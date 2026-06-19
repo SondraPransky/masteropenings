@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EECoach</title>
+<script>!function(){var t=localStorage.getItem('mc_theme')||'light';if(t==='dark')document.documentElement.setAttribute('data-theme','dark')}()</script>
+<script src="data.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:    #f8fafc;
+  --surf:  #ffffff;
+  --surf2: #f1f5f9;
+  --surf3: #e2e8f0;
+  --border:   rgba(15,23,42,.09);
+  --border-h: rgba(15,23,42,.18);
+  --cyan:      #6366f1;
+  --cyan-dim:  rgba(99,102,241,.08);
+  --cyan-glow: rgba(99,102,241,.22);
+  --gold:     #d97706;
+  --green:    #059669;
+  --green-dim:rgba(5,150,105,.08);
+  --text:  #0f172a;
+  --text-2:#475569;
+  --dim:   #94a3b8;
+  --r: 10px; --rs: 6px;
+  --shadow-sm: 0 1px 3px rgba(15,23,42,.08),0 1px 2px rgba(15,23,42,.06);
+  --shadow:    0 4px 12px rgba(15,23,42,.08),0 2px 4px rgba(15,23,42,.06);
+  --shadow-lg: 0 20px 48px rgba(15,23,42,.12),0 8px 16px rgba(15,23,42,.06);
+}
+[data-theme="dark"] {
+  --bg:    #080c14;  --surf:  #0e1520;  --surf2: #151e2d;  --surf3: #1c2740;
+  --border:rgba(148,163,184,.09); --border-h:rgba(148,163,184,.18);
+  --cyan-dim:rgba(99,102,241,.12); --cyan-glow:rgba(99,102,241,.3);
+  --gold:  #f59e0b; --green: #34d399;  --green-dim:rgba(52,211,153,.12);
+  --text:  #f1f5f9; --text-2:#94a3b8;  --dim:#64748b;
+  --shadow-sm:0 1px 4px rgba(0,0,0,.5),0 2px 8px rgba(0,0,0,.25);
+  --shadow:   0 4px 16px rgba(0,0,0,.55),0 1px 4px rgba(0,0,0,.3);
+  --shadow-lg:0 16px 56px rgba(0,0,0,.75),0 4px 14px rgba(0,0,0,.4);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* ── NAV ── */
+nav{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;height:60px;
+  background:rgba(255,255,255,.92);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;
+}
+[data-theme="dark"] nav{background:rgba(8,12,20,.93)}
+.logo{font-weight:800;font-size:1rem;display:flex;align-items:center;gap:6px;text-decoration:none;color:var(--text)}
+.logo em{color:var(--cyan);font-style:normal}
+.nav-right{display:flex;align-items:center;gap:8px}
+.nav-admin{font-size:.78rem;color:var(--dim);text-decoration:none;padding:5px 11px;border:1px solid var(--border);border-radius:var(--rs);transition:.15s}
+.nav-admin:hover{color:var(--text);border-color:var(--border-h);background:var(--surf2)}
+@media(max-width:540px){.nav-admin{display:none}}
+#theme-toggle{width:32px;height:32px;border-radius:var(--rs);border:1px solid var(--border);background:var(--surf2);color:var(--dim);font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;flex-shrink:0;padding:0;line-height:1}
+#theme-toggle:hover{background:var(--surf3);color:var(--text)}
+
+/* ── HERO ── */
+.hero{text-align:center;padding:72px 24px 56px;max-width:680px;margin:0 auto}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;font-size:.71rem;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--cyan);background:var(--cyan-dim);border:1px solid rgba(99,102,241,.25);border-radius:20px;padding:5px 14px;margin-bottom:22px}
+.hero h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:800;letter-spacing:-.6px;line-height:1.12;margin-bottom:16px}
+.hero h1 em{color:var(--cyan);font-style:normal}
+.hero-sub{font-size:1.05rem;color:var(--text-2);line-height:1.7;max-width:520px;margin:0 auto 32px}
+.hero-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 22px;border-radius:var(--rs);border:none;font-family:inherit;font-weight:600;font-size:.9rem;cursor:pointer;transition:.15s;text-decoration:none;white-space:nowrap}
+.btn-primary{background:var(--cyan);color:#fff;box-shadow:0 1px 8px var(--cyan-glow)}
+.btn-primary:hover{filter:brightness(1.1)}
+.btn-ghost{background:transparent;color:var(--text-2);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--surf2);color:var(--text);border-color:var(--border-h)}
+
+/* ── STATS ── */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:680px;margin:0 auto 72px;padding:0 24px}
+@media(max-width:600px){.stats{grid-template-columns:1fr}}
+.stat-card{background:var(--surf);border:1px solid var(--border);border-radius:var(--r);padding:22px 20px;text-align:center;box-shadow:var(--shadow-sm)}
+.stat-val{font-size:2rem;font-weight:800;color:var(--cyan);line-height:1;margin-bottom:6px}
+.stat-lbl{font-size:.72rem;color:var(--dim);text-transform:uppercase;letter-spacing:1.2px;font-weight:600}
+
+/* ── SECTION ── */
+.section{max-width:900px;margin:0 auto 72px;padding:0 24px}
+.section-title{text-align:center;margin-bottom:36px}
+.section-title h2{font-size:clamp(1.4rem,3vw,2rem);font-weight:800;letter-spacing:-.3px;margin-bottom:8px}
+.section-title p{color:var(--text-2);font-size:.95rem}
+
+/* ── FEATURES ── */
+.features{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+@media(max-width:640px){.features{grid-template-columns:1fr}}
+.feat-card{background:var(--surf);border:1px solid var(--border);border-radius:var(--r);padding:28px 24px;box-shadow:var(--shadow-sm);transition:.2s}
+.feat-card:hover{box-shadow:var(--shadow);border-color:var(--border-h);transform:translateY(-1px)}
+.feat-icon{font-size:1.8rem;margin-bottom:14px;line-height:1}
+.feat-title{font-size:1rem;font-weight:700;margin-bottom:8px}
+.feat-desc{font-size:.875rem;color:var(--text-2);line-height:1.65}
+
+/* ── STEPS ── */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+@media(max-width:640px){.steps{grid-template-columns:1fr}}
+.step{text-align:center;padding:8px}
+.step-num{font-size:2.4rem;font-weight:800;color:var(--cyan);opacity:.18;line-height:1;margin-bottom:10px;font-family:'JetBrains Mono',monospace}
+.step-title{font-size:.95rem;font-weight:700;margin-bottom:8px}
+.step-desc{font-size:.845rem;color:var(--text-2);line-height:1.6}
+
+/* ── CITATION ── */
+.citation-wrap{max-width:640px;margin:0 auto 72px;padding:0 24px}
+.citation-card{background:var(--surf);border:1px solid var(--border);border-left:4px solid var(--cyan);border-radius:var(--r);padding:28px 32px;box-shadow:var(--shadow-sm)}
+.citation-text{font-size:1.05rem;line-height:1.7;color:var(--text);margin-bottom:14px;font-style:italic}
+.citation-text::before{content:'\201C';color:var(--cyan);font-size:1.4rem;line-height:0;vertical-align:-.2em;margin-right:2px}
+.citation-text::after{content:'\201D';color:var(--cyan);font-size:1.4rem;line-height:0;vertical-align:-.2em;margin-left:2px}
+.citation-author{font-size:.78rem;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:1.2px}
+
+/* ── CTA FINAL ── */
+.cta-final{text-align:center;max-width:560px;margin:0 auto 72px;padding:0 24px}
+.cta-final-box{background:var(--surf);border:1px solid var(--border);border-radius:calc(var(--r)*1.5);padding:48px 32px;box-shadow:var(--shadow)}
+.cta-final h2{font-size:clamp(1.4rem,3vw,1.9rem);font-weight:800;margin-bottom:10px;letter-spacing:-.3px}
+.cta-final p{color:var(--text-2);font-size:.9rem;margin-bottom:24px;line-height:1.6}
+
+/* ── FOOTER ── */
+footer{border-top:1px solid var(--border);padding:24px;text-align:center;font-size:.78rem;color:var(--dim)}
+footer a{color:var(--dim);text-decoration:none;margin:0 8px;transition:.15s}
+footer a:hover{color:var(--text)}
+.footer-links{margin-top:8px}
+
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:var(--surf3);border-radius:2px}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="home.html">♟ EE<em id="nav-nom"></em></a>
+  <div class="nav-right">
+    <button id="theme-toggle" onclick="toggleTheme()" title="Changer de thème">🌙</button>
+    <a href="admin.html" class="nav-admin">📋 Espace prof</a>
+    <a id="nav-cta" href="landing.html" class="btn btn-primary" style="padding:7px 16px;font-size:.82rem"></a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-badge" id="hero-badge"></div>
+  <h1 id="hero-titre"></h1>
+  <p class="hero-sub" id="hero-sub"></p>
+  <div class="hero-btns">
+    <a id="cta-principal" href="landing.html" class="btn btn-primary"></a>
+    <a id="cta-secondaire" href="#comment" class="btn btn-ghost"></a>
+  </div>
+</div>
+
+<div class="stats" id="stats-row"></div>
+
+<div class="section">
+  <div class="section-title">
+    <h2>Pourquoi EECoach ?</h2>
+  </div>
+  <div class="features" id="features-grid"></div>
+</div>
+
+<div class="section" id="comment">
+  <div class="section-title">
+    <h2>Comment ça marche</h2>
+    <p>En trois étapes, de la création au suivi.</p>
+  </div>
+  <div class="steps" id="steps-list"></div>
+</div>
+
+<div class="citation-wrap" id="citation-wrap"></div>
+
+<div class="cta-final">
+  <div class="cta-final-box">
+    <h2 id="cta-final-titre"></h2>
+    <p id="cta-final-desc"></p>
+    <a id="cta-final-btn" href="landing.html" class="btn btn-primary"></a>
+  </div>
+</div>
+
+<footer>
+  <div id="footer-desc"></div>
+  <div class="footer-links" id="footer-links"></div>
+</footer>
+
+<script>
+function toggleTheme() {
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const next = dark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('mc_theme', next);
+  document.getElementById('theme-toggle').textContent = next === 'dark' ? '☀️' : '🌙';
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  document.getElementById('theme-toggle').textContent = dark ? '☀️' : '🌙';
+});
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+(function render() {
+  const S = typeof SITE !== 'undefined' ? SITE : null;
+  if (!S) return;
+
+  // Nav
+  document.getElementById('nav-nom').textContent   = S.nom;
+  document.getElementById('nav-cta').textContent   = S.nav_cta;
+  document.title = S.nom + ' — ' + S.tagline;
+
+  // Hero
+  document.getElementById('hero-badge').textContent   = S.tagline;
+  document.getElementById('hero-titre').innerHTML     = S.hero.titre;
+  document.getElementById('hero-sub').textContent     = S.hero.sous_titre;
+  document.getElementById('cta-principal').textContent = S.hero.cta_principal;
+  document.getElementById('cta-secondaire').textContent = S.hero.cta_secondaire;
+  document.getElementById('cta-secondaire').href = S.lien_outil;
+
+  // Stats
+  document.getElementById('stats-row').innerHTML = S.stats.map(s => `
+    <div class="stat-card">
+      <div class="stat-val">${esc(s.valeur)}</div>
+      <div class="stat-lbl">${esc(s.label)}</div>
+    </div>`).join('');
+
+  // Features
+  document.getElementById('features-grid').innerHTML = S.fonctionnalites.map(f => `
+    <div class="feat-card">
+      <div class="feat-icon">${f.icone}</div>
+      <div class="feat-title">${esc(f.titre)}</div>
+      <p class="feat-desc">${esc(f.description)}</p>
+    </div>`).join('');
+
+  // Steps
+  document.getElementById('steps-list').innerHTML = S.etapes.map(e => `
+    <div class="step">
+      <div class="step-num">${esc(e.num)}</div>
+      <div class="step-title">${esc(e.titre)}</div>
+      <p class="step-desc">${esc(e.description)}</p>
+    </div>`).join('');
+
+  // Citation
+  if (S.citation && S.citation.afficher) {
+    document.getElementById('citation-wrap').innerHTML = `
+      <div class="citation-card">
+        <div class="citation-text">${esc(S.citation.texte)}</div>
+        <div class="citation-author">${esc(S.citation.auteur)}</div>
+      </div>`;
+  }
+
+  // CTA final
+  document.getElementById('cta-final-titre').textContent = S.cta_final.titre;
+  document.getElementById('cta-final-desc').textContent  = S.cta_final.description;
+  document.getElementById('cta-final-btn').textContent   = S.cta_final.bouton;
+  document.getElementById('cta-final-btn').href          = S.lien_outil;
+
+  // Footer
+  document.getElementById('footer-desc').textContent = S.footer.description;
+  if (S.footer.liens && S.footer.liens.length) {
+    document.getElementById('footer-links').innerHTML =
+      S.footer.liens.map(l => `<a href="${esc(l.url)}">${esc(l.label)}</a>`).join('');
+  }
+})();
+</script>
+</body>
+</html>

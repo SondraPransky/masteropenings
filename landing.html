@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EECoach — Accueil</title>
+<script>!function(){var t=localStorage.getItem('mc_theme')||'light';if(t==='dark')document.documentElement.setAttribute('data-theme','dark')}()</script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:    #f8fafc;
+  --surf:  #ffffff;
+  --surf2: #f1f5f9;
+  --surf3: #e2e8f0;
+  --border:   rgba(15,23,42,.09);
+  --border-h: rgba(15,23,42,.18);
+  --cyan:     #6366f1;
+  --cyan-dim: rgba(99,102,241,.08);
+  --cyan-glow:rgba(99,102,241,.22);
+  --gold:     #d97706;
+  --gold-dim: rgba(217,119,6,.08);
+  --green:    #059669;
+  --green-dim:rgba(5,150,105,.08);
+  --red:      #e11d48;
+  --red-dim:  rgba(225,29,72,.08);
+  --text:  #0f172a;
+  --text-2:#475569;
+  --dim:   #94a3b8;
+  --r: 10px; --rs: 6px;
+  --shadow-sm: 0 1px 3px rgba(15,23,42,.08), 0 1px 2px rgba(15,23,42,.06);
+  --shadow:    0 4px 12px rgba(15,23,42,.08), 0 2px 4px rgba(15,23,42,.06);
+  --shadow-lg: 0 20px 48px rgba(15,23,42,.14), 0 8px 16px rgba(15,23,42,.08);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* NAV */
+nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; height: 60px;
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 50;
+}
+.logo { font-weight: 800; font-size: 1rem; display: flex; align-items: center; gap: 6px; }
+.logo em { color: var(--cyan); font-style: normal; }
+.nav-admin {
+  font-size: .78rem; color: var(--dim);
+  text-decoration: none;
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--rs);
+  transition: .15s;
+}
+.nav-admin:hover { color: var(--text); border-color: var(--border-h); background: var(--surf2); }
+
+/* HERO */
+.hero {
+  text-align: center;
+  padding: 64px 24px 48px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: .72rem; font-weight: 700; letter-spacing: 1.4px;
+  text-transform: uppercase; color: var(--cyan);
+  background: var(--cyan-dim); border: 1px solid rgba(99,102,241,.25);
+  border-radius: 20px; padding: 5px 14px; margin-bottom: 20px;
+}
+.hero h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; letter-spacing: -.5px; line-height: 1.15; margin-bottom: 14px; }
+.hero-sub { font-size: 1rem; color: var(--text-2); line-height: 1.65; }
+
+/* PORTAL */
+.portal { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 900px; margin: 0 auto; padding: 0 24px 64px; }
+@media (max-width: 700px) { .portal { grid-template-columns: 1fr; } }
+
+.portal-card {
+  background: var(--surf);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 28px;
+  box-shadow: var(--shadow-sm);
+}
+.portal-card-title {
+  font-size: .67rem; font-weight: 700; letter-spacing: 1.8px;
+  text-transform: uppercase; color: var(--dim); margin-bottom: 20px;
+  display: flex; align-items: center; gap: 7px;
+}
+.portal-card-title .icon { font-size: .9rem; }
+
+/* Account chips */
+.account-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; min-height: 36px; }
+.account-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 7px 14px;
+  background: var(--surf2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-size: .83rem; font-weight: 500; font-family: inherit;
+  color: var(--text); cursor: pointer; transition: .15s;
+}
+.account-chip:hover {
+  border-color: rgba(99,102,241,.4);
+  background: rgba(99,102,241,.08);
+  color: var(--cyan);
+}
+.account-chip .initial {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--cyan-dim); color: var(--cyan);
+  font-size: .7rem; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.account-empty { font-size: .8rem; color: var(--dim); padding: 4px 0 12px; }
+
+/* PIN entry inline */
+.pin-prompt {
+  display: none;
+  background: var(--surf2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.pin-prompt.on { display: block; }
+.pin-prompt label { font-size: .75rem; font-weight: 600; color: var(--text-2); display: block; margin-bottom: 8px; }
+.pin-row { display: flex; gap: 8px; }
+
+/* Divider */
+.divider {
+  display: flex; align-items: center; gap: 10px;
+  margin: 20px 0 20px;
+  color: var(--dim); font-size: .73rem;
+}
+.divider::before, .divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+/* Form rows */
+.frow { margin-bottom: 14px; }
+.frow label { display: block; font-size: .75rem; font-weight: 600; color: var(--text-2); margin-bottom: 6px; }
+input[type=text], input[type=password], input[type=number] {
+  width: 100%; padding: 9px 12px;
+  background: var(--surf2); border: 1px solid var(--border);
+  border-radius: var(--rs); color: var(--text);
+  font-family: inherit; font-size: .875rem; outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px var(--cyan-dim); }
+input::placeholder { color: var(--dim); }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 9px 18px; border-radius: var(--rs); border: none;
+  font-family: inherit; font-weight: 600; font-size: .835rem;
+  cursor: pointer; transition: .15s; width: 100%; white-space: nowrap;
+}
+.btn-gold { background: var(--gold); color: #fff; box-shadow: 0 1px 6px rgba(217,119,6,.3); }
+.btn-gold:hover { filter: brightness(1.08); }
+.btn-ghost { background: transparent; color: var(--text-2); border: 1px solid var(--border); }
+.btn-ghost:hover { background: var(--surf2); color: var(--text); border-color: var(--border-h); }
+.btn-primary { background: var(--cyan); color: #fff; box-shadow: 0 1px 8px var(--cyan-glow); }
+.btn-primary:hover { filter: brightness(1.1); }
+.btn-sm { padding: 6px 14px; font-size: .78rem; width: auto; }
+.btn-row { display: flex; gap: 8px; }
+
+/* Error */
+.field-error { font-size: .75rem; color: var(--red); margin-top: 6px; display: none; }
+.field-error.on { display: block; }
+
+/* Prof zone */
+.prof-section { display: flex; flex-direction: column; gap: 14px; }
+.prof-section + .prof-section { border-top: 1px solid var(--border); padding-top: 20px; margin-top: 6px; }
+.section-label { font-size: .75rem; font-weight: 600; color: var(--text-2); margin-bottom: 8px; }
+.pin-info { font-size: .73rem; color: var(--dim); line-height: 1.5; margin-bottom: 12px; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: var(--surf3); border-radius: 2px; }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 300;
+  background: var(--surf); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 10px 16px;
+  font-size: .83rem; font-weight: 500;
+  transform: translateY(60px); opacity: 0;
+  transition: .25s; pointer-events: none;
+  box-shadow: var(--shadow);
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.ok { border-color: rgba(5,150,105,.35); color: #047857; }
+.toast.ko { border-color: rgba(225,29,72,.3); color: #be123c; }
+
+/* ══ DARK MODE ══════════════════════════════════ */
+[data-theme="dark"] {
+  --bg:        #080c14;
+  --surf:      #0e1520;
+  --surf2:     #151e2d;
+  --surf3:     #1c2740;
+  --border:    rgba(148,163,184,.09);
+  --border-h:  rgba(148,163,184,.18);
+  --cyan-dim:  rgba(99,102,241,.12);
+  --cyan-glow: rgba(99,102,241,.3);
+  --gold:      #f59e0b;
+  --gold-dim:  rgba(245,158,11,.14);
+  --green:     #34d399;
+  --green-dim: rgba(52,211,153,.12);
+  --red:       #fb7185;
+  --red-dim:   rgba(251,113,133,.12);
+  --text:      #f1f5f9;
+  --text-2:    #94a3b8;
+  --dim:       #64748b;
+  --shadow-sm: 0 1px 4px rgba(0,0,0,.5), 0 2px 8px rgba(0,0,0,.25);
+  --shadow:    0 4px 16px rgba(0,0,0,.55), 0 1px 4px rgba(0,0,0,.3);
+  --shadow-lg: 0 16px 56px rgba(0,0,0,.75), 0 4px 14px rgba(0,0,0,.4);
+}
+[data-theme="dark"] nav { background: rgba(8,12,20,.93); }
+[data-theme="dark"] .btn-gold { color: #000; }
+[data-theme="dark"] .btn-primary { box-shadow: 0 1px 8px var(--cyan-glow); }
+[data-theme="dark"] .account-chip:hover { background: rgba(99,102,241,.12); }
+[data-theme="dark"] .toast.ok { border-color: rgba(52,211,153,.4);  color: var(--green); }
+[data-theme="dark"] .toast.ko { border-color: rgba(251,113,133,.4); color: var(--red); }
+[data-theme="dark"] .field-error { color: var(--red); }
+
+/* Toggle thème */
+#theme-toggle {
+  width: 32px; height: 32px;
+  border-radius: var(--rs);
+  border: 1px solid var(--border);
+  background: var(--surf2);
+  color: var(--dim);
+  font-size: .95rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: .15s; flex-shrink: 0; padding: 0; line-height: 1;
+}
+#theme-toggle:hover { background: var(--surf3); color: var(--text); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">♟ EE<em>Coach</em></div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <button id="theme-toggle" onclick="toggleTheme()" title="Changer de thème">🌙</button>
+    <a href="admin.html" class="nav-admin">📋 Espace prof →</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-badge">♟ Entraîneur d'ouvertures</div>
+  <h1>Révisez, progressez,<br>maîtrisez</h1>
+  <p class="hero-sub">Modules interactifs, répétition espacée SM-2,<br>suivi de progression en temps réel.</p>
+</div>
+
+<div class="portal">
+
+  <!-- ═══ ESPACE ÉLÈVE ═══ -->
+  <div class="portal-card">
+    <div class="portal-card-title"><span class="icon">🎓</span>Espace élève</div>
+
+    <!-- Comptes existants -->
+    <div id="account-list" class="account-list"></div>
+
+    <!-- Saisie PIN si nécessaire -->
+    <div id="pin-prompt" class="pin-prompt">
+      <label id="pin-label">Code PIN pour <strong id="pin-for-name"></strong></label>
+      <div class="pin-row">
+        <input type="password" id="pin-field" maxlength="8" placeholder="PIN…" style="width:120px"
+               onkeydown="if(event.key==='Enter')confirmPin()">
+        <button class="btn btn-primary btn-sm" onclick="confirmPin()">Entrer</button>
+        <button class="btn btn-ghost btn-sm" onclick="cancelPin()">Annuler</button>
+      </div>
+      <div class="field-error" id="pin-error">Code PIN incorrect</div>
+    </div>
+
+    <div class="divider">ou créer un compte</div>
+
+    <div class="frow">
+      <label>Prénom / pseudo</label>
+      <input type="text" id="new-name" placeholder="Ex : Alice" maxlength="40"
+             onkeydown="if(event.key==='Enter')createAccount()">
+    </div>
+    <div class="frow">
+      <label>Code PIN <span style="color:var(--dim);font-weight:400">(optionnel — pour protéger votre compte)</span></label>
+      <input type="password" id="new-pin" placeholder="4 chiffres max" maxlength="8"
+             onkeydown="if(event.key==='Enter')createAccount()">
+    </div>
+    <div class="field-error" id="create-error">Ce prénom est déjà utilisé.</div>
+    <button class="btn btn-gold" style="margin-top:6px" onclick="createAccount()">Commencer →</button>
+  </div>
+
+  <!-- ═══ ESPACE PROF ═══ -->
+  <div class="portal-card">
+    <div class="portal-card-title"><span class="icon">📋</span>Espace professeur</div>
+
+    <div class="prof-section">
+      <div class="section-label">Tableau de bord admin</div>
+      <div class="pin-info">Accédez aux archives de tous vos élèves : sessions, erreurs, maîtrise SM-2, parties Maia.</div>
+      <div class="frow" id="prof-pin-row" style="margin-bottom:0">
+        <label>Mot de passe prof <span id="prof-pin-status" style="color:var(--dim);font-weight:400">(non configuré)</span></label>
+        <input type="password" id="prof-pin-input" placeholder="Mot de passe…"
+               onkeydown="if(event.key==='Enter')accessAdmin()">
+      </div>
+      <div class="field-error" id="prof-pin-error">Mot de passe incorrect</div>
+      <button class="btn btn-primary" onclick="accessAdmin()">Ouvrir le tableau de bord →</button>
+    </div>
+
+    <div class="prof-section" style="margin-top:20px">
+      <div class="section-label">Créer/modifier les modules</div>
+      <div class="pin-info">Importez des PGN, créez des modules et partagez-les avec vos élèves.</div>
+      <button class="btn btn-ghost" onclick="window.location.href='index.html'">Ouvrir l'outil →</button>
+    </div>
+
+    <div class="prof-section" style="margin-top:20px">
+      <div class="section-label">Configurer le mot de passe prof</div>
+      <div class="btn-row">
+        <input type="password" id="set-pin-input" placeholder="Nouveau mot de passe…" style="flex:1;padding:8px 12px;background:var(--surf2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-family:inherit;font-size:.83rem;outline:none" onfocus="this.style.borderColor='var(--cyan)'" onblur="this.style.borderColor='var(--border)'" onkeydown="if(event.key==='Enter')setProfPin()">
+        <button class="btn btn-ghost btn-sm" onclick="setProfPin()">Définir</button>
+      </div>
+      <div class="field-error" id="set-pin-ok" style="color:var(--green);margin-top:6px"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+//  Données & état
+// ══════════════════════════════════════════
+let accounts = JSON.parse(localStorage.getItem('mc_accounts') || '[]');
+let pendingLogin = null; // account awaiting PIN
+
+// ══════════════════════════════════════════
+//  Init
+// ══════════════════════════════════════════
+(function init() {
+  renderAccounts();
+  updateProfPinStatus();
+
+  // Pre-fill name if student already logged in
+  const current = localStorage.getItem('mc_student');
+  if (current) document.getElementById('new-name').value = current;
+})();
+
+// ── Thème ──────────────────────────────────────────────
+function toggleTheme() {
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const next = dark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('mc_theme', next);
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.textContent = next === 'dark' ? '☀️' : '🌙';
+}
+document.addEventListener('DOMContentLoaded', function() {
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
+});
+
+// ══════════════════════════════════════════
+//  Comptes élèves
+// ══════════════════════════════════════════
+function renderAccounts() {
+  const el = document.getElementById('account-list');
+  if (!accounts.length) {
+    el.innerHTML = '<div class="account-empty">Aucun compte enregistré — créez le vôtre.</div>';
+    return;
+  }
+  el.innerHTML = accounts.map(a => `
+    <button class="account-chip" onclick="selectAccount(${JSON.stringify(a.name)})">
+      <span class="initial">${a.name[0].toUpperCase()}</span>
+      ${escHtml(a.name)}
+    </button>
+  `).join('');
+}
+
+function selectAccount(name) {
+  const acc = accounts.find(a => a.name === name);
+  if (!acc) return;
+  if (acc.pin) {
+    // Show PIN prompt
+    pendingLogin = name;
+    document.getElementById('pin-for-name').textContent = name;
+    document.getElementById('pin-prompt').classList.add('on');
+    document.getElementById('pin-field').value = '';
+    document.getElementById('pin-error').classList.remove('on');
+    setTimeout(() => document.getElementById('pin-field').focus(), 80);
+  } else {
+    loginAs(name);
+  }
+}
+
+function confirmPin() {
+  const entered = document.getElementById('pin-field').value;
+  const acc = accounts.find(a => a.name === pendingLogin);
+  if (acc && acc.pin === entered) {
+    document.getElementById('pin-prompt').classList.remove('on');
+    loginAs(pendingLogin);
+  } else {
+    document.getElementById('pin-error').classList.add('on');
+    document.getElementById('pin-field').value = '';
+    document.getElementById('pin-field').focus();
+  }
+}
+
+function cancelPin() {
+  pendingLogin = null;
+  document.getElementById('pin-prompt').classList.remove('on');
+}
+
+function createAccount() {
+  const name = document.getElementById('new-name').value.trim();
+  const pin  = document.getElementById('new-pin').value.trim() || null;
+  const errEl = document.getElementById('create-error');
+  errEl.classList.remove('on');
+
+  if (!name) { toast('Entrez votre prénom', 'ko'); return; }
+
+  const existing = accounts.find(a => a.name.toLowerCase() === name.toLowerCase());
+  if (existing) {
+    if (existing.pin && pin !== existing.pin) {
+      errEl.textContent = 'Ce compte existe déjà — entrez le bon PIN ou choisissez-le ci-dessus.';
+      errEl.classList.add('on');
+      return;
+    }
+    loginAs(existing.name);
+    return;
+  }
+
+  // New account
+  accounts.push({ name, pin, createdAt: Date.now() });
+  localStorage.setItem('mc_accounts', JSON.stringify(accounts));
+  loginAs(name);
+}
+
+function loginAs(name) {
+  localStorage.setItem('mc_student', name);
+  // Update lastSeen
+  const i = accounts.findIndex(a => a.name === name);
+  if (i >= 0) {
+    accounts[i].lastSeen = Date.now();
+    localStorage.setItem('mc_accounts', JSON.stringify(accounts));
+  }
+  window.location.href = 'index.html';
+}
+
+// ══════════════════════════════════════════
+//  Espace prof
+// ══════════════════════════════════════════
+function updateProfPinStatus() {
+  const pin = localStorage.getItem('mc_prof_pin');
+  document.getElementById('prof-pin-status').textContent = pin ? '(configuré)' : '(non configuré)';
+  document.getElementById('prof-pin-row').style.display = pin ? 'block' : 'none';
+}
+
+function accessAdmin() {
+  const storedPin = localStorage.getItem('mc_prof_pin');
+  const entered   = document.getElementById('prof-pin-input').value;
+  const errEl     = document.getElementById('prof-pin-error');
+  errEl.classList.remove('on');
+
+  if (!storedPin || storedPin === entered) {
+    window.location.href = 'admin.html';
+  } else {
+    errEl.classList.add('on');
+  }
+}
+
+function setProfPin() {
+  const pin = document.getElementById('set-pin-input').value.trim();
+  const msgEl = document.getElementById('set-pin-ok');
+  if (!pin) {
+    localStorage.removeItem('mc_prof_pin');
+    msgEl.textContent = '✓ Mot de passe supprimé (accès libre)';
+  } else {
+    localStorage.setItem('mc_prof_pin', pin);
+    msgEl.textContent = '✓ Mot de passe enregistré';
+  }
+  msgEl.style.display = 'block';
+  document.getElementById('set-pin-input').value = '';
+  updateProfPinStatus();
+  setTimeout(() => { msgEl.style.display = 'none'; }, 3000);
+}
+
+// ══════════════════════════════════════════
+//  Utilitaires
+// ══════════════════════════════════════════
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+let toastTimer;
+function toast(msg, type = 'ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.className = 'toast', 2800);
+}
+</script>
+</body>
+</html>
