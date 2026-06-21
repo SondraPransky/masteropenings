@@ -19,7 +19,7 @@ const SITE = {
   hero: {
     sur_titre:  "Outil pédagogique d'échecs",
     titre:      "Faites réviser vos<br>ouvertures, <em>en ligne</em>",
-    sous_titre: "Importez vos PGN annotés, partagez un code à vos élèves et analysez leurs erreurs position par position — sans aucune inscription.",
+    sous_titre: "Créez vos modules d'ouvertures, assignez-les à vos élèves, et analysez leurs erreurs position par position — chacun sur son compte.",
     cta_principal:   "Lancer l'outil gratuitement",
     cta_secondaire:  "Voir comment ça marche ↓"
   },
@@ -35,8 +35,8 @@ const SITE = {
   fonctionnalites: [
     {
       icone: "♟",
-      titre: "Import PGN avec commentaires",
-      description: "Collez n'importe quel PGN. Les commentaires {…} sont lus automatiquement et affichés à l'élève après chaque coup."
+      titre: "Créez sur échiquier ou par PGN",
+      description: "Construisez vos lignes en jouant sur un échiquier — variantes et commentaires inclus — ou collez n'importe quel PGN annoté."
     },
     {
       icone: "↗",
@@ -44,9 +44,9 @@ const SITE = {
       description: "L'adversaire joue automatiquement. L'élève rejoue toute l'ouverture de mémoire, coup après coup, sans aide."
     },
     {
-      icone: "📤",
-      titre: "Partage instantané par code",
-      description: "Un clic génère un code unique. L'élève le colle dans l'outil pour importer le module. Aucun compte, aucune app."
+      icone: "👥",
+      titre: "Assignation par classe",
+      description: "Créez une classe, ajoutez l'email de vos élèves, et le module apparaît directement dans leur espace — où qu'ils soient."
     },
     {
       icone: "📋",
@@ -64,19 +64,19 @@ const SITE = {
     },
     {
       num: "02",
-      titre: "Un code de partage",
-      description: "Cliquez 📤 pour générer un code compact. Envoyez-le par message, email, ou affichez-le en classe."
+      titre: "Assignez à votre classe",
+      description: "Ajoutez l'email de vos élèves à une classe et choisissez les modules à réviser. Ils sont notifiés dans leur espace."
     },
     {
       num: "03",
       titre: "L'élève révise",
-      description: "Il colle le code, entre son prénom et joue immédiatement. Le prof voit les résultats en temps réel."
+      description: "Il se connecte, voit ses modules assignés et révise. Vous suivez ses résultats en temps réel."
     }
   ],
 
   // ── Citation / Témoignage ─────────────────────────────────
   citation: {
-    texte:  "Enfin un outil simple pour donner des devoirs d'ouvertures. Je crée le module, j'envoie le code au groupe, et le lendemain j'ai les statistiques.",
+    texte:  "Enfin un outil simple pour donner des devoirs d'ouvertures. Je crée le module, je l'assigne à ma classe, et le lendemain j'ai les statistiques.",
     auteur: "Formateur fédéral",
     afficher: true   // mettez false pour masquer cette section
   },
@@ -84,7 +84,7 @@ const SITE = {
   // ── Section CTA finale ────────────────────────────────────
   cta_final: {
     titre:       "Prêt à réviser ?",
-    description: "Gratuit, sans inscription, sans installation. Fonctionne dans n'importe quel navigateur.",
+    description: "Gratuit, sans installation. Crée ton compte et commence en moins d'une minute.",
     bouton:      "Ouvrir EECoach"
   },
 

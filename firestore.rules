@@ -1,0 +1,74 @@
+rules_version = '2';
+
+// ════════════════════════════════════════════════════════════
+//  Règles de sécurité Firestore — EECoach
+//  À coller dans : Console Firebase → Firestore Database → Règles → Publier
+//
+//  Modèle MVP : tout utilisateur CONNECTÉ peut lire les modules/classes
+//  (nécessaire pour qu'un élève charge un module assigné). Seul le prof
+//  PROPRIÉTAIRE peut écrire/supprimer ses modules et ses classes.
+//  On pourra durcir plus tard (restreindre la lecture aux modules assignés).
+// ════════════════════════════════════════════════════════════
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // ── users/{uid} : profil (email, name, role) ──
+    // Lecture ouverte aux connectés (le prof doit voir le nom de ses élèves).
+    // Écriture uniquement sur son propre document.
+    match /users/{uid} {
+      allow read:  if signedIn();
+      allow write: if signedIn() && request.auth.uid == uid;
+    }
+
+    // ── modules/{id} : modules d'ouvertures ──
+    // Lecture aux connectés (l'élève charge les modules qui lui sont assignés).
+    // Écriture : le prof propriétaire (teacherId) OU l'élève propriétaire
+    // d'un module perso importé (ownerStudentId).
+    match /modules/{id} {
+      allow read:   if signedIn();
+      allow create: if signedIn() && (request.resource.data.teacherId == request.auth.uid
+                                    || request.resource.data.ownerStudentId == request.auth.uid);
+      allow update: if signedIn() && (request.resource.data.teacherId == request.auth.uid
+                                    || request.resource.data.ownerStudentId == request.auth.uid);
+      allow delete: if signedIn() && (resource.data.teacherId == request.auth.uid
+                                    || resource.data.ownerStudentId == request.auth.uid);
+    }
+
+    // ── classes/{id} : classes (moduleIds[], studentEmails[]) ──
+    // Lecture aux connectés (l'élève cherche les classes contenant son email).
+    // Écriture : seulement par le prof propriétaire.
+    match /classes/{id} {
+      allow read:   if signedIn();
+      allow create: if signedIn() && request.resource.data.teacherId == request.auth.uid;
+      allow update: if signedIn() && request.resource.data.teacherId == request.auth.uid;
+      allow delete: if signedIn() && resource.data.teacherId == request.auth.uid;
+    }
+
+    // ── results/{auto} : résultats par position (analyse d'erreurs) ──
+    // L'élève crée ses résultats ; le prof les lit. Pas de modif/suppression.
+    match /results/{id} {
+      allow read:   if signedIn();
+      allow create: if signedIn();
+      allow update, delete: if false;
+    }
+
+    // ── practice/{auto} : sessions de pratique (% réussite par session) ──
+    match /practice/{id} {
+      allow read:   if signedIn();
+      allow create: if signedIn();
+      allow update, delete: if false;
+    }
+
+    // ── games/{auto} : parties Maia sauvegardées ──
+    match /games/{id} {
+      allow read:   if signedIn();
+      allow create: if signedIn();
+      allow update, delete: if false;
+    }
+  }
+}

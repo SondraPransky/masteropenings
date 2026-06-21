@@ -1151,6 +1151,73 @@ textarea {
   white-space: nowrap;
 }
 .sh-play-btn:hover { filter: brightness(1.1); box-shadow: 0 2px 10px var(--cyan-glow); }
+.sh-section-label { font-size:.7rem; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; color:var(--dim); margin:24px 0 10px; }
+.sh-section-head { display:flex; align-items:center; justify-content:space-between; margin:24px 0 10px; }
+.sh-section-head .sh-section-label { margin:0; }
+.sh-notif-banner { background:var(--gold-dim); border:1px solid rgba(217,119,6,.3); color:var(--gold); border-radius:var(--r); padding:11px 15px; font-size:.86rem; margin-bottom:4px; }
+.sh-new-badge { background:var(--gold-dim)!important; color:var(--gold)!important; border-color:rgba(217,119,6,.3)!important; }
+.sh-module-card.sh-new { box-shadow:0 0 0 2px rgba(217,119,6,.4); }
+.sh-del-btn { background:none; border:none; color:var(--dim); cursor:pointer; font-size:1rem; padding:4px 8px; border-radius:var(--rs); flex-shrink:0; align-self:center; }
+.sh-del-btn:hover { background:var(--red-dim); color:var(--red); }
+.sh-perso-empty { font-size:.8rem; color:var(--dim); padding:14px 4px; text-align:center; border:1px dashed var(--border); border-radius:var(--r); }
+.sh-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:16px; }
+.sh-hello { font-size:1.45rem; font-weight:800; letter-spacing:-.4px; }
+.sh-hello-sub { font-size:.82rem; color:var(--dim); margin-top:2px; }
+.sh-streak { font-size:.82rem; font-weight:700; color:var(--gold); background:var(--gold-dim); border:1px solid rgba(217,119,6,.25); padding:5px 11px; border-radius:999px; white-space:nowrap; flex-shrink:0; }
+.sh-streak:empty { display:none; }
+.sh-hero { background:linear-gradient(135deg,#6366f1,#4f46e5); color:#fff; border-radius:var(--r); padding:18px 20px; margin-bottom:16px; box-shadow:0 4px 16px rgba(99,102,241,.28); }
+[data-theme="dark"] .sh-hero { background:linear-gradient(135deg,#4338ca,#312e81); }
+.sh-hero-label { font-size:1.02rem; font-weight:800; margin-bottom:3px; }
+.sh-hero-sub { font-size:.82rem; opacity:.92; margin-bottom:14px; line-height:1.45; }
+.sh-hero-btn { background:#fff; color:#4f46e5; border:none; border-radius:var(--rs); padding:11px 16px; font-family:inherit; font-weight:700; font-size:.9rem; cursor:pointer; width:100%; transition:.12s; }
+.sh-hero-btn:hover { filter:brightness(.96); transform:translateY(-1px); }
+.sh-ring { flex-shrink:0; }
+.sh-mod { display:flex; align-items:center; gap:12px; background:var(--surf); border:1px solid var(--border); border-radius:var(--r); padding:11px 12px; margin-bottom:9px; cursor:pointer; transition:.12s; }
+.sh-mod:hover { border-color:var(--border-h); background:var(--surf2); }
+.sh-mod-new { box-shadow:0 0 0 2px rgba(217,119,6,.38); }
+.sh-mod-body { flex:1; min-width:0; }
+.sh-mod-name { font-size:.88rem; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.sh-mod-chips { display:flex; align-items:center; gap:7px; margin-top:5px; }
+.sh-mod-side { font-size:.72rem; color:var(--dim); }
+.sh-chip { font-size:.7rem; font-weight:600; padding:2px 8px; border-radius:999px; white-space:nowrap; }
+.sh-chip-gold { background:var(--gold-dim); color:var(--gold); }
+.sh-chip-green { background:var(--green-dim); color:var(--green); }
+.sh-chip-cyan { background:var(--cyan-dim); color:var(--cyan); }
+.sh-card-act { flex-shrink:0; width:32px; height:32px; border-radius:50%; border:1px solid var(--border); background:var(--surf); color:var(--dim); cursor:pointer; font-size:.85rem; display:flex; align-items:center; justify-content:center; transition:.12s; }
+.sh-card-play { background:var(--cyan); color:#fff; border-color:var(--cyan); }
+.sh-card-act:hover { filter:brightness(1.06); }
+.sh-empty { font-size:.8rem; color:var(--dim); padding:16px; text-align:center; border:1px dashed var(--border); border-radius:var(--r); }
+.onb-card { background:var(--cyan-dim); border:1px solid rgba(99,102,241,.25); border-radius:var(--r); padding:14px 16px; margin-bottom:16px; }
+.onb-head { display:flex; align-items:center; gap:10px; font-weight:700; font-size:.92rem; margin-bottom:8px; }
+.onb-prog { font-size:.72rem; font-weight:700; color:var(--cyan); background:var(--surf); border:1px solid var(--border); border-radius:999px; padding:2px 9px; }
+.onb-x { margin-left:auto; background:none; border:none; color:var(--dim); font-size:1.15rem; cursor:pointer; line-height:1; padding:0 4px; }
+.onb-x:hover { color:var(--text); }
+.onb-step { display:flex; align-items:center; gap:10px; padding:8px 0; font-size:.85rem; }
+.onb-step + .onb-step { border-top:1px solid rgba(99,102,241,.12); }
+.onb-check { width:20px; height:20px; flex-shrink:0; border-radius:50%; border:1.5px solid var(--border-h); display:flex; align-items:center; justify-content:center; font-size:.7rem; color:#fff; }
+.onb-step.on .onb-check { background:var(--green); border-color:var(--green); }
+.onb-step.on .onb-label { color:var(--dim); text-decoration:line-through; }
+.onb-label { flex:1; }
+.onb-step .btn { margin-left:auto; flex-shrink:0; }
+.onb-sub { font-size:.82rem; color:var(--text-2); }
+.ws-card { background:var(--surf); border:1px solid var(--border); border-radius:var(--r); padding:14px 16px; margin-bottom:16px; }
+.ws-head { font-weight:700; font-size:.9rem; margin-bottom:2px; }
+.ws-sub { font-size:.76rem; color:var(--dim); margin-bottom:12px; }
+.ws-row { display:flex; align-items:center; gap:12px; padding:8px 0; }
+.ws-row + .ws-row { border-top:1px solid var(--border); }
+.ws-move { font-size:.92rem; font-weight:700; font-family:'JetBrains Mono',monospace; min-width:46px; flex-shrink:0; }
+.ws-info { flex:1; min-width:0; }
+.ws-name { font-size:.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ws-comment { color:var(--dim); font-weight:400; }
+.ws-bar { height:5px; background:var(--surf3); border-radius:3px; margin-top:5px; overflow:hidden; }
+.ws-fill { height:100%; background:var(--red); border-radius:3px; }
+.ws-stat { font-size:.74rem; color:var(--red); font-weight:600; flex-shrink:0; white-space:nowrap; }
+.lib-row { display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--border); }
+.lib-row:last-child { border-bottom:none; }
+.lib-info { flex:1; min-width:0; }
+.lib-name { font-size:.9rem; font-weight:600; }
+.lib-side { font-size:.68rem; font-weight:600; color:var(--cyan); background:var(--cyan-dim); border-radius:999px; padding:1px 8px; margin-left:6px; }
+.lib-desc { font-size:.78rem; color:var(--dim); margin-top:2px; }
 
 /* Bouton retour élève (dans la nav drill) */
 #btn-back-student {
@@ -1457,7 +1524,7 @@ textarea {
 
 <nav>
   <div class="nav-left">
-    <a href="landing.html" class="nav-back">← Accueil</a>
+    <a href="home.html" class="nav-back">← Accueil</a>
     <div class="logo">♟ EE<em>Coach</em></div>
   </div>
   <div class="tabs" id="nav-tabs">
@@ -1525,14 +1592,40 @@ textarea {
 ════════════════════════════════════════ -->
 <div id="page-student-home" class="page">
   <div style="max-width:680px;margin:0 auto;padding:20px 16px">
-    <div class="sh-header">
-      <div class="sh-header-name" id="sh-student-name">Bonjour !</div>
-      <div class="sh-header-sub">Modules à réviser aujourd'hui</div>
+
+    <!-- Salutation + streak -->
+    <div class="sh-top">
+      <div>
+        <div class="sh-hello" id="sh-student-name">Salut !</div>
+        <div class="sh-hello-sub">Prêt pour ta révision du jour ?</div>
+      </div>
+      <div class="sh-streak" id="sh-streak"></div>
     </div>
-    <div id="sh-module-list">
-      <div class="empty"><div class="empty-ico">🎯</div>Aucun module assigné.<br><span style="font-size:.8rem">Votre professeur vous en assignera bientôt.</span></div>
+
+    <!-- Hero : à réviser aujourd'hui -->
+    <div class="sh-hero" id="sh-hero"></div>
+
+    <!-- Notification : nouveaux modules assignés -->
+    <div id="sh-notif"></div>
+
+    <!-- Modules assignés par le prof -->
+    <div class="sh-section-head">
+      <div class="sh-section-label" style="margin:0">Mes modules</div>
     </div>
-    <div style="text-align:center;margin-top:16px">
+    <div id="sh-module-list"></div>
+
+    <!-- Révisions perso (import élève) -->
+    <div class="sh-section-head" style="margin-top:22px">
+      <div class="sh-section-label" style="margin:0">Mes révisions perso</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+        <button class="btn btn-ghost btn-sm" onclick="openLibrary()" style="font-size:.74rem">📚 Biblio</button>
+        <button class="btn btn-ghost btn-sm" onclick="openPgnEditorNew('student')" style="font-size:.74rem">🎹 Créer</button>
+        <button class="btn btn-ghost btn-sm" onclick="openStudentImport()" style="font-size:.74rem">+ Importer</button>
+      </div>
+    </div>
+    <div id="sh-perso-list"></div>
+
+    <div style="text-align:center;margin-top:20px">
       <button class="btn btn-ghost btn-sm" onclick="loadStudentModules()" style="font-size:.75rem">↻ Actualiser</button>
     </div>
   </div>
@@ -1583,13 +1676,15 @@ textarea {
 
     <!-- ── SECTION : Modules ── -->
     <div id="csec-modules">
+      <div id="coach-onboarding"></div>
       <div class="cs-header">
         <div>
           <div class="cs-title">Mes modules</div>
           <div class="cs-sub" id="cs-modules-sub">0 module créé</div>
         </div>
         <div class="cs-actions">
-          <button class="btn btn-ghost btn-sm" onclick="loadExample()">Exemple</button>
+          <button class="btn btn-ghost btn-sm" onclick="openLibrary()">📚 Bibliothèque</button>
+          <button class="btn btn-ghost btn-sm" onclick="openPgnEditorNew('teacher')">🎹 Échiquier</button>
           <button class="btn btn-gold" onclick="openCreateDrillModal()">+ Nouveau module</button>
         </div>
       </div>
@@ -1628,6 +1723,7 @@ textarea {
 
       <div id="prof-ui">
         <div class="cs-kpi-strip" id="prof-kpis"></div>
+        <div id="prof-weakspots"></div>
         <div class="eleve-layout">
           <div class="eleve-panel">
             <div class="eleve-panel-header">
@@ -1775,19 +1871,6 @@ textarea {
 ════════════════════════════════════════ -->
 <div id="page-drill" class="page">
 
-  <!-- Import par code — collapsible -->
-  <div class="card" style="margin-bottom:18px;padding:14px 20px">
-    <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleImport()">
-      <span style="font-size:.82rem;font-weight:600;color:var(--dim)">⬇ Importer un module (code prof)</span>
-      <span id="import-toggle-ico" style="font-size:.72rem;color:var(--dim)">▼ Afficher</span>
-    </div>
-    <div id="import-body" style="display:none;margin-top:12px">
-      <div class="import-row">
-        <input type="text" id="inp-import-code" placeholder="Collez le code de partage ici…">
-        <button class="btn btn-blue" onclick="doImportCode()">⬇ Importer</button>
-      </div>
-    </div>
-  </div>
 
   <div id="no-drill" style="text-align:center;padding:40px;color:var(--dim);display:none">
     <div style="font-size:2rem;margin-bottom:12px">🎯</div>
@@ -1920,6 +2003,50 @@ textarea {
 ════════════════════════════════════════ -->
 
 <!-- Modal : Créer un module -->
+<div class="overlay" id="modal-library">
+  <div class="modal" style="max-width:620px;width:96vw;max-height:90vh;overflow-y:auto;padding:24px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <div class="modal-title" style="margin:0">📚 Bibliothèque d'ouvertures</div>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-library')">✕</button>
+    </div>
+    <p style="font-size:.8rem;color:var(--dim);margin-bottom:16px">Choisis une ouverture prête à l'emploi pour commencer tout de suite — coups et commentaires inclus.</p>
+    <div id="library-list"></div>
+  </div>
+</div>
+
+<div class="overlay" id="modal-student-import">
+  <div class="modal" style="max-width:560px;width:96vw;max-height:92vh;overflow-y:auto;padding:28px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div class="modal-title" style="margin:0">🎯 Importer une révision perso</div>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-student-import')">✕</button>
+    </div>
+    <p style="font-size:.8rem;color:var(--dim);margin-bottom:18px;line-height:1.5">Colle un PGN (avec ou sans commentaires) pour t'entraîner sur l'ouverture de ton choix. C'est <strong>privé</strong> — ton prof ne le voit pas.</p>
+    <div class="frow">
+      <label>PGN</label>
+      <textarea id="si-pgn" spellcheck="false" autocorrect="off" autocomplete="off" style="height:130px"
+        placeholder="1. e4 e5 2. Nf3 Nc6 3. Bb5 {L'Espagnole} a6 *"></textarea>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end">
+      <div class="frow" style="margin:0">
+        <label>Nom</label>
+        <input type="text" id="si-name" placeholder="Ex : Mon répertoire Sicilienne">
+      </div>
+      <div class="frow" style="margin:0">
+        <label>Je joue</label>
+        <select id="si-side">
+          <option value="w">♔ Blancs</option>
+          <option value="b">♚ Noirs</option>
+          <option value="both">⇄ Les deux</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:22px">
+      <button class="btn btn-ghost" onclick="closeModal('modal-student-import')">Annuler</button>
+      <button class="btn btn-primary" onclick="importStudentDrill()">Créer ma révision</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="modal-create-drill">
   <div class="modal" style="max-width:620px;width:96vw;max-height:92vh;overflow-y:auto;padding:28px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
@@ -2047,7 +2174,20 @@ textarea {
     <!-- Header -->
     <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-bottom:1px solid var(--border);flex-shrink:0;gap:12px">
       <div style="font-weight:700;font-size:.95rem">🎹 Éditeur de variantes</div>
-      <div id="editor-drill-name" style="font-size:.82rem;color:var(--dim);flex:1;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+      <div style="display:flex;gap:8px;flex:1;align-items:center;min-width:0">
+        <input id="editor-drill-name" placeholder="Nom du module…" style="flex:1;min-width:0;font-size:.84rem;padding:6px 10px;background:var(--surf);border:1px solid var(--border);border-radius:var(--rs);color:var(--text)">
+        <select id="editor-side" title="Quel camp l'élève joue" style="flex-shrink:0;font-size:.8rem;padding:6px 8px;background:var(--surf);border:1px solid var(--border);border-radius:var(--rs);color:var(--text)">
+          <option value="w">♔ Blancs</option>
+          <option value="b">♚ Noirs</option>
+          <option value="both">⇄ Les deux</option>
+        </select>
+        <select id="editor-level" title="Niveau" style="flex-shrink:0;font-size:.8rem;padding:6px 8px;background:var(--surf);border:1px solid var(--border);border-radius:var(--rs);color:var(--text)">
+          <option value="Débutant">Débutant</option>
+          <option value="Intermédiaire" selected>Intermédiaire</option>
+          <option value="Avancé">Avancé</option>
+          <option value="Expert">Expert</option>
+        </select>
+      </div>
       <div style="display:flex;gap:6px;flex-shrink:0">
         <button class="btn btn-ghost btn-sm" onclick="closeEditorModal()">✕ Fermer</button>
         <button class="btn btn-gold btn-sm" onclick="saveEditorDrill()">💾 Enregistrer</button>
@@ -2104,34 +2244,6 @@ textarea {
 </div>
 
 <!-- Modal : partage de drill -->
-<div class="overlay" id="modal-share">
-  <div class="modal" style="max-width:440px">
-    <div class="modal-title">📤 Partager ce module</div>
-
-    <!-- Section : envoyer à un élève avec compte (Firebase) -->
-    <div id="share-send-section" style="display:none;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)">
-      <div style="font-size:.8rem;font-weight:600;margin-bottom:8px;color:var(--text)">Envoyer à un élève</div>
-      <div style="font-size:.78rem;color:var(--dim);margin-bottom:10px">Sélectionnez un élève inscrit — il recevra le module directement dans son espace.</div>
-      <select id="share-student-select" style="width:100%;padding:7px 10px;font-size:.83rem;margin-bottom:10px">
-        <option value="">— Choisir un élève —</option>
-      </select>
-      <button class="btn btn-gold btn-sm" style="width:100%" onclick="sendModuleToStudent()">📨 Envoyer le module</button>
-      <div id="share-send-feedback" style="font-size:.76rem;margin-top:8px;text-align:center;min-height:16px"></div>
-    </div>
-
-    <!-- Section : code de partage (toujours visible) -->
-    <div style="font-size:.8rem;font-weight:600;margin-bottom:8px;color:var(--text)">Code de partage</div>
-    <div class="modal-sub" style="margin-bottom:10px">Copiez ce code et envoyez-le à vos élèves. Ils l'importent dans <strong>♟ Réviser</strong>.</div>
-    <div class="share-box">
-      <span style="font-size:.7rem;color:var(--dim)">Code :</span>
-      <span class="share-code" id="share-code-text"></span>
-    </div>
-    <div class="modal-foot">
-      <button class="btn btn-ghost" onclick="closeModal('modal-share')">Fermer</button>
-      <button class="btn btn-gold"  onclick="copyShareCode()">📋 Copier le code</button>
-    </div>
-  </div>
-</div>
 
 <div id="toast" class="toast"></div>
 <canvas id="ghost-canvas" width="60" height="60"
@@ -2158,7 +2270,7 @@ textarea {
 // ══════════════════════════════════════════════════════
 const FIREBASE_CONFIGURED = (typeof FIREBASE_CONFIG !== 'undefined') &&
                              FIREBASE_CONFIG.apiKey !== 'VOTRE_API_KEY';
-let db = null, fbAuth = null, currentUser = null, currentRole = null;
+let db = null, fbAuth = null, currentUser = null, currentRole = null, pendingRole = null;
 
 if (FIREBASE_CONFIGURED) {
   try {
@@ -2230,13 +2342,14 @@ async function registerUser() {
   const role  =  document.getElementById('reg-role')?.value  || 'student';
   if (!name || !email || !pwd) { showLoginError('Remplissez tous les champs.'); return; }
   if (pwd.length < 6) { showLoginError('Le mot de passe doit contenir au moins 6 caractères.'); return; }
+  pendingRole = role;  // mémorise le rôle voulu : onAuthStateChanged se déclenche avant l'écriture du doc users
   try {
     const cred = await fbAuth.createUserWithEmailAndPassword(email, pwd);
     await cred.user.updateProfile({ displayName: name });
     await db.collection(C_USERS).doc(cred.user.uid).set({
       email, name, role, created: Date.now()
     });
-  } catch(e) { showLoginError(translateFirebaseError(e.code)); }
+  } catch(e) { pendingRole = null; showLoginError(translateFirebaseError(e.code)); }
 }
 
 async function logoutUser() {
@@ -2284,19 +2397,15 @@ async function loadTeacherModules() {
     const snap = await db.collection(C_MODULES)
       .where('teacherId', '==', currentUser.uid)
       .get();
-    if (!snap.empty) {
-      drills = snap.docs.map(d => d.data())
-        .sort((a, b) => (b.id || 0) - (a.id || 0));
-      save();
-    }
-    // Charger aussi les classes
+    drills = snap.docs.map(d => d.data())
+      .sort((a, b) => (b.id || 0) - (a.id || 0));
+    save();
+    // Classes (toujours réinitialiser depuis Firestore : pas de fuite entre comptes)
     const clsSnap = await db.collection(C_CLASSES)
       .where('teacherId', '==', currentUser.uid)
       .get();
-    if (!clsSnap.empty) {
-      classes = clsSnap.docs.map(d => d.data());
-      saveClasses();
-    }
+    classes = clsSnap.docs.map(d => d.data());
+    saveClasses();
     renderDrillList();
     renderClassList();
     renderClassModuleSelect();
@@ -2328,87 +2437,257 @@ async function loadStudentModules() {
   const nameEl = document.getElementById('sh-student-name');
   if (nameEl) nameEl.textContent = currentUser.displayName || currentUser.email;
 
+  let assigned = [], personal = [];
   try {
+    // 1. Modules assignés via les classes (l'élève est ajouté par email)
     const snap = await db.collection(C_CLASSES)
       .where('studentEmails', 'array-contains', currentUser.email)
       .get();
     const moduleIds = new Set();
     snap.docs.forEach(d => (d.data().moduleIds || []).forEach(id => moduleIds.add(id)));
-
-    if (!moduleIds.size) {
-      if (listEl) listEl.innerHTML = '<div class="empty"><div class="empty-ico">🎯</div>Aucun module assigné.<br><span style="font-size:.8rem">Votre professeur vous en assignera bientôt.</span></div>';
-      return;
-    }
-    const modules = [];
     for (const mid of moduleIds) {
       const mSnap = await db.collection(C_MODULES).doc(mid).get();
-      if (mSnap.exists) modules.push({ ...mSnap.data() });
+      if (mSnap.exists) assigned.push({ ...mSnap.data() });
     }
-    drills = modules;
-    save();
-    renderStudentHome(modules);
+    // 2. Modules persos importés par l'élève (privés)
+    const pSnap = await db.collection(C_MODULES)
+      .where('ownerStudentId', '==', currentUser.uid)
+      .get();
+    personal = pSnap.docs.map(d => ({ ...d.data() }));
+    // 3. Résultats + sessions de l'élève (stats du tableau de bord, multi-appareils)
+    const rs = await db.collection(C_RESULTS).where('studentId', '==', currentUser.uid).get();
+    results = rs.docs.map(d => d.data()); localStorage.setItem('mc_results', JSON.stringify(results));
+    const ps = await db.collection(C_PRACTICE).where('studentId', '==', currentUser.uid).get();
+    practiceLog = ps.docs.map(d => d.data()); localStorage.setItem('mc_practice', JSON.stringify(practiceLog));
   } catch(e) {
     console.error('loadStudentModules', e);
     if (listEl) listEl.innerHTML = '<div style="color:var(--red);padding:20px;text-align:center;font-size:.85rem">Erreur de chargement. Vérifiez votre connexion.</div>';
-  }
-}
-
-function renderStudentHome(modules) {
-  const el     = document.getElementById('sh-module-list');
-  const nameEl = document.getElementById('sh-student-name');
-  if (!el) return;
-  if (nameEl && currentUser) {
-    const name = currentUser.displayName || currentUser.email;
-    nameEl.textContent = 'Bonjour, ' + name.split(' ')[0] + ' !';
-  }
-  if (!modules.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-ico">🎯</div>Aucun module assigné.<br><span style="font-size:.8rem">Votre professeur vous en assignera bientôt.</span></div>';
     return;
   }
-  el.innerHTML = modules.map((m, i) => {
-    const myResults = results.filter(r => String(r.drillId) === String(m.id));
-    const total   = myResults.length;
-    const correct = myResults.filter(r => r.correct).length;
-    const pct     = total ? Math.round(correct / total * 100) : null;
-    const isNew   = pct === null;
-    const barW    = pct ?? 0;
-    const barCol  = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--gold)' : 'var(--red)';
-    const scoreHtml = isNew
-      ? '<span class="badge" style="background:var(--cyan-dim);color:var(--cyan);border-color:rgba(99,102,241,.2)">Nouveau ✦</span>'
-      : `<span class="badge ${pct>=80?'badge-green':pct>=50?'badge-gold':'badge-red'}">${pct}%</span>`;
-    const dlHtml = m.deadline ? `<span style="font-size:.72rem;color:var(--dim)">📅 ${m.deadline}</span>` : '';
-    const sideIcon = m.side === 'w' ? '♔' : m.side === 'b' ? '♚' : '⇄';
-    return `<div class="sh-module-card" onclick="startStudentDrill(${i})">
-      <div class="sh-module-icon">${sideIcon}</div>
-      <div class="sh-module-info">
-        <div class="sh-module-name">${escapeHtml(m.name)}</div>
-        <div class="sh-module-meta">
-          <span class="badge badge-blue">${escapeHtml(m.level || '')}</span>
-          <span class="badge badge-gold">${m.side==='w'?'Blancs':m.side==='b'?'Noirs':'Les deux'}</span>
-          ${scoreHtml}${dlHtml}
-        </div>
-        ${total > 0 ? `<div class="sh-module-progress">
-          <div class="prog-bar" style="flex:1"><div class="prog-fill" style="width:${barW}%;background:${barCol}"></div></div>
-          <span>${correct}/${total} coups</span>
-        </div>` : ''}
-      </div>
-      <button class="sh-play-btn">▶ Réviser</button>
-    </div>`;
-  }).join('');
+  drills = [...assigned, ...personal];
+  save();
+  renderStudentHome(assigned, personal);
+}
+
+function renderStudentHome(assigned, personal) {
+  assigned = assigned || [];
+  personal = personal || [];
+  const first = currentUser ? (currentUser.displayName || currentUser.email).split(' ')[0] : '';
+  if (currentUser) S.student = currentUser.displayName || currentUser.email;
+  const nameEl = document.getElementById('sh-student-name');
+  if (nameEl) nameEl.textContent = 'Salut ' + first;
+
+  // Streak (jours d'affilée avec activité)
+  const streak = _computeStreak();
+  const streakEl = document.getElementById('sh-streak');
+  if (streakEl) streakEl.innerHTML = streak > 0 ? `🔥 ${streak} j` : '';
+
+  // Notification : modules assignés pas encore ouverts
+  const seen    = _seenModules();
+  const newOnes = assigned.filter(m => !seen.includes(String(m.id)));
+
+  // Hero : à réviser aujourd'hui (positions dues — répétition espacée)
+  const all    = [...assigned, ...personal];
+  const dueN   = _allDuePositions().length;
+  const heroEl = document.getElementById('sh-hero');
+  if (heroEl) {
+    if (dueN > 0) {
+      heroEl.innerHTML = `<div class="sh-hero-label">À réviser aujourd'hui</div>
+        <div class="sh-hero-sub">${dueN} position${dueN>1?'s':''} due${dueN>1?'s':''} — choisies par la répétition espacée.</div>
+        <button class="sh-hero-btn" onclick="reviserTout()">▶ Commencer la révision</button>`;
+    } else if (all.length) {
+      heroEl.innerHTML = `<div class="sh-hero-label">Tout est à jour ✓</div>
+        <div class="sh-hero-sub">Bravo ${escapeHtml(first)} ! Rien à réviser aujourd'hui. Reviens demain ou explore un module.</div>`;
+    } else {
+      heroEl.innerHTML = `<div class="sh-hero-label">Bienvenue 👋</div>
+        <div class="sh-hero-sub">Ton prof va t'assigner des modules. En attendant, tu peux importer ton propre PGN ci-dessous.</div>`;
+    }
+  }
+
+  // Bannière nouveaux modules
+  const notifEl = document.getElementById('sh-notif');
+  if (notifEl) notifEl.innerHTML = newOnes.length
+    ? `<div class="sh-notif-banner">🔔 <strong>${newOnes.length} nouveau${newOnes.length>1?'x':''} module${newOnes.length>1?'s':''}</strong> de ton prof !</div>`
+    : '';
+
+  // Modules assignés
+  const el = document.getElementById('sh-module-list');
+  if (el) el.innerHTML = assigned.length
+    ? assigned.map((m, i) => _shModuleCard(m, i, newOnes.some(n => String(n.id)===String(m.id)), false)).join('')
+    : '<div class="sh-empty">Aucun module assigné. Ton prof t\'en enverra bientôt — tu seras prévenu ici.</div>';
+
+  // Révisions perso
+  const pel = document.getElementById('sh-perso-list');
+  if (pel) pel.innerHTML = personal.length
+    ? personal.map((m, j) => _shModuleCard(m, assigned.length + j, false, true)).join('')
+    : '<div class="sh-empty">Aucune révision perso. Importe un PGN pour t\'entraîner sur ce que tu veux.</div>';
+}
+
+// Stats d'un module pour l'élève (depuis les résultats réels)
+function _moduleStats(m) {
+  const student = S.student || (currentUser ? (currentUser.displayName || currentUser.email) : '');
+  const rs = results.filter(r => String(r.drillId) === String(m.id));
+  const total   = rs.length;
+  const correct = rs.filter(r => r.correct).length;
+  let pct = total ? Math.round(correct / total * 100) : null;
+  let due = 0, totalPos = 0, played = false;
+  if (m.varmode === 'tree') {
+    const positions = _treePlayerPositions(m);
+    totalPos = positions.length;
+    const did = String(m.id), now = Date.now();
+    positions.forEach(p => {
+      const mm = masteryData[`${student}_${did}_${p.masteryKey}`];
+      if (mm) played = true;
+      if (!mm || mm.due <= now) due++;
+    });
+    // L'anneau = couverture de maîtrise (positions non dues / total)
+    pct = totalPos ? Math.round((totalPos - due) / totalPos * 100) : null;
+  }
+  let state;
+  if (m.varmode === 'tree') {
+    if (!played && due === totalPos) state = 'new';
+    else if (due === 0)             state = 'mastered';
+    else                           state = 'review';
+  } else {
+    state = total > 0 ? (pct >= 90 ? 'mastered' : 'review') : 'new';
+  }
+  return { total, correct, pct, due, totalPos, played, state };
+}
+
+function _computeStreak() {
+  const days = new Set();
+  const add = ts => { if (ts) days.add(new Date(ts).toDateString()); };
+  results.forEach(r => add(r.ts));
+  (typeof practiceLog !== 'undefined' ? practiceLog : []).forEach(p => add(p.ts));
+  if (!days.size) return 0;
+  let streak = 0;
+  const d = new Date();
+  if (!days.has(d.toDateString())) d.setDate(d.getDate() - 1); // tolère "hier" comme départ
+  while (days.has(d.toDateString())) { streak++; d.setDate(d.getDate() - 1); }
+  return streak;
+}
+
+function _renderRing(pct, colorVar) {
+  const has = pct !== null && pct !== undefined;
+  const p   = Math.max(0, Math.min(100, has ? pct : 0));
+  const C    = 100.5;                       // 2·π·r, r=16
+  const off  = (C * (1 - p / 100)).toFixed(1);
+  const label = has ? p + '%' : '·';
+  return `<svg width="38" height="38" viewBox="0 0 40 40" class="sh-ring" aria-hidden="true">
+    <circle cx="20" cy="20" r="16" fill="none" stroke="var(--surf3)" stroke-width="4"/>
+    <circle cx="20" cy="20" r="16" fill="none" stroke="${colorVar}" stroke-width="4" stroke-dasharray="${C}" stroke-dashoffset="${off}" stroke-linecap="round" transform="rotate(-90 20 20)"/>
+    <text x="20" y="20" text-anchor="middle" dominant-baseline="central" style="font-size:10px;font-weight:700;fill:var(--text)">${label}</text>
+  </svg>`;
+}
+
+function _shModuleCard(m, idx, isNew, isPersonal) {
+  const st  = _moduleStats(m);
+  const ringCol = st.state === 'mastered' ? 'var(--green)' : st.state === 'review' ? 'var(--gold)' : 'var(--cyan)';
+  let chip;
+  if (isNew)                      chip = '<span class="sh-chip sh-chip-gold">🔔 Nouveau</span>';
+  else if (st.state === 'new')    chip = '<span class="sh-chip sh-chip-cyan">À découvrir</span>';
+  else if (st.state === 'mastered') chip = '<span class="sh-chip sh-chip-green">✓ Maîtrisé</span>';
+  else                            chip = `<span class="sh-chip sh-chip-gold">↻ À revoir${st.due ? ` · ${st.due}` : ''}</span>`;
+  const edit = isPersonal ? `<button class="sh-card-act" onclick="event.stopPropagation();openPgnEditor(${idx})" title="Éditer sur échiquier">🎹</button>` : '';
+  const del  = isPersonal ? `<button class="sh-card-act" onclick="event.stopPropagation();deleteStudentDrill('${m.id}')" title="Supprimer">🗑</button>` : '';
+  return `<div class="sh-mod${isNew ? ' sh-mod-new' : ''}" onclick="startStudentDrill(${idx})">
+    ${_renderRing(st.pct, ringCol)}
+    <div class="sh-mod-body">
+      <div class="sh-mod-name">${escapeHtml(m.name)}</div>
+      <div class="sh-mod-chips">${chip}<span class="sh-mod-side">${m.side==='w'?'Blancs':m.side==='b'?'Noirs':'Les deux'}</span></div>
+    </div>
+    ${edit}${del}
+    <button class="sh-card-act" onclick="event.stopPropagation();playVsMaia(${idx})" title="Jouer contre Maia">🤖</button>
+    <button class="sh-card-act sh-card-play" title="Réviser">▶</button>
+  </div>`;
+}
+
+// Lance le module le plus prioritaire (nouveau du prof > plus faible maîtrise)
+function startPriorityReview() {
+  const seen = _seenModules();
+  let target = -1, best = Infinity;
+  drills.forEach((m, i) => {
+    const s = _moduleStats(m);
+    if (s.state === 'mastered') return;
+    const isNewProf = !m.personal && !seen.includes(String(m.id));
+    const score = (isNewProf ? -1000 : 0) + (s.pct ?? 0);
+    if (score < best) { best = score; target = i; }
+  });
+  if (target < 0) { toast('✓ Tout est à jour — rien à réviser !', 'ok'); return; }
+  startStudentDrill(target);
+}
+
+// ── Suivi "déjà vu" pour la notification (local par élève) ──
+function _seenKey()    { return 'mc_seen_modules_' + (currentUser?.uid || 'anon'); }
+function _seenModules(){ try { return JSON.parse(localStorage.getItem(_seenKey()) || '[]'); } catch(e){ return []; } }
+function _markModuleSeen(id) {
+  const seen = _seenModules();
+  if (!seen.includes(String(id))) { seen.push(String(id)); localStorage.setItem(_seenKey(), JSON.stringify(seen)); }
 }
 
 function startStudentDrill(idx) {
   S.student = currentUser?.displayName || currentUser?.email || 'Élève';
   localStorage.setItem('mc_student', S.student);
+  const d = drills[idx];
+  if (d) _markModuleSeen(d.id);
   goPage('drill');
   startDrill(idx);
+}
+
+// ── Import perso par l'élève (privé) ──────────────────
+function openStudentImport() {
+  const n = document.getElementById('si-name'); if (n) n.value = '';
+  const p = document.getElementById('si-pgn');  if (p) p.value = '';
+  document.getElementById('modal-student-import').classList.add('on');
+}
+
+function importStudentDrill() {
+  const name = document.getElementById('si-name').value.trim();
+  const pgn  = document.getElementById('si-pgn').value.trim();
+  const side = document.getElementById('si-side').value;
+  if (!name) { toast('⚠ Donne un nom à ta révision', 'ko'); return; }
+  if (!pgn)  { toast('⚠ Colle un PGN', 'ko'); return; }
+  let allLines;
+  try { allLines = extractAllLines(pgn); }
+  catch(e) { toast('❌ PGN invalide : ' + e.message, 'ko'); return; }
+  if (!allLines.length) { toast('❌ Aucune ligne jouable dans ce PGN', 'ko'); return; }
+  const tree = _buildDrillTree(allLines, side);
+  if (!Object.keys(tree).length) { toast('⚠ Aucun coup extractible', 'ko'); return; }
+  const d = {
+    id: Date.now(),
+    name, level: 'Perso', side, pgn,
+    mode: 'line', varmode: 'tree', tree,
+    sessions: [{ label: 'Arbre complet', startFen: new Chess().fen(), moves: [], kps: [] }],
+    hideComments: false, deadline: null,
+    personal: true,
+    ownerStudentId: currentUser?.uid || null,
+    created: new Date().toLocaleDateString('fr-FR')
+  };
+  drills.push(d);
+  save();
+  if (db && currentUser) {
+    db.collection(C_MODULES).doc(String(d.id)).set({ ...d, tree: d.tree || {} })
+      .catch(e => console.error('importStudentDrill FS:', e));
+  }
+  closeModal('modal-student-import');
+  toast('✓ Révision perso créée', 'ok');
+  loadStudentModules();
+}
+
+function deleteStudentDrill(id) {
+  if (!confirm('Supprimer cette révision perso ?')) return;
+  drills = drills.filter(d => String(d.id) !== String(id));
+  save();
+  if (db && currentUser) {
+    db.collection(C_MODULES).doc(String(id)).delete().catch(e => console.error('deleteStudentDrill FS:', e));
+  }
+  loadStudentModules();
 }
 
 // ── Sync Firestore — résultats Vue Prof ───────────────
 async function loadTeacherResults() {
   if (!db || !currentUser || currentRole !== 'teacher') return;
   const myDrillIds = drills.map(d => String(d.id));
-  if (!myDrillIds.length) return;
   try {
     let allResults = [];
     for (let i = 0; i < myDrillIds.length; i += 10) {
@@ -2417,11 +2696,41 @@ async function loadTeacherResults() {
         .where('drillId', 'in', chunk).get();
       allResults = allResults.concat(snap.docs.map(d => d.data()));
     }
-    if (allResults.length) {
-      results = allResults;
-      localStorage.setItem('mc_results', JSON.stringify(results));
-    }
+    results = allResults;   // toujours réinitialiser (pas de fuite entre comptes/sessions)
+    localStorage.setItem('mc_results', JSON.stringify(results));
   } catch(e) { console.error('loadTeacherResults', e); }
+}
+
+// ── Sync Firestore — sessions de pratique (Vue Prof) ──
+async function loadTeacherPractice() {
+  if (!db || !currentUser || currentRole !== 'teacher') return;
+  const myDrillIds = drills.map(d => String(d.id));
+  try {
+    let all = [];
+    for (let i = 0; i < myDrillIds.length; i += 10) {
+      const chunk = myDrillIds.slice(i, i + 10);
+      const snap  = await db.collection(C_PRACTICE).where('drillId', 'in', chunk).get();
+      all = all.concat(snap.docs.map(d => d.data()));
+    }
+    practiceLog = all;
+    localStorage.setItem('mc_practice', JSON.stringify(practiceLog));
+  } catch(e) { console.error('loadTeacherPractice', e); }
+}
+
+// ── Sync Firestore — parties Maia (Vue Prof) ──────────
+async function loadTeacherGames() {
+  if (!db || !currentUser || currentRole !== 'teacher') return;
+  const myDrillIds = drills.map(d => String(d.id));
+  try {
+    let all = [];
+    for (let i = 0; i < myDrillIds.length; i += 10) {
+      const chunk = myDrillIds.slice(i, i + 10);
+      const snap  = await db.collection(C_GAMES).where('drillId', 'in', chunk).get();
+      all = all.concat(snap.docs.map(d => d.data()));
+    }
+    savedGames = all;
+    localStorage.setItem('mc_games', JSON.stringify(savedGames));
+  } catch(e) { console.error('loadTeacherGames', e); }
 }
 
 // ── Auth state ────────────────────────────────────────
@@ -2435,9 +2744,13 @@ if (fbAuth) {
     }
     try {
       const snap = await db.collection(C_USERS).doc(user.uid).get();
-      currentRole = snap.exists ? snap.data().role : 'student';
-    } catch(e) { currentRole = 'student'; }
+      if (snap.exists)      currentRole = snap.data().role;
+      else if (pendingRole) currentRole = pendingRole;  // inscription en cours : doc users en train d'être écrit
+      else                  currentRole = 'student';
+    } catch(e) { currentRole = pendingRole || 'student'; }
+    pendingRole = null;
     updateNav();
+    await loadMasteryFromFirestore();   // progression SM-2 multi-appareils
 
     if (currentRole === 'student') {
       goPage('student-home');
@@ -2447,6 +2760,7 @@ if (fbAuth) {
       await loadTeacherModules();
       if (!drills.length && !localStorage.getItem('mc_demo_seen')) {
         injectDemoDrill();
+        if (drills[0]) await syncModuleToFirestore(drills[0]);  // rendre le module démo assignable aux élèves
         setTimeout(() => toast('👋 Module Espagnole de démo chargé — cliquez ▶ Jouer pour essayer.', 'ok'), 600);
       }
       goPage('coach');
@@ -2506,7 +2820,7 @@ const S = {
   sel:      null,
   ok:       0,
   ko:       0,
-  student:  localStorage.getItem('mc_student') || ''
+  student:  localStorage.getItem('mc_student') || 'Élève'
 };
 
 // ══════════════════════════════════════════════════════
@@ -2573,10 +2887,10 @@ function switchCoachSection(sec) {
     const btn = document.getElementById('csnav-'+s);
     if (btn) btn.classList.toggle('on', s===sec);
   });
-  if (sec==='eleves')  { loadTeacherResults().then(()=>renderProfView()); }
+  if (sec==='eleves')  { Promise.all([loadTeacherResults(), loadTeacherPractice(), loadTeacherGames()]).then(()=>renderProfView()); }
   if (sec==='classes') { renderClassesTab(); renderClassModuleSelect(); }
   if (sec==='heatmap') { _syncHeatmapFilters(); renderHeatmap(); }
-  if (sec==='parties') { _syncPartiesFilter(); renderPartiesTab(); }
+  if (sec==='parties') { loadTeacherGames().then(()=>{ _syncPartiesFilter(); renderPartiesTab(); }); }
 }
 
 function _syncHeatmapFilters() {
@@ -2596,6 +2910,74 @@ function _syncPartiesFilter() {
 
 function openCreateDrillModal() {
   document.getElementById('modal-create-drill').classList.add('on');
+}
+
+// ── Bibliothèque d'ouvertures prêtes à l'emploi ──────────
+const OPENINGS_LIBRARY = [
+  { name:"Ouverture italienne", side:"w", level:"Débutant",
+    desc:"Sortie rapide des pièces et pression sur f7 — idéale pour débuter.",
+    pgn:"1. e4 e5 2. Nf3 {Attaque e5 et développe le cavalier.} Nc6 3. Bc4 {Le fou vise f7, le point le plus faible des Noirs.} Bc5 4. c3 {Prépare d4 pour bâtir un grand centre.} Nf6 5. d3 d6 6. O-O O-O *" },
+  { name:"Partie espagnole (Ruy Lopez)", side:"w", level:"Intermédiaire",
+    desc:"L'ouverture la plus jouée au plus haut niveau : pression durable sur le centre.",
+    pgn:"1. e4 e5 2. Nf3 Nc6 3. Bb5 {Le fou attaque le cavalier qui défend e5.} a6 4. Ba4 Nf6 5. O-O Be7 6. Re1 {Renforce e4 et prépare le plan c3-d4.} b5 7. Bb3 d6 *" },
+  { name:"Défense sicilienne (Najdorf)", side:"b", level:"Avancé",
+    desc:"La réponse la plus combative à 1.e4 : déséquilibre et contre-jeu pour les Noirs.",
+    pgn:"1. e4 c5 {Les Noirs contestent le centre de flanc.} 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 a6 {Le coup Najdorf : contrôle b5 et prépare e5 ou e6.} *" },
+  { name:"Défense Caro-Kann", side:"b", level:"Intermédiaire",
+    desc:"Solide et fiable : une structure saine sans faiblesse pour les Noirs.",
+    pgn:"1. e4 c6 {Prépare d5 en soutenant le pion.} 2. d4 d5 3. Nc3 dxe4 4. Nxe4 Bf5 {Le fou sort activement avant de jouer e6.} 5. Ng3 Bg6 *" },
+  { name:"Système Londonien", side:"w", level:"Débutant",
+    desc:"Un plan simple et solide pour les Blancs, jouable contre presque tout.",
+    pgn:"1. d4 d5 2. Bf4 {Le fou sort hors de la chaîne de pions — c'est l'idée clé.} Nf6 3. e3 e6 4. Nf3 c5 5. c3 Nc6 *" },
+  { name:"Défense française", side:"b", level:"Intermédiaire",
+    desc:"Contre-attaque sur le centre blanc ; patience et bon plan requis.",
+    pgn:"1. e4 e6 {Prépare d5 pour frapper le centre.} 2. d4 d5 3. Nc3 Nf6 4. e5 Nfd7 {Le cavalier recule pour préparer la rupture c5.} *" }
+];
+
+function openLibrary() { renderLibrary(); document.getElementById('modal-library').classList.add('on'); }
+
+function renderLibrary() {
+  const el = document.getElementById('library-list');
+  if (!el) return;
+  const verb = (currentRole === 'teacher') ? 'Ajouter' : 'Apprendre';
+  el.innerHTML = OPENINGS_LIBRARY.map((o, i) => `
+    <div class="lib-row">
+      <div class="lib-info">
+        <div class="lib-name">${escapeHtml(o.name)} <span class="lib-side">${o.side==='w'?'Blancs':o.side==='b'?'Noirs':'Les deux'}</span></div>
+        <div class="lib-desc">${escapeHtml(o.desc)}</div>
+      </div>
+      <button class="btn btn-gold btn-sm" onclick="addFromLibrary(${i})">${verb}</button>
+    </div>`).join('');
+}
+
+function addFromLibrary(idx) {
+  const o = OPENINGS_LIBRARY[idx];
+  if (!o) return;
+  const asStudent = (currentRole !== 'teacher');
+  let allLines;
+  try { allLines = extractAllLines(o.pgn); } catch(e) { toast('❌ Erreur de chargement', 'ko'); return; }
+  const tree = _buildDrillTree(allLines, o.side);
+  if (!Object.keys(tree).length) { toast('❌ Ouverture invalide', 'ko'); return; }
+  const d = {
+    id: Date.now(),
+    name: o.name, level: o.level || 'Intermédiaire', side: o.side, pgn: o.pgn,
+    mode: 'line', varmode: 'tree', tree,
+    sessions: [{ label: 'Arbre complet', startFen: new Chess().fen(), moves: [], kps: [] }],
+    hideComments: false, deadline: null,
+    fromLibrary: true,
+    created: new Date().toLocaleDateString('fr-FR')
+  };
+  if (asStudent) { d.personal = true; d.ownerStudentId = currentUser?.uid || null; }
+  drills.push(d);
+  save();
+  if (db && currentUser) {
+    if (asStudent) db.collection(C_MODULES).doc(String(d.id)).set({ ...d, tree: d.tree || {} }).catch(e => console.error('library FS:', e));
+    else syncModuleToFirestore(d);
+  }
+  closeModal('modal-library');
+  toast(`✓ « ${o.name} » ajouté`, 'ok');
+  if (asStudent) loadStudentModules();
+  else { renderDrillList(); renderClassModuleSelect(); }
 }
 
 function goPage(name) {
@@ -2703,6 +3085,23 @@ function extractAllLines(pgn) {
 }
 
 function _normFen(fen) { return fen.split(' ').slice(0,4).join(' '); }
+
+// Détecte si un coup laisse du matériel en prise (heuristique 1 coup, prudente).
+function _materialHint(fenBefore, moveSan) {
+  try {
+    const g = new Chess(fenBefore);
+    if (!g.move(moveSan)) return '';
+    const val = { p:1, n:3, b:3, r:5, q:9, k:0 };
+    let worst = 0;
+    for (const c of g.moves({ verbose:true }).filter(m => m.captured)) {
+      const g2 = new Chess(g.fen()); g2.move(c.san);
+      const recap = g2.moves({ verbose:true }).some(m => m.to === c.to && m.captured);
+      const net = val[c.captured] - (recap ? val[c.piece] : 0);
+      if (net > worst) worst = net;
+    }
+    return worst >= 2 ? '⚠ ce coup semble laisser du matériel en prise' : '';
+  } catch(e) { return ''; }
+}
 
 function _buildDrillTree(allLines, side) {
   const tree = {};
@@ -2856,17 +3255,7 @@ function updateReviserToutBadge() {
   const cnt = document.getElementById('reviser-tout-count');
   if (!btn) return;
   if (!S.student) { btn.style.display='none'; return; }
-  const now = Date.now();
-  let total = 0;
-  drills.forEach(d => {
-    _drillSessions(d).forEach(sess => {
-      (sess.kps||[]).forEach((kp, posIdx) => {
-        const key = `${S.student}_${d.id}_${posIdx}_${kp.san||''}`;
-        const m = masteryData[key];
-        if (!m || m.due <= now) total++;
-      });
-    });
-  });
+  const total = _allDuePositions().length;
   if (total > 0) {
     btn.style.display = 'inline-flex';
     cnt.textContent   = total;
@@ -2877,19 +3266,9 @@ function updateReviserToutBadge() {
 
 function reviserTout() {
   if (!S.student) { toast('⚠ Identifiez-vous d\'abord','ko'); return; }
-  const now = Date.now();
-  const dueKps = [];
-  drills.forEach((d, i) => {
-    _drillSessions(d).forEach(sess => {
-      (sess.kps||[]).forEach((kp, posIdx) => {
-        const key = `${S.student}_${d.id}_${posIdx}_${kp.san||''}`;
-        const m = masteryData[key];
-        if (!m || m.due <= now) dueKps.push({...kp, posIdx, _drill: d, _drillIdx: i});
-      });
-    });
-  });
+  const dueKps = _allDuePositions();
   if (!dueKps.length) { toast('✓ Aucune position à réviser !','ok'); return; }
-  // Mélange aléatoire pour intercaler les drills
+  // Mélange aléatoire pour intercaler les modules
   for (let i = dueKps.length-1; i>0; i--) {
     const j = Math.floor(Math.random()*(i+1));
     [dueKps[i], dueKps[j]] = [dueKps[j], dueKps[i]];
@@ -2900,8 +3279,8 @@ function reviserTout() {
   S.sessionIdx = 0; S.postTheory = false; S.phase = 'test';
   S.unifiedReview = true; S._reviewMode = true;
   S.kps = dueKps.map(p => ({...p, attempted:false, correct:false}));
-  document.getElementById('s-name').textContent  = '↻ Révision complète';
-  document.getElementById('s-level').textContent = dueKps.length+' positions';
+  document.getElementById('s-name').textContent  = '↻ Révision intelligente';
+  document.getElementById('s-level').textContent = dueKps.length+' position'+(dueKps.length>1?'s dues':' due');
   document.getElementById('s-side').textContent  = '';
   document.getElementById('s-mode-badge').textContent = '↻ Multi-modules';
   document.getElementById('learn-card').style.display    = 'none';
@@ -2912,7 +3291,7 @@ function reviserTout() {
   document.getElementById('history-card').style.display  = '';
   clearFeedback(); clearLog(); updateScores(); drawCoords(); resizeBoard(); renderPosStrip(); loadPosition(0);
   goPage('drill');
-  toast(`↻ Révision complète — ${dueKps.length} position${dueKps.length>1?'s':''}`, 'ok');
+  toast(`↻ Révision intelligente — ${dueKps.length} position${dueKps.length>1?'s':''}`, 'ok');
 }
 
 function reviserDrill(i) {
@@ -3028,7 +3407,49 @@ function injectDemoDrill() {
   }
 }
 
+// ── Onboarding prof : guide de démarrage en 3 étapes ──
+function renderCoachOnboarding() {
+  const el = document.getElementById('coach-onboarding');
+  if (!el) return;
+  if (localStorage.getItem('mc_onboarding_done')) { el.innerHTML = ''; return; }
+  const nbModules = drills.filter(d => !d.personal && !d.demo).length;
+  const nbClasses = (typeof classes !== 'undefined' ? classes : []).length;
+  const steps = [
+    { done: true,          label: 'Compte professeur créé', cta: '' },
+    { done: nbModules > 0, label: 'Créez votre premier module',
+      cta: `<button class="btn btn-gold btn-sm" onclick="openPgnEditorNew('teacher')">Créer</button>` },
+    { done: nbClasses > 0, label: 'Créez une classe et ajoutez vos élèves',
+      cta: `<button class="btn btn-gold btn-sm" onclick="switchCoachSection('classes')">Créer une classe</button>` }
+  ];
+  const doneN = steps.filter(s => s.done).length;
+  if (doneN === steps.length) {
+    el.innerHTML = `<div class="onb-card">
+      <div class="onb-head"><span>🎉 Tout est prêt !</span><button class="onb-x" onclick="dismissOnboarding()" title="Masquer">×</button></div>
+      <div class="onb-sub">Vos élèves voient leurs modules assignés et révisent. Suivez leur progression dans l'onglet Élèves.</div>
+    </div>`;
+    return;
+  }
+  el.innerHTML = `<div class="onb-card">
+    <div class="onb-head">
+      <span>👋 Bienvenue ! Démarrez en 3 étapes</span>
+      <span class="onb-prog">${doneN}/${steps.length}</span>
+      <button class="onb-x" onclick="dismissOnboarding()" title="Masquer">×</button>
+    </div>
+    ${steps.map(s => `<div class="onb-step ${s.done ? 'on' : ''}">
+      <span class="onb-check">${s.done ? '✓' : ''}</span>
+      <span class="onb-label">${s.label}</span>
+      ${!s.done ? s.cta : ''}
+    </div>`).join('')}
+  </div>`;
+}
+
+function dismissOnboarding() {
+  localStorage.setItem('mc_onboarding_done', '1');
+  renderCoachOnboarding();
+}
+
 function renderDrillList() {
+  renderCoachOnboarding();
   const grid = document.getElementById('module-cards-grid');
   const n    = drills.length;
 
@@ -3074,8 +3495,7 @@ function renderDrillList() {
       _deadlinePill(d),
     ].filter(Boolean).join('');
 
-    const editorBtn = d.varmode!=='tree'
-      ? `<button class="btn btn-ghost btn-sm" onclick="openPgnEditor(${i})" title="Éditeur de variantes">🎹</button>` : '';
+    const editorBtn = `<button class="btn btn-ghost btn-sm" onclick="openPgnEditor(${i})" title="Éditeur sur échiquier">🎹</button>`;
 
     return `<div class="mcard">
       ${dueBanner}
@@ -3084,8 +3504,7 @@ function renderDrillList() {
       <div class="mcard-badges">${badges}</div>
       <div class="mcard-footer">
         <button class="btn btn-gold btn-sm" style="flex:1" onclick="launchDrill(${i})">▶ Jouer</button>
-        <button class="btn btn-blue btn-sm" onclick="openShareModal(${i})" title="Partager">📤 Partager</button>
-        <button class="btn btn-ghost btn-sm" onclick="openEditDrill(${i})" title="Modifier">✏️</button>
+        <button class="btn btn-ghost btn-sm" onclick="playVsMaia(${i})" title="Jouer contre Maia">🤖</button>
         ${editorBtn}
         <button class="btn btn-ghost btn-sm" onclick="deleteDrill(${d.id})" title="Supprimer">🗑</button>
       </div>
@@ -3188,183 +3607,8 @@ function saveEditDrill() {
 // ══════════════════════════════════════════════════════
 // PARTAGE PAR CODE
 // ══════════════════════════════════════════════════════
-function generateShareCode(drill) {
-  // Les nouveaux modules (varmode=tree) partagent le PGN complet pour reconstruire l'arbre
-  if (drill.varmode === 'tree' && drill.pgn) {
-    const payload = {
-      n: drill.name, l: drill.level, s: drill.side,
-      pgn: drill.pgn,
-      hc: drill.hideComments ? 1 : 0
-    };
-    return btoa(encodeURIComponent(JSON.stringify(payload)));
-  }
-  // Ancien format : sessions[] ou moves/kps directs
-  const sess   = drill.sessions?.[0];
-  const moves  = drill.moves  || sess?.moves  || [];
-  const kps    = drill.kps    || sess?.kps    || [];
-  const sf     = drill.startFen || sess?.startFen || new Chess().fen();
-  const ll     = drill.lineLabel || sess?.label;
-  const dp     = drill.depth ?? sess?.depth ?? 0;
-  const payload = {
-    n: drill.name, l: drill.level, s: drill.side,
-    mo: drill.mode || 'positions', ll, dp, sf,
-    mv: moves.map(m=>[m.san, m.comment||'']),
-    kp: kps.map(p=>[p.fen, p.san, p.comment||'', p.isCapture?1:0, p.isCastle?1:0, p.isCheck?1:0]),
-    hc: drill.hideComments ? 1 : 0,
-    st: drill.students || null
-  };
-  return btoa(encodeURIComponent(JSON.stringify(payload)));
-}
-
-let _shareModalIdx = -1;
-
-function openShareModal(idx) {
-  _shareModalIdx = idx;
-  const code = generateShareCode(drills[idx]);
-  document.getElementById('share-code-text').textContent = code;
-  document.getElementById('share-send-feedback').textContent = '';
-
-  // Populate student list from Firebase classes if available
-  const sendSection = document.getElementById('share-send-section');
-  const sel = document.getElementById('share-student-select');
-  sel.innerHTML = '<option value="">— Choisir un élève —</option>';
-
-  const students = [];
-  (window._classesList || []).forEach(cls => {
-    (cls.students || []).forEach(email => {
-      if (!students.includes(email)) students.push(email);
-    });
-  });
-
-  if (FIREBASE_CONFIGURED && students.length) {
-    students.forEach(email => {
-      const opt = document.createElement('option');
-      opt.value = email; opt.textContent = email;
-      sel.appendChild(opt);
-    });
-    sendSection.style.display = '';
-  } else {
-    sendSection.style.display = 'none';
-  }
-
-  document.getElementById('modal-share').classList.add('on');
-}
-
-async function sendModuleToStudent() {
-  const email = document.getElementById('share-student-select').value;
-  const fb = document.getElementById('share-send-feedback');
-  if (!email) { fb.style.color='var(--red)'; fb.textContent='Sélectionnez un élève.'; return; }
-  if (_shareModalIdx < 0) return;
-  const drill = drills[_shareModalIdx];
-  fb.style.color = 'var(--dim)'; fb.textContent = 'Envoi en cours…';
-  try {
-    if (db) {
-      // Find the student's uid via email (requires Firestore lookup or invite doc)
-      const inviteRef = db.collection('invites').doc();
-      await inviteRef.set({
-        teacherId: currentUser?.uid || '',
-        teacherEmail: currentUser?.email || '',
-        studentEmail: email,
-        drillId: drill.id,
-        drillName: drill.name,
-        shareCode: generateShareCode(drill),
-        createdAt: Date.now(),
-        status: 'pending'
-      });
-      fb.style.color = 'var(--green)'; fb.textContent = `✓ Module envoyé à ${email}`;
-    }
-  } catch(e) {
-    fb.style.color = 'var(--red)'; fb.textContent = 'Erreur Firebase : ' + e.message;
-  }
-}
-
-function copyShareCode() {
-  const code = document.getElementById('share-code-text').textContent;
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(code).then(()=>toast('✓ Code copié !','ok'));
-  } else {
-    const ta = document.createElement('textarea');
-    ta.value = code; document.body.appendChild(ta); ta.select();
-    document.execCommand('copy'); document.body.removeChild(ta);
-    toast('✓ Code copié !','ok');
-  }
-}
-
-function _importSingleModule(p, seqName) {
-  // Nouveau format : PGN inclus → reconstruire l'arbre
-  if (p.pgn) {
-    let allLines = [];
-    try { allLines = extractAllLines(p.pgn); } catch(e) {}
-    const tree = allLines.length ? _buildDrillTree(allLines, p.s) : {};
-    return {
-      id:      Date.now() + Math.floor(Math.random()*1000),
-      name:    p.n, level: p.l, side: p.s,
-      mode: 'line', varmode: 'tree', tree, pgn: p.pgn,
-      sessions: [{ label: 'Arbre complet', startFen: new Chess().fen(), moves: [], kps: [] }],
-      hideComments: !!p.hc,
-      created: new Date().toLocaleDateString('fr-FR'),
-      imported: true, seqName: seqName || null
-    };
-  }
-  // Ancien format : moves/kps sérialisés
-  const startFen = p.sf || new Chess().fen();
-  const moves = [];
-  const g = new Chess(startFen);
-  for (const [san, comment] of (p.mv||[])) {
-    const fenBefore = g.fen();
-    const r = g.move(san);
-    if (!r) break;
-    moves.push({san:r.san, comment:comment||'', fenBefore});
-  }
-  return {
-    id:           Date.now() + Math.floor(Math.random()*1000),
-    name:         p.n,
-    level:        p.l,
-    side:         p.s,
-    mode:         p.mo||'positions',
-    lineLabel:    p.ll,
-    depth:        p.dp||0,
-    startFen,
-    moves,
-    hideComments: !!p.hc,
-    students:     p.st||null,
-    kps: (p.kp||[]).map(k=>({
-      fen:k[0], san:k[1], comment:k[2]||'',
-      isCapture:!!k[3], isCastle:!!k[4], isCheck:!!k[5],
-      attempted:false, correct:false
-    })),
-    created:  new Date().toLocaleDateString('fr-FR'),
-    imported: true,
-    seqName:  seqName || null
-  };
-}
-
-function doImportCode() {
-  const raw = document.getElementById('inp-import-code').value.trim();
-  if (!raw) { toast('⚠ Collez un code de partage','ko'); return; }
-  try {
-    const p = JSON.parse(decodeURIComponent(atob(raw)));
-
-    // Séquence de modules
-    if (p.sq)  { doImportSequence(p); return; }
-    // Code classe
-    if (p.cls) { doImportClass(p);    return; }
-
-    const drill = _importSingleModule(p, null);
-
-    // Éviter doublons
-    if (drills.find(d=>d.name===drill.name)) {
-      toast('⚠ Ce module est déjà importé','ko'); return;
-    }
-
-    drills.push(drill);
-    save(); renderDrillList();
-    document.getElementById('inp-import-code').value='';
-    toast('✓ Module importé : '+escapeHtml(drill.name),'ok');
-  } catch(e) {
-    toast('❌ Code invalide ou corrompu','ko');
-  }
-}
+// (Partage par code retiré — l'assignation se fait uniquement via les classes,
+//  et l'élève peut importer ses propres PGN depuis son espace.)
 
 // ══════════════════════════════════════════════════════
 // CLASSES
@@ -3409,12 +3653,6 @@ async function createClass() {
   toast(`✓ Classe "${name}" créée — ${selectedIds.length} module${selectedIds.length>1?'s':''}`, 'ok');
 }
 
-function generateClassCode(cls) {
-  const payload = { cls:1, name:cls.name, ms:cls.moduleCodes };
-  if (cls.students?.length) payload.st = cls.students;
-  return btoa(encodeURIComponent(JSON.stringify(payload)));
-}
-
 function deleteClass(id) {
   classes = classes.filter(c=>c.id!==id);
   saveClasses();
@@ -3425,20 +3663,8 @@ function deleteClass(id) {
   toast('Classe supprimée');
 }
 
-function copyClassCode(id) {
-  const cls = classes.find(c=>c.id===id);
-  if (!cls) return;
-  const code = generateClassCode(cls);
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(code).then(()=>toast('✓ Code classe copié !','ok'));
-  } else {
-    const ta=document.createElement('textarea'); ta.value=code;
-    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
-    document.body.removeChild(ta); toast('✓ Code classe copié !','ok');
-  }
-}
-
 function renderClassList() {
+  renderCoachOnboarding();
   const el = document.getElementById('cls-list');
   if (!el) return;
   if (!classes.length) { el.innerHTML=''; return; }
@@ -3474,60 +3700,6 @@ function renderClassModuleSelect() {
   ).join('');
 }
 
-
-function doImportClass(p) {
-  const className = p.name || 'Classe';
-  const imported = [], skipped = [];
-  for (const code of (p.ms||[])) {
-    try {
-      const mp = JSON.parse(decodeURIComponent(atob(code)));
-      const drill = _importSingleModule(mp, className);
-      // Appliquer la liste d'élèves si présente dans le code classe
-      if (p.st?.length) drill.students = p.st;
-      if (drills.find(d=>d.name===drill.name)) { skipped.push(drill.name); continue; }
-      drills.push(drill);
-      imported.push(drill.name);
-    } catch(e) { /* ignorer */ }
-  }
-  // Enregistrer la classe côté élève dans mc_accounts
-  const _accs = JSON.parse(localStorage.getItem('mc_accounts') || '[]');
-  const student = localStorage.getItem('mc_student');
-  if (student) {
-    const acc = _accs.find(a=>a.name===student);
-    if (acc) {
-      if (!acc.classes) acc.classes = [];
-      if (!acc.classes.includes(className)) acc.classes.push(className);
-      localStorage.setItem('mc_accounts', JSON.stringify(_accs));
-    }
-  }
-  save(); renderDrillList();
-  document.getElementById('inp-import-code').value='';
-  if (imported.length) {
-    toast(`✓ Classe "${escapeHtml(className)}" — ${imported.length} module${imported.length>1?'s':''} importé${imported.length>1?'s':''}`, 'ok');
-  } else {
-    toast('⚠ Tous les modules de cette classe sont déjà importés', 'ko');
-  }
-}
-
-function doImportSequence(p) {
-  const imported = [], skipped = [];
-  for (const code of (p.ms||[])) {
-    try {
-      const mp = JSON.parse(decodeURIComponent(atob(code)));
-      const drill = _importSingleModule(mp, p.n);
-      if (drills.find(d=>d.name===drill.name)) { skipped.push(drill.name); continue; }
-      drills.push(drill);
-      imported.push(drill.name);
-    } catch(e) { /* ignorer code invalide */ }
-  }
-  save(); renderDrillList();
-  document.getElementById('inp-import-code').value='';
-  if (imported.length) {
-    toast(`✓ Séquence "${escapeHtml(p.n)}" — ${imported.length} module${imported.length>1?'s':''} importé${imported.length>1?'s':''}`, 'ok');
-  } else {
-    toast('⚠ Tous les modules de cette séquence sont déjà importés', 'ko');
-  }
-}
 
 // ══════════════════════════════════════════════════════
 // PRÉNOM ÉLÈVE
@@ -3613,7 +3785,6 @@ function initDrillPage() {
   sel.value = S.idx;
 
   updateStudentBar();
-  if (!S.student) { askName(); return; }
   if (S._reviewMode) { S._reviewMode = false; return; }
   startDrill(S.idx);
 }
@@ -3752,7 +3923,8 @@ function tryMoveInPositions(from, to) {
 
   const norm = s=>s.replace(/[+#!?]/g,'');
   const kp = S.kps[S.posIdx];
-  const isCorrect = norm(played.san)===norm(kp.san);
+  const accept = [kp.san, ...(kp.altSans||[])].map(norm);
+  const isCorrect = accept.includes(norm(played.san));
   kp.attempted=true; kp.correct=isCorrect;
 
   if (isCorrect) {
@@ -3764,7 +3936,8 @@ function tryMoveInPositions(from, to) {
     addLog(played.san, true, S.posIdx+1);
   } else {
     S.ko++;
-    setFeedback('ko','✗ Pas tout à fait. Le coup attendu était : '+fig(kp.san), S.drill.hideComments ? '' : kp.comment);
+    const matHint = _materialHint(S.game.fen(), played.san);
+    setFeedback('ko','✗ Pas tout à fait. Le coup attendu était : '+fig(kp.san)+(matHint?' · '+matHint:''), S.drill.hideComments ? '' : kp.comment);
     addLog(played.san+' ✗', false, S.posIdx+1);
   }
 
@@ -4054,6 +4227,70 @@ function _treeUnseenCount() {
   return n;
 }
 
+// ── Répétition espacée pour les modules arbre ──────────
+// Énumère chaque point de décision du joueur comme une flashcard stable (clé = FEN normalisé).
+function _treePlayerPositions(drill) {
+  const out = [];
+  if (drill.varmode !== 'tree' || !drill.tree) return out;
+  const side = drill.side;
+  const startFen = drill.sessions?.[0]?.startFen || new Chess().fen();
+  const seen = new Set();
+  const queue = [new Chess(startFen)];
+  while (queue.length) {
+    const g  = queue.shift();
+    const nf = _normFen(g.fen());
+    if (seen.has(nf)) continue;
+    seen.add(nf);
+    const node = drill.tree[nf];
+    if (!node) continue;
+    if (isPlayerMove(g.fen(), side) && node.player && node.player.length) {
+      const canon = node.player[0];
+      out.push({
+        fen: g.fen(),
+        masteryKey: nf + '_' + canon.san,
+        san: canon.san,
+        altSans: node.player.map(m => m.san),
+        comment: canon.comment || ''
+      });
+    }
+    [...(node.player || []), ...(node.opp || [])].forEach(mv => {
+      const g2 = new Chess(g.fen());
+      if (g2.move(mv.san)) queue.push(g2);
+    });
+  }
+  return out;
+}
+
+// Positions dues (à réviser) pour un module, pour l'élève donné.
+function _treeDuePositions(drill, student) {
+  const now = Date.now();
+  const did = String(drill.id);
+  return _treePlayerPositions(drill).filter(p => {
+    const m = masteryData[`${student}_${did}_${p.masteryKey}`];
+    return !m || m.due <= now;
+  });
+}
+
+// Toutes les positions dues, tous modules confondus (élève courant) → flashcards.
+function _allDuePositions() {
+  const student = S.student || (currentUser ? (currentUser.displayName || currentUser.email) : '');
+  if (!student) return [];
+  const now = Date.now();
+  const due = [];
+  drills.forEach((d, i) => {
+    if (d.varmode === 'tree') {
+      _treeDuePositions(d, student).forEach(p =>
+        due.push({ ...p, _drill: d, _drillIdx: i, attempted: false, correct: false }));
+    } else {
+      _drillSessions(d).forEach(sess => (sess.kps || []).forEach((kp, posIdx) => {
+        const m = masteryData[`${student}_${d.id}_${posIdx}_${kp.san || ''}`];
+        if (!m || m.due <= now) due.push({ ...kp, posIdx, _drill: d, _drillIdx: i, attempted: false, correct: false });
+      }));
+    }
+  });
+  return due;
+}
+
 // BFS from root to find the path of opp choices that leads to the
 // shallowest unseen (or LRU) opp move. Returns {normFen: san} map
 // used by _pickOppMove to deterministically steer the opp each session.
@@ -4149,7 +4386,7 @@ function tryMoveInTree(from, to) {
     S.last = { from, to }; S.sel = null; S.ok++;
     updateScores(); setFeedback('ok', `✓ ${legal.san}`, S.drill.hideComments ? '' : (isValid.comment||'')); drawBoard();
     addLog(legal.san, true, S.ok + S.ko);
-    recordResult(true, {san: legal.san, comment: isValid.comment||'', posIdx});
+    recordResult(true, {san: legal.san, comment: isValid.comment||'', posIdx, masteryKey: nf + '_' + node.player[0].san});
     S.waitingForPlayer = false;
     setTimeout(advanceTree, 600);
   } else {
@@ -4158,9 +4395,10 @@ function tryMoveInTree(from, to) {
     S.ko++; S.sel = null; updateScores();
     const expected = node.player.map(m => m.san).join(' / ');
     const corrComment = node.player[0].comment||'';
-    setFeedback('ko', `✗ ${legal.san} — attendu : ${expected}`, S.drill.hideComments ? '' : corrComment); drawBoard();
+    const matHint = _materialHint(g.fen(), legal.san);
+    setFeedback('ko', `✗ ${legal.san} — attendu : ${expected}${matHint ? ' · ' + matHint : ''}`, S.drill.hideComments ? '' : corrComment); drawBoard();
     addLog(legal.san + ' ✗', false, S.ok + S.ko);
-    recordResult(false, {san: node.player[0].san, comment: corrComment, posIdx});
+    recordResult(false, {san: node.player[0].san, comment: corrComment, posIdx, masteryKey: nf + '_' + node.player[0].san});
     if (!S._treeErrors) S._treeErrors = [];
     S._treeErrors.push({ fen: g.fen(), san: node.player[0].san, comment: corrComment });
     setTimeout(() => {
@@ -4468,6 +4706,36 @@ function closeModal(id){document.getElementById(id).classList.remove('on');}
 function nextDrill(){S.idx=(S.idx+1)%drills.length; initDrillPage();}
 
 // ── SM-2 spaced repetition ────────────────────────────
+// ── Synchronisation SM-2 multi-appareils (dans users/{uid}.mastery) ──
+let _masterySyncTimer = null;
+function _scheduleMasterySync() {
+  if (!db || !currentUser) return;
+  clearTimeout(_masterySyncTimer);
+  _masterySyncTimer = setTimeout(saveMasteryToFirestore, 2500);
+}
+async function saveMasteryToFirestore() {
+  const student = currentUser?.displayName || currentUser?.email;
+  if (!db || !currentUser || !student) return;
+  const prefix = student + '_';
+  const mine = {};
+  for (const k in masteryData) if (k.startsWith(prefix)) mine[k] = masteryData[k];
+  try { await db.collection(C_USERS).doc(currentUser.uid).set({ mastery: mine }, { merge: true }); }
+  catch(e) { console.error('saveMastery FS:', e); }
+}
+async function loadMasteryFromFirestore() {
+  if (!db || !currentUser) return;
+  try {
+    const snap = await db.collection(C_USERS).doc(currentUser.uid).get();
+    const m = snap.exists && snap.data().mastery;
+    if (m) {
+      for (const k in m) {
+        if (!masteryData[k] || (m[k].due || 0) > (masteryData[k].due || 0)) masteryData[k] = m[k];
+      }
+      localStorage.setItem('mc_mastery', JSON.stringify(masteryData));
+    }
+  } catch(e) { console.error('loadMastery FS:', e); }
+}
+
 function sm2Update(student, drillId, posKey, correct) {
   const key = `${student}_${drillId}_${posKey}`;
   const m   = masteryData[key] || { ef:2.5, interval:1, reps:0, due:0 };
@@ -4483,6 +4751,7 @@ function sm2Update(student, drillId, posKey, correct) {
   m.ef  = Math.max(1.3, m.ef + 0.1 - (5-q)*(0.08+(5-q)*0.02));
   m.due = Date.now() + m.interval * 86400000;
   masteryData[key] = m;
+  _scheduleMasterySync();
 }
 
 function sm2Get(student, drillId, posKey) {
@@ -4491,15 +4760,21 @@ function sm2Get(student, drillId, posKey) {
 
 // ── Enregistrement de session ─────────────────────────
 function recordPracticeSession(pct) {
-  practiceLog.push({
-    drillId:    S.drill.id,
-    drillName:  S.drill.name,
-    student:    S.student||'Anonyme',
+  const rec = {
+    drillId:      String(S.drill.id),
+    drillName:    S.drill.name,
+    student:      S.student || currentUser?.displayName || currentUser?.email || 'Anonyme',
+    studentEmail: currentUser?.email || null,
+    studentId:    currentUser?.uid   || null,
     pct,
-    sessionIdx: S.sessionIdx,
+    sessionIdx:   S.sessionIdx,
     ts: Date.now()
-  });
+  };
+  practiceLog.push(rec);
   save();
+  if (db && currentUser) {
+    db.collection(C_PRACTICE).add(rec).catch(e => console.error('recordPracticeSession FS:', e));
+  }
 }
 
 // ── Sauvegarde de partie Maia ─────────────────────────
@@ -4509,23 +4784,29 @@ function saveGame() {
   const pgn = g.pgn({ sloppy: true });
   const res = g.in_checkmate() ? (g.turn()==='w' ? '0-1' : '1-0')
             : (g.in_draw()||g.in_stalemate()) ? '½-½' : '*';
-  savedGames.push({
+  const rec = {
     id:        Date.now(),
-    drillId:   S.drill.id,
+    drillId:   String(S.drill.id),
     drillName: S.drill.name,
-    student:   S.student||'Anonyme',
+    student:   S.student || currentUser?.displayName || currentUser?.email || 'Anonyme',
+    studentEmail: currentUser?.email || null,
+    studentId:    currentUser?.uid   || null,
     level:     S.drill.level,
     side:      S.drill.side,
     pgn,
     result:    res,
     ts:        Date.now()
-  });
+  };
+  savedGames.push(rec);
   save();
+  if (db && currentUser) {
+    db.collection(C_GAMES).add(rec).catch(e => console.error('saveGame FS:', e));
+  }
 }
 
 function recordResult(correct, kp) {
   const student = S.student || currentUser?.displayName || currentUser?.email || 'Anonyme';
-  const posKey  = kp.posIdx + '_' + (kp.san||'');
+  const posKey  = kp.masteryKey || (kp.posIdx + '_' + (kp.san||''));
   sm2Update(student, S.drill.id, posKey, correct);
   const rec = {
     drillId:      String(S.drill.id),
@@ -4564,14 +4845,6 @@ const pieceImgs={};
 function getPieceImg(color,type){
   const img=pieceImgs[color+type.toUpperCase()];
   return img&&img.complete&&img.naturalWidth>0?img:null;
-}
-
-function toggleImport() {
-  const body = document.getElementById('import-body');
-  const ico  = document.getElementById('import-toggle-ico');
-  const shown = body.style.display !== 'none';
-  body.style.display = shown ? 'none' : 'block';
-  ico.textContent = shown ? '▼ Afficher' : '▲ Masquer';
 }
 
 function setBoardComment(comment) {
@@ -4837,6 +5110,41 @@ function startPostTheory() {
     .then(() => { if (S.postTheory) _afterMaiaReady(); })
     .catch(()  => { if (S.postTheory) setFeedback('hint', '⚠️ Moteur indisponible — vérifiez votre connexion.', ''); });
   }
+}
+
+// Jouer une partie contre Maia depuis une ouverture (accès direct, 1 clic)
+function playVsMaia(idx) {
+  const d = drills[idx];
+  if (!d) return;
+  S.student = currentUser?.displayName || currentUser?.email || S.student || 'Élève';
+  S.drill = d; S.idx = idx;
+  S.flipped = (d.side === 'b');
+  // Jouer la ligne principale jusqu'à la sortie du répertoire
+  const g = new Chess(d.sessions?.[0]?.startFen || new Chess().fen());
+  if (d.varmode === 'tree' && d.tree) {
+    let guard = 0;
+    while (guard++ < 300) {
+      const node = d.tree[_normFen(g.fen())];
+      if (!node) break;
+      const mv = isPlayerMove(g.fen(), d.side) ? node.player?.[0] : node.opp?.[0];
+      if (!mv || !g.move(mv.san)) break;
+    }
+  } else {
+    (d.sessions?.[0]?.moves || []).forEach(m => { try { g.move(m.san); } catch(e) {} });
+  }
+  S.lineGame = g;
+  document.getElementById('s-name').textContent  = d.name + ' — Partie vs Maia';
+  document.getElementById('s-level').textContent = d.level || '';
+  document.getElementById('s-side').textContent  = d.side==='w'?'♔ Blancs':d.side==='b'?'♚ Noirs':'⇄ Les deux';
+  document.getElementById('s-mode-badge').textContent = '🤖 vs Maia';
+  document.getElementById('learn-card').style.display    = 'none';
+  document.getElementById('notation-card').style.display = 'none';
+  document.getElementById('score-card').style.display    = 'none';
+  document.getElementById('history-card').style.display  = 'none';
+  S._reviewMode = true;            // empêche initDrillPage de relancer startDrill
+  goPage('drill');
+  resizeBoard();
+  startPostTheory();               // active le mode partie libre + Maia
 }
 
 function tryMovePostTheory(from, to, promo) {
@@ -5190,6 +5498,43 @@ function _deadlinePill(drill) {
   return `<span class="deadline-pill ok">📅 ${drill.deadline}</span>`;
 }
 
+// Points faibles de la classe : positions qui font échouer le plus d'élèves.
+function _classWeakSpots(arr) {
+  const byPos = {};
+  arr.forEach(r => {
+    const key = r.drillId + '|' + (r.san || '');
+    if (!byPos[key]) byPos[key] = { drillName: r.drillName, san: r.san, comment: r.comment || '', attempts: 0, fails: 0, failStudents: new Set() };
+    const p = byPos[key];
+    p.attempts++;
+    if (!r.correct) { p.fails++; p.failStudents.add(r.student || r.studentName || 'Anonyme'); }
+    if (r.comment && !p.comment) p.comment = r.comment;
+  });
+  return Object.values(byPos)
+    .filter(p => p.fails > 0)
+    .map(p => ({ ...p, failStudentCount: p.failStudents.size, rate: Math.round(p.fails / p.attempts * 100) }))
+    .sort((a, b) => b.failStudentCount - a.failStudentCount || b.rate - a.rate)
+    .slice(0, 6);
+}
+
+function renderClassWeakSpots(arr) {
+  const el = document.getElementById('prof-weakspots');
+  if (!el) return;
+  const spots = _classWeakSpots(arr || []);
+  if (!spots.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `<div class="ws-card">
+    <div class="ws-head">🎯 Points faibles de la classe</div>
+    <div class="ws-sub">Les positions qui font le plus échouer tes élèves — à revoir en cours.</div>
+    ${spots.map(s => `<div class="ws-row">
+      <span class="ws-move">${fig(s.san)}</span>
+      <div class="ws-info">
+        <div class="ws-name">${escapeHtml(s.drillName || 'Module')}${s.comment ? ` · <span class="ws-comment">${escapeHtml(s.comment.slice(0,42))}</span>` : ''}</div>
+        <div class="ws-bar"><div class="ws-fill" style="width:${s.rate}%"></div></div>
+      </div>
+      <span class="ws-stat">${s.failStudentCount} élève${s.failStudentCount > 1 ? 's' : ''} · ${s.rate}%</span>
+    </div>`).join('')}
+  </div>`;
+}
+
 function renderProfView(){
   // Filtre classe
   const clsNames = [...new Set(drills.map(d=>d.seqName).filter(Boolean))];
@@ -5235,6 +5580,9 @@ function renderProfView(){
     <div class="cs-kpi"><div class="cs-kpi-val" style="color:var(--cyan)">${sessions.length}</div><div class="cs-kpi-lbl">Sessions</div></div>
     <div class="cs-kpi"><div class="cs-kpi-val" style="color:${avgPct>=70?'var(--green)':'var(--red)'}">${avgPct}%</div><div class="cs-kpi-lbl">Réussite</div></div>
     <div class="cs-kpi"><div class="cs-kpi-val" style="color:var(--blue)">${savedGames.length}</div><div class="cs-kpi-lbl">Parties Maia</div></div>`;
+
+  // Points faibles de la classe (insight actionnable)
+  renderClassWeakSpots(filtered);
 
   // Update sidebar eleves badge
   const eleveBadge = document.getElementById('csnav-count-eleves');
@@ -5635,7 +5983,6 @@ function renderClassesTab() {
           <div style="font-size:1rem;font-weight:700">🏫 ${escapeHtml(clsName)}</div>
           <div style="font-size:.73rem;color:var(--dim);margin-top:2px">${clsDrillIds.length} module${clsDrillIds.length>1?'s':''} · ${students.length} élève${students.length>1?'s':''} · Réussite : ${avgRate}%</div>
         </div>
-        ${localCls?`<button class="btn btn-blue btn-sm" onclick="copyClassCode(${localCls.id})">📤 Code classe</button>`:''}
       </div>
       <div class="prog-bar" style="margin-bottom:12px">
         <div class="prog-fill" style="width:${avgRate}%;background:${avgRate>=70?'var(--green)':avgRate>=50?'#facc15':'var(--red)'}"></div>
@@ -5821,7 +6168,27 @@ function openPgnEditor(i) {
     });
   }
   _E.path = []; _E.node = _E.root;
-  document.getElementById('editor-drill-name').textContent = d.name;
+  _E.createRole = null;
+  document.getElementById('editor-drill-name').value = d.name;
+  document.getElementById('editor-side').value = d.side || 'w';
+  document.getElementById('editor-level').value = d.level || 'Intermédiaire';
+  document.getElementById('editor-comment').value = '';
+  document.getElementById('modal-pgn-editor').classList.add('on');
+  _eResize(); renderEditorBoard(); renderEditorNotation();
+}
+
+// Créer un module à partir d'un échiquier vide (role: 'teacher' | 'student')
+function openPgnEditorNew(role) {
+  _E.drillIdx   = -1;
+  _E.createRole = role;
+  _E.startFen   = new Chess().fen();
+  _E.flipped    = false;
+  _E.sel = _E.lastFrom = _E.lastTo = null;
+  _E.root = { san:null, fenBefore:null, fenAfter:_E.startFen, comment:'', children:[] };
+  _E.path = []; _E.node = _E.root;
+  document.getElementById('editor-drill-name').value = '';
+  document.getElementById('editor-side').value = 'w';
+  document.getElementById('editor-level').value = 'Intermédiaire';
   document.getElementById('editor-comment').value = '';
   document.getElementById('modal-pgn-editor').classList.add('on');
   _eResize(); renderEditorBoard(); renderEditorNotation();
@@ -6125,29 +6492,56 @@ function editorTreeToPGN() {
 }
 
 function saveEditorDrill() {
-  if (_E.drillIdx<0) return;
-  const pgn=editorTreeToPGN();
-  const d=drills[_E.drillIdx];
+  const pgn  = editorTreeToPGN();
+  const name = (document.getElementById('editor-drill-name').value || '').trim();
+  const side =  document.getElementById('editor-side').value || 'w';
+  const level = document.getElementById('editor-level').value || 'Intermédiaire';
+  if (!name) { toast('⚠ Donne un nom au module', 'ko'); return; }
   let allLines;
-  try { allLines=extractAllLines(pgn); } catch(e) { toast('❌ PGN invalide : '+e.message,'ko'); return; }
-  const varmode=d.varmode||'all';
-  const rawLines=varmode==='main'?allLines.filter(l=>l.depth===0):varmode==='shallow'?allLines.filter(l=>l.depth<=1):allLines;
-  const sessions=[];
-  [...rawLines].sort((a,b)=>a.depth-b.depth).forEach(line=>{
-    const kps=d.mode==='positions'?extractKeyPositions(line.moves,d.side):[];
-    if (d.mode==='positions'&&!kps.length) return;
-    if (d.mode==='line'&&!line.moves.length) return;
-    const label=line.depth===0?'Ligne principale':
-      (line.label.match(/\[[^\]]+\]/g)||[]).pop()?.replace(/[\[\]]/g,'').trim()||line.label;
-    sessions.push({label,depth:line.depth,startFen:line.startFen,moves:line.moves,kps});
-  });
-  if (!sessions.length) { toast('⚠ Ajoutez au moins 2 coups dans chaque variante','ko'); return; }
-  d.sessions=sessions; d.pgn=pgn;
-  save(); renderDrillList(); closeEditorModal();
-  if (FIREBASE_CONFIGURED && db && currentUser) syncModuleToFirestore(d).catch(console.error);
-  toast(`✓ ${sessions.length} session${sessions.length>1?'s':''} enregistrée${sessions.length>1?'s':''}`, 'ok');
-  if (varmode==='main' && pgn.includes('('))
-    setTimeout(()=>toast('⚠ Variante détectée — ce module est en mode "Ligne principale". Cliquez ✏️ pour activer les variantes.','warn'),800);
+  try { allLines = extractAllLines(pgn); } catch(e) { toast('❌ PGN invalide : ' + e.message, 'ko'); return; }
+  if (!allLines.some(l => l.moves.length)) { toast('⚠ Joue au moins un coup sur l\'échiquier', 'ko'); return; }
+
+  const tree = _buildDrillTree(allLines, side);
+  if (!Object.keys(tree).length) { toast('⚠ Aucun coup à enregistrer', 'ko'); return; }
+  const sessions = [{ label: 'Arbre complet', startFen: new Chess().fen(), moves: [], kps: [] }];
+
+  let d, isNew = false;
+  if (_E.drillIdx < 0) {
+    // Création
+    isNew = true;
+    d = {
+      id: Date.now(),
+      name, level, side, pgn,
+      mode: 'line', varmode: 'tree', tree, sessions,
+      hideComments: false, deadline: null,
+      created: new Date().toLocaleDateString('fr-FR')
+    };
+    if (_E.createRole === 'student') { d.personal = true; d.ownerStudentId = currentUser?.uid || null; }
+    drills.push(d);
+  } else {
+    // Modification
+    d = drills[_E.drillIdx];
+    d.name = name; d.side = side; d.pgn = pgn; d.level = level;
+    d.varmode = 'tree'; d.mode = 'line';
+    d.tree = tree; d.sessions = sessions;
+  }
+
+  save(); closeEditorModal();
+
+  // Synchronisation Firestore selon la propriété
+  if (db && currentUser) {
+    if (d.personal) {
+      db.collection(C_MODULES).doc(String(d.id)).set({ ...d, tree: d.tree || {} }).catch(e => console.error('saveEditor FS:', e));
+    } else if (currentRole === 'teacher') {
+      syncModuleToFirestore(d);
+    }
+  }
+
+  // Rafraîchir la bonne vue
+  if (currentRole === 'student') loadStudentModules();
+  else { renderDrillList(); renderClassModuleSelect(); }
+
+  toast(isNew ? '✓ Module créé' : '✓ Module mis à jour', 'ok');
 }
 
 // Touches ← → dans l'éditeur
