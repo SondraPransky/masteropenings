@@ -1569,6 +1569,7 @@ textarea {
     <div id="register-form" style="display:none">
       <div class="frow"><label>Prénom &amp; Nom</label><input type="text" id="reg-name" placeholder="Alice Dupont" autocomplete="name"></div>
       <div class="frow"><label>Email</label><input type="email" id="reg-email" placeholder="alice@email.com" autocomplete="email"></div>
+      <div class="frow"><label>Pseudo <span style="font-weight:400;color:var(--dim);font-size:.72rem">— simple, pour que ton prof t'ajoute facilement</span></label><input type="text" id="reg-pseudo" placeholder="ex : alex12" autocomplete="off"></div>
       <div class="frow">
         <label>Mot de passe <span style="font-weight:400;color:var(--dim);font-size:.72rem">— 6 caractères minimum</span></label>
         <input type="password" id="reg-pwd" placeholder="••••••••" autocomplete="new-password">
@@ -1754,7 +1755,7 @@ textarea {
         <!-- Colonne gauche: formulaires -->
         <div style="display:flex;flex-direction:column;gap:14px">
           <div class="cls-create-form">
-            <div style="font-weight:700;font-size:.9rem;margin-bottom:14px">🏫 Nouvelle classe</div>
+            <div id="cls-form-title" style="font-weight:700;font-size:.9rem;margin-bottom:14px">🏫 Nouvelle classe</div>
             <div style="font-size:.8rem;color:var(--dim);margin-bottom:14px;line-height:1.6">Créez un groupe d'élèves. Ils verront les modules assignés dans leur espace.</div>
             <div class="frow">
               <label>Nom de la classe</label>
@@ -1765,10 +1766,13 @@ textarea {
               <div id="inp-cls-modules" class="module-checklist"></div>
             </div>
             <div class="frow">
-              <label>Emails des élèves <span style="font-weight:400;color:var(--dim);font-size:.72rem">— un par ligne</span></label>
-              <textarea id="inp-cls-students" rows="3" spellcheck="false" placeholder="alice@email.com&#10;bob@email.com&#10;charlie@email.com"></textarea>
+              <label>Élèves <span style="font-weight:400;color:var(--dim);font-size:.72rem">— pseudo ou email, un par ligne</span></label>
+              <textarea id="inp-cls-students" rows="3" spellcheck="false" placeholder="alex12&#10;marie&#10;bob@email.com"></textarea>
             </div>
-            <button class="btn btn-gold btn-sm" onclick="createClass()">🏫 Créer la classe</button>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <button id="cls-save-btn" class="btn btn-gold btn-sm" onclick="saveClass()">🏫 Créer la classe</button>
+              <button id="cls-cancel-btn" class="btn btn-ghost btn-sm" onclick="cancelEditClass()" style="display:none">Annuler</button>
+            </div>
             <div id="cls-list" style="margin-top:14px"></div>
           </div>
 
@@ -2270,7 +2274,7 @@ textarea {
 // ══════════════════════════════════════════════════════
 const FIREBASE_CONFIGURED = (typeof FIREBASE_CONFIG !== 'undefined') &&
                              FIREBASE_CONFIG.apiKey !== 'VOTRE_API_KEY';
-let db = null, fbAuth = null, currentUser = null, currentRole = null, pendingRole = null;
+let db = null, fbAuth = null, currentUser = null, currentRole = null, pendingRole = null, currentPseudo = null;
 
 if (FIREBASE_CONFIGURED) {
   try {
@@ -2340,14 +2344,17 @@ async function registerUser() {
   const email = (document.getElementById('reg-email')?.value || '').trim();
   const pwd   =  document.getElementById('reg-pwd')?.value   || '';
   const role  =  document.getElementById('reg-role')?.value  || 'student';
+  let pseudo  = (document.getElementById('reg-pseudo')?.value || '').trim().toLowerCase().replace(/\s+/g,'');
   if (!name || !email || !pwd) { showLoginError('Remplissez tous les champs.'); return; }
   if (pwd.length < 6) { showLoginError('Le mot de passe doit contenir au moins 6 caractères.'); return; }
+  if (!pseudo) pseudo = email.split('@')[0].toLowerCase();
   pendingRole = role;  // mémorise le rôle voulu : onAuthStateChanged se déclenche avant l'écriture du doc users
   try {
     const cred = await fbAuth.createUserWithEmailAndPassword(email, pwd);
     await cred.user.updateProfile({ displayName: name });
+    currentPseudo = pseudo;
     await db.collection(C_USERS).doc(cred.user.uid).set({
-      email, name, role, created: Date.now()
+      email, name, role, pseudo, created: Date.now()
     });
   } catch(e) { pendingRole = null; showLoginError(translateFirebaseError(e.code)); }
 }
@@ -2430,6 +2437,15 @@ async function deleteModuleFromFirestore(drillId) {
   catch(e) { console.error('deleteModuleFromFirestore', e); }
 }
 
+// ── Identifiants de l'élève pour le matching des classes (pseudo, email, nom) ──
+function _myIdentifiers() {
+  return [...new Set([
+    currentPseudo,
+    (currentUser?.email || '').toLowerCase(),
+    (currentUser?.displayName || '').toLowerCase()
+  ].filter(Boolean))].slice(0, 10);
+}
+
 // ── Sync Firestore — élève ────────────────────────────
 async function loadStudentModules() {
   if (!db || !currentUser || currentRole !== 'student') return;
@@ -2439,9 +2455,10 @@ async function loadStudentModules() {
 
   let assigned = [], personal = [];
   try {
-    // 1. Modules assignés via les classes (l'élève est ajouté par email)
+    // 1. Modules assignés via les classes (matching par pseudo, email ou nom)
+    const ids = _myIdentifiers();
     const snap = await db.collection(C_CLASSES)
-      .where('studentEmails', 'array-contains', currentUser.email)
+      .where('students', 'array-contains-any', ids.length ? ids : ['__none__'])
       .get();
     const moduleIds = new Set();
     snap.docs.forEach(d => (d.data().moduleIds || []).forEach(id => moduleIds.add(id)));
@@ -2744,7 +2761,7 @@ if (fbAuth) {
     }
     try {
       const snap = await db.collection(C_USERS).doc(user.uid).get();
-      if (snap.exists)      currentRole = snap.data().role;
+      if (snap.exists)    { currentRole = snap.data().role; currentPseudo = snap.data().pseudo || null; }
       else if (pendingRole) currentRole = pendingRole;  // inscription en cours : doc users en train d'être écrit
       else                  currentRole = 'student';
     } catch(e) { currentRole = pendingRole || 'student'; }
@@ -3613,53 +3630,73 @@ function saveEditDrill() {
 // ══════════════════════════════════════════════════════
 // CLASSES
 // ══════════════════════════════════════════════════════
-async function createClass() {
+let _editingClassId = null;
+
+async function saveClass() {
   const name          = document.getElementById('inp-cls-name').value.trim();
   const selectEl      = document.getElementById('inp-cls-modules');
   const selectedIds   = selectEl ? [...selectEl.querySelectorAll('input[type=checkbox]:checked')].map(c => c.value) : [];
   const stuRaw        = document.getElementById('inp-cls-students').value.trim();
   const studentEmails = stuRaw ? stuRaw.split('\n').map(s=>s.trim().toLowerCase()).filter(Boolean) : [];
 
-  if (!name)              { toast('⚠ Donnez un nom à la classe','ko'); return; }
-  if (!selectedIds.length){ toast('⚠ Sélectionnez au moins un module','ko'); return; }
+  if (!name)               { toast('⚠ Donnez un nom à la classe','ko'); return; }
+  if (!selectedIds.length) { toast('⚠ Sélectionnez au moins un module','ko'); return; }
   if (!studentEmails.length){ toast('⚠ Ajoutez au moins un email d\'élève','ko'); return; }
 
-  const cls = {
-    id:             Date.now(),
-    name,
-    moduleIds:      selectedIds,
-    moduleCodes:    [],
-    studentEmails,
-    students:       studentEmails,
-    created:        new Date().toLocaleDateString('fr-FR')
-  };
-  classes.push(cls);
-  saveClasses();
-  document.getElementById('inp-cls-name').value = '';
-  document.getElementById('inp-cls-students').value = '';
-  if (selectEl) selectEl.querySelectorAll('input[type=checkbox]').forEach(c => c.checked = false);
-
-  // Sauvegarder dans Firestore
-  if (db && currentUser && currentRole === 'teacher') {
-    try {
-      await db.collection(C_CLASSES).doc(String(cls.id)).set({
-        ...cls,
-        teacherId: currentUser.uid
-      });
-    } catch(e) { console.error('createClass Firestore:', e); }
+  let cls = (_editingClassId != null) ? classes.find(c => c.id === _editingClassId) : null;
+  const isEdit = !!cls;
+  if (cls) {
+    cls.name = name; cls.moduleIds = selectedIds; cls.studentEmails = studentEmails; cls.students = studentEmails;
+  } else {
+    cls = { id: Date.now(), name, moduleIds: selectedIds, moduleCodes: [], studentEmails, students: studentEmails, created: new Date().toLocaleDateString('fr-FR') };
+    classes.push(cls);
   }
-
+  saveClasses();
+  if (db && currentUser && currentRole === 'teacher') {
+    try { await db.collection(C_CLASSES).doc(String(cls.id)).set({ ...cls, teacherId: currentUser.uid }); }
+    catch(e) { console.error('saveClass Firestore:', e); }
+  }
+  cancelEditClass();
   renderClassList();
-  toast(`✓ Classe "${name}" créée — ${selectedIds.length} module${selectedIds.length>1?'s':''}`, 'ok');
+  renderClassesTab();
+  toast(isEdit ? `✓ Classe « ${name} » mise à jour` : `✓ Classe « ${name} » créée`, 'ok');
+}
+
+function openEditClass(id) {
+  const cls = classes.find(c => c.id === id);
+  if (!cls) return;
+  _editingClassId = id;
+  document.getElementById('inp-cls-name').value = cls.name;
+  document.getElementById('inp-cls-students').value = (cls.studentEmails || cls.students || []).join('\n');
+  renderClassModuleSelect();
+  const ids = (cls.moduleIds || []).map(String);
+  document.querySelectorAll('#inp-cls-modules input[type=checkbox]').forEach(c => { c.checked = ids.includes(String(c.value)); });
+  const t = document.getElementById('cls-form-title'); if (t) t.textContent = '✏️ Modifier la classe';
+  const b = document.getElementById('cls-save-btn');   if (b) b.textContent = '💾 Enregistrer';
+  const x = document.getElementById('cls-cancel-btn'); if (x) x.style.display = '';
+  document.getElementById('inp-cls-name').scrollIntoView({ behavior:'smooth', block:'center' });
+}
+
+function cancelEditClass() {
+  _editingClassId = null;
+  const n = document.getElementById('inp-cls-name');     if (n) n.value = '';
+  const s = document.getElementById('inp-cls-students'); if (s) s.value = '';
+  document.querySelectorAll('#inp-cls-modules input[type=checkbox]').forEach(c => c.checked = false);
+  const t = document.getElementById('cls-form-title');  if (t) t.textContent = '🏫 Nouvelle classe';
+  const b = document.getElementById('cls-save-btn');    if (b) b.textContent = '🏫 Créer la classe';
+  const x = document.getElementById('cls-cancel-btn');  if (x) x.style.display = 'none';
 }
 
 function deleteClass(id) {
+  if (!confirm('Supprimer cette classe ? Les élèves n\'y auront plus accès.')) return;
   classes = classes.filter(c=>c.id!==id);
   saveClasses();
   if (db && currentUser) {
     db.collection(C_CLASSES).doc(String(id)).delete().catch(e => console.error('deleteClass FS:', e));
   }
+  if (_editingClassId === id) cancelEditClass();
   renderClassList();
+  renderClassesTab();
   toast('Classe supprimée');
 }
 
@@ -3669,18 +3706,19 @@ function renderClassList() {
   if (!el) return;
   if (!classes.length) { el.innerHTML=''; return; }
   el.innerHTML = classes.map(cls => {
-    const modCount = (cls.moduleIds?.length || cls.moduleCodes?.length || 0);
-    const stuCount = (cls.studentEmails?.length || cls.students?.length || 0);
+    const modNames = (cls.moduleIds || []).map(id => { const d = drills.find(x => String(x.id) === String(id)); return d ? d.name : '— supprimé —'; });
     const stuList  = (cls.studentEmails || cls.students || []);
     return `<div style="padding:10px 12px;background:var(--surf2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
         <div style="flex:1;min-width:0">
           <div style="font-weight:700;font-size:.88rem">🏫 ${escapeHtml(cls.name)}</div>
-          <div style="font-size:.72rem;color:var(--dim);margin-top:2px">${modCount} module${modCount>1?'s':''} · ${stuCount} élève${stuCount>1?'s':''} · ${escapeHtml(cls.created)}</div>
-          ${stuList.length ? `<div style="font-size:.7rem;color:var(--dim);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${stuList.slice(0,4).map(escapeHtml).join(', ')}${stuList.length>4?' …':''}</div>` : ''}
+          <div style="font-size:.72rem;color:var(--dim);margin-top:2px">${modNames.length} module${modNames.length>1?'s':''} · ${stuList.length} élève${stuList.length>1?'s':''}</div>
+          ${modNames.length ? `<div style="font-size:.7rem;color:var(--cyan);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📦 ${modNames.map(escapeHtml).join(', ')}</div>` : ''}
+          ${stuList.length ? `<div style="font-size:.7rem;color:var(--dim);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">👤 ${stuList.slice(0,4).map(escapeHtml).join(', ')}${stuList.length>4?' +'+(stuList.length-4):''}</div>` : ''}
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0">
-          <button class="btn btn-ghost btn-sm" onclick="deleteClass(${cls.id})">🗑</button>
+          <button class="btn btn-ghost btn-sm" onclick="openEditClass(${cls.id})" title="Modifier">✏️</button>
+          <button class="btn btn-ghost btn-sm" onclick="deleteClass(${cls.id})" title="Supprimer">🗑</button>
         </div>
       </div>
     </div>`;
@@ -4764,8 +4802,9 @@ function recordPracticeSession(pct) {
     drillId:      String(S.drill.id),
     drillName:    S.drill.name,
     student:      S.student || currentUser?.displayName || currentUser?.email || 'Anonyme',
-    studentEmail: currentUser?.email || null,
-    studentId:    currentUser?.uid   || null,
+    studentEmail:  currentUser?.email || null,
+    studentPseudo: currentPseudo      || null,
+    studentId:     currentUser?.uid   || null,
     pct,
     sessionIdx:   S.sessionIdx,
     ts: Date.now()
@@ -4812,8 +4851,9 @@ function recordResult(correct, kp) {
     drillId:      String(S.drill.id),
     drillName:    S.drill.name,
     student,
-    studentEmail: currentUser?.email  || null,
-    studentId:    currentUser?.uid    || null,
+    studentEmail:  currentUser?.email  || null,
+    studentPseudo: currentPseudo       || null,
+    studentId:     currentUser?.uid    || null,
     posIdx:       kp.posIdx,
     san:          kp.san,
     comment:      kp.comment,
@@ -5522,8 +5562,11 @@ function renderClassWeakSpots(arr) {
   const spots = _classWeakSpots(arr || []);
   if (!spots.length) { el.innerHTML = ''; return; }
   el.innerHTML = `<div class="ws-card">
-    <div class="ws-head">🎯 Points faibles de la classe</div>
-    <div class="ws-sub">Les positions qui font le plus échouer tes élèves — à revoir en cours.</div>
+    <div class="ws-head" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+      <span>🎯 Points faibles de la classe</span>
+      <button onclick="switchCoachSection('heatmap')" style="background:none;border:none;color:var(--cyan);font-size:.74rem;font-weight:600;cursor:pointer;padding:0;white-space:nowrap">Analyse complète →</button>
+    </div>
+    <div class="ws-sub">Aperçu des positions qui font le plus échouer tes élèves — à revoir en cours.</div>
     ${spots.map(s => `<div class="ws-row">
       <span class="ws-move">${fig(s.san)}</span>
       <div class="ws-info">
@@ -5533,6 +5576,27 @@ function renderClassWeakSpots(arr) {
       <span class="ws-stat">${s.failStudentCount} élève${s.failStudentCount > 1 ? 's' : ''} · ${s.rate}%</span>
     </div>`).join('')}
   </div>`;
+}
+
+// Roster unifié pour la Vue Prof : élèves des classes (pseudo/email) + élèves avec résultats, dédupliqués.
+function _buildProfRoster(filtered) {
+  const rosterIds = [...new Set(classes.flatMap(c => (c.studentEmails || c.students || [])))];
+  const keysOf = r => [(r.studentEmail||'').toLowerCase(), (r.studentPseudo||'').toLowerCase(), (r.student||'').toLowerCase()].filter(Boolean);
+  const map = {};
+  rosterIds.forEach(id => { map[id] = { key:id, label:id, total:0, correct:0, lastTs:0, played:false }; });
+  const attach = (r, isResult) => {
+    const keys = keysOf(r);
+    let target = rosterIds.find(id => keys.includes(id));
+    if (!target) { target = keys[0] || (r.student||'anonyme').toLowerCase(); if (!map[target]) map[target] = { key:target, label:r.student||target, total:0, correct:0, lastTs:0, played:false }; }
+    const s = map[target];
+    if (r.student) s.label = r.student;
+    if ((r.ts||0) > s.lastTs) s.lastTs = r.ts;
+    s.played = true;
+    if (isResult) { s.total++; if (r.correct) s.correct++; }
+  };
+  filtered.forEach(r => attach(r, true));
+  practiceLog.forEach(l => attach(l, false));
+  return Object.values(map).sort((a,b) => b.lastTs - a.lastTs);
 }
 
 function renderProfView(){
@@ -5570,7 +5634,7 @@ function renderProfView(){
   if (classDrillIds) filtered = filtered.filter(r=>classDrillIds.map(String).includes(String(r.drillId)));
 
   // KPIs
-  const students   = [...new Set([...results,...practiceLog].map(r=>r.student||r.studentName))].filter(Boolean);
+  const students   = _buildProfRoster(filtered);
   const totalRes   = filtered.length;
   const correct    = filtered.filter(r=>r.correct).length;
   const avgPct     = totalRes ? Math.round(correct/totalRes*100) : 0;
@@ -5590,57 +5654,43 @@ function renderProfView(){
   const eleveCount2 = document.getElementById('csnav-count-eleves2');
   if (eleveCount2) eleveCount2.textContent = students.length + ' élève' + (students.length>1?'s':'');
 
-  // Student list
-  const byStudent = {};
-  filtered.forEach(r=>{
-    const sname = r.student || r.studentName || 'Anonyme';
-    if (!byStudent[sname]) byStudent[sname]={total:0,correct:0,lastTs:0,drills:new Set()};
-    byStudent[sname].total++;
-    if (r.correct) byStudent[sname].correct++;
-    if (r.ts>byStudent[sname].lastTs) byStudent[sname].lastTs=r.ts;
-    byStudent[sname].drills.add(r.drillName);
-  });
-  practiceLog.forEach(l=>{
-    const sname = l.student || l.studentName || 'Anonyme';
-    if (!byStudent[sname]) byStudent[sname]={total:0,correct:0,lastTs:0,drills:new Set()};
-    if (l.ts>byStudent[sname].lastTs) byStudent[sname].lastTs=l.ts;
-  });
-
+  // Liste élèves : roster complet (depuis les classes) + élèves ayant joué
   const _now = Date.now();
-  document.getElementById('student-list').innerHTML = Object.entries(byStudent)
-    .sort((a,b)=>b[1].lastTs-a[1].lastTs)
-    .map(([name,data])=>{
-      const pct = data.total ? Math.round(data.correct/data.total*100) : 0;
-      const since = data.lastTs ? Math.floor((_now-data.lastTs)/86400000) : 999;
-      const smKeys = Object.keys(masteryData).filter(k=>k.startsWith(name+'_'));
-      const dueCount = smKeys.filter(k=>masteryData[k].due<=_now).length;
-      const alertCls = dueCount > 0 ? ' alert' : '';
-      const sinceStr = since===0 ? 'Aujourd\'hui' : since<365 ? since+'j' : '—';
-      const dotColor = since===0 ? 'var(--green)' : since<=3 ? '#d97706' : since<=7 ? '#d97706' : 'var(--dim)';
-      const isOn = name===selectedStudent ? ' on' : '';
-      return `<div class="eleve-item${isOn}${alertCls}" data-sname="${escapeHtml(name)}" onclick="showStudentDetail(this.dataset.sname)">
-        <div class="eleve-name">
-          <span>👤 ${escapeHtml(name)}</span>
-          <div style="display:flex;align-items:center;gap:5px">
-            <span style="width:7px;height:7px;border-radius:50%;background:${dotColor};display:inline-block;flex-shrink:0"></span>
-            ${_masteryBadge(name)}
-          </div>
+  document.getElementById('student-list').innerHTML = students.map(s => {
+    const pct = s.total ? Math.round(s.correct/s.total*100) : 0;
+    const since = s.lastTs ? Math.floor((_now-s.lastTs)/86400000) : null;
+    const dueCount = Object.keys(masteryData).filter(k => k.startsWith(s.label+'_') && masteryData[k].due<=_now).length;
+    const alertCls = dueCount > 0 ? ' alert' : '';
+    const dotColor = !s.played ? 'var(--dim)' : since===0 ? 'var(--green)' : since<=7 ? '#d97706' : 'var(--dim)';
+    const isOn = s.key===selectedStudent ? ' on' : '';
+    return `<div class="eleve-item${isOn}${alertCls}" data-sname="${escapeHtml(s.key)}" onclick="showStudentDetail(this.dataset.sname)">
+      <div class="eleve-name">
+        <span>${s.played?'👤':'⚪'} ${escapeHtml(s.label)}</span>
+        <div style="display:flex;align-items:center;gap:5px">
+          <span style="width:7px;height:7px;border-radius:50%;background:${dotColor};display:inline-block;flex-shrink:0"></span>
+          ${s.played ? _masteryBadge(s.label) : ''}
         </div>
-        <div class="eleve-meta">${sinceStr} · ${pct}% · ${data.total} coup${data.total===1?'':'s'}</div>
-        <div class="eleve-progbar"><div class="eleve-progfill" style="width:${pct}%;background:${pct>=70?'var(--green)':pct>=50?'#facc15':'var(--red)'}"></div></div>
-      </div>`;
-    }).join('') || '<div style="color:var(--dim);font-size:.82rem;text-align:center;padding:24px">Aucun élève avec résultats</div>';
+      </div>
+      <div class="eleve-meta">${s.played ? (since===0?'Aujourd\'hui':since+'j')+' · '+pct+'% · '+s.total+' coup'+(s.total>1?'s':'') : 'Pas encore commencé'}</div>
+      <div class="eleve-progbar"><div class="eleve-progfill" style="width:${pct}%;background:${pct>=70?'var(--green)':pct>=50?'#facc15':'var(--red)'}"></div></div>
+    </div>`;
+  }).join('') || '<div style="color:var(--dim);font-size:.82rem;text-align:center;padding:24px">Aucun élève. Crée une classe pour en ajouter.</div>';
 
   if (selectedStudent) showStudentDetail(selectedStudent);
 }
 
-function showStudentDetail(name) {
-  selectedStudent = name;
+function showStudentDetail(id) {
+  selectedStudent = id;
   document.querySelectorAll('.eleve-item').forEach(el =>
-    el.classList.toggle('on', el.dataset.sname === name)
+    el.classList.toggle('on', el.dataset.sname === id)
   );
 
-  let sr = results.filter(r => (r.student||r.studentName) === name);
+  const idLower = (id||'').toLowerCase();
+  let sr = results.filter(r =>
+    [(r.studentEmail||'').toLowerCase(), (r.studentPseudo||'').toLowerCase(), (r.student||'').toLowerCase()].includes(idLower)
+    || (r.student||r.studentName) === id
+  );
+  const name = (sr[0] && sr[0].student) || id;   // nom affichable (sinon l'identifiant)
   if (selectedDrillFilter !== 'all') sr = sr.filter(r => String(r.drillId) === selectedDrillFilter);
 
   const byDrill = {};
@@ -5667,7 +5717,7 @@ function showStudentDetail(name) {
   <div class="eleve-detail-body">`;
 
   if (!sr.length) {
-    html += '<div style="padding:20px;color:var(--dim);font-size:.83rem">Aucun résultat pour ce filtre.</div></div>';
+    html += '<div style="padding:20px;color:var(--dim);font-size:.83rem">Cet élève n\'a pas encore commencé.</div></div>';
     document.getElementById('prof-detail').innerHTML = html; return;
   }
 
@@ -5947,51 +5997,38 @@ function renderHeatmap() {
 // ══════════════════════════════════════════════════════
 function renderClassesTab() {
   const el = document.getElementById('prof-classes-content');
-
-  // Classes déduites des drills importés (seqName) + classes locales créées
-  const classNames = [...new Set([
-    ...drills.map(d=>d.seqName).filter(Boolean),
-    ...classes.map(c=>c.name)
-  ])];
-
-  if (!classNames.length) {
-    el.innerHTML = '<div class="empty" style="padding:40px"><div class="empty-ico">🏫</div>Aucune classe.<br>Créez-en une dans Coach ou importez un code classe.</div>';
+  if (!el) return;
+  if (!classes.length) {
+    el.innerHTML = '<div class="empty" style="padding:40px;border:1px dashed var(--border);border-radius:var(--r)"><div class="empty-ico">🏫</div>Aucune classe.<br>Créez-en une à gauche pour suivre vos élèves.</div>';
     return;
   }
-
-  const html = classNames.map(clsName => {
-    const clsDrillIds = drills.filter(d=>d.seqName===clsName).map(d=>d.id);
-    const clsResults  = results.filter(r=>clsDrillIds.includes(r.drillId));
-    const students    = [...new Set(clsResults.map(r=>r.student))];
-    const totalAtt    = clsResults.length;
-    const totalOk     = clsResults.filter(r=>r.correct).length;
-    const avgRate     = totalAtt ? Math.round(totalOk/totalAtt*100) : 0;
-    const localCls    = classes.find(c=>c.name===clsName);
-
-    const stuRows = students.length ? students.map(stu => {
-      const sr = clsResults.filter(r=>r.student===stu);
-      const pct = sr.length ? Math.round(sr.filter(r=>r.correct).length/sr.length*100) : 0;
-      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)">
-        <span style="font-size:.82rem">👤 ${escapeHtml(stu)}</span>
-        <span style="font-size:.82rem;font-weight:700;color:${pct>=70?'var(--green)':pct>=50?'#ca8a04':'var(--red)'}">${pct}% <span style="font-weight:400;color:var(--dim)">(${sr.length} coups)</span></span>
+  const now = Date.now();
+  el.innerHTML = classes.map(cls => {
+    const modIds = (cls.moduleIds || []).map(String);
+    const roster = (cls.studentEmails || cls.students || []);
+    const clsResults = results.filter(r => modIds.includes(String(r.drillId)));
+    let activeCount = 0;
+    const rows = roster.length ? roster.map(email => {
+      const sr = clsResults.filter(r => [(r.studentEmail||'').toLowerCase(), (r.studentPseudo||'').toLowerCase(), (r.student||'').toLowerCase()].includes(email));
+      const played = sr.length > 0;
+      if (played) activeCount++;
+      const pct = played ? Math.round(sr.filter(r => r.correct).length / sr.length * 100) : 0;
+      const lastTs = played ? Math.max(...sr.map(r => r.ts || 0)) : 0;
+      const since = lastTs ? Math.floor((now - lastTs) / 86400000) : null;
+      const status = !played
+        ? '<span style="color:var(--dim);font-size:.78rem">Pas encore commencé</span>'
+        : `<span style="font-weight:700;color:${pct>=70?'var(--green)':pct>=50?'var(--gold)':'var(--red)'}">${pct}%</span> <span style="color:var(--dim);font-size:.72rem">· ${since===0?'auj.':since+'j'}</span>`;
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);gap:8px">
+        <span style="font-size:.82rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${played?'🟢':'⚪'} ${escapeHtml(email)}</span>
+        <span style="flex-shrink:0">${status}</span>
       </div>`;
-    }).join('') : `<div style="color:var(--dim);font-size:.8rem;padding:8px 0">Aucun résultat pour cette classe</div>`;
-
+    }).join('') : '<div style="color:var(--dim);font-size:.8rem;padding:8px 0">Aucun élève dans cette classe.</div>';
     return `<div class="card" style="margin-bottom:14px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-        <div>
-          <div style="font-size:1rem;font-weight:700">🏫 ${escapeHtml(clsName)}</div>
-          <div style="font-size:.73rem;color:var(--dim);margin-top:2px">${clsDrillIds.length} module${clsDrillIds.length>1?'s':''} · ${students.length} élève${students.length>1?'s':''} · Réussite : ${avgRate}%</div>
-        </div>
-      </div>
-      <div class="prog-bar" style="margin-bottom:12px">
-        <div class="prog-fill" style="width:${avgRate}%;background:${avgRate>=70?'var(--green)':avgRate>=50?'#facc15':'var(--red)'}"></div>
-      </div>
-      ${stuRows}
+      <div style="font-size:1rem;font-weight:700">🏫 ${escapeHtml(cls.name)}</div>
+      <div style="font-size:.73rem;color:var(--dim);margin:2px 0 12px">${activeCount}/${roster.length} actif${activeCount>1?'s':''} · ${modIds.length} module${modIds.length>1?'s':''}</div>
+      ${rows}
     </div>`;
   }).join('');
-
-  el.innerHTML = html;
 }
 
 function renderPartiesTab() {
