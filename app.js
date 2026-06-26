@@ -2156,8 +2156,6 @@ function startStudyPhase() {
   S.studyStartFen = startFen;
   S.studyTree = root;
   S.studyMaxDepth = (function md(n, depth){ let m = depth; n.children.forEach(c => { m = Math.max(m, md(c, depth+1)); }); return m; })(root, 0);
-  S.studyViewMode = localStorage.getItem('mc_study_view') || 'full';   // mode d'affichage mémorisé
-  if (!['full', 'path', 'focus'].includes(S.studyViewMode)) S.studyViewMode = 'full';   // ignore anciens modes retirés
   S.hintSquare = null; S.sel = null;
   document.getElementById('learn-card').style.display    = 'block';
   document.getElementById('notation-card').style.display = 'none';
@@ -2180,14 +2178,9 @@ function _setStudyLayout(on) {
   const cm    = document.getElementById('learn-comment');
   const card  = document.getElementById('learn-card');
   const guessRow = document.getElementById('study-guess-row');
-  const modeRow = document.getElementById('study-mode-row');
   if (grid) grid.classList.toggle('study-mode', on);
   if (info) info.style.display = on ? 'none' : '';
   if (guessRow) guessRow.style.display = on ? 'block' : 'none';
-  if (modeRow) {
-    modeRow.style.display = on ? 'block' : 'none';
-    if (on) modeRow.querySelectorAll('.study-mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === (S.studyViewMode || 'full')));
-  }
   S.studyGuess = false;   // « devine le coup » toujours désactivé à l'entrée/sortie de l'étude
   const gb = document.getElementById('study-guess-btn');
   if (gb) { gb.classList.remove('active'); gb.textContent = '🎯 Devine le coup'; }
@@ -2306,7 +2299,7 @@ function renderStudyGuessLine() {
   el.innerHTML = h;
 }
 
-function studyNext() { if (S.studyNode && S.studyNode.children && S.studyNode.children.length) studyGoPath([...(S.studyPath||[]), 0]); }
+function studyNext() { if (S.studyNode && S.studyNode.children && S.studyNode.children.length) studyGoPath([...(S.studyPath || []), 0]); }
 function studyPrev() { if (S.studyPath && S.studyPath.length) studyGoPath(S.studyPath.slice(0, -1)); }
 
 function updateStudyProgress() {
@@ -2400,93 +2393,9 @@ function renderStudyTree() {
     }
     return h;
   }
-  // La ligne suivie (chemin courant puis children[0] jusqu'au bout) — pour Parcours & Focus.
-  function followSeq() {
-    const seq = []; let node = S.studyTree, path = [], idx = 0;
-    const follow = S.studyPath || [];
-    while (node.children && node.children.length) {
-      const ci = (idx < follow.length) ? follow[idx] : 0;
-      const mv = node.children[ci]; if (!mv) break;
-      const mvPath = [...path, ci];
-      seq.push({ node: mv, path: mvPath });
-      idx++; node = mv; path = mvPath;
-    }
-    return seq;
-  }
-  const mvLabel = n => { const w = n.fenBefore.split(' ')[1] === 'w'; return (n.fenBefore.split(' ')[5] + (w ? '.' : '…')) + fig(n.san); };
-  // Mode « Parcours sinueux » : la ligne suivie en chemin de nœuds ; à chaque coup, les
-  // sous-variantes (autres suites) partent en embranchements colorés, cliquables pour y entrer.
-  function pathMode() {
-    const seq = followSeq(), N = seq.length;
-    if (!N) return '<span style="color:var(--dim)">Aucun coup.</span>';
-    const curIdx = Math.max(0, Math.min(N - 1, (S.studyPath || []).length - 1));
-    const step = 44, cx = 132, amp = 70, top = 26, W = 264, H = top * 2 + (N - 1) * step;
-    const X = i => cx + amp * Math.sin(i * 0.8), Y = i => top + i * step;
-    let d = '';
-    for (let i = 0; i < N; i++) d += (i === 0 ? 'M' : ' L') + X(i).toFixed(1) + ',' + Y(i);
-    let nodes = '', branches = '';
-    seq.forEach((s, i) => {
-      const x = X(i), y = Y(i), isCur = i === curIdx, r = isCur ? 13 : 10;
-      const mast = _studyMastery(s.node);   // vert = maîtrisé, orange = à revoir, sinon neutre
-      const fill = isCur ? 'var(--cyan)' : mast === 'known' ? '#22c55e' : mast === 'due' ? '#f59e0b' : 'var(--surf2)';
-      const stroke = (isCur || mast) ? '' : 'stroke="var(--border)" stroke-width="1.5"';
-      const lx = x > cx ? x - r - 7 : x + r + 7, anchor = x > cx ? 'end' : 'start';
-      nodes += `<g onclick="studyGoPath(${JSON.stringify(s.path)})" style="cursor:pointer">`;
-      if (isCur) nodes += `<circle cx="${x.toFixed(1)}" cy="${y}" r="${r + 5}" fill="none" stroke="var(--cyan)" stroke-width="2" opacity="0.35"/>`;
-      nodes += `<circle ${isCur ? 'id="study-active"' : ''} cx="${x.toFixed(1)}" cy="${y}" r="${r}" fill="${fill}" ${stroke}/>`;
-      if (s.node.comment) nodes += `<circle cx="${(x + r * 0.72).toFixed(1)}" cy="${(y - r * 0.72).toFixed(1)}" r="4" fill="var(--surf)" stroke="var(--cyan)" stroke-width="1.5"/>`;
-      nodes += `<text x="${lx.toFixed(1)}" y="${y + 4}" text-anchor="${anchor}" font-family="'JetBrains Mono',monospace" font-size="12" fill="${isCur ? 'var(--text)' : 'var(--dim)'}">${mvLabel(s.node)}</text></g>`;
-      // embranchements : autres suites après ce coup (sous-variantes)
-      const alts = s.node.children ? s.node.children.slice(1) : [];
-      alts.forEach((a, j) => {
-        const side = x <= cx ? -1 : 1, bx = x + side * 40, by = y + step * 0.5 + j * 19;
-        const acol = depthCol(1), alx = side < 0 ? bx + 10 : bx - 10, aanchor = side < 0 ? 'start' : 'end';
-        branches += `<g onclick="studyGoPath(${JSON.stringify([...s.path, j + 1])})" style="cursor:pointer">`
-          + `<line x1="${x.toFixed(1)}" y1="${y}" x2="${bx.toFixed(1)}" y2="${by.toFixed(1)}" stroke="${acol}" stroke-width="2" stroke-dasharray="3 3" opacity="0.65"/>`
-          + `<circle cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="7" fill="${acol}"/>`
-          + `<text x="${alx.toFixed(1)}" y="${(by + 4).toFixed(1)}" text-anchor="${aanchor}" font-family="'JetBrains Mono',monospace" font-size="11" fill="var(--dim)">${mvLabel(a)}</text></g>`;
-      });
-    });
-    return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;margin:0 auto;overflow:visible"><path d="${d}" fill="none" stroke="var(--surf2)" stroke-width="4" stroke-linecap="round"/>${branches}${nodes}</svg>`;
-  }
-  // Mode « Focus » : un coup en grand + préc./suiv. + les coups alternatifs (sous-variantes)
-  // cliquables pour entrer dedans + un fil de points.
-  function focusMode() {
-    const seq = followSeq();
-    if (!seq.length) return '<span style="color:var(--dim)">Aucun coup.</span>';
-    const curIdx = Math.max(0, Math.min(seq.length - 1, (S.studyPath || []).length - 1));
-    const cur = seq[curIdx], prev = seq[curIdx - 1], nexts = cur.node.children || [];
-    let h = '<div class="study-focus">';
-    h += `<div class="focus-prev">${prev ? mvLabel(prev.node) : '—'}</div>`;
-    h += `<div class="focus-cur" id="study-active">${mvLabel(cur.node)}</div>`;
-    h += `<div class="focus-next">${nexts[0] ? mvLabel(nexts[0]) + ' →' : 'fin de ligne'}</div>`;
-    if (nexts.length > 1) {
-      h += '<div class="focus-alts"><span class="focus-alts-lbl">ou&nbsp;:</span>';
-      nexts.slice(1).forEach((a, k) => { h += `<span class="study-alt-chip" onclick="studyGoPath(${JSON.stringify([...cur.path, k + 1])})">${mvLabel(a)}</span>`; });
-      h += '</div>';
-    }
-    h += '<div class="focus-scrub">';
-    seq.forEach((s, i) => {
-      const mast = _studyMastery(s.node);
-      const cls = i === curIdx ? ' cur' : mast === 'known' ? ' known' : mast === 'due' ? ' due' : '';
-      h += `<span class="focus-dot${cls}${s.node.comment ? ' commented' : ''}" title="${escapeHtml(s.node.san)}" onclick="studyGoPath(${JSON.stringify(s.path)})"></span>`;
-    });
-    h += '</div></div>';
-    return h;
-  }
-  const mode = S.studyViewMode || 'full';
-  const body = mode === 'path'  ? pathMode()
-             : mode === 'focus' ? focusMode()
-             :                    mainline(S.studyTree, [], 0, false);
+  const body = mainline(S.studyTree, [], 0, false);   // mode unique : arbre complet (toutes les sous-variantes nichées)
   el.innerHTML = body || '<span style="color:var(--dim)">Aucun coup.</span>';
   requestAnimationFrame(() => { const a = document.getElementById('study-active'); if (a) a.scrollIntoView({ block:'nearest', behavior:'instant' }); });
-}
-
-function setStudyViewMode(mode) {
-  S.studyViewMode = mode;
-  try { localStorage.setItem('mc_study_view', mode); } catch (e) {}
-  document.querySelectorAll('#study-mode-row .study-mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
-  renderStudyTree();
 }
 
 function startLearnPhase() {
