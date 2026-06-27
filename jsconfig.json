@@ -1,0 +1,21 @@
+{
+  "//": "Type-check de DÉV sur le JS vanilla. N'émet rien, ne change pas le runtime.",
+  "//2": "VS Code l'utilise automatiquement pour souligner les erreurs dans l'éditeur.",
+  "//3": "Démarrage volontairement permissif (strict:false) : on cible les VRAIS bugs (fautes de frappe, mauvais nb d'arguments, identifiants inconnus, code mort) sans noyer sous le bruit. On durcira ensuite (strictNullChecks) par paliers.",
+  "compilerOptions": {
+    "checkJs": true,
+    "allowJs": true,
+    "noEmit": true,
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "skipLibCheck": true,
+    "types": [],
+    "strict": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false
+  },
+  "include": ["app.js", "lib/**/*.js", "data.js", "firebase-config.js", "supabase-config.js", "supabase-data.js", "types/**/*.d.ts"],
+  "exclude": ["node_modules"]
+}

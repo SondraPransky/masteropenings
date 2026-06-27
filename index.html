@@ -5,12 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EECoach — Révision d'ouvertures</title>
 <script>!function(){var t=localStorage.getItem('mc_theme')||'light';if(t==='dark')document.documentElement.setAttribute('data-theme','dark')}()</script>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4f46e5">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/ort.wasm.min.js"></script>
+<!-- onnxruntime-web (~plusieurs Mo) : chargé À LA DEMANDE par loadMaia() lors de la 1re partie vs Maia, pas au démarrage -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="supabase-data.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
@@ -32,7 +39,7 @@
   <span id="nav-role-chip" style="display:none"></span>
   <span id="nav-user" style="display:none"></span>
   <button id="btn-logout" onclick="logoutUser()" class="btn btn-ghost btn-sm" style="display:none" title="Déconnexion">Sortir</button>
-  <button id="theme-toggle" onclick="toggleTheme()" title="Changer de thème"><i class="ti ti-moon" aria-hidden="true"></i></button>
+  <button id="theme-toggle" onclick="toggleTheme()" title="Changer de thème" aria-label="Changer de thème"><i class="ti ti-moon" aria-hidden="true"></i></button>
 </nav>
 
 <!-- ════════════════════════════════════════
@@ -100,6 +107,9 @@
 
     <!-- Hero : à réviser aujourd'hui -->
     <div class="sh-hero" id="sh-hero"></div>
+
+    <!-- Tableau de bord répétition espacée (P3) -->
+    <div id="sh-dashboard"></div>
 
     <!-- Notification : nouveaux modules assignés -->
     <div id="sh-notif"></div>
@@ -395,6 +405,7 @@
           <span id="test-btns" style="display:inline-flex;gap:6px">
             <button class="btn btn-ghost btn-sm" onclick="showHint()">💡 Aide</button>
             <button id="btn-pause-adv" class="btn btn-ghost btn-sm" onclick="togglePauseAdversary()" title="Pause avant coup adversaire" style="display:none">⏸ Auto</button>
+            <button id="sr-suspend-btn" class="btn btn-ghost btn-sm" onclick="srSuspendCurrent()" title="Retirer cette position de la révision espacée" style="display:none">⏸ Suspendre</button>
             <button class="btn btn-red btn-sm"   onclick="skipPosition()">→ Voir la réponse</button>
           </span>
         </div>
@@ -465,15 +476,16 @@
 
         <!-- Positions clés (mode flash) -->
         <div class="card" id="pos-card">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div id="pos-card-head" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
             <div class="clabel" style="margin:0">Positions clés</div>
             <span id="pos-prog" style="font-size:.75rem;color:var(--dim)">—</span>
           </div>
           <div id="pos-strip" class="pos-strip"></div>
+          <div id="sr-bar" style="display:none"></div>
         </div>
 
         <!-- Feedback -->
-        <div id="feedback" class="feedback"></div>
+        <div id="feedback" class="feedback" role="status" aria-live="polite" aria-atomic="true"></div>
 
         <!-- Score -->
         <div class="card" id="score-card">
@@ -635,7 +647,7 @@
 
 <!-- ════ ÉDITEUR DE VARIANTES ════ -->
 <div class="overlay" id="modal-pgn-editor" style="align-items:stretch;padding:0;z-index:200">
-  <div style="display:flex;flex-direction:column;height:100dvh;max-height:100dvh;background:var(--bg);width:100%;max-width:980px;margin:0 auto;box-shadow:var(--shadow)">
+  <div aria-label="Éditeur de variantes" style="display:flex;flex-direction:column;height:100dvh;max-height:100dvh;background:var(--bg);width:100%;max-width:980px;margin:0 auto;box-shadow:var(--shadow)">
     <!-- Header -->
     <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-bottom:1px solid var(--border);flex-shrink:0;gap:12px">
       <div style="font-weight:700;font-size:.95rem">🎹 Éditeur de variantes</div>
@@ -703,7 +715,7 @@
 
 <div class="overlay" id="modal-end">
   <div class="modal">
-    <div class="modal-title">🏁 Module terminé !</div>
+    <div class="modal-title" id="end-title">🏁 Module terminé !</div>
     <div id="end-body"></div>
     <div class="modal-foot" id="modal-end-foot">
       <button id="btn-replay" class="btn btn-ghost" onclick="closeModal('modal-end');startDrill(S.idx)">↺ Rejouer</button>
@@ -713,9 +725,35 @@
   </div>
 </div>
 
+<!-- Modal : Réglages de la révision espacée (P4) -->
+<div class="overlay" id="modal-sr-settings">
+  <div class="modal" style="max-width:440px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="modal-title" style="margin:0">⚙ Réglages de la révision</div>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-sr-settings')">✕</button>
+    </div>
+    <label class="sr-set-row">
+      <span>Nouveaux coups par jour</span>
+      <input id="sr-set-newlimit" type="number" min="0" max="100" class="sr-set-input" style="width:80px">
+    </label>
+    <label class="sr-set-row">
+      <span>Ordre des cartes</span>
+      <select id="sr-set-order" class="sr-set-input">
+        <option value="mixed">Mélangé</option>
+        <option value="due">Révisions d'abord</option>
+      </select>
+    </label>
+    <div class="sr-set-row" style="border:none">
+      <span>Positions suspendues</span>
+      <span id="sr-set-suspended" style="font-size:.82rem;color:var(--dim)"></span>
+    </div>
+    <button class="btn btn-gold" style="width:100%;margin-top:18px" onclick="saveSrSettings()">Enregistrer</button>
+  </div>
+</div>
+
 <!-- Modal : partage de drill -->
 
-<div id="toast" class="toast"></div>
+<div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 <canvas id="ghost-canvas" width="60" height="60"
   style="position:fixed;pointer-events:none;z-index:999;display:none;"></canvas>
 <div id="promo-backdrop" onclick="cancelPromo()" ontouchstart="cancelPromo()"
@@ -734,6 +772,7 @@
 <div id="promo-pick"
   style="display:none;position:fixed;z-index:10000;flex-direction:row;gap:6px;border-radius:8px;padding:8px 10px;box-shadow:0 4px 20px rgba(0,0,0,.4);background:var(--surf1);border:1px solid var(--border)"></div>
 
+<script src="lib/core.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

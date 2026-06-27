@@ -59,6 +59,7 @@ function updateNav() {
 
 // ── Fonctions d'authentification ─────────────────────
 async function loginUser() {
+  if (USE_SUPABASE) return _sbLogin();
   if (!fbAuth) return;
   const email = (document.getElementById('login-email')?.value || '').trim();
   const pwd   =  document.getElementById('login-pwd')?.value   || '';
@@ -68,6 +69,7 @@ async function loginUser() {
 }
 
 async function registerUser() {
+  if (USE_SUPABASE) return _sbRegister();
   if (!fbAuth) return;
   const name  = (document.getElementById('reg-name')?.value  || '').trim();
   const email = (document.getElementById('reg-email')?.value || '').trim();
@@ -89,6 +91,7 @@ async function registerUser() {
 }
 
 async function logoutUser() {
+  if (USE_SUPABASE) return _sbLogout();
   if (fbAuth) await fbAuth.signOut();
 }
 
@@ -251,7 +254,7 @@ function renderStudentHome(assigned, personal) {
 
   // Hero : à réviser aujourd'hui (positions dues — répétition espacée)
   const all    = [...assigned, ...personal];
-  const dueN   = _allDuePositions().length;
+  const dueN   = _srSessionSize('all');
   const heroEl = document.getElementById('sh-hero');
   if (heroEl) {
     if (dueN > 0) {
@@ -266,6 +269,8 @@ function renderStudentHome(assigned, personal) {
         <div class="sh-hero-sub">Ton prof va t'assigner des modules. En attendant, tu peux importer ton propre PGN ci-dessous.</div>`;
     }
   }
+
+  renderSrDashboard();   // tableau de bord répétition espacée (P3)
 
   // Bannière nouveaux modules
   const notifEl = document.getElementById('sh-notif');
@@ -496,7 +501,9 @@ async function loadTeacherGames() {
 }
 
 // ── Auth state ────────────────────────────────────────
-if (fbAuth) {
+if (USE_SUPABASE && sb) {
+  _sbInitAuth();
+} else if (fbAuth) {
   fbAuth.onAuthStateChanged(async user => {
     currentUser = user;
     if (!user) {
@@ -626,13 +633,6 @@ function totalSessions() {
   return d.sessions?.length || 1;
 }
 
-function shortSessionLabel(label) {
-  // "Ligne principale [Nxb5] [c6]" → "c6"
-  const branches = label.match(/\[[^\]]+\]/g) || [];
-  if (!branches.length) return label;
-  return branches[branches.length - 1].replace(/[\[\]]/g, '').trim();
-}
-
 function isPlayerMove(fenBefore, side) {
   const turn = fenBefore.split(' ')[1];
   return side === 'both' || turn === side;
@@ -757,93 +757,10 @@ function goPage(name) {
 }
 
 // ══════════════════════════════════════════════════════
-// PARSING PGN
+// PARSING PGN + SM-2 (cœur) + _normFen → déplacés dans lib/core.js
+// (normalizeSAN, extractAllLines, sm2Schedule, _normFen), chargé avant app.js
+// et testés via Vitest (tests/core.test.js).
 // ══════════════════════════════════════════════════════
-function normalizeSAN(san, g) {
-  const tmp = new Chess(g.fen());
-  if (tmp.move(san)) return san;
-  // Tenter sans désambiguïsation (Nge2 → Ne2, Rdf1 → Rf1, etc.)
-  const m = san.match(/^([NBRQK])([a-h][1-8]|[a-h]|[1-8])(.+)$/);
-  if (m) {
-    const t2 = new Chess(g.fen());
-    if (t2.move(m[1]+m[3])) return m[1]+m[3];
-  }
-  return san;
-}
-
-function extractAllLines(pgn) {
-  const text = pgn.replace(/\[[^\]]*\]/g, '');
-  const allLines = [];
-
-  function tokenize(str) {
-    const tokens = [];
-    // Regex corrigée : [^\s(){}]+ évite d'absorber les ( ) collés (ex: "d3)" → "d3" + ")")
-    const re = /\{([^}]*)\}|\(|\)|([^\s(){}]+)/g;
-    let m;
-    while ((m = re.exec(str)) !== null) {
-      if (m[1] !== undefined) {
-        const t = m[1].replace(/\[%[^\]]*\]/g, '').trim();
-        if (t && !/^\[%/.test(m[1].trim())) tokens.push({ type:'comment', text:t });
-      } else if (m[0]==='(') tokens.push({type:'open'});
-      else if (m[0]===')') tokens.push({type:'close'});
-      else tokens.push({type:'move', text:m[2]});
-    }
-    return tokens;
-  }
-
-  function parseLine(tokens, startFen, label, depth) {
-    const g = new Chess(startFen);
-    const moves = [];
-    let i = 0;
-
-    while (i < tokens.length) {
-      const tok = tokens[i];
-
-      if (tok.type === 'open') {
-        let d = 1, vt = [];
-        i++;
-        while (i < tokens.length && d > 0) {
-          if (tokens[i].type==='open') d++;
-          if (tokens[i].type==='close') { d--; if (d===0) break; }
-          vt.push(tokens[i]);
-          i++;
-        }
-        const forkFen = moves.length>0 ? moves[moves.length-1].fenBefore : startFen;
-        const ft = vt.find(t => t.type==='move' && !/^\d+\./.test(t.text) && !/^\$/.test(t.text) && !/^(1-0|0-1|1\/2|\*)/.test(t.text));
-        parseLine(vt, forkFen, label+' ['+(ft?ft.text:'?')+']', depth+1);
-        continue;
-      }
-
-      if (tok.type==='close') { i++; continue; }
-
-      // Commentaire post-coup : on l'attache au dernier coup joué (look-behind)
-      if (tok.type==='comment') {
-        if (moves.length > 0 && !moves[moves.length-1].comment) {
-          moves[moves.length-1].comment = tok.text;
-        }
-        i++; continue;
-      }
-
-      if (tok.type==='move') {
-        const t = tok.text;
-        if (/^\d+\.+$/.test(t)||/^\$\d+$/.test(t)||/^(1-0|0-1|1\/2-1\/2|\*)$/.test(t)) { i++; continue; }
-        const fenBefore = g.fen();
-        const san = normalizeSAN(t, g);
-        const r = g.move(san);
-        if (!r) { i++; continue; }
-        moves.push({san:r.san, comment:'', fenBefore});
-      }
-      i++;
-    }
-
-    if (moves.length >= 2) allLines.push({label, depth, startFen, moves});
-  }
-
-  parseLine(tokenize(text), new Chess().fen(), 'Ligne principale', 0);
-  return allLines;
-}
-
-function _normFen(fen) { return fen.split(' ').slice(0,4).join(' '); }
 
 // Détecte si un coup laisse du matériel en prise (heuristique 1 coup, prudente).
 function _materialHint(fenBefore, moveSan) {
@@ -878,31 +795,6 @@ function _buildDrillTree(allLines, side) {
     }
   }
   return tree;
-}
-
-function extractKeyPositions(moves, side) {
-  const g = new Chess(moves[0].fenBefore);
-  const positions = [];
-
-  moves.forEach((mv, i) => {
-    const colorToPlay = g.turn();
-    const isPlayer = side==='both' || colorToPlay===side;
-    const r = g.move(mv.san);
-    if (!r) return;
-
-    const isCapture = r.flags.includes('c')||r.flags.includes('e');
-    const isCastle  = r.flags.includes('k')||r.flags.includes('q');
-    const isCheck   = r.san.includes('+')||r.san.includes('#');
-    const isLast    = i===moves.length-1;
-    const isPeriodic= i>=4 && i%4===0;
-
-    if (isPlayer && (isCapture||isCastle||isCheck||isLast||isPeriodic)) {
-      positions.push({fen:mv.fenBefore, san:r.san, comment:mv.comment||'', isCapture, isCastle, isCheck, attempted:false, correct:false});
-    }
-  });
-
-  const seen = new Set();
-  return positions.filter(p => { if(seen.has(p.fen)) return false; seen.add(p.fen); return true; });
 }
 
 // ══════════════════════════════════════════════════════
@@ -1030,7 +922,7 @@ function updateReviserToutBadge() {
   const cnt = document.getElementById('reviser-tout-count');
   if (!btn) return;
   if (!S.student) { btn.style.display='none'; return; }
-  const total = _allDuePositions().length;
+  const total = _srSessionSize('all');
   if (total > 0) {
     btn.style.display = 'inline-flex';
     cnt.textContent   = total;
@@ -1039,66 +931,274 @@ function updateReviserToutBadge() {
   }
 }
 
-function reviserTout() {
-  if (!S.student) { toast('⚠ Identifiez-vous d\'abord','ko'); return; }
-  const dueKps = _allDuePositions();
-  if (!dueKps.length) { toast('✓ Aucune position à réviser !','ok'); return; }
-  // Mélange aléatoire pour intercaler les modules
-  for (let i = dueKps.length-1; i>0; i--) {
-    const j = Math.floor(Math.random()*(i+1));
-    [dueKps[i], dueKps[j]] = [dueKps[j], dueKps[i]];
-  }
-  S.drill  = dueKps[0]._drill;
-  S.idx    = dueKps[0]._drillIdx;
-  S.ok = 0; S.ko = 0; S.sel = null;
-  S.sessionIdx = 0; S.postTheory = false; S.phase = 'test';
-  S.unifiedReview = true; S._reviewMode = true;
-  S.kps = dueKps.map(p => ({...p, attempted:false, correct:false}));
-  document.getElementById('s-name').textContent  = '↻ Révision intelligente';
-  document.getElementById('s-level').textContent = dueKps.length+' position'+(dueKps.length>1?'s dues':' due');
+// Points d'entrée (hero + bannières modules) → session de répétition espacée.
+function reviserTout() { srStart('all'); }
+function reviserDrill(i) { srStart('drill', i); }
+
+// ══════════════════════════════════════════════════════
+// RÉPÉTITION ESPACÉE (SR) — session « comme Chess Tempo »
+//   • Nouveaux (jamais vus) vs Révisions (dues) + quota de nouveaux/jour
+//   • Coup raté → révélé puis remis plus loin dans la session (étape)
+//   • Bilan de fin (révisé, rétention, nouveaux appris, prévision)
+// ══════════════════════════════════════════════════════
+function _srNewLimit() { const v = parseInt(localStorage.getItem('mc_sr_newlimit'), 10); return Number.isFinite(v) && v >= 0 ? v : 12; }
+function _srTodayKey(student) { return 'mc_srnew_' + student + '_' + new Date().toISOString().slice(0, 10); }
+function _srNewToday(student) { return parseInt(localStorage.getItem(_srTodayKey(student)) || '0', 10) || 0; }
+function _srBumpNewToday(student) { try { localStorage.setItem(_srTodayKey(student), String(_srNewToday(student) + 1)); } catch (e) {} }
+
+// Toutes les positions « joueur » d'un module, avec clé de maîtrise (FEN pour les arbres).
+function _srPositions(d) {
+  if (!d) return [];
+  if (d.varmode === 'tree') return _treePlayerPositions(d);
+  const out = [];
+  _drillSessions(d).forEach(sess => (sess.kps || []).forEach((kp, posIdx) => {
+    out.push({ fen: kp.fen, masteryKey: posIdx + '_' + (kp.san || ''), san: kp.san, altSans: kp.altSans || [], comment: kp.comment || '', isCapture: kp.isCapture, isCastle: kp.isCastle, isCheck: kp.isCheck });
+  }));
+  return out;
+}
+
+function _srScopeList(scope, drillIdx) {
+  return scope === 'drill' ? (drills[drillIdx] ? [{ d: drills[drillIdx], i: drillIdx }] : [])
+                           : drills.map((d, i) => ({ d, i }));
+}
+
+// File d'une session : révisions dues + quota de nouvelles, mélangées.
+function _srBuildQueue(scopeList, student) {
+  const now = Date.now();
+  const reviews = [], news = [];
+  scopeList.forEach(({ d, i }) => {
+    const did = String(d.id);
+    _srPositions(d).forEach(p => {
+      const fullKey = `${student}_${did}_${p.masteryKey}`;
+      if (_srIsSuspended(fullKey)) return;                  // position suspendue → ignorée
+      const rec = masteryData[fullKey];
+      const card = { ...p, _drill: d, _drillIdx: i, attempted: false, correct: false };
+      if (!rec) news.push(card);
+      else if (rec.due <= now) reviews.push(card);
+    });
+  });
+  const shuffle = a => { for (let k = a.length - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [a[k], a[j]] = [a[j], a[k]]; } return a; };
+  shuffle(reviews); shuffle(news);
+  const cap = Math.max(0, _srNewLimit() - _srNewToday(student));
+  const picked = news.slice(0, cap).map(c => ({ ...c, _srNew: true }));
+  const combined = reviews.concat(picked);
+  const queue = (localStorage.getItem('mc_sr_order') || 'mixed') === 'due' ? combined : shuffle(combined);
+  return { queue, revTotal: reviews.length, newTotal: picked.length };
+}
+
+// Nombre de cartes qu'une session contiendrait maintenant (compteurs hero/badge).
+function _srSessionSize(scope, drillIdx) {
+  const student = S.student || (currentUser ? (currentUser.displayName || currentUser.email) : '');
+  if (!student) return 0;
+  return _srBuildQueue(_srScopeList(scope, drillIdx), student).queue.length;
+}
+
+// Lance une session de répétition espacée. scope = 'all' | 'drill'.
+function srStart(scope, drillIdx) {
+  if (!S.student) { toast('⚠ Identifiez-vous d\'abord', 'ko'); return; }
+  const student = S.student;
+  const { queue, revTotal, newTotal } = _srBuildQueue(_srScopeList(scope, drillIdx), student);
+  if (!queue.length) { toast('✓ Rien à réviser pour le moment !', 'ok'); return; }
+  S.sr = { active: true, scope, drillIdx, student, scopeList: _srScopeList(scope, drillIdx),
+           graded: new Set(), passed: new Set(),
+           newTotal, revTotal, newRemaining: newTotal, revRemaining: revTotal, total: queue.length,
+           stats: { reviewed: 0, correct: 0, again: 0, newLearned: 0 } };
+  S.drill = queue[0]._drill; S.idx = queue[0]._drillIdx;
+  S.ok = 0; S.ko = 0; S.sel = null; S.sessionIdx = 0; S.postTheory = false;
+  S.phase = 'test'; S._reviewMode = true; S.unifiedReview = (scope !== 'drill');
+  S.kps = queue;
+  document.getElementById('s-name').textContent  = scope === 'drill' ? (S.drill.name + ' — Révision') : '↻ Révision espacée';
+  document.getElementById('s-level').textContent = (revTotal + newTotal) + ' carte' + ((revTotal + newTotal) > 1 ? 's' : '');
   document.getElementById('s-side').textContent  = '';
-  document.getElementById('s-mode-badge').textContent = '↻ Multi-modules';
+  document.getElementById('s-mode-badge').textContent = '↻ SR';
   document.getElementById('learn-card').style.display    = 'none';
   document.getElementById('notation-card').style.display = 'none';
   document.getElementById('pos-card').style.display      = 'block';
   document.getElementById('test-btns').style.display     = '';
   document.getElementById('score-card').style.display    = '';
   document.getElementById('history-card').style.display  = '';
-  clearFeedback(); clearLog(); updateScores(); drawCoords(); resizeBoard(); renderPosStrip(); loadPosition(0);
+  clearFeedback(); clearLog(); updateScores(); drawCoords(); resizeBoard();
+  loadPosition(0);
   goPage('drill');
-  toast(`↻ Révision intelligente — ${dueKps.length} position${dueKps.length>1?'s':''}`, 'ok');
+  toast(`↻ ${revTotal} révision${revTotal > 1 ? 's' : ''} · ${newTotal} nouveau${newTotal > 1 ? 'x' : ''}`, 'ok');
 }
 
-function reviserDrill(i) {
-  const d = S.student ? drills[i] : null;
-  if (!d) { toast('⚠ Identifiez-vous d\'abord','ko'); return; }
-  const now = Date.now();
-  const dueKps = [];
-  _drillSessions(d).forEach(sess => {
-    (sess.kps||[]).forEach((kp, posIdx) => {
-      const key = `${S.student}_${d.id}_${posIdx}_${kp.san||''}`;
-      const m   = masteryData[key];
-      if (!m || m.due <= now) dueKps.push({...kp, posIdx});
+function _srToggleBar(on) {
+  const head = document.getElementById('pos-card-head'), strip = document.getElementById('pos-strip'), bar = document.getElementById('sr-bar');
+  if (head) head.style.display = on ? 'none' : '';
+  if (strip) strip.style.display = on ? 'none' : '';
+  if (bar) bar.style.display = on ? 'block' : 'none';
+  const susp = document.getElementById('sr-suspend-btn'); if (susp) susp.style.display = on ? '' : 'none';
+}
+
+function _srUpdateBar() {
+  const bar = document.getElementById('sr-bar'); if (!bar || !S.sr) return;
+  const passed = S.sr.passed.size, total = S.sr.total, pct = total ? Math.round(passed / total * 100) : 0;
+  bar.innerHTML =
+    `<div class="sr-bar-top"><span>Révision espacée</span><span>${passed} / ${total}</span></div>`
+    + `<div class="sr-prog"><div class="sr-prog-fill" style="width:${pct}%"></div></div>`
+    + `<div class="sr-counts">`
+    + `<span class="sr-count sr-new"><i class="ti ti-sparkles" aria-hidden="true"></i> Nouveaux · ${S.sr.newRemaining}</span>`
+    + `<span class="sr-count sr-rev"><i class="ti ti-history" aria-hidden="true"></i> Révisions · ${S.sr.revRemaining}</span>`
+    + `</div>`;
+}
+
+// Réponse pendant une session SR (depuis tryMoveInPositions / skipPosition).
+function _srAnswer(kp, played, isCorrect) {
+  const key = kp.masteryKey, first = !S.sr.graded.has(key);
+  kp.attempted = true; kp.correct = isCorrect;
+  if (first) {                                   // la 1re tentative seule pilote la planification
+    S.sr.graded.add(key);
+    recordResult(isCorrect, kp);                 // clé FEN correcte (corrige le bug de la révision arbre)
+    S.sr.stats.reviewed++;
+    if (isCorrect) { S.sr.stats.correct++; S.ok++; } else { S.sr.stats.again++; S.ko++; }
+    if (kp._srNew) _srBumpNewToday(S.sr.student);
+    updateScores();
+  }
+  if (isCorrect) {
+    if (played) S.game.move({ from: played.from, to: played.to, promotion: 'q' });
+    if (!S.sr.passed.has(key)) {
+      S.sr.passed.add(key);
+      if (kp._srNew) { S.sr.newRemaining = Math.max(0, S.sr.newRemaining - 1); S.sr.stats.newLearned++; }
+      else S.sr.revRemaining = Math.max(0, S.sr.revRemaining - 1);
+    }
+    setFeedback('ok', '✓ ' + fig(kp.san), S.drill?.hideComments ? '' : kp.comment);
+    addLog(kp.san, true, S.posIdx + 1);
+    drawBoard(); _srUpdateBar();
+    setTimeout(() => loadPosition(S.posIdx + 1), 850);
+  } else {
+    const matHint = played ? _materialHint(S.game.fen(), played.san) : '';
+    setFeedback('ko', '✗ Le coup était : ' + fig(kp.san) + (matHint ? ' · ' + matHint : '') + '  ↻ revu plus tard', S.drill?.hideComments ? '' : kp.comment);
+    addLog((played ? played.san : '?') + ' ✗', false, S.posIdx + 1);
+    const insertAt = Math.min(S.posIdx + 3, S.kps.length);   // étape : remis plus loin dans la session
+    S.kps.splice(insertAt, 0, { ...kp, attempted: false, correct: false, _requeued: true });
+    drawBoard(); _srUpdateBar();
+    setTimeout(() => loadPosition(S.posIdx + 1), 1400);
+  }
+}
+
+// Prévision : nb de positions dues par jour (offsets 1..days) pour le périmètre.
+function _srForecast(scopeList, student, days) {
+  const counts = new Array(days).fill(0);
+  const t0 = new Date(); t0.setHours(0, 0, 0, 0); const startToday = t0.getTime();
+  scopeList.forEach(({ d }) => {
+    const did = String(d.id);
+    _srPositions(d).forEach(p => {
+      const rec = masteryData[`${student}_${did}_${p.masteryKey}`];
+      if (!rec) return;
+      const off = Math.floor((rec.due - startToday) / 86400000);
+      if (off >= 1 && off <= days) counts[off - 1]++;
     });
   });
-  if (!dueKps.length) { toast('✓ Aucune position à réviser aujourd\'hui !','ok'); return; }
-  S.idx = i; S.drill = d; S.ok = 0; S.ko = 0; S.sel = null;
-  S.sessionIdx = 0; S.postTheory = false; S.phase = 'test'; S._reviewMode = true;
-  S.kps = dueKps.map(p=>({...p, attempted:false, correct:false}));
-  document.getElementById('drill-sel').value = i;
-  document.getElementById('s-name').textContent  = d.name + ' — Révision';
-  document.getElementById('s-level').textContent = d.level;
-  document.getElementById('s-side').textContent  = d.side==='w'?'♔ Blancs':d.side==='b'?'♚ Noirs':'⇄ Les deux';
-  document.getElementById('s-mode-badge').textContent = '↻ Révision';
-  document.getElementById('learn-card').style.display = 'none';
-  document.getElementById('notation-card').style.display = 'none';
-  document.getElementById('pos-card').style.display = 'block';
-  document.getElementById('test-btns').style.display = '';
-  document.getElementById('score-card').style.display = '';
-  document.getElementById('history-card').style.display = '';
-  clearFeedback(); clearLog(); updateScores(); drawCoords(); resizeBoard(); renderPosStrip(); loadPosition(0);
-  goPage('drill');
-  toast(`↻ Révision — ${dueKps.length} position${dueKps.length>1?'s':''} à revoir`, 'ok');
+  return counts;
+}
+
+function _srBilan() {
+  const sr = S.sr, s = sr.stats;
+  const retention = s.reviewed ? Math.round(s.correct / s.reviewed * 100) : 0;
+  const fc = _srForecast(sr.scopeList, sr.student, 6), maxFc = Math.max(1, ...fc);
+  const labels = ['dem.', '+2j', '+3j', '+4j', '+5j', '+6j'];
+  const bars = fc.map((c, i) => `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">`
+    + `<span style="font-size:.6rem;color:var(--dim);height:.7rem">${c || ''}</span>`
+    + `<div style="width:100%;height:${Math.round(5 + c / maxFc * 38)}px;background:${i === 0 ? 'var(--gold)' : 'var(--cyan)'};border-radius:3px 3px 0 0;opacity:${c ? 1 : .3}"></div>`
+    + `<span style="font-size:.6rem;color:var(--dim)">${labels[i]}</span></div>`).join('');
+  const scope = sr.scope, drillIdx = sr.drillIdx, scopeList = sr.scopeList, student = sr.student;
+  S.sr = null;   // fin de session
+  const title = document.getElementById('end-title'); if (title) title.textContent = '✓ Session terminée';
+  document.getElementById('end-body').innerHTML =
+    `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:6px">`
+    + `<div class="score-box"><div class="score-val">${s.reviewed}</div><div class="score-lbl">Révisé</div></div>`
+    + `<div class="score-box"><div class="score-val" style="color:var(--green)">${retention}%</div><div class="score-lbl">Rétention</div></div>`
+    + `<div class="score-box"><div class="score-val" style="color:var(--cyan)">${s.newLearned}</div><div class="score-lbl">Nouveaux</div></div>`
+    + `<div class="score-box"><div class="score-val" style="color:var(--gold)">${s.again}</div><div class="score-lbl">À revoir</div></div>`
+    + `</div>`
+    + `<div style="font-size:.72rem;color:var(--dim);margin:14px 0 6px;display:flex;align-items:center;gap:5px"><i class="ti ti-calendar" aria-hidden="true"></i> Tes prochaines révisions</div>`
+    + `<div style="display:flex;align-items:flex-end;gap:6px;height:60px">${bars}</div>`;
+  const errBtn = document.getElementById('btn-replay-errors'); if (errBtn) errBtn.style.display = 'none';
+  const more = _srBuildQueue(scopeList, student).queue.length;
+  const replayBtn = document.getElementById('btn-replay');
+  if (replayBtn) {
+    if (more > 0) { replayBtn.style.display = ''; replayBtn.className = 'btn btn-blue'; replayBtn.textContent = `↻ Continuer (${more})`; replayBtn.onclick = () => { closeModal('modal-end'); srStart(scope, drillIdx); }; }
+    else replayBtn.style.display = 'none';
+  }
+  const nextBtn = document.getElementById('btn-next-drill');
+  if (nextBtn) { nextBtn.style.display = ''; nextBtn.className = 'btn btn-gold'; nextBtn.style.color = ''; nextBtn.textContent = '✓ Terminer'; nextBtn.onclick = () => { closeModal('modal-end'); goPage('student-home'); }; }
+  updateReviserToutBadge();
+  document.getElementById('modal-end').classList.add('on');
+}
+
+// ── Suspendre une position (P4) : la sortir de la révision (persisté localStorage) ──
+function _srSuspendedMap() { try { return JSON.parse(localStorage.getItem('mc_sr_suspended') || '{}'); } catch (e) { return {}; } }
+function _srIsSuspended(fullKey) { return !!_srSuspendedMap()[fullKey]; }
+function _srSetSuspended(fullKey, on) { const m = _srSuspendedMap(); if (on) m[fullKey] = 1; else delete m[fullKey]; try { localStorage.setItem('mc_sr_suspended', JSON.stringify(m)); } catch (e) {} }
+function _srSuspendedCount() { return Object.keys(_srSuspendedMap()).length; }
+function srSuspendCurrent() {
+  if (!(S.sr && S.sr.active)) return;
+  const card = S.kps[S.posIdx]; if (!card) return;
+  _srSetSuspended(S.sr.student + '_' + String(card._drill.id) + '_' + card.masteryKey, true);
+  const here = S.posIdx;
+  S.kps = S.kps.filter((k, i) => i <= here || k.masteryKey !== card.masteryKey);   // retire les occurrences à venir
+  if (!S.sr.passed.has(card.masteryKey)) {
+    if (card._srNew) S.sr.newRemaining = Math.max(0, S.sr.newRemaining - 1);
+    else S.sr.revRemaining = Math.max(0, S.sr.revRemaining - 1);
+    S.sr.total = Math.max(S.sr.passed.size, S.sr.total - 1);
+  }
+  toast('⏸ Position suspendue (réglages pour réactiver)', 'ok');
+  loadPosition(S.posIdx + 1);
+}
+
+// ── Réglages de la révision (P4) ──
+function openSrSettings() {
+  const ni = document.getElementById('sr-set-newlimit'); if (ni) ni.value = _srNewLimit();
+  const or = document.getElementById('sr-set-order'); if (or) or.value = localStorage.getItem('mc_sr_order') || 'mixed';
+  const su = document.getElementById('sr-set-suspended');
+  if (su) { const n = _srSuspendedCount(); su.innerHTML = n ? `${n} · <a href="#" onclick="event.preventDefault();_srClearSuspended()" style="color:var(--cyan)">réactiver tout</a>` : 'aucune'; }
+  document.getElementById('modal-sr-settings').classList.add('on');
+}
+function _srClearSuspended() { try { localStorage.setItem('mc_sr_suspended', '{}'); } catch (e) {} openSrSettings(); renderSrDashboard(); updateReviserToutBadge(); }
+function saveSrSettings() {
+  const ni = document.getElementById('sr-set-newlimit'), lim = Math.max(0, Math.min(100, parseInt(ni && ni.value, 10) || 0));
+  try { localStorage.setItem('mc_sr_newlimit', String(lim)); } catch (e) {}
+  const or = document.getElementById('sr-set-order'); try { localStorage.setItem('mc_sr_order', (or && or.value) || 'mixed'); } catch (e) {}
+  closeModal('modal-sr-settings');
+  renderSrDashboard(); updateReviserToutBadge();
+  toast('✓ Réglages enregistrés', 'ok');
+}
+
+// ── Tableau de bord élève : métriques + prévision 14 j (P3) ──
+function _srMyResults() {
+  const id = S.student, email = currentUser && currentUser.email;
+  return results.filter(r => r.student === id || (email && r.studentEmail === email));
+}
+function renderSrDashboard() {
+  const el = document.getElementById('sh-dashboard'); if (!el) return;
+  const student = S.student;
+  if (!student) { el.innerHTML = ''; return; }
+  const recKeys = Object.keys(masteryData).filter(k => k.startsWith(student + '_'));
+  const seen = recKeys.length, dueNow = _srSessionSize('all');
+  if (!seen && !dueNow) { el.innerHTML = ''; return; }
+  const mature = recKeys.filter(k => (masteryData[k].interval || 0) >= 21).length;
+  const cutoff = Date.now() - 30 * 86400000;
+  const rr = _srMyResults().filter(r => r.ts >= cutoff);
+  const retention = rr.length ? Math.round(rr.filter(r => r.correct).length / rr.length * 100) : null;
+  const fc = _srForecast(drills.map((d, i) => ({ d, i })), student, 13);
+  const series = [dueNow].concat(fc), maxV = Math.max(1, ...series);
+  const lbl = i => i === 0 ? 'auj.' : i === 7 ? '+7j' : i === 13 ? '+13j' : '';
+  const bars = series.map((c, i) => `<div class="srdash-bar-col" title="${c} due${c > 1 ? 's' : ''}">`
+    + `<div class="srdash-bar" style="height:${Math.round(4 + c / maxV * 42)}px;background:${i === 0 ? 'var(--gold)' : 'var(--cyan)'};opacity:${c ? 1 : .25}"></div>`
+    + `<span class="srdash-bar-lbl">${lbl(i)}</span></div>`).join('');
+  el.innerHTML =
+    `<div class="srdash"><div class="srdash-head">`
+    + `<span class="srdash-title">↻ Ma répétition espacée</span>`
+    + `<button class="btn btn-ghost btn-sm" style="font-size:.72rem" title="Réglages" onclick="openSrSettings()">⚙</button></div>`
+    + `<div class="srdash-metrics">`
+    + `<div class="srdash-m"><div class="srdash-v" style="color:var(--cyan)">${dueNow}</div><div class="srdash-l">À réviser</div></div>`
+    + `<div class="srdash-m"><div class="srdash-v" style="color:var(--green)">${retention != null ? retention + '%' : '—'}</div><div class="srdash-l">Rétention 30j</div></div>`
+    + `<div class="srdash-m"><div class="srdash-v" style="color:var(--gold)">${mature}</div><div class="srdash-l">Maîtrisées</div></div>`
+    + `<div class="srdash-m"><div class="srdash-v">${seen}</div><div class="srdash-l">Cartes vues</div></div>`
+    + `</div>`
+    + `<div class="srdash-fc-lbl">Prévision des révisions (14 j)</div>`
+    + `<div class="srdash-fc">${bars}</div></div>`;
 }
 
 let _pendingDelId = null;
@@ -1536,6 +1636,7 @@ function updateSessionInfo() {
 function startDrill(i) {
   const d = drills[i];
   if (!d) return;
+  S.sr = null;   // sortie d'une éventuelle session de révision espacée
   // Avec Firebase : le nom vient du compte
   if (FIREBASE_CONFIGURED && currentUser && !S.student) {
     S.student = currentUser.displayName || currentUser.email;
@@ -1624,6 +1725,8 @@ function loadPosition(posIdx) {
   renderPosStrip();
   updatePosInfo();
   drawBoard();
+  _srToggleBar(!!(S.sr && S.sr.active));
+  if (S.sr && S.sr.active) _srUpdateBar();
 }
 
 function updatePosInfo() {
@@ -1654,6 +1757,7 @@ function tryMoveInPositions(from, to) {
   const kp = S.kps[S.posIdx];
   const accept = [kp.san, ...(kp.altSans||[])].map(norm);
   const isCorrect = accept.includes(norm(played.san));
+  if (S.sr && S.sr.active) { _srAnswer(kp, played, isCorrect); return; }
   kp.attempted=true; kp.correct=isCorrect;
 
   if (isCorrect) {
@@ -1676,6 +1780,7 @@ function tryMoveInPositions(from, to) {
 }
 
 function endPositionsDrill() {
+  if (S.sr && S.sr.active) { _srBilan(); return; }
   const done = S.ok+S.ko;
   const pct  = done ? Math.round(S.ok/done*100) : 0;
   if (!S.unifiedReview) recordPracticeSession(pct);
@@ -1989,36 +2094,6 @@ function _treePlayerPositions(drill) {
     });
   }
   return out;
-}
-
-// Positions dues (à réviser) pour un module, pour l'élève donné.
-function _treeDuePositions(drill, student) {
-  const now = Date.now();
-  const did = String(drill.id);
-  return _treePlayerPositions(drill).filter(p => {
-    const m = masteryData[`${student}_${did}_${p.masteryKey}`];
-    return !m || m.due <= now;
-  });
-}
-
-// Toutes les positions dues, tous modules confondus (élève courant) → flashcards.
-function _allDuePositions() {
-  const student = S.student || (currentUser ? (currentUser.displayName || currentUser.email) : '');
-  if (!student) return [];
-  const now = Date.now();
-  const due = [];
-  drills.forEach((d, i) => {
-    if (d.varmode === 'tree') {
-      _treeDuePositions(d, student).forEach(p =>
-        due.push({ ...p, _drill: d, _drillIdx: i, attempted: false, correct: false }));
-    } else {
-      _drillSessions(d).forEach(sess => (sess.kps || []).forEach((kp, posIdx) => {
-        const m = masteryData[`${student}_${d.id}_${posIdx}_${kp.san || ''}`];
-        if (!m || m.due <= now) due.push({ ...kp, posIdx, _drill: d, _drillIdx: i, attempted: false, correct: false });
-      }));
-    }
-  });
-  return due;
 }
 
 // BFS from root to find the path of opp choices that leads to the
@@ -2590,6 +2665,7 @@ function enterTestPhase() {
 // FIN DE DRILL (commun)
 // ══════════════════════════════════════════════════════
 function showEndModal(pct) {
+  const _et = document.getElementById('end-title'); if (_et) _et.textContent = '🏁 Module terminé !';
   const msg = pct>=85?'🌟 Excellent ! Maîtrise parfaite.':pct>=60?'👍 Bon travail, continuez !':'💪 Persistez, vous progressez !';
   const showContinue = (isLineMode() || S.drill?.varmode === 'tree') && S.lineGame && !S.lineGame.game_over();
 
@@ -2736,19 +2812,7 @@ async function loadMasteryFromFirestore() {
 
 function sm2Update(student, drillId, posKey, correct) {
   const key = `${student}_${drillId}_${posKey}`;
-  const m   = masteryData[key] || { ef:2.5, interval:1, reps:0, due:0 };
-  const q   = correct ? 5 : 1;
-  if (q >= 3) {
-    if      (m.reps === 0) m.interval = 1;
-    else if (m.reps === 1) m.interval = 6;
-    else                   m.interval = Math.round(m.interval * m.ef);
-    m.reps++;
-  } else {
-    m.reps = 0; m.interval = 1;
-  }
-  m.ef  = Math.max(1.3, m.ef + 0.1 - (5-q)*(0.08+(5-q)*0.02));
-  m.due = Date.now() + m.interval * 86400000;
-  masteryData[key] = m;
+  masteryData[key] = sm2Schedule(masteryData[key], correct, Date.now());
   _scheduleMasterySync();
 }
 
@@ -2893,9 +2957,10 @@ function resizeBoard() {
   drawCoords(); drawBoard();
 }
 
+let _resizeTimer;
 window.addEventListener('resize', ()=>{
-  clearTimeout(resizeBoard._t);
-  resizeBoard._t = setTimeout(resizeBoard, 120);
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(resizeBoard, 120);
 });
 
 // Touches ← → pour naviguer en phase apprentissage (ligne) ET étude (arbre PGN)
@@ -2933,11 +2998,31 @@ let _maiaIdx2Uci  = null;   // 1234   → "e2e4"
 let _maiaState    = 'idle'; // idle | loading | ready | error
 let _maiaThinking = false;
 
+// Charge onnxruntime-web À LA DEMANDE (1re partie vs Maia), pas au démarrage de la page.
+// Le <script> n'est plus dans le <head> → l'app démarre sans télécharger le runtime ONNX.
+let _ortPromise = null;
+function _ensureOrt() {
+  if (typeof ort !== 'undefined') return Promise.resolve();
+  if (_ortPromise) return _ortPromise;
+  _ortPromise = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/ort.wasm.min.js';
+    s.onload  = () => resolve();
+    s.onerror = () => { _ortPromise = null; reject(new Error('Échec du chargement de onnxruntime-web')); };
+    document.head.appendChild(s);
+  });
+  return _ortPromise;
+}
+
 async function loadMaia(onProgress) {
   if (_maiaState === 'ready')   return;
   if (_maiaState === 'loading') return;
   _maiaState = 'loading';
   try {
+    // Runtime ONNX chargé à la demande (lazy) — accélère le démarrage de l'app
+    onProgress?.('Chargement du runtime…', 2);
+    await _ensureOrt();
+
     // Config WASM
     ort.env.wasm.wasmPaths  = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/';
     ort.env.wasm.numThreads = 1;
@@ -3384,6 +3469,7 @@ cvs.addEventListener('click',e=>{
 
 function tryMove(from, to) {
   if(S.phase==='study') { tryStudyGuess(from,to); return; }
+  if(S.sr && S.sr.active) { tryMoveInPositions(from,to); return; }   // session SR : toujours le flux « positions » (quel que soit le varmode)
   if(S.postTheory) tryMovePostTheory(from,to);
   else if(S.drill?.varmode==='tree') tryMoveInTree(from,to);
   else if(isLineMode()) tryMoveInLine(from,to);
@@ -3445,15 +3531,14 @@ function showHint(){
 }
 
 function skipPosition(){
-  if(isLineMode()) skipLinePosition();
-  else {
-    const kp=S.kps[S.posIdx]; if(!kp) return;
-    kp.attempted=true; kp.correct=false;
-    setFeedback('ko','→ Le coup était : '+fig(kp.san), S.drill.hideComments ? '' : kp.comment);
-    S.ko++; updateScores(); renderPosStrip();
-    recordResult(false,{san:kp.san,comment:kp.comment,posIdx:S.posIdx});
-    setTimeout(()=>loadPosition(S.posIdx+1),1300);
-  }
+  if(isLineMode()) { skipLinePosition(); return; }
+  const kp=S.kps[S.posIdx]; if(!kp) return;
+  if(S.sr && S.sr.active){ _srAnswer(kp, null, false); return; }   // « voir la réponse » = raté
+  kp.attempted=true; kp.correct=false;
+  setFeedback('ko','→ Le coup était : '+fig(kp.san), S.drill.hideComments ? '' : kp.comment);
+  S.ko++; updateScores(); renderPosStrip();
+  recordResult(false,{san:kp.san,comment:kp.comment,posIdx:S.posIdx});
+  setTimeout(()=>loadPosition(S.posIdx+1),1300);
 }
 
 // ══════════════════════════════════════════════════════
@@ -3481,8 +3566,8 @@ function clearFeedback(){
 function updateScores(){
   const done=S.ok+S.ko;
   const pct=done?Math.round(S.ok/done*100):null;
-  document.getElementById('sc-ok') .textContent=S.ok;
-  document.getElementById('sc-ko') .textContent=S.ko;
+  document.getElementById('sc-ok') .textContent=String(S.ok);
+  document.getElementById('sc-ko') .textContent=String(S.ko);
   const pctEl=document.getElementById('sc-pct');
   pctEl.textContent=pct!==null?pct+'%':'—';
   pctEl.style.color=pct===null?'var(--cyan)':pct>=70?'var(--green)':pct>=50?'var(--gold)':'var(--red)';
@@ -3496,31 +3581,77 @@ function addLog(san,ok,num){
   e.innerHTML=`<div class="dot"></div><span style="color:var(--dim)">${num}.</span> <strong>${fig(san)}</strong>`;
   el.appendChild(e); el.scrollTop=el.scrollHeight;
 }
+let _toastTimer;
 function toast(msg,type){
   const t=document.getElementById('toast');
   t.textContent=msg; t.className='toast show '+(type||'');
-  clearTimeout(t._t); t._t=setTimeout(()=>t.className='toast',2800);
+  clearTimeout(_toastTimer); _toastTimer=setTimeout(()=>t.className='toast',2800);
+}
+
+// ══════════════════════════════════════════════════════
+// ACCESSIBILITÉ — sémantique + clavier des modales
+// ══════════════════════════════════════════════════════
+const _A11Y_FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+let _a11yLastFocus = null;
+
+function _initA11y() {
+  const overlays = Array.from(document.querySelectorAll('.overlay'));
+
+  // 1) Sémantique : chaque modale = un dialog nommé par son titre.
+  overlays.forEach(ov => {
+    const box = ov.querySelector('.modal') || ov.firstElementChild;
+    if (!box) return;
+    box.setAttribute('role', 'dialog');
+    box.setAttribute('aria-modal', 'true');
+    if (!box.hasAttribute('tabindex')) box.setAttribute('tabindex', '-1');
+    const title = box.querySelector('.modal-title');
+    if (title) {
+      if (!title.id) title.id = 'mt-' + (ov.id || Math.random().toString(36).slice(2));
+      box.setAttribute('aria-labelledby', title.id);
+    }
+  });
+
+  // 2) Focus à l'ouverture, restauration à la fermeture (la classe .on pilote l'affichage).
+  const obs = new MutationObserver(muts => {
+    muts.forEach(m => {
+      const ov = m.target;
+      if (!(ov instanceof Element) || !ov.classList.contains('overlay')) return;
+      const isOpen  = ov.classList.contains('on');
+      const wasOpen = (m.oldValue || '').split(/\s+/).includes('on');
+      if (isOpen && !wasOpen) {
+        _a11yLastFocus = document.activeElement;
+        const box = ov.querySelector('.modal') || ov.firstElementChild;
+        const target = (box && (box.querySelector(_A11Y_FOCUSABLE) || box)) || null;
+        setTimeout(() => { try { target && target.focus(); } catch(e) {} }, 30);
+      } else if (!isOpen && wasOpen && _a11yLastFocus) {
+        try { _a11yLastFocus.focus(); } catch(e) {}
+        _a11yLastFocus = null;
+      }
+    });
+  });
+  overlays.forEach(ov => obs.observe(ov, { attributes: true, attributeFilter: ['class'], attributeOldValue: true }));
+
+  // 3) Échap ferme la modale ouverte ; Tab reste piégé dedans.
+  document.addEventListener('keydown', e => {
+    const open = document.querySelector('.overlay.on');
+    if (!open) return;
+    if (e.key === 'Escape') {
+      open.classList.remove('on');
+    } else if (e.key === 'Tab') {
+      const box = open.querySelector('.modal') || open;
+      const items = Array.from(box.querySelectorAll(_A11Y_FOCUSABLE)).filter(el => el.offsetParent !== null);
+      if (!items.length) return;
+      const first = items[0], last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) { last.focus(); e.preventDefault(); }
+      else if (!e.shiftKey && document.activeElement === last) { first.focus(); e.preventDefault(); }
+    }
+  });
 }
 
 // ══════════════════════════════════════════════════════
 // VUE PROF — tabbed
 // ══════════════════════════════════════════════════════
 let selectedStudent=null, selectedDrillFilter='all', _profTab='presence';
-
-function showProfTab(tab) {
-  // Legacy compat — map old tab names to new sections
-  const legacyMap = { presence:'eleves', progression:'eleves', heatmap:'heatmap', classes:'classes', parties:'parties', export:'export' };
-  switchCoachSection(legacyMap[tab] || tab);
-}
-
-function _studentSparkline(name) {
-  const now = Date.now();
-  const bars = Array.from({length:7},(_,i)=>{
-    const s = now-(7-i)*86400000, e = now-(6-i)*86400000;
-    return practiceLog.some(l=>l.student===name&&l.ts>=s&&l.ts<e);
-  });
-  return `<div class="sparkline">${bars.map(h=>`<div class="spark-bar${h?' has':''}"></div>`).join('')}</div>`;
-}
 
 function _masteryBadge(name) {
   const now = Date.now();
@@ -3536,7 +3667,7 @@ function _masteryBadge(name) {
 function _deadlinePill(drill) {
   if (!drill.deadline) return '';
   const today = new Date().toISOString().slice(0,10);
-  const diff  = (new Date(drill.deadline) - new Date(today)) / 86400000;
+  const diff  = (new Date(drill.deadline).getTime() - new Date(today).getTime()) / 86400000;
   if (diff < 0)  return `<span class="deadline-pill late">⚠ En retard</span>`;
   if (diff <= 3) return `<span class="deadline-pill soon">⏰ Dans ${Math.round(diff)}j</span>`;
   return `<span class="deadline-pill ok">📅 ${drill.deadline}</span>`;
@@ -3637,13 +3768,17 @@ function renderProfView(){
 
   // Update sidebar eleves badge
   const eleveBadge = document.getElementById('csnav-count-eleves');
-  if (eleveBadge) eleveBadge.textContent = students.length;
+  if (eleveBadge) eleveBadge.textContent = String(students.length);
   const eleveCount2 = document.getElementById('csnav-count-eleves2');
   if (eleveCount2) eleveCount2.textContent = students.length + ' élève' + (students.length>1?'s':'');
 
   // Liste élèves : roster complet (depuis les classes) + élèves ayant joué
   const _now = Date.now();
-  document.getElementById('student-list').innerHTML = students.map(s => {
+  const _wkAgo = _now - 7 * 86400000;
+  const _activeWk = students.filter(s => s.lastTs >= _wkAgo).length;
+  const _inactive = students.filter(s => s.played && s.lastTs < _wkAgo).length;
+  const _srSummary = students.length ? `<div class="sr-coach-summary"><i class="ti ti-refresh" aria-hidden="true"></i> Révisions — <strong>${_activeWk}</strong> actif${_activeWk>1?'s':''} cette semaine · <strong>${_inactive}</strong> inactif${_inactive>1?'s':''} (&gt;7j) · rétention moyenne ${avgPct}%</div>` : '';
+  document.getElementById('student-list').innerHTML = _srSummary + students.map(s => {
     const pct = s.total ? Math.round(s.correct/s.total*100) : 0;
     const since = s.lastTs ? Math.floor((_now-s.lastTs)/86400000) : null;
     const dueCount = Object.keys(masteryData).filter(k => k.startsWith(s.label+'_') && masteryData[k].due<=_now).length;
@@ -3836,11 +3971,6 @@ function _edTab(btn, tab) {
   const body = detail.querySelector('#edt-' + tab);
   if (body) body.style.display = '';
   btn.classList.add('on');
-}
-
-function renderProgressionTab() {
-  // Legacy compat — now progression is inline in showStudentDetail
-  if (selectedStudent) showStudentDetail(selectedStudent);
 }
 
 function _buildProgressionHTML(name) {
@@ -4679,7 +4809,7 @@ function saveEditorDrill() {
       id: Date.now(),
       name, level, side, pgn,
       mode: 'line', varmode: 'tree', tree, sessions,
-      hideComments: false, deadline: null,
+      hideComments: false, deadline: null, personal: false, ownerStudentId: null,
       created: new Date().toLocaleDateString('fr-FR'),
       updatedAt: Date.now()
     };
@@ -4745,3 +4875,4 @@ if (!FIREBASE_CONFIGURED) {
   goPage('login');
 }
 setTimeout(resizeBoard, 50);
+_initA11y();
