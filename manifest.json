@@ -1,0 +1,17 @@
+{
+  "name": "EECoach — Révision d'ouvertures",
+  "short_name": "EECoach",
+  "description": "Créez vos modules d'ouvertures d'échecs, assignez-les à vos élèves et suivez leur progression position par position.",
+  "lang": "fr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#fafafa",
+  "theme_color": "#4f46e5",
+  "categories": ["education", "games"],
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
