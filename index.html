@@ -570,7 +570,7 @@
     <div class="frow">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
         <label style="margin:0">PGN <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--dim);font-size:.72rem">— collez, ou importez un fichier</span></label>
-        <label class="btn btn-ghost btn-sm" style="cursor:pointer;font-size:.74rem;margin:0">📁 Importer un fichier .pgn<input type="file" accept=".pgn,.txt" onchange="loadPgnFile(event)" style="display:none"></label>
+        <label class="btn btn-blue btn-sm" style="cursor:pointer;font-size:.8rem;margin:0;color:#fff">📁 Choisir un fichier .pgn<input type="file" accept=".pgn,.txt" onchange="loadPgnFile(event)" style="display:none"></label>
       </div>
       <textarea id="inp-pgn" spellcheck="false" autocorrect="off" autocomplete="off"
         style="height:140px"
@@ -773,6 +773,7 @@
   style="display:none;position:fixed;z-index:10000;flex-direction:row;gap:6px;border-radius:8px;padding:8px 10px;box-shadow:0 4px 20px rgba(0,0,0,.4);background:var(--surf1);border:1px solid var(--border)"></div>
 
 <script src="lib/core.js"></script>
+<script src="lib/dbmap.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

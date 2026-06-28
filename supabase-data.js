@@ -80,7 +80,65 @@ function _sbInitAuth() {
     } catch (e) { currentRole = 'student'; currentPseudo = null; }
     pendingRole = null;
     updateNav();
-    // NOTE : chargement des modules/résultats = étape SUIVANTE (données).
-    goPage(currentRole === 'student' ? 'student-home' : 'coach');
+    if (currentRole === 'teacher') { await _sbLoadTeacherModules(); goPage('coach'); }
+    else { goPage('student-home'); /* loadStudentModules : étape données suivante */ }
   });
+}
+
+// ════════════════════════════════════════════════════════════
+//  DONNÉES — modules & classes (côté enseignant)
+//  Étape SUIVANTE : élève (loadStudentModules), résultats, pratique, parties.
+// ════════════════════════════════════════════════════════════
+async function _sbLoadTeacherModules() {
+  if (!sb || !currentUser || currentRole !== 'teacher') return;
+  try {
+    const { data: mods, error: e1 } = await sb.from('modules').select('*').eq('teacher_id', currentUser.uid);
+    if (e1) throw e1;
+    drills = (mods || []).map(_sbRowToModule).sort((a, b) => (b.id || 0) - (a.id || 0));
+    save();
+    const { data: cls, error: e2 } = await sb.from('classes').select('*').eq('teacher_id', currentUser.uid);
+    if (e2) throw e2;
+    classes = (cls || []).map(_sbRowToClass);
+    saveClasses();
+    renderDrillList();
+    renderClassList();
+    renderClassModuleSelect();
+    updateStudentBar();
+  } catch (e) { console.error('_sbLoadTeacherModules', e); renderDrillList(); }
+}
+
+async function _sbSaveModule(drill) {
+  if (!sb || !currentUser || currentRole !== 'teacher') return;
+  try {
+    const row = _sbModuleToRow(drill);
+    row.teacher_id = currentUser.uid;   // garantir le propriétaire (RLS)
+    const { error } = await sb.from('modules').upsert(row);
+    if (error) throw error;
+  } catch (e) { console.error('_sbSaveModule', e); }
+}
+
+async function _sbDeleteModule(drillId) {
+  if (!sb || !currentUser || currentRole !== 'teacher') return;
+  try {
+    const { error } = await sb.from('modules').delete().eq('id', drillId);
+    if (error) throw error;
+  } catch (e) { console.error('_sbDeleteModule', e); }
+}
+
+async function _sbSaveClass(cls) {
+  if (!sb || !currentUser || currentRole !== 'teacher') return;
+  try {
+    const row = _sbClassToRow(cls);
+    row.teacher_id = currentUser.uid;
+    const { error } = await sb.from('classes').upsert(row);
+    if (error) throw error;
+  } catch (e) { console.error('_sbSaveClass', e); }
+}
+
+async function _sbDeleteClass(id) {
+  if (!sb || !currentUser) return;
+  try {
+    const { error } = await sb.from('classes').delete().eq('id', id);
+    if (error) throw error;
+  } catch (e) { console.error('_sbDeleteClass', e); }
 }

@@ -60,6 +60,12 @@ declare function extractAllLines(
   pgn: string
 ): Array<{ label: string; depth: number; startFen: string; moves: any[] }>;
 
+// lib/dbmap.js — mappers objet app ↔ ligne SQL (globaux dans le navigateur)
+declare function _sbModuleToRow(d: any): any;
+declare function _sbRowToModule(r: any): any;
+declare function _sbClassToRow(c: any): any;
+declare function _sbRowToClass(r: any): any;
+
 // ════════════════════════════════════════════════════════════
 //  Augmentations DOM pragmatiques (code vanilla "legacy")
 //  getElementById() → HTMLElement, querySelector() → Element,

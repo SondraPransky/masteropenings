@@ -131,6 +131,7 @@ function translateFirebaseError(code) {
 
 // ── Sync Firestore — modules (enseignant) ─────────────
 async function loadTeacherModules() {
+  if (USE_SUPABASE) return _sbLoadTeacherModules();
   if (!db || !currentUser || currentRole !== 'teacher') return;
   try {
     const snap = await db.collection(C_MODULES)
@@ -153,6 +154,7 @@ async function loadTeacherModules() {
 }
 
 async function syncModuleToFirestore(drill) {
+  if (USE_SUPABASE) return _sbSaveModule(drill);
   if (!db || !currentUser || currentRole !== 'teacher') return;
   try {
     await db.collection(C_MODULES).doc(String(drill.id)).set({
@@ -164,6 +166,7 @@ async function syncModuleToFirestore(drill) {
 }
 
 async function deleteModuleFromFirestore(drillId) {
+  if (USE_SUPABASE) return _sbDeleteModule(drillId);
   if (!db || !currentUser || currentRole !== 'teacher') return;
   try { await db.collection(C_MODULES).doc(String(drillId)).delete(); }
   catch(e) { console.error('deleteModuleFromFirestore', e); }
@@ -1438,7 +1441,9 @@ async function saveClass() {
     classes.push(cls);
   }
   saveClasses();
-  if (db && currentUser && currentRole === 'teacher') {
+  if (USE_SUPABASE) {
+    await _sbSaveClass(cls);
+  } else if (db && currentUser && currentRole === 'teacher') {
     try { await db.collection(C_CLASSES).doc(String(cls.id)).set({ ...cls, teacherId: currentUser.uid }); }
     catch(e) { console.error('saveClass Firestore:', e); }
   }
@@ -1481,7 +1486,9 @@ function deleteClass(id) {
   if (!confirm('Supprimer cette classe ? Les élèves n\'y auront plus accès.')) return;
   classes = classes.filter(c=>c.id!==id);
   saveClasses();
-  if (db && currentUser) {
+  if (USE_SUPABASE) {
+    _sbDeleteClass(id);
+  } else if (db && currentUser) {
     db.collection(C_CLASSES).doc(String(id)).delete().catch(e => console.error('deleteClass FS:', e));
   }
   if (_editingClassId === id) cancelEditClass();

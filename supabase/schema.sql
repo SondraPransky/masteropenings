@@ -1,16 +1,22 @@
 -- ════════════════════════════════════════════════════════════
---  EECoach — Schéma Supabase (Postgres + RLS)
---
---  À EXÉCUTER UNE FOIS dans : Supabase → SQL Editor → New query → Run.
---  Traduit firestore.rules. Modèle MVP : tout utilisateur CONNECTÉ peut
---  LIRE modules/classes/résultats ; seul le propriétaire écrit ses données.
---  (On pourra durcir la lecture plus tard.)
+--  EECoach — Schéma Supabase COMPLET (tables + RLS + trigger)
+--  À EXÉCUTER dans : Supabase → SQL Editor → coller → Run.
+--  Idempotent : peut être relancé sans risque (drop + recreate).
+--  Modèle MVP : tout utilisateur CONNECTÉ lit modules/classes/résultats ;
+--  seul le propriétaire écrit ses données.
 -- ════════════════════════════════════════════════════════════
 
--- ── Tables ──────────────────────────────────────────────────
+-- ── Remise à zéro propre (aucune donnée en prod pour l'instant) ──
+drop trigger if exists on_auth_user_created on auth.users;
+drop table if exists public.games    cascade;
+drop table if exists public.practice cascade;
+drop table if exists public.results  cascade;
+drop table if exists public.classes  cascade;
+drop table if exists public.modules  cascade;
+drop table if exists public.profiles cascade;
 
--- profiles : 1 ligne par compte (lié à auth.users de Supabase Auth)
-create table if not exists public.profiles (
+-- ── Tables ──────────────────────────────────────────────────
+create table public.profiles (
   id         uuid primary key references auth.users(id) on delete cascade,
   email      text,
   name       text,
@@ -19,8 +25,7 @@ create table if not exists public.profiles (
   created_at timestamptz default now()
 );
 
--- modules : modules d'ouvertures (id = Date.now() de l'app)
-create table if not exists public.modules (
+create table public.modules (
   id               bigint primary key,
   teacher_id       uuid references auth.users(id) on delete cascade,
   owner_student_id uuid references auth.users(id) on delete cascade,
@@ -36,22 +41,22 @@ create table if not exists public.modules (
   personal         boolean default false,
   deadline         date,
   updated_at       bigint,
+  extra            jsonb default '{}'::jsonb,
   created_at       timestamptz default now()
 );
 
--- classes : assignation (module_ids[] + students[] en JSON, comme l'app)
-create table if not exists public.classes (
+create table public.classes (
   id          bigint primary key,
   teacher_id  uuid references auth.users(id) on delete cascade,
   name        text,
   module_ids  jsonb default '[]'::jsonb,
   students    jsonb default '[]'::jsonb,
   individual  boolean default false,
+  extra       jsonb default '{}'::jsonb,
   created_at  timestamptz default now()
 );
 
--- results : une ligne par tentative de position (analyse d'erreurs)
-create table if not exists public.results (
+create table public.results (
   id             bigint generated always as identity primary key,
   drill_id       text,
   drill_name     text,
@@ -64,11 +69,11 @@ create table if not exists public.results (
   correct        boolean,
   pos_idx        int,
   ts             bigint,
+  extra          jsonb default '{}'::jsonb,
   created_at     timestamptz default now()
 );
 
--- practice : sessions de pratique (% de réussite par session)
-create table if not exists public.practice (
+create table public.practice (
   id             bigint generated always as identity primary key,
   drill_id       text,
   drill_name     text,
@@ -78,11 +83,11 @@ create table if not exists public.practice (
   pct            numeric,
   session_idx    int,
   ts             bigint,
+  extra          jsonb default '{}'::jsonb,
   created_at     timestamptz default now()
 );
 
--- games : parties jouées contre Maia
-create table if not exists public.games (
+create table public.games (
   id            bigint primary key,
   drill_id      text,
   drill_name    text,
@@ -93,10 +98,11 @@ create table if not exists public.games (
   pgn           text,
   result        text,
   ts            bigint,
+  extra         jsonb default '{}'::jsonb,
   created_at    timestamptz default now()
 );
 
--- ── Activation RLS ──────────────────────────────────────────
+-- ── RLS ─────────────────────────────────────────────────────
 alter table public.profiles enable row level security;
 alter table public.modules  enable row level security;
 alter table public.classes  enable row level security;
@@ -104,25 +110,19 @@ alter table public.results  enable row level security;
 alter table public.practice enable row level security;
 alter table public.games    enable row level security;
 
--- ── Politiques (traduisent firestore.rules) ─────────────────
-
--- profiles : lecture aux connectés (le prof voit le nom de ses élèves) ; écriture sur son propre profil
 create policy "profiles_read"      on public.profiles for select to authenticated using (true);
 create policy "profiles_write_own" on public.profiles for all    to authenticated using (id = auth.uid()) with check (id = auth.uid());
 
--- modules : lecture aux connectés ; écriture par le prof OU l'élève propriétaire
-create policy "modules_read"          on public.modules for select to authenticated using (true);
-create policy "modules_insert_owner"  on public.modules for insert to authenticated with check (teacher_id = auth.uid() or owner_student_id = auth.uid());
-create policy "modules_update_owner"  on public.modules for update to authenticated using  (teacher_id = auth.uid() or owner_student_id = auth.uid()) with check (teacher_id = auth.uid() or owner_student_id = auth.uid());
-create policy "modules_delete_owner"  on public.modules for delete to authenticated using  (teacher_id = auth.uid() or owner_student_id = auth.uid());
+create policy "modules_read"         on public.modules for select to authenticated using (true);
+create policy "modules_insert_owner" on public.modules for insert to authenticated with check (teacher_id = auth.uid() or owner_student_id = auth.uid());
+create policy "modules_update_owner" on public.modules for update to authenticated using  (teacher_id = auth.uid() or owner_student_id = auth.uid()) with check (teacher_id = auth.uid() or owner_student_id = auth.uid());
+create policy "modules_delete_owner" on public.modules for delete to authenticated using  (teacher_id = auth.uid() or owner_student_id = auth.uid());
 
--- classes : lecture aux connectés ; écriture par le prof propriétaire
-create policy "classes_read"          on public.classes for select to authenticated using (true);
+create policy "classes_read"           on public.classes for select to authenticated using (true);
 create policy "classes_insert_teacher" on public.classes for insert to authenticated with check (teacher_id = auth.uid());
 create policy "classes_update_teacher" on public.classes for update to authenticated using  (teacher_id = auth.uid()) with check (teacher_id = auth.uid());
 create policy "classes_delete_teacher" on public.classes for delete to authenticated using  (teacher_id = auth.uid());
 
--- results / practice / games : l'élève crée, tout le monde (connecté) lit, pas de modif/suppr
 create policy "results_read"   on public.results  for select to authenticated using (true);
 create policy "results_insert" on public.results  for insert to authenticated with check (true);
 create policy "practice_read"   on public.practice for select to authenticated using (true);
@@ -130,7 +130,7 @@ create policy "practice_insert" on public.practice for insert to authenticated w
 create policy "games_read"   on public.games for select to authenticated using (true);
 create policy "games_insert" on public.games for insert to authenticated with check (true);
 
--- ── Création auto du profil à l'inscription (pattern Supabase) ──
+-- ── Création auto du profil à l'inscription ─────────────────
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
@@ -144,7 +144,9 @@ begin
 end;
 $$;
 
-drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
+
+-- ── Recharger le cache de schéma de PostgREST ───────────────
+notify pgrst, 'reload schema';
