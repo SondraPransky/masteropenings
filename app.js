@@ -183,6 +183,7 @@ function _myIdentifiers() {
 
 // ── Sync Firestore — élève ────────────────────────────
 async function loadStudentModules() {
+  if (USE_SUPABASE) return _sbLoadStudentModules();
   if (!db || !currentUser || currentRole !== 'student') return;
   const listEl = document.getElementById('sh-module-list');
   const nameEl = document.getElementById('sh-student-name');
@@ -435,7 +436,9 @@ function importStudentDrill() {
   };
   drills.push(d);
   save();
-  if (db && currentUser) {
+  if (USE_SUPABASE) {
+    _sbSaveStudentModule(d);
+  } else if (db && currentUser) {
     db.collection(C_MODULES).doc(String(d.id)).set({ ...d, tree: d.tree || {} })
       .catch(e => console.error('importStudentDrill FS:', e));
   }
@@ -448,7 +451,9 @@ function deleteStudentDrill(id) {
   if (!confirm('Supprimer cette révision perso ?')) return;
   drills = drills.filter(d => String(d.id) !== String(id));
   save();
-  if (db && currentUser) {
+  if (USE_SUPABASE) {
+    _sbDeleteStudentModule(id);
+  } else if (db && currentUser) {
     db.collection(C_MODULES).doc(String(id)).delete().catch(e => console.error('deleteStudentDrill FS:', e));
   }
   loadStudentModules();
@@ -456,6 +461,7 @@ function deleteStudentDrill(id) {
 
 // ── Sync Firestore — résultats Vue Prof ───────────────
 async function loadTeacherResults() {
+  if (USE_SUPABASE) return _sbLoadTeacherResults();
   if (!db || !currentUser || currentRole !== 'teacher') return;
   const myDrillIds = drills.map(d => String(d.id));
   try {
@@ -473,6 +479,7 @@ async function loadTeacherResults() {
 
 // ── Sync Firestore — sessions de pratique (Vue Prof) ──
 async function loadTeacherPractice() {
+  if (USE_SUPABASE) return _sbLoadTeacherPractice();
   if (!db || !currentUser || currentRole !== 'teacher') return;
   const myDrillIds = drills.map(d => String(d.id));
   try {
@@ -489,6 +496,7 @@ async function loadTeacherPractice() {
 
 // ── Sync Firestore — parties Maia (Vue Prof) ──────────
 async function loadTeacherGames() {
+  if (USE_SUPABASE) return _sbLoadTeacherGames();
   if (!db || !currentUser || currentRole !== 'teacher') return;
   const myDrillIds = drills.map(d => String(d.id));
   try {
@@ -733,7 +741,7 @@ function addFromLibrary(idx) {
   drills.push(d);
   save();
   if (db && currentUser) {
-    if (asStudent) db.collection(C_MODULES).doc(String(d.id)).set({ ...d, tree: d.tree || {} }).catch(e => console.error('library FS:', e));
+    if (asStudent) { if (USE_SUPABASE) _sbSaveStudentModule(d); else db.collection(C_MODULES).doc(String(d.id)).set({ ...d, tree: d.tree || {} }).catch(e => console.error('library FS:', e)); }
     else syncModuleToFirestore(d);
   }
   closeModal('modal-library');
@@ -1295,7 +1303,7 @@ function renderCoachOnboarding() {
   const steps = [
     { done: true,          label: 'Compte professeur créé', cta: '' },
     { done: nbModules > 0, label: 'Créez votre premier module',
-      cta: `<button class="btn btn-gold btn-sm" onclick="openPgnEditorNew('teacher')">Créer</button>` },
+      cta: `<button class="btn btn-gold btn-sm" onclick="openCreateDrillModal()">Créer</button>` },
     { done: nbClasses > 0, label: 'Créez une classe et ajoutez vos élèves',
       cta: `<button class="btn btn-gold btn-sm" onclick="switchCoachSection('classes')">Créer une classe</button>` }
   ];
@@ -1382,6 +1390,7 @@ function renderDrillList() {
       <div class="mcard-badges">${badges}</div>
       <div class="mcard-footer">
         <button class="btn btn-gold btn-sm" style="flex:1" onclick="launchDrill(${i})">▶ Jouer</button>
+        <button class="btn btn-blue btn-sm" style="flex:1" onclick="shareDrill(${i})" title="Assigner ce module à des élèves">📤 Partager</button>
         <button class="btn btn-ghost btn-sm" onclick="playVsMaia(${i})" title="Jouer contre Maia">🤖</button>
         ${editorBtn}
         <button class="btn btn-ghost btn-sm" onclick="deleteDrill(${d.id})" title="Supprimer">🗑</button>
@@ -1391,6 +1400,24 @@ function renderDrillList() {
 }
 
 function launchDrill(i) { S.idx=i; goPage('drill'); }
+
+// Partager un module = ouvrir le formulaire de classe avec ce module déjà coché.
+// Il ne reste au prof qu'à saisir les élèves puis valider (l'assignation passe par les classes).
+function shareDrill(i) {
+  const d = drills[i];
+  if (!d) return;
+  switchCoachSection('classes');
+  cancelEditClass();            // repart d'un formulaire « nouvelle classe » vierge
+  renderClassModuleSelect();    // reconstruit la liste des cases à cocher
+  document.querySelectorAll('#inp-cls-modules input[type=checkbox]').forEach(c => {
+    c.checked = String(c.value) === String(d.id);
+  });
+  const t = document.getElementById('cls-form-title');
+  if (t) t.textContent = '📤 Partager « ' + (d.name || 'module') + ' »';
+  const s = document.getElementById('inp-cls-students');
+  if (s) { s.scrollIntoView({ behavior:'smooth', block:'center' }); setTimeout(() => s.focus(), 300); }
+  toast('Ajoutez les élèves (pseudo ou email) puis validez', 'ok');
+}
 
 // ══════════════════════════════════════════════════════
 // PARTAGE PAR CODE
@@ -1429,7 +1456,8 @@ async function saveClass() {
   if (individual) name = studentEmails[0] ? '👤 ' + studentEmails[0] : '';
 
   if (!name && !individual) { toast('⚠ Donnez un nom à la classe','ko'); return; }
-  if (!selectedIds.length)  { toast('⚠ Sélectionnez au moins un module','ko'); return; }
+  // Cours particulier : le module est optionnel (on peut l'assigner plus tard via 📤 Partager).
+  if (!selectedIds.length && !individual) { toast('⚠ Sélectionnez au moins un module','ko'); return; }
   if (!studentEmails.length){ toast(individual ? '⚠ Indiquez le pseudo ou l\'email de l\'élève' : '⚠ Ajoutez au moins un élève','ko'); return; }
 
   let cls = (_editingClassId != null) ? classes.find(c => c.id === _editingClassId) : null;
@@ -1480,6 +1508,21 @@ function cancelEditClass() {
   const b = document.getElementById('cls-save-btn');    if (b) b.textContent = '🏫 Créer la classe';
   const x = document.getElementById('cls-cancel-btn');  if (x) x.style.display = 'none';
   toggleClassMode();
+}
+
+// Ajouter un élève = ouvrir le formulaire en mode « cours particulier ».
+// Il suffit de saisir le pseudo ; le module s'assigne plus tard via 📤 Partager.
+function addStudent() {
+  switchCoachSection('classes');
+  cancelEditClass();
+  const ind = document.getElementById('inp-cls-individual');
+  if (ind) { ind.checked = true; toggleClassMode(); }
+  renderClassModuleSelect();
+  const t = document.getElementById('cls-form-title');
+  if (t) t.textContent = '👤 Nouvel élève';
+  const s = document.getElementById('inp-cls-students');
+  if (s) { s.scrollIntoView({ behavior:'smooth', block:'center' }); setTimeout(() => s.focus(), 300); }
+  toast('Saisis le pseudo de l\'élève puis valide', 'ok');
 }
 
 function deleteClass(id) {
@@ -1643,6 +1686,7 @@ function updateSessionInfo() {
 function startDrill(i) {
   const d = drills[i];
   if (!d) return;
+  document.getElementById('btn-quit-maia').style.display = 'none';   // aucune partie Maia en cours en mode drill
   S.sr = null;   // sortie d'une éventuelle session de révision espacée
   // Avec Firebase : le nom vient du compte
   if (FIREBASE_CONFIGURED && currentUser && !S.student) {
@@ -2790,6 +2834,12 @@ function nextDrill(){S.idx=(S.idx+1)%drills.length; initDrillPage();}
 // ── Synchronisation SM-2 multi-appareils (dans users/{uid}.mastery) ──
 let _masterySyncTimer = null;
 function _scheduleMasterySync() {
+  if (USE_SUPABASE) {
+    if (!sb || !currentUser) return;
+    clearTimeout(_masterySyncTimer);
+    _masterySyncTimer = setTimeout(_sbSaveMastery, 2500);
+    return;
+  }
   if (!db || !currentUser) return;
   clearTimeout(_masterySyncTimer);
   _masterySyncTimer = setTimeout(saveMasteryToFirestore, 2500);
@@ -2842,7 +2892,9 @@ function recordPracticeSession(pct) {
   };
   practiceLog.push(rec);
   save();
-  if (db && currentUser) {
+  if (USE_SUPABASE) {
+    _sbRecordPractice(rec);
+  } else if (db && currentUser) {
     db.collection(C_PRACTICE).add(rec).catch(e => console.error('recordPracticeSession FS:', e));
   }
 }
@@ -2869,7 +2921,9 @@ function saveGame() {
   };
   savedGames.push(rec);
   save();
-  if (db && currentUser) {
+  if (USE_SUPABASE) {
+    _sbSaveGame(rec);
+  } else if (db && currentUser) {
     db.collection(C_GAMES).add(rec).catch(e => console.error('saveGame FS:', e));
   }
 }
@@ -2893,7 +2947,9 @@ function recordResult(correct, kp) {
   };
   results.push(rec);
   save();
-  if (db && currentUser) {
+  if (USE_SUPABASE) {
+    _sbRecordResult(rec);
+  } else if (db && currentUser) {
     db.collection(C_RESULTS).add(rec).catch(e => console.error('recordResult FS:', e));
   }
 }
@@ -3167,6 +3223,7 @@ function _checkPTEnd() {
     S.postTheory = false;
     saveGame();
     document.getElementById('test-btns').style.display = 'none';
+    document.getElementById('btn-quit-maia').style.display = 'none';
     let msg = '🏁 Partie terminée — enregistrée dans Vue Prof.';
     if (g.in_checkmate()) msg = g.turn()==='w' ? '⚔️ Mat — les Noirs gagnent !' : '🏆 Mat — les Blancs gagnent !';
     else if (g.in_draw() || g.in_stalemate()) msg = '🤝 Partie nulle.';
@@ -3189,7 +3246,9 @@ function _afterMaiaReady() {
 function startPostTheory() {
   closeModal('modal-end');
   S.postTheory = true; S.sel = null; _maiaThinking = false;
+  S._ptStartPly = (S.lineGame && S.lineGame.history) ? S.lineGame.history().length : 0;   // coups déjà joués (théorie) → pour détecter si l'élève joue vraiment
   document.getElementById('test-btns').style.display = 'inline-flex';
+  document.getElementById('btn-quit-maia').style.display = '';   // bouton « Arrêter la partie »
   document.getElementById('pos-card').style.display  = 'none';
   drawBoard();
 
@@ -3203,6 +3262,19 @@ function startPostTheory() {
     .then(() => { if (S.postTheory) _afterMaiaReady(); })
     .catch(()  => { if (S.postTheory) setFeedback('hint', '⚠️ Moteur indisponible — vérifiez votre connexion.', ''); });
   }
+}
+
+// Arrêter une partie contre Maia : on l'enregistre (si l'élève a joué au moins
+// un coup depuis la théorie) puis on revient à son espace.
+function quitMaiaGame() {
+  const played = S.lineGame && S.lineGame.history && S.lineGame.history().length > (S._ptStartPly || 0);
+  if (played) saveGame();          // résultat '*' (partie inachevée) — visible dans Vue Prof
+  S.postTheory = false;
+  _maiaThinking = false;
+  document.getElementById('btn-quit-maia').style.display = 'none';
+  document.getElementById('test-btns').style.display = 'none';
+  toast(played ? '✓ Partie enregistrée dans Vue Prof' : 'Partie quittée', 'ok');
+  goPage(currentRole === 'teacher' ? 'coach' : 'student-home');
 }
 
 // Jouer une partie contre Maia depuis une ouverture (accès direct, 1 clic)
@@ -3744,7 +3816,9 @@ function _buildProfRoster(filtered) {
 function renderProfView(){
   selectedDrillFilter = document.getElementById('prof-drill-filter').value;
 
-  const hasAny = results.length || practiceLog.length || savedGames.length;
+  // Des élèves inscrits (via classes) suffisent à afficher le panneau, même sans résultat encore.
+  const hasStudents = classes.some(c => (c.studentEmails || c.students || []).length);
+  const hasAny = results.length || practiceLog.length || savedGames.length || hasStudents;
   document.getElementById('prof-empty').style.display = hasAny ? 'none' : 'block';
   document.getElementById('prof-ui').style.display    = hasAny ? ''     : 'none';
   if (!hasAny) return;
@@ -3803,7 +3877,7 @@ function renderProfView(){
       <div class="eleve-meta">${s.played ? (since===0?'Aujourd\'hui':since+'j')+' · '+pct+'% · '+s.total+' coup'+(s.total>1?'s':'') : 'Pas encore commencé'}</div>
       <div class="eleve-progbar"><div class="eleve-progfill" style="width:${pct}%;background:${pct>=70?'var(--green)':pct>=50?'#facc15':'var(--red)'}"></div></div>
     </div>`;
-  }).join('') || '<div style="color:var(--dim);font-size:.82rem;text-align:center;padding:24px">Aucun élève. Crée une classe pour en ajouter.</div>';
+  }).join('') || '<div style="color:var(--dim);font-size:.82rem;text-align:center;padding:24px">Aucun élève. Clique sur « ➕ Ajouter un élève » en haut.</div>';
 
   if (selectedStudent) showStudentDetail(selectedStudent);
 }
@@ -4836,7 +4910,7 @@ function saveEditorDrill() {
   // Synchronisation Firestore selon la propriété
   if (db && currentUser) {
     if (d.personal) {
-      db.collection(C_MODULES).doc(String(d.id)).set({ ...d, tree: d.tree || {} }).catch(e => console.error('saveEditor FS:', e));
+      if (USE_SUPABASE) _sbSaveStudentModule(d); else db.collection(C_MODULES).doc(String(d.id)).set({ ...d, tree: d.tree || {} }).catch(e => console.error('saveEditor FS:', e));
     } else if (currentRole === 'teacher') {
       syncModuleToFirestore(d);
     }

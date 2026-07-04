@@ -212,6 +212,7 @@
           <div class="cs-sub">Résultats et progression par élève</div>
         </div>
         <div class="cs-actions">
+          <button class="btn btn-blue btn-sm" onclick="addStudent()" title="Enregistrer un nouvel élève">➕ Ajouter un élève</button>
           <select id="prof-drill-filter" onchange="renderProfView()" style="font-size:.8rem;width:auto;max-width:230px">
             <option value="all">Tous les modules</option>
           </select>
@@ -220,8 +221,9 @@
 
       <div id="prof-empty" class="empty" style="display:none;border:1px dashed var(--border);border-radius:var(--r)">
         <div class="empty-ico">📋</div>
-        Aucune session enregistrée.<br>
-        <span style="font-size:.8rem">Les résultats apparaissent après qu'un élève a joué.</span>
+        Aucun élève pour l'instant.<br>
+        <span style="font-size:.8rem">Ajoutez un élève pour suivre sa progression — les résultats s'afficheront dès qu'il aura joué.</span>
+        <div style="margin-top:16px"><button class="btn btn-blue btn-sm" onclick="addStudent()">➕ Ajouter un élève</button></div>
       </div>
 
       <div id="prof-ui">
@@ -408,6 +410,7 @@
             <button id="sr-suspend-btn" class="btn btn-ghost btn-sm" onclick="srSuspendCurrent()" title="Retirer cette position de la révision espacée" style="display:none">⏸ Suspendre</button>
             <button class="btn btn-red btn-sm"   onclick="skipPosition()">→ Voir la réponse</button>
           </span>
+          <button id="btn-quit-maia" class="btn btn-red btn-sm" onclick="quitMaiaGame()" title="Quitter la partie contre Maia" style="display:none">✕ Arrêter la partie</button>
         </div>
         <div id="board-turn-prompt"></div>
         <div id="board-comment"></div>
