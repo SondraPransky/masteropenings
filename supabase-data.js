@@ -8,7 +8,7 @@
 //  Étape EN COURS : AUTHENTIFICATION (login / register / logout / session).
 //  À venir : modules, classes, résultats, pratique, parties.
 // ════════════════════════════════════════════════════════════
-const USE_SUPABASE = false;   // ← mettre true pour basculer l'authentification sur Supabase
+const USE_SUPABASE = true;   // ← mettre true pour basculer l'authentification sur Supabase
 
 // Normalise un user Supabase vers la forme attendue par l'app (compat Firebase).
 function _sbUser(u) {

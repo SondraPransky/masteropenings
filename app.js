@@ -1,11 +1,14 @@
 // ══════════════════════════════════════════════════════
 // FIREBASE — initialisation
 // ══════════════════════════════════════════════════════
-const FIREBASE_CONFIGURED = (typeof FIREBASE_CONFIG !== 'undefined') &&
-                             FIREBASE_CONFIG.apiKey !== 'VOTRE_API_KEY';
+// « Mode comptes » (login obligatoire + backend distant) — vrai avec Supabase (défaut) ou Firebase (repli).
+const ACCOUNTS_ON =
+  (typeof USE_SUPABASE !== 'undefined' && USE_SUPABASE && typeof SUPABASE_CONFIGURED !== 'undefined' && SUPABASE_CONFIGURED)
+  || ((typeof FIREBASE_CONFIG !== 'undefined') && FIREBASE_CONFIG.apiKey !== 'VOTRE_API_KEY');
 let db = null, fbAuth = null, currentUser = null, currentRole = null, pendingRole = null, currentPseudo = null;
 
-if (FIREBASE_CONFIGURED) {
+// Repli Firebase : n'initialise QUE hors Supabase et si la lib est chargée.
+if (!USE_SUPABASE && typeof firebase !== 'undefined' && typeof FIREBASE_CONFIG !== 'undefined') {
   try {
     firebase.initializeApp(FIREBASE_CONFIG);
     db     = firebase.firestore();
@@ -24,9 +27,9 @@ function updateNav() {
 
   // En mode Firebase, le chip nav-student (mode local) est inutile
   const navStudentChip = document.getElementById('nav-student');
-  if (navStudentChip) navStudentChip.style.display = FIREBASE_CONFIGURED ? 'none' : '';
+  if (navStudentChip) navStudentChip.style.display = ACCOUNTS_ON ? 'none' : '';
 
-  if (!FIREBASE_CONFIGURED) return;
+  if (!ACCOUNTS_ON) return;
 
   const isTeacher = currentRole === 'teacher';
   const isStudent = currentRole === 'student';
@@ -764,7 +767,7 @@ function goPage(name) {
   if (name === 'coach') { renderClassModuleSelect(); }
   // Bouton retour visible sur la page drill pour les élèves Firebase
   const btnBack = document.getElementById('btn-back-student');
-  if (btnBack) btnBack.style.display = (FIREBASE_CONFIGURED && currentRole === 'student' && name === 'drill') ? '' : 'none';
+  if (btnBack) btnBack.style.display = (ACCOUNTS_ON && currentRole === 'student' && name === 'drill') ? '' : 'none';
 }
 
 // ══════════════════════════════════════════════════════
@@ -1584,7 +1587,7 @@ function renderClassModuleSelect() {
 // ══════════════════════════════════════════════════════
 function askName(restrictedStudents) {
   // Avec Firebase : le nom vient du compte, pas d'un prompt
-  if (FIREBASE_CONFIGURED && currentUser) {
+  if (ACCOUNTS_ON && currentUser) {
     S.student = currentUser.displayName || currentUser.email;
     localStorage.setItem('mc_student', S.student);
     updateStudentBar();
@@ -1638,10 +1641,10 @@ function updateStudentBar() {
     bar.style.display='flex';
     document.getElementById('student-name-display').textContent = S.student;
     // Avec Firebase, le nom est dans nav-user, pas nav-student
-    if (!FIREBASE_CONFIGURED) document.getElementById('nav-student').textContent = '👤 '+S.student;
+    if (!ACCOUNTS_ON) document.getElementById('nav-student').textContent = '👤 '+S.student;
   } else {
     bar.style.display='none';
-    if (!FIREBASE_CONFIGURED) document.getElementById('nav-student').textContent='';
+    if (!ACCOUNTS_ON) document.getElementById('nav-student').textContent='';
   }
   updateReviserToutBadge();
 }
@@ -1689,13 +1692,13 @@ function startDrill(i) {
   document.getElementById('btn-quit-maia').style.display = 'none';   // aucune partie Maia en cours en mode drill
   S.sr = null;   // sortie d'une éventuelle session de révision espacée
   // Avec Firebase : le nom vient du compte
-  if (FIREBASE_CONFIGURED && currentUser && !S.student) {
+  if (ACCOUNTS_ON && currentUser && !S.student) {
     S.student = currentUser.displayName || currentUser.email;
     localStorage.setItem('mc_student', S.student);
     updateStudentBar();
   }
   // Vérifier liste de pseudos autorisés (mode non-Firebase uniquement)
-  if (!FIREBASE_CONFIGURED && d.students?.length && S.student && !d.students.includes(S.student)) {
+  if (!ACCOUNTS_ON && d.students?.length && S.student && !d.students.includes(S.student)) {
     S.idx = i;
     askName(d.students);
     return;
@@ -4935,7 +4938,7 @@ document.addEventListener('keydown', e => {
 // ══════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════
-if (!FIREBASE_CONFIGURED) {
+if (!ACCOUNTS_ON) {
   // Mode local : pas de Firebase, comportement original
   if (!drills.length && !localStorage.getItem('mc_demo_seen')) {
     injectDemoDrill();
