@@ -1,20 +1,9 @@
 // ══════════════════════════════════════════════════════
-// FIREBASE — initialisation
+// ÉTAT GLOBAL — auth Supabase
 // ══════════════════════════════════════════════════════
-// « Mode comptes » (login obligatoire + backend distant) — vrai avec Supabase (défaut) ou Firebase (repli).
-const ACCOUNTS_ON =
-  (typeof USE_SUPABASE !== 'undefined' && USE_SUPABASE && typeof SUPABASE_CONFIGURED !== 'undefined' && SUPABASE_CONFIGURED)
-  || ((typeof FIREBASE_CONFIG !== 'undefined') && FIREBASE_CONFIG.apiKey !== 'VOTRE_API_KEY');
-let db = null, fbAuth = null, currentUser = null, currentRole = null, pendingRole = null, currentPseudo = null;
-
-// Repli Firebase : n'initialise QUE hors Supabase et si la lib est chargée.
-if (!USE_SUPABASE && typeof firebase !== 'undefined' && typeof FIREBASE_CONFIG !== 'undefined') {
-  try {
-    firebase.initializeApp(FIREBASE_CONFIG);
-    db     = firebase.firestore();
-    fbAuth = firebase.auth();
-  } catch(e) { console.error('Firebase init:', e); }
-}
+// « Mode comptes » : login obligatoire + backend distant (Supabase).
+const ACCOUNTS_ON = (typeof SUPABASE_CONFIGURED !== 'undefined') && SUPABASE_CONFIGURED;
+let currentUser = null, currentRole = null, pendingRole = null, currentPseudo = null;
 
 // ── Mise à jour de la nav selon le rôle ───────────────
 function updateNav() {
@@ -61,42 +50,11 @@ function updateNav() {
 }
 
 // ── Fonctions d'authentification ─────────────────────
-async function loginUser() {
-  if (USE_SUPABASE) return _sbLogin();
-  if (!fbAuth) return;
-  const email = (document.getElementById('login-email')?.value || '').trim();
-  const pwd   =  document.getElementById('login-pwd')?.value   || '';
-  if (!email || !pwd) { showLoginError('Remplissez tous les champs.'); return; }
-  try { await fbAuth.signInWithEmailAndPassword(email, pwd); }
-  catch(e) { showLoginError(translateFirebaseError(e.code)); }
-}
+async function loginUser() { return _sbLogin(); }
 
-async function registerUser() {
-  if (USE_SUPABASE) return _sbRegister();
-  if (!fbAuth) return;
-  const name  = (document.getElementById('reg-name')?.value  || '').trim();
-  const email = (document.getElementById('reg-email')?.value || '').trim();
-  const pwd   =  document.getElementById('reg-pwd')?.value   || '';
-  const role  =  document.getElementById('reg-role')?.value  || 'student';
-  let pseudo  = (document.getElementById('reg-pseudo')?.value || '').trim().toLowerCase().replace(/\s+/g,'');
-  if (!name || !email || !pwd) { showLoginError('Remplissez tous les champs.'); return; }
-  if (pwd.length < 6) { showLoginError('Le mot de passe doit contenir au moins 6 caractères.'); return; }
-  if (!pseudo) pseudo = email.split('@')[0].toLowerCase();
-  pendingRole = role;  // mémorise le rôle voulu : onAuthStateChanged se déclenche avant l'écriture du doc users
-  try {
-    const cred = await fbAuth.createUserWithEmailAndPassword(email, pwd);
-    await cred.user.updateProfile({ displayName: name });
-    currentPseudo = pseudo;
-    await db.collection(C_USERS).doc(cred.user.uid).set({
-      email, name, role, pseudo, created: Date.now()
-    });
-  } catch(e) { pendingRole = null; showLoginError(translateFirebaseError(e.code)); }
-}
+async function registerUser() { return _sbRegister(); }
 
-async function logoutUser() {
-  if (USE_SUPABASE) return _sbLogout();
-  if (fbAuth) await fbAuth.signOut();
-}
+async function logoutUser() { return _sbLogout(); }
 
 function showLoginError(msg) {
   const el = document.getElementById('login-error');
@@ -118,62 +76,10 @@ function showLoginTab(tab) {
   if (err) err.style.display = 'none';
 }
 
-function translateFirebaseError(code) {
-  const map = {
-    'auth/user-not-found':     'Aucun compte avec cet email.',
-    'auth/wrong-password':     'Mot de passe incorrect.',
-    'auth/invalid-email':      'Email invalide.',
-    'auth/email-already-in-use':'Cet email est déjà utilisé.',
-    'auth/weak-password':      'Mot de passe trop court (6 caractères minimum).',
-    'auth/too-many-requests':  'Trop de tentatives. Réessayez plus tard.',
-    'auth/invalid-credential': 'Email ou mot de passe incorrect.',
-    'auth/network-request-failed': 'Erreur réseau. Vérifiez votre connexion.',
-  };
-  return map[code] || ('Erreur : ' + code);
-}
-
-// ── Sync Firestore — modules (enseignant) ─────────────
-async function loadTeacherModules() {
-  if (USE_SUPABASE) return _sbLoadTeacherModules();
-  if (!db || !currentUser || currentRole !== 'teacher') return;
-  try {
-    const snap = await db.collection(C_MODULES)
-      .where('teacherId', '==', currentUser.uid)
-      .get();
-    drills = snap.docs.map(d => d.data())
-      .sort((a, b) => (b.id || 0) - (a.id || 0));
-    save();
-    // Classes (toujours réinitialiser depuis Firestore : pas de fuite entre comptes)
-    const clsSnap = await db.collection(C_CLASSES)
-      .where('teacherId', '==', currentUser.uid)
-      .get();
-    classes = clsSnap.docs.map(d => d.data());
-    saveClasses();
-    renderDrillList();
-    renderClassList();
-    renderClassModuleSelect();
-    updateStudentBar();
-  } catch(e) { console.error('loadTeacherModules', e); renderDrillList(); }
-}
-
-async function syncModuleToFirestore(drill) {
-  if (USE_SUPABASE) return _sbSaveModule(drill);
-  if (!db || !currentUser || currentRole !== 'teacher') return;
-  try {
-    await db.collection(C_MODULES).doc(String(drill.id)).set({
-      ...drill,
-      teacherId: currentUser.uid,
-      tree: drill.tree || {}  // assurer présence
-    });
-  } catch(e) { console.error('syncModuleToFirestore', e); }
-}
-
-async function deleteModuleFromFirestore(drillId) {
-  if (USE_SUPABASE) return _sbDeleteModule(drillId);
-  if (!db || !currentUser || currentRole !== 'teacher') return;
-  try { await db.collection(C_MODULES).doc(String(drillId)).delete(); }
-  catch(e) { console.error('deleteModuleFromFirestore', e); }
-}
+// ── Données — modules + classes (enseignant) ──────────
+async function loadTeacherModules()          { return _sbLoadTeacherModules(); }
+async function syncModuleToFirestore(drill)   { return _sbSaveModule(drill); }
+async function deleteModuleFromFirestore(drillId) { return _sbDeleteModule(drillId); }
 
 // ── Identifiants de l'élève pour le matching des classes (pseudo, email, nom) ──
 function _myIdentifiers() {
@@ -184,54 +90,8 @@ function _myIdentifiers() {
   ].filter(Boolean))].slice(0, 10);
 }
 
-// ── Sync Firestore — élève ────────────────────────────
-async function loadStudentModules() {
-  if (USE_SUPABASE) return _sbLoadStudentModules();
-  if (!db || !currentUser || currentRole !== 'student') return;
-  const listEl = document.getElementById('sh-module-list');
-  const nameEl = document.getElementById('sh-student-name');
-  if (nameEl) nameEl.textContent = currentUser.displayName || currentUser.email;
-
-  let assigned = [], personal = [];
-  try {
-    // 1. Modules assignés via les classes (matching par pseudo, email ou nom)
-    const ids = _myIdentifiers();
-    const snap = await db.collection(C_CLASSES)
-      .where('students', 'array-contains-any', ids.length ? ids : ['__none__'])
-      .get();
-    const moduleIds = new Set();
-    snap.docs.forEach(d => (d.data().moduleIds || []).forEach(id => moduleIds.add(id)));
-    for (const mid of moduleIds) {
-      const mSnap = await db.collection(C_MODULES).doc(mid).get();
-      if (mSnap.exists) assigned.push({ ...mSnap.data() });
-    }
-    // Nom du coach (prof propriétaire) — affiché seulement si l'élève a plusieurs profs
-    const coachIds = [...new Set(assigned.map(m => m.teacherId).filter(Boolean))];
-    const coachNames = {};
-    for (const tid of coachIds) {
-      try { const u = await db.collection(C_USERS).doc(tid).get(); if (u.exists) { const ud = u.data(); coachNames[tid] = ud.name || ud.pseudo || ud.email || 'Coach'; } } catch(e) {}
-    }
-    const _multiCoach = coachIds.length > 1;
-    assigned.forEach(m => { m.coachName = coachNames[m.teacherId] || null; m._showCoach = _multiCoach; });
-    // 2. Modules persos importés par l'élève (privés)
-    const pSnap = await db.collection(C_MODULES)
-      .where('ownerStudentId', '==', currentUser.uid)
-      .get();
-    personal = pSnap.docs.map(d => ({ ...d.data() }));
-    // 3. Résultats + sessions de l'élève (stats du tableau de bord, multi-appareils)
-    const rs = await db.collection(C_RESULTS).where('studentId', '==', currentUser.uid).get();
-    results = rs.docs.map(d => d.data()); localStorage.setItem('mc_results', JSON.stringify(results));
-    const ps = await db.collection(C_PRACTICE).where('studentId', '==', currentUser.uid).get();
-    practiceLog = ps.docs.map(d => d.data()); localStorage.setItem('mc_practice', JSON.stringify(practiceLog));
-  } catch(e) {
-    console.error('loadStudentModules', e);
-    if (listEl) listEl.innerHTML = '<div style="color:var(--red);padding:20px;text-align:center;font-size:.85rem">Erreur de chargement. Vérifiez votre connexion.</div>';
-    return;
-  }
-  drills = [...assigned, ...personal];
-  save();
-  renderStudentHome(assigned, personal);
-}
+// ── Données — modules de l'élève (assignés + perso) ───
+async function loadStudentModules() { return _sbLoadStudentModules(); }
 
 function renderStudentHome(assigned, personal) {
   assigned = assigned || [];
@@ -439,12 +299,7 @@ function importStudentDrill() {
   };
   drills.push(d);
   save();
-  if (USE_SUPABASE) {
-    _sbSaveStudentModule(d);
-  } else if (db && currentUser) {
-    db.collection(C_MODULES).doc(String(d.id)).set({ ...d, tree: d.tree || {} })
-      .catch(e => console.error('importStudentDrill FS:', e));
-  }
+  _sbSaveStudentModule(d);
   closeModal('modal-student-import');
   toast('✓ Révision perso créée', 'ok');
   loadStudentModules();
@@ -454,102 +309,17 @@ function deleteStudentDrill(id) {
   if (!confirm('Supprimer cette révision perso ?')) return;
   drills = drills.filter(d => String(d.id) !== String(id));
   save();
-  if (USE_SUPABASE) {
-    _sbDeleteStudentModule(id);
-  } else if (db && currentUser) {
-    db.collection(C_MODULES).doc(String(id)).delete().catch(e => console.error('deleteStudentDrill FS:', e));
-  }
+  _sbDeleteStudentModule(id);
   loadStudentModules();
 }
 
-// ── Sync Firestore — résultats Vue Prof ───────────────
-async function loadTeacherResults() {
-  if (USE_SUPABASE) return _sbLoadTeacherResults();
-  if (!db || !currentUser || currentRole !== 'teacher') return;
-  const myDrillIds = drills.map(d => String(d.id));
-  try {
-    let allResults = [];
-    for (let i = 0; i < myDrillIds.length; i += 10) {
-      const chunk = myDrillIds.slice(i, i + 10);
-      const snap  = await db.collection(C_RESULTS)
-        .where('drillId', 'in', chunk).get();
-      allResults = allResults.concat(snap.docs.map(d => d.data()));
-    }
-    results = allResults;   // toujours réinitialiser (pas de fuite entre comptes/sessions)
-    localStorage.setItem('mc_results', JSON.stringify(results));
-  } catch(e) { console.error('loadTeacherResults', e); }
-}
+// ── Données — Vue Prof (résultats / pratique / parties) ──
+async function loadTeacherResults()  { return _sbLoadTeacherResults(); }
+async function loadTeacherPractice() { return _sbLoadTeacherPractice(); }
+async function loadTeacherGames()    { return _sbLoadTeacherGames(); }
 
-// ── Sync Firestore — sessions de pratique (Vue Prof) ──
-async function loadTeacherPractice() {
-  if (USE_SUPABASE) return _sbLoadTeacherPractice();
-  if (!db || !currentUser || currentRole !== 'teacher') return;
-  const myDrillIds = drills.map(d => String(d.id));
-  try {
-    let all = [];
-    for (let i = 0; i < myDrillIds.length; i += 10) {
-      const chunk = myDrillIds.slice(i, i + 10);
-      const snap  = await db.collection(C_PRACTICE).where('drillId', 'in', chunk).get();
-      all = all.concat(snap.docs.map(d => d.data()));
-    }
-    practiceLog = all;
-    localStorage.setItem('mc_practice', JSON.stringify(practiceLog));
-  } catch(e) { console.error('loadTeacherPractice', e); }
-}
-
-// ── Sync Firestore — parties Maia (Vue Prof) ──────────
-async function loadTeacherGames() {
-  if (USE_SUPABASE) return _sbLoadTeacherGames();
-  if (!db || !currentUser || currentRole !== 'teacher') return;
-  const myDrillIds = drills.map(d => String(d.id));
-  try {
-    let all = [];
-    for (let i = 0; i < myDrillIds.length; i += 10) {
-      const chunk = myDrillIds.slice(i, i + 10);
-      const snap  = await db.collection(C_GAMES).where('drillId', 'in', chunk).get();
-      all = all.concat(snap.docs.map(d => d.data()));
-    }
-    savedGames = all;
-    localStorage.setItem('mc_games', JSON.stringify(savedGames));
-  } catch(e) { console.error('loadTeacherGames', e); }
-}
-
-// ── Auth state ────────────────────────────────────────
-if (USE_SUPABASE && sb) {
-  _sbInitAuth();
-} else if (fbAuth) {
-  fbAuth.onAuthStateChanged(async user => {
-    currentUser = user;
-    if (!user) {
-      updateNav();
-      goPage('login');
-      return;
-    }
-    try {
-      const snap = await db.collection(C_USERS).doc(user.uid).get();
-      if (snap.exists)    { currentRole = snap.data().role; currentPseudo = snap.data().pseudo || null; }
-      else if (pendingRole) currentRole = pendingRole;  // inscription en cours : doc users en train d'être écrit
-      else                  currentRole = 'student';
-    } catch(e) { currentRole = pendingRole || 'student'; }
-    pendingRole = null;
-    updateNav();
-    await loadMasteryFromFirestore();   // progression SM-2 multi-appareils
-
-    if (currentRole === 'student') {
-      goPage('student-home');
-      await loadStudentModules();
-    } else {
-      // Enseignant
-      await loadTeacherModules();
-      if (!drills.length && !localStorage.getItem('mc_demo_seen')) {
-        injectDemoDrill();
-        if (drills[0]) await syncModuleToFirestore(drills[0]);  // rendre le module démo assignable aux élèves
-        setTimeout(() => toast('👋 Module Espagnole de démo chargé — cliquez ▶ Jouer pour essayer.', 'ok'), 600);
-      }
-      goPage('coach');
-    }
-  });
-}
+// ── Auth state (Supabase) ─────────────────────────────
+if (sb) _sbInitAuth();
 
 // ══════════════════════════════════════════════════════
 // DONNÉES
@@ -743,8 +513,8 @@ function addFromLibrary(idx) {
   if (asStudent) { d.personal = true; d.ownerStudentId = currentUser?.uid || null; }
   drills.push(d);
   save();
-  if (db && currentUser) {
-    if (asStudent) { if (USE_SUPABASE) _sbSaveStudentModule(d); else db.collection(C_MODULES).doc(String(d.id)).set({ ...d, tree: d.tree || {} }).catch(e => console.error('library FS:', e)); }
+  if (currentUser) {
+    if (asStudent) _sbSaveStudentModule(d);
     else syncModuleToFirestore(d);
   }
   closeModal('modal-library');
@@ -1472,12 +1242,7 @@ async function saveClass() {
     classes.push(cls);
   }
   saveClasses();
-  if (USE_SUPABASE) {
-    await _sbSaveClass(cls);
-  } else if (db && currentUser && currentRole === 'teacher') {
-    try { await db.collection(C_CLASSES).doc(String(cls.id)).set({ ...cls, teacherId: currentUser.uid }); }
-    catch(e) { console.error('saveClass Firestore:', e); }
-  }
+  await _sbSaveClass(cls);
   cancelEditClass();
   renderClassList();
   renderClassesTab();
@@ -1532,11 +1297,7 @@ function deleteClass(id) {
   if (!confirm('Supprimer cette classe ? Les élèves n\'y auront plus accès.')) return;
   classes = classes.filter(c=>c.id!==id);
   saveClasses();
-  if (USE_SUPABASE) {
-    _sbDeleteClass(id);
-  } else if (db && currentUser) {
-    db.collection(C_CLASSES).doc(String(id)).delete().catch(e => console.error('deleteClass FS:', e));
-  }
+  _sbDeleteClass(id);
   if (_editingClassId === id) cancelEditClass();
   renderClassList();
   renderClassesTab();
@@ -2834,40 +2595,12 @@ function closeModal(id){document.getElementById(id).classList.remove('on');}
 function nextDrill(){S.idx=(S.idx+1)%drills.length; initDrillPage();}
 
 // ── SM-2 spaced repetition ────────────────────────────
-// ── Synchronisation SM-2 multi-appareils (dans users/{uid}.mastery) ──
+// ── Synchronisation SM-2 multi-appareils (profiles.mastery, Supabase) ──
 let _masterySyncTimer = null;
 function _scheduleMasterySync() {
-  if (USE_SUPABASE) {
-    if (!sb || !currentUser) return;
-    clearTimeout(_masterySyncTimer);
-    _masterySyncTimer = setTimeout(_sbSaveMastery, 2500);
-    return;
-  }
-  if (!db || !currentUser) return;
+  if (!sb || !currentUser) return;
   clearTimeout(_masterySyncTimer);
-  _masterySyncTimer = setTimeout(saveMasteryToFirestore, 2500);
-}
-async function saveMasteryToFirestore() {
-  const student = currentUser?.displayName || currentUser?.email;
-  if (!db || !currentUser || !student) return;
-  const prefix = student + '_';
-  const mine = {};
-  for (const k in masteryData) if (k.startsWith(prefix)) mine[k] = masteryData[k];
-  try { await db.collection(C_USERS).doc(currentUser.uid).set({ mastery: mine }, { merge: true }); }
-  catch(e) { console.error('saveMastery FS:', e); }
-}
-async function loadMasteryFromFirestore() {
-  if (!db || !currentUser) return;
-  try {
-    const snap = await db.collection(C_USERS).doc(currentUser.uid).get();
-    const m = snap.exists && snap.data().mastery;
-    if (m) {
-      for (const k in m) {
-        if (!masteryData[k] || (m[k].due || 0) > (masteryData[k].due || 0)) masteryData[k] = m[k];
-      }
-      localStorage.setItem('mc_mastery', JSON.stringify(masteryData));
-    }
-  } catch(e) { console.error('loadMastery FS:', e); }
+  _masterySyncTimer = setTimeout(_sbSaveMastery, 2500);
 }
 
 function sm2Update(student, drillId, posKey, correct) {
@@ -2895,11 +2628,7 @@ function recordPracticeSession(pct) {
   };
   practiceLog.push(rec);
   save();
-  if (USE_SUPABASE) {
-    _sbRecordPractice(rec);
-  } else if (db && currentUser) {
-    db.collection(C_PRACTICE).add(rec).catch(e => console.error('recordPracticeSession FS:', e));
-  }
+  _sbRecordPractice(rec);
 }
 
 // ── Sauvegarde de partie Maia ─────────────────────────
@@ -2924,11 +2653,7 @@ function saveGame() {
   };
   savedGames.push(rec);
   save();
-  if (USE_SUPABASE) {
-    _sbSaveGame(rec);
-  } else if (db && currentUser) {
-    db.collection(C_GAMES).add(rec).catch(e => console.error('saveGame FS:', e));
-  }
+  _sbSaveGame(rec);
 }
 
 function recordResult(correct, kp) {
@@ -2950,11 +2675,7 @@ function recordResult(correct, kp) {
   };
   results.push(rec);
   save();
-  if (USE_SUPABASE) {
-    _sbRecordResult(rec);
-  } else if (db && currentUser) {
-    db.collection(C_RESULTS).add(rec).catch(e => console.error('recordResult FS:', e));
-  }
+  _sbRecordResult(rec);
 }
 
 // ══════════════════════════════════════════════════════
@@ -4910,13 +4631,10 @@ function saveEditorDrill() {
 
   save(); closeEditorModal();
 
-  // Synchronisation Firestore selon la propriété
-  if (db && currentUser) {
-    if (d.personal) {
-      if (USE_SUPABASE) _sbSaveStudentModule(d); else db.collection(C_MODULES).doc(String(d.id)).set({ ...d, tree: d.tree || {} }).catch(e => console.error('saveEditor FS:', e));
-    } else if (currentRole === 'teacher') {
-      syncModuleToFirestore(d);
-    }
+  // Persistance selon la propriété du module
+  if (currentUser) {
+    if (d.personal) _sbSaveStudentModule(d);
+    else if (currentRole === 'teacher') syncModuleToFirestore(d);
   }
 
   // Rafraîchir la bonne vue

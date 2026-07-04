@@ -1,14 +1,8 @@
 // ════════════════════════════════════════════════════════════
-//  supabase-data.js — couche d'accès Supabase (MIGRATION INCRÉMENTALE)
-//
-//  Activé UNIQUEMENT si USE_SUPABASE = true. Tant que c'est false,
-//  l'app tourne 100 % sur Firebase, ce fichier ne fait QUE définir des
-//  fonctions (aucun effet). On bascule quand chaque étape est portée.
-//
-//  Étape EN COURS : AUTHENTIFICATION (login / register / logout / session).
-//  À venir : modules, classes, résultats, pratique, parties.
+//  supabase-data.js — couche d'accès Supabase (backend UNIQUE de l'app)
+//  Auth + données : modules, classes, résultats, pratique, parties, mastery.
+//  Firebase a été retiré ; ceci est la seule couche backend.
 // ════════════════════════════════════════════════════════════
-const USE_SUPABASE = true;   // ← mettre true pour basculer l'authentification sur Supabase
 
 // Normalise un user Supabase vers la forme attendue par l'app (compat Firebase).
 function _sbUser(u) {

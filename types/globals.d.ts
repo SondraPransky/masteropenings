@@ -30,9 +30,6 @@ declare class Chess {
   [key: string]: any;
 }
 
-// Firebase 10 (compat, global) — https://www.gstatic.com/firebasejs/...
-declare const firebase: any;
-
 // onnxruntime-web (global) — https://cdn.jsdelivr.net/npm/onnxruntime-web/...
 declare const ort: any;
 
