@@ -124,12 +124,19 @@ create policy "classes_insert_teacher" on public.classes for insert to authentic
 create policy "classes_update_teacher" on public.classes for update to authenticated using  (teacher_id = auth.uid()) with check (teacher_id = auth.uid());
 create policy "classes_delete_teacher" on public.classes for delete to authenticated using  (teacher_id = auth.uid());
 
-create policy "results_read"   on public.results  for select to authenticated using (true);
-create policy "results_insert" on public.results  for insert to authenticated with check (true);
-create policy "practice_read"   on public.practice for select to authenticated using (true);
-create policy "practice_insert" on public.practice for insert to authenticated with check (true);
-create policy "games_read"   on public.games for select to authenticated using (true);
-create policy "games_insert" on public.games for insert to authenticated with check (true);
+-- results / practice / games : l'élève n'écrit/ne lit QUE ses lignes ;
+-- le prof lit/supprime celles liées à SES modules (drill_id texte = modules.id::text).
+create policy "results_insert" on public.results for insert to authenticated with check (student_id = auth.uid());
+create policy "results_read"   on public.results for select to authenticated using (student_id = auth.uid() or drill_id in (select id::text from public.modules where teacher_id = auth.uid()));
+create policy "results_delete" on public.results for delete to authenticated using (student_id = auth.uid() or drill_id in (select id::text from public.modules where teacher_id = auth.uid()));
+
+create policy "practice_insert" on public.practice for insert to authenticated with check (student_id = auth.uid());
+create policy "practice_read"   on public.practice for select to authenticated using (student_id = auth.uid() or drill_id in (select id::text from public.modules where teacher_id = auth.uid()));
+create policy "practice_delete" on public.practice for delete to authenticated using (student_id = auth.uid() or drill_id in (select id::text from public.modules where teacher_id = auth.uid()));
+
+create policy "games_insert" on public.games for insert to authenticated with check (student_id = auth.uid());
+create policy "games_read"   on public.games for select to authenticated using (student_id = auth.uid() or drill_id in (select id::text from public.modules where teacher_id = auth.uid()));
+create policy "games_delete" on public.games for delete to authenticated using (student_id = auth.uid() or drill_id in (select id::text from public.modules where teacher_id = auth.uid()));
 
 -- ── Création auto du profil à l'inscription ─────────────────
 create or replace function public.handle_new_user()
