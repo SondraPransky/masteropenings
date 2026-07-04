@@ -63,6 +63,9 @@
         <input type="password" id="login-pwd" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')loginUser()">
       </div>
       <button class="btn btn-primary" style="width:100%;margin-top:14px;padding:10px" onclick="loginUser()">Se connecter →</button>
+      <div style="text-align:center;margin-top:10px">
+        <button type="button" onclick="requestPasswordReset()" style="background:none;border:none;color:var(--cyan);cursor:pointer;font-size:.8rem;text-decoration:underline;padding:0;font-family:inherit">Mot de passe oublié ?</button>
+      </div>
     </div>
     <div id="register-form" style="display:none">
       <div class="frow"><label>Prénom &amp; Nom</label><input type="text" id="reg-name" placeholder="Alice Dupont" autocomplete="name"></div>
@@ -80,6 +83,14 @@
         </select>
       </div>
       <button class="btn btn-primary" style="width:100%;margin-top:14px;padding:10px" onclick="registerUser()">Créer mon compte →</button>
+    </div>
+    <div id="recovery-form" style="display:none">
+      <div style="font-size:.85rem;color:var(--dim);margin-bottom:12px;line-height:1.5">Choisis un nouveau mot de passe pour ton compte.</div>
+      <div class="frow">
+        <label>Nouveau mot de passe <span style="font-weight:400;color:var(--dim);font-size:.72rem">— 6 caractères minimum</span></label>
+        <input type="password" id="recovery-pwd" placeholder="••••••••" autocomplete="new-password" onkeydown="if(event.key==='Enter')submitNewPassword()">
+      </div>
+      <button class="btn btn-primary" style="width:100%;margin-top:14px;padding:10px" onclick="submitNewPassword()">Enregistrer le nouveau mot de passe</button>
     </div>
     <div id="login-error" style="display:none;margin-top:14px;padding:10px 14px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:var(--rs);font-size:.82rem;color:#ef4444;line-height:1.5"></div>
   </div>

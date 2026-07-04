@@ -56,6 +56,30 @@ async function registerUser() { return _sbRegister(); }
 
 async function logoutUser() { return _sbLogout(); }
 
+// ── Réinitialisation du mot de passe ──────────────────
+function requestPasswordReset() {
+  const email = (document.getElementById('login-email')?.value || '').trim();
+  _sbResetPassword(email);
+}
+// Affiché quand l'utilisateur revient via le lien de réinitialisation (événement PASSWORD_RECOVERY).
+function showRecoveryForm() {
+  goPage('login');
+  document.getElementById('login-form').style.display    = 'none';
+  document.getElementById('register-form').style.display = 'none';
+  const tabs = document.querySelector('.login-tabs'); if (tabs) tabs.style.display = 'none';
+  document.getElementById('recovery-form').style.display = '';
+  const err = document.getElementById('login-error'); if (err) err.style.display = 'none';
+  setTimeout(() => document.getElementById('recovery-pwd')?.focus(), 100);
+}
+async function submitNewPassword() {
+  const pwd = document.getElementById('recovery-pwd')?.value || '';
+  if (pwd.length < 6) { showLoginError('Le mot de passe doit contenir au moins 6 caractères.'); return; }
+  const err = await _sbUpdatePassword(pwd);
+  if (err) { showLoginError(err); return; }
+  // Succès → on recharge sur une URL propre (sans le token de récup) : session active, routage normal.
+  location.replace(location.origin + location.pathname);
+}
+
 function showLoginError(msg) {
   const el = document.getElementById('login-error');
   if (!el) return;

@@ -60,9 +60,25 @@ async function _sbLogout() {
   await sb.auth.signOut();
 }
 
+// Envoie l'email de réinitialisation (lien de récupération renvoyant vers l'app).
+async function _sbResetPassword(email) {
+  if (!email) { showLoginError('Entrez d\'abord votre email ci-dessus.'); return; }
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+  if (error) { showLoginError(_sbAuthError(error)); return; }
+  toast('📧 Email de réinitialisation envoyé — vérifiez vos mails (et les spams)', 'ok');
+}
+
+// Applique le nouveau mot de passe (session de récupération active). Renvoie un message FR ou null.
+async function _sbUpdatePassword(pwd) {
+  const { error } = await sb.auth.updateUser({ password: pwd });
+  return error ? _sbAuthError(error) : null;
+}
+
 // Équivalent de fbAuth.onAuthStateChanged : pilote la session + le routage.
 function _sbInitAuth() {
-  sb.auth.onAuthStateChange(async (_event, session) => {
+  sb.auth.onAuthStateChange(async (event, session) => {
+    // Lien de réinitialisation cliqué → formulaire « nouveau mot de passe ».
+    if (event === 'PASSWORD_RECOVERY') { showRecoveryForm(); return; }
     const u = session && session.user;
     currentUser = _sbUser(u);
     if (!u) { updateNav(); goPage('login'); return; }

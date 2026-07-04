@@ -26,4 +26,9 @@ test.describe('Page de connexion (visiteur non connecté)', () => {
     await expect(page.locator('#login-error')).toBeVisible();
     await expect(page.locator('#login-error')).toContainText('Remplissez');
   });
+
+  test('« Mot de passe oublié ? » sans email → invite à saisir l’email', async ({ page }) => {
+    await page.getByRole('button', { name: /Mot de passe oublié/ }).click();
+    await expect(page.locator('#login-error')).toContainText('Entrez');
+  });
 });
