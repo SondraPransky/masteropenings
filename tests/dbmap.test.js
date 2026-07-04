@@ -1,5 +1,9 @@
 import dbmap from '../lib/dbmap.js';
-const { _sbModuleToRow, _sbRowToModule, _sbClassToRow, _sbRowToClass } = dbmap;
+const {
+  _sbModuleToRow, _sbRowToModule, _sbClassToRow, _sbRowToClass,
+  _sbResultToRow, _sbRowToResult, _sbPracticeToRow, _sbRowToPractice,
+  _sbGameToRow, _sbRowToGame
+} = dbmap;
 
 describe('mapping module ↔ ligne SQL', () => {
   const drill = {
@@ -75,5 +79,35 @@ describe('mapping classe ↔ ligne SQL', () => {
     const back = _sbRowToClass(_sbClassToRow(indiv));
     expect(back.individual).toBe(true);
     expect(back.students).toEqual(['paul']);
+  });
+});
+
+describe('mapping résultat / pratique / partie ↔ ligne SQL', () => {
+  it('résultat : round-trip (student→student_name, posIdx→pos_idx, drillId en texte)', () => {
+    const rec = { drillId: 123, drillName: 'Espagnole', student: 'Léa', studentEmail: 'lea@ex.fr', studentPseudo: 'lea', studentId: 'uid', posIdx: 4, san: 'Bb5', comment: 'clouage', correct: true, ts: 1700000000000 };
+    const back = _sbRowToResult(_sbResultToRow(rec));
+    expect(back.drillId).toBe('123');
+    expect(back.student).toBe('Léa');
+    expect(back.posIdx).toBe(4);
+    expect(back.correct).toBe(true);
+    expect(back.san).toBe('Bb5');
+    expect(back.ts).toBe(1700000000000);
+  });
+  it('pratique : round-trip (student dans extra, sessionIdx→session_idx)', () => {
+    const rec = { drillId: 9, drillName: 'D', student: 'Léa', studentEmail: 'lea@ex.fr', studentPseudo: 'lea', studentId: 'uid', pct: 80, sessionIdx: 2, ts: 1700000000001 };
+    const back = _sbRowToPractice(_sbPracticeToRow(rec));
+    expect(back.pct).toBe(80);
+    expect(back.sessionIdx).toBe(2);
+    expect(back.student).toBe('Léa');
+    expect(back.drillId).toBe('9');
+  });
+  it('partie : round-trip (id bigint préservé)', () => {
+    const rec = { id: 1700000000002, drillId: 9, drillName: 'D', student: 'Léa', studentEmail: 'lea@ex.fr', studentId: 'uid', side: 'w', level: 'Avancé', pgn: '1. e4 e5', result: '1-0', ts: 1700000000002 };
+    const back = _sbRowToGame(_sbGameToRow(rec));
+    expect(back.id).toBe(1700000000002);
+    expect(back.result).toBe('1-0');
+    expect(back.side).toBe('w');
+    expect(back.student).toBe('Léa');
+    expect(back.pgn).toBe('1. e4 e5');
   });
 });

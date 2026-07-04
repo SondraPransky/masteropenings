@@ -22,6 +22,7 @@ create table public.profiles (
   name       text,
   pseudo     text,
   role       text check (role in ('teacher','student')) default 'student',
+  mastery    jsonb default '{}'::jsonb,
   created_at timestamptz default now()
 );
 
@@ -137,9 +138,19 @@ language plpgsql
 security definer set search_path = public
 as $$
 begin
-  insert into public.profiles (id, email)
-  values (new.id, new.email)
-  on conflict (id) do nothing;
+  -- Le rôle/nom/pseudo voulus arrivent dans raw_user_meta_data (options.data du signUp).
+  insert into public.profiles (id, email, name, role, pseudo)
+  values (
+    new.id,
+    new.email,
+    new.raw_user_meta_data->>'name',
+    coalesce(nullif(new.raw_user_meta_data->>'role', ''), 'student'),
+    new.raw_user_meta_data->>'pseudo'
+  )
+  on conflict (id) do update set
+    name   = coalesce(excluded.name,   public.profiles.name),
+    role   = coalesce(excluded.role,   public.profiles.role),
+    pseudo = coalesce(excluded.pseudo, public.profiles.pseudo);
   return new;
 end;
 $$;

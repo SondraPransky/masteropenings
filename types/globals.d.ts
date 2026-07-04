@@ -65,6 +65,12 @@ declare function _sbModuleToRow(d: any): any;
 declare function _sbRowToModule(r: any): any;
 declare function _sbClassToRow(c: any): any;
 declare function _sbRowToClass(r: any): any;
+declare function _sbResultToRow(r: any): any;
+declare function _sbRowToResult(r: any): any;
+declare function _sbPracticeToRow(r: any): any;
+declare function _sbRowToPractice(r: any): any;
+declare function _sbGameToRow(r: any): any;
+declare function _sbRowToGame(r: any): any;
 
 // ════════════════════════════════════════════════════════════
 //  Augmentations DOM pragmatiques (code vanilla "legacy")
