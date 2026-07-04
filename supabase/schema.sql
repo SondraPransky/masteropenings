@@ -111,15 +111,30 @@ alter table public.results  enable row level security;
 alter table public.practice enable row level security;
 alter table public.games    enable row level security;
 
-create policy "profiles_read"      on public.profiles for select to authenticated using (true);
+-- Helper : identifiants (pseudo + email minuscules) de l'utilisateur connecté.
+-- SECURITY DEFINER → lit profiles sans RLS (évite toute récursion dans les policies).
+create or replace function public.my_identifiers()
+returns text[] language sql stable security definer set search_path = public as $$
+  select array_remove(array[lower(pseudo), lower(email)], null) from public.profiles where id = auth.uid();
+$$;
+grant execute on function public.my_identifiers() to authenticated;
+
+-- profiles : soi-même + ses profs (nom affiché à l'élève)
+create policy "profiles_read"      on public.profiles for select to authenticated
+  using (id = auth.uid() or id in (select teacher_id from public.classes where students ?| public.my_identifiers()));
 create policy "profiles_write_own" on public.profiles for all    to authenticated using (id = auth.uid()) with check (id = auth.uid());
 
-create policy "modules_read"         on public.modules for select to authenticated using (true);
+-- modules : les siens (prof), ses perso, ou ceux assignés via ses classes (élève)
+create policy "modules_read"         on public.modules for select to authenticated
+  using (teacher_id = auth.uid() or owner_student_id = auth.uid()
+    or id in (select (jsonb_array_elements_text(coalesce(module_ids,'[]'::jsonb)))::bigint from public.classes where students ?| public.my_identifiers()));
 create policy "modules_insert_owner" on public.modules for insert to authenticated with check (teacher_id = auth.uid() or owner_student_id = auth.uid());
 create policy "modules_update_owner" on public.modules for update to authenticated using  (teacher_id = auth.uid() or owner_student_id = auth.uid()) with check (teacher_id = auth.uid() or owner_student_id = auth.uid());
 create policy "modules_delete_owner" on public.modules for delete to authenticated using  (teacher_id = auth.uid() or owner_student_id = auth.uid());
 
-create policy "classes_read"           on public.classes for select to authenticated using (true);
+-- classes : les siennes (prof) ou celles dont on est membre (élève)
+create policy "classes_read"           on public.classes for select to authenticated
+  using (teacher_id = auth.uid() or students ?| public.my_identifiers());
 create policy "classes_insert_teacher" on public.classes for insert to authenticated with check (teacher_id = auth.uid());
 create policy "classes_update_teacher" on public.classes for update to authenticated using  (teacher_id = auth.uid()) with check (teacher_id = auth.uid());
 create policy "classes_delete_teacher" on public.classes for delete to authenticated using  (teacher_id = auth.uid());
