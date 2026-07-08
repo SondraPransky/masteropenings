@@ -1117,7 +1117,7 @@ textarea {
 }
 .cs-title { font-size: 1.2rem; font-weight: 800; letter-spacing: -.4px; margin-bottom: 2px; }
 .cs-sub { font-size: .78rem; color: var(--dim); }
-.cs-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+.cs-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; flex-wrap: wrap; max-width: 100%; }
 
 /* Module cards */
 .mcard-grid {

@@ -3885,7 +3885,7 @@ function renderHeatmap() {
   const el = document.getElementById('prof-heatmap-content');
   const drillId = (document.getElementById('hm-drill-filter') || document.getElementById('prof-drill-filter'))?.value || 'all';
 
-  let filtered = drillId === 'all' ? results : results.filter(r=>r.drillId===+drillId);
+  let filtered = drillId === 'all' ? results : results.filter(r=>String(r.drillId)===drillId);
 
   if (!filtered.length) {
     el.innerHTML = '<div class="empty" style="padding:40px"><div class="empty-ico">🔥</div>Sélectionnez un module pour voir la heatmap des erreurs</div>';
