@@ -1,142 +1,127 @@
-# EECoach — Outil de révision d'ouvertures
+# CLAUDE.md — EECoach
 
-## Vue d'ensemble
-Outil pédagogique d'échecs pour coaches. Public cible : élèves 10–16 ans. Un coach crée des modules (drills) depuis des PGN annotés, partage un code à ses élèves, et analyse leurs erreurs position par position. Textes d'erreur doux, labels pédagogiques, interface simple — les coaches sont non-techniques.
+## 1. Vision du Projet
 
-**Pas de build step.** Tout est dans des fichiers HTML/JS/CSS statiques, édités directement.
+Transformer l’application existante en un outil complet de formation et de suivi pour un club d’échecs.
 
-## Structure du projet
+L’application doit permettre :
+- La révision d’ouvertures et d’exercices (tactiques, mats)
+- Aux élèves de saisir et envoyer leurs propres parties au coach
+- Une **bibliothèque d’exercices partagée** entre coachs
+- L’**assignation** d’exercices par les entraîneurs
+- Un suivi de progression détaillé
 
-```
-index.html      # Application principale (~4400 lignes) — tout est là
-admin.html      # Tableau de bord prof séparé (accès PIN, gestion élèves)
-landing.html    # Page de présentation publique
-data.js         # Contenu modifiable de landing.html (textes, stats, FAQ…)
-```
+**Principe** : On fait évoluer l’application de façon progressive, sans tout réécrire.
 
-### admin.html
-Tableau de bord standalone pour le coach, protégé par PIN (`mc_prof_pin`).  
-Lit les mêmes clés localStorage que `index.html`. Fonctions : sessions par élève, erreurs, maîtrise SM-2, parties PGN, suppression des données élève.  
-Clé supplémentaire : `mc_accounts` (liste des comptes élèves enregistrés).
+## 2. État Actuel du Projet (Juillet 2026)
 
-## Prévisualisation locale
-```
-npx serve . -p 5174
-```
-→ `http://localhost:5174`
+### Points forts
+- Migration Supabase bien avancée
+- Début de modularisation réussi (`state.js`, `lib/core.js`, `lib/dbmap.js`, `lib/tree.js`)
+- Passage à **Vite + modules ES**
+- **Déployé en ligne** : GitHub Pages via GitHub Actions → `https://sondrapransky.github.io/masteropenings/` (redéploie à chaque push sur `main`)
+- `CLAUDE.md` présent et utilisé
 
-## Fichier principal : index.html
+### Problèmes majeurs
+- `app.js` reste **très volumineux** (~254 Ko, ~5000 lignes) malgré les extractions
+- Beaucoup de logique encore mélangée dans `app.js`
+- Responsabilités encore trop centralisées
 
-Le fichier est organisé en sections séparées par `// ══…══` :
+## 3. Dette Technique
 
-| Lignes ~  | Section                          |
-|-----------|----------------------------------|
-| 1–300     | CSS design système               |
-| 300–1100  | CSS composants                   |
-| 1100–1500 | HTML squelette + pages           |
-| 1500–2250 | JS utilitaires + chess helpers   |
-| 2250–3600 | JS drill engine (startDrill, etc.) |
-| 3600–4039 | JS Vue Prof                      |
-| 4039–4429 | JS éditeur PGN visuel            |
+| Problème                          | Impact     | Priorité |
+|----------------------------------|------------|----------|
+| Taille excessive de `app.js`     | Très élevé | **Critique** |
+| Mélange des responsabilités      | Élevé      | Critique |
+| Manque d’extraction des domaines | Élevé      | Haute    |
+| Transition incomplète vers modules | Moyen    | Haute    |
 
-## Stack
-- **chess.js 0.10.3** — validation des coups, génération FEN
-- **ONNX Runtime Web 1.18.0** — moteur Maia (43 MB, chargé à la demande)
-- **Canvas 560×560** — échiquier principal (pièces cburnett SVG inline)
-- **Inter + JetBrains Mono** (Google Fonts)
-- Vanilla HTML/JS/CSS — aucune dépendance build
+## 4. Architecture Actuelle
 
-## localStorage
-| Clé             | Contenu                                      |
-|-----------------|----------------------------------------------|
-| `mc_drills`     | tableau des drills                           |
-| `mc_results`    | résultats par coup/position                  |
-| `mc_practice`   | sessions de pratique (score global)          |
-| `mc_games`      | parties Maia sauvegardées (PGN)              |
-| `mc_mastery`    | données SM-2 par `student_drillId_posKey`    |
-| `mc_student`    | nom de l'élève courant                       |
-| `mc_accounts`   | comptes élèves enregistrés (utilisé par admin.html) |
-| `mc_prof_pin`   | PIN d'accès au tableau de bord admin         |
-| `mc_theme`      | `'light'` \| `'dark'`                       |
+- **Build** : Vite (modules ES)
+- **Backend** : Supabase (source de vérité). Clé « publishable » PUBLIQUE (protégée par RLS) → OK committée ; **jamais** de clé « secret » dans le code.
+- **État global** : `state.js` → objet `G` (bon pattern)
+- **Modules extraits** : `lib/core.js` (SM-2, parsing PGN), `lib/dbmap.js` (mappers objet↔SQL), `lib/tree.js` (arbres d’ouverture)
+- **Vendors** : `chess.js` et `@supabase/supabase-js` chargés en CDN (globals `window.Chess` / `window.supabase`) ; dans un module ES, un identifiant non déclaré se résout sur `globalThis`, donc pas besoin de les importer.
+- **Pont `window`** : `app.js` expose ~280 fonctions aux `onclick=""` via `Object.assign(window, {…})` — à réduire au fil des extractions.
 
-## Structure d'un drill (`drills[i]`)
-```js
-{
-  id:       number,       // timestamp
-  name:     string,
-  level:    string,       // '900'|'1300'|'1600'|'1900'|'2200'|'2500'
-  side:     'w'|'b',
-  mode:     'line'|'flash'|'tree',
-  varmode:  'main'|'all'|'shallow',
-  pgn:      string,       // source de vérité — PGN complet avec variantes
-  sessions: [],           // lignes extraites via extractAllLines(pgn)
-  deadline: string|null,  // date ISO optionnelle
-}
-```
+`app.js` reste le fichier principal et contient encore la majorité de la logique.
 
-## Pages et navigation
-```js
-goPage('coach')   // Créer module
-goPage('drill')   // Réviser
-goPage('prof')    // Vue prof
-```
-Les pages sont des `<div id="page-X">` affichées/cachées via classe `on`.
+### Carte des fichiers
 
-## Fonctions clés
-```js
-startDrill(i)           // Lance un drill depuis la liste
-renderDrillBoard()      // Redessine l'échiquier canvas
-toast(msg, type)        // Notification temporaire ('ok'|'warn'|'err')
-renderProfView()        // Reconstruit la Vue Prof complète
-showProfTab(tab)        // tab: 'presence'|'progression'|'parties'|'export'
-showStudentDetail(name) // Sélectionne un élève dans Présence
-openPgnEditor(i)        // Ouvre l'éditeur visuel sur le drill i
-saveEditorDrill()       // Sauvegarde l'arbre éditeur → d.pgn + d.sessions
-pgnToEditorTree(pgn, startFen)  // Parse PGN → arbre éditeur (avec .parent)
-editorTreeToPGN(node)   // Arbre éditeur → PGN string standard
-extractAllLines(pgn)    // PGN → tableau de sessions drillables (≥2 coups)
-```
+| Fichier | Rôle | Taille |
+|---------|------|--------|
+| `app.js` | Cœur applicatif : vues login/coach/drill/prof/élève, drill engine, éditeur PGN, accès Supabase, pont `window` | ~254 Ko · 5016 lignes |
+| `index.html` | Structure statique des écrans (montés/pilotés par `app.js`) | ~46 Ko |
+| `style.css` | Styles : design system (variables `--cyan`, `--surf`, `--border`…) + tous les écrans | ~54 Ko |
+| `state.js` | État global réassignable → objet `G` (source unique) | ~1,5 Ko |
+| `lib/core.js` | Logique pure : SM-2, normalisation/parsing PGN | ~5 Ko |
+| `lib/dbmap.js` | Mappers objet ↔ lignes SQL (Supabase) | ~6,5 Ko |
+| `lib/tree.js` | Arbres d’ouverture, positions du joueur, indices matériels | ~3,5 Ko |
+| `home.html` + `data.js` | Page marketing autonome (copiée telle quelle dans `dist/` au build) | — |
 
-## État global important
-```js
-// Éditeur PGN
-_E = { drillIdx, root, path, node, startFen, flipped, sel, lastFrom, lastTo }
-// Nœud éditeur : { san, fenBefore, fenAfter, comment, children[], parent }
+> `lib/tree.js` est la dernière extraction « propre » (ESM + test dédié) : c’est le modèle à suivre pour les prochaines.
 
-// Drill en cours
-S = { ok, ko }         // score session
-drills                 // tableau complet (synced avec localStorage)
-results                // mc_results désérialisé
-practiceLog            // mc_practice désérialisé
-masteryData            // mc_mastery désérialisé
-```
+### Commandes
+- **Dev** : `npm run dev` (Vite, HMR) — ou `npx serve .` (ESM natif, sans build)
+- **Build prod** : `npm run build` → `dist/` (app bundlée + `home.html`/`data.js` copiés)
+- **Tests** : `npm test` (Vitest, logique pure) · `npm run typecheck`
+- **E2E** : `npm run test:e2e:public` (sans compte) / `npm run test:e2e` (nécessite un `.env` gitignoré)
+- **Déploiement** : `git push origin main` → GitHub Actions (`.github/workflows/deploy.yml`) build Vite + publie `dist/` sur Pages, automatiquement.
+  - ⚠️ Après avoir touché aux dépendances : `npm install` **puis committer `package-lock.json`** — sinon `npm ci` échoue en CI.
 
-## Moteur Maia
-- Modèle : `https://www.maiachess.com/maia3/maia3_simplified.onnx` (43 MB, CORS *)
-- Liste de coups : chargée depuis GitHub à `MAIA_MOVES_URL` (4352 UCI, **pas un fichier local**)
-  ```js
-  const MAIA_MOVES_URL = 'https://raw.githubusercontent.com/CSSLab/maia-platform-frontend/main/src/lib/engine/data/all_moves_maia3.json';
-  ```
-- Chargé lazily au premier lancement d'une partie post-théorie
-- Miroir FEN pour les positions où c'est aux Noirs de jouer
+## 5. Stratégie de Refactoring Recommandée
 
-## Modes de drill
-| Mode     | `mode`  | Comportement                                              |
-|----------|---------|-----------------------------------------------------------|
-| Flash    | `flash` | Positions clés une par une, choix parmi les candidats    |
-| Ligne    | `line`  | Rejouer toute la ligne depuis le début, adversaire auto  |
-| Arbre    | `tree`  | Adversaire choisit aléatoirement parmi les variantes PGN |
+**Approche** : Extraction progressive et sécurisée (pattern Strangler Fig).
 
-## Conventions CSS
-- Variables `--bg`, `--surf`, `--surf2`, `--text`, `--dim`, `--cyan` (indigo), `--gold`, `--green`, `--red`, `--violet`
-- Dark mode via `[data-theme="dark"]` sur `<html>`
-- Cartes : classe `card`, coins `--r` (10px), ombre `--shadow-sm`
-- Modales : classe `modal` + `on` pour afficher ; overlay `.overlay` + `on`
+**Ordre de priorité des extractions** :
 
-## Pièges connus
-- **`extractAllLines()`** exige ≥ 2 coups par variante — les variations à 1 coup sont ignorées. Pour construire l'arbre éditeur, utiliser `pgnToEditorTree()` à la place.
-- **`openPgnEditor()`** lit en priorité `d.pgn` (arbre complet) puis fallback sur `d.sessions`. Ne jamais reconstruire l'arbre uniquement depuis sessions.
-- **`showProfTab()`** attend les valeurs exactes `'presence'`, `'progression'`, `'parties'`, `'export'` — pas `'prog'` ou abréviations.
-- **Canvas échiquier** : 560×560px, case = 70px. Coordonnées : `x = file*70 + 35`, `y = (7-rank)*70 + 35` (pour les Blancs).
-- **SM-2 key format** : `sm2Get(student, drillId, posKey)` où `posKey = drillId + '_' + posIdx + '_' + san`.
+1. **Éditeur PGN** (`modal-pgn-editor` + logique associée) → `lib/editor.js`
+2. **Drill Engine** (logique des modes `line` / `flash` / `tree`, sessions, etc.) → `lib/drill.js`
+3. **Vues et rendu** (coach + élève) → `lib/views.js` ou `lib/coach.js` + `lib/student.js`
+4. **Logique SM-2 / Mastery** → `lib/mastery.js`
 
+**Règles d’extraction** :
+- Faire des extractions **petites et testables**
+- Toujours garder l’application fonctionnelle après chaque extraction
+- Utiliser `G` (de `state.js`) comme point central d’état
+- Documenter les nouvelles fonctions dans ce fichier si nécessaire
+
+## 6. Priorités Actuelles
+
+1. **Réduire la taille de `app.js`** (extractions progressives)
+2. Améliorer le moteur de révision et les exercices
+3. Créer une bibliothèque d’exercices partagée
+4. Implémenter l’assignation d’exercices
+5. Améliorer le suivi des progrès des élèves
+6. Améliorer le design et l’UX
+
+## 7. Règles de Développement
+
+- Supabase est la source de vérité.
+- Toute modification importante dans `app.js` doit être justifiée.
+- Privilégier les extractions petites et incrémentales.
+- Toujours tester après une extraction.
+- Utiliser `state.js` (`G`) pour l’état partagé.
+
+## 8. Pièges Connus
+
+- Attention à la cohérence entre localStorage et Supabase pendant la transition.
+- L’éditeur PGN et le Drill Engine sont des zones sensibles.
+- Beaucoup de code expose encore des fonctions via `window` → à réduire progressivement.
+- Un `import` ES est en lecture seule : pour partager un état **réassignable** entre modules, passer par les propriétés de `G` (`G.drills = …`), jamais par un `let` importé.
+- Certains noms d’état entrent en collision avec des chaînes littérales (`'classes'`, `'results.csv'`) : attention aux remplacements globaux.
+
+## 9. Instructions pour Claude Code
+
+Tu es un ingénieur senior pragmatique.
+
+- Lis systématiquement ce fichier avant toute modification importante.
+- Propose des extractions **petites, testables et sécurisées**.
+- Demande confirmation avant de toucher aux zones critiques (`app.js`, éditeur, drill engine).
+- Documente les décisions d’architecture dans ce fichier.
+- Privilégie la maintenabilité à long terme.
+
+---
+
+**Fin du CLAUDE.md**
