@@ -11,6 +11,10 @@ import {
   _sbGameToRow, _sbRowToGame
 } from './lib/dbmap.js';
 import { isPlayerMove, _buildDrillTree, _treePlayerPositions, _materialHint } from './lib/tree.js';
+import {
+  NAG_GLYPH, _parseShapes, _shapesToPGN, _commentWithShapes, nagGlyphs, _nagGroup,
+  _findNodeByFen, pgnToEditorTree, editorTreeToPGN
+} from './lib/editor-core.js';
 import { G } from './state.js';
 
 // ── Configuration Supabase (client `sb`) ──────────────────
@@ -4012,73 +4016,7 @@ const EP = { wK:'♔',wQ:'♕',wR:'♖',wB:'♗',wN:'♘',wP:'♙', bK:'♚',bQ:
 const _E = { drillIdx:-1, root:null, path:[], node:null, startFen:'', flipped:false, sel:null, lastFrom:null, lastTo:null };
 let _eSQ = 48;
 
-function _findNodeByFen(node, fen) {
-  if (node.fenAfter === fen) return node;
-  for (const child of node.children) {
-    const found = _findNodeByFen(child, fen);
-    if (found) return found;
-  }
-  return null;
-}
-
-// Reconstruit l'arbre éditeur depuis un PGN (préserve toutes les variantes, y compris courtes)
-function pgnToEditorTree(pgn, startFen) {
-  const root = { san:null, fenBefore:null, fenAfter:startFen, comment:'', children:[] };
-  const text = pgn.replace(/\[[A-Za-z]\w*\s+"[^"]*"\]/g, '');   // retire les en-têtes PGN, garde [%cal]/[%csl] dans les commentaires
-  const re = /\{([^}]*)\}|\(|\)|([^\s(){}]+)/g;
-  const tokens = [];
-  let m;
-  while ((m = re.exec(text)) !== null) {
-    if (m[1] !== undefined) {
-      const ps = _parseShapes(m[1]);
-      if (ps.text || ps.shapes.length) tokens.push({type:'comment', text:ps.text, shapes:ps.shapes});
-    } else if (m[0]==='(') tokens.push({type:'open'});
-    else if (m[0]===')') tokens.push({type:'close'});
-    else tokens.push({type:'move', text:m[2]});
-  }
-  function parse(toks, node) {
-    const g = new Chess(node.fenAfter);
-    let cur = node, i = 0;
-    while (i < toks.length) {
-      const tok = toks[i];
-      if (tok.type === 'open') {
-        let d=1, vt=[];
-        i++;
-        while (i < toks.length && d > 0) {
-          if (toks[i].type==='open') d++;
-          if (toks[i].type==='close') { d--; if (d===0) break; }
-          vt.push(toks[i]); i++;
-        }
-        // La variante est une alternative au dernier coup joué → brancher depuis son parent
-        if (cur.parent) parse(vt, cur.parent);
-        i++; continue;
-      }
-      if (tok.type === 'close') { i++; continue; }
-      if (tok.type === 'comment') {
-        if (cur !== node) {
-          if (tok.text && !cur.comment) cur.comment = tok.text;
-          if (tok.shapes && tok.shapes.length) cur.shapes = (cur.shapes||[]).concat(tok.shapes);
-        }
-        i++; continue;
-      }
-      const t = tok.text;
-      if (/^\$\d+$/.test(t)) { if (cur !== node) { cur.nags = cur.nags || []; const _n=+t.slice(1); if(!cur.nags.includes(_n)) cur.nags.push(_n); } i++; continue; }
-      if (/^\d+\.+$/.test(t)||/^(1-0|0-1|1\/2-1\/2|\*)$/.test(t)) { i++; continue; }
-      const fenBefore = g.fen();
-      const san = normalizeSAN(t, g);
-      const r = g.move(san);
-      if (!r) { i++; continue; }
-      let ch = cur.children.find(c => c.san===r.san && c.fenBefore===fenBefore);
-      if (!ch) {
-        ch = {san:r.san, fenBefore, fenAfter:g.fen(), comment:'', children:[], parent:cur};
-        cur.children.push(ch);
-      }
-      cur = ch; i++;
-    }
-  }
-  parse(tokens, root);
-  return root;
-}
+// _findNodeByFen + pgnToEditorTree → lib/editor-core.js
 
 function openPgnEditor(i) {
   const d = G.drills[i];
@@ -4211,21 +4149,7 @@ function editorClickSqLogic(sq, ex, ey) {
 let _eArrowFrom = null, _eArrowColor = null, _eArrowHandlers = false;
 const _SHAPE_COL = { green:'#15803d', red:'#b91c1c', yellow:'#ca8a04', blue:'#1d4ed8' };
 
-function _parseShapes(raw) {
-  const COL = { G:'green', R:'red', Y:'yellow', B:'blue' };
-  const shapes = [];
-  let s = raw;
-  s = s.replace(/\[%cal\s+([^\]]+)\]/gi, (mm, list) => {
-    list.split(',').forEach(tk => { tk = tk.trim(); const c = COL[(tk[0]||'').toUpperCase()] || 'green'; const f = tk.slice(1,3), t = tk.slice(3,5); if (f.length===2 && t.length===2) shapes.push({type:'arrow', from:f, to:t, color:c}); });
-    return '';
-  });
-  s = s.replace(/\[%csl\s+([^\]]+)\]/gi, (mm, list) => {
-    list.split(',').forEach(tk => { tk = tk.trim(); const c = COL[(tk[0]||'').toUpperCase()] || 'green'; const sq = tk.slice(1,3); if (sq.length===2) shapes.push({type:'circle', square:sq, color:c}); });
-    return '';
-  });
-  s = s.replace(/\[%[^\]]*\]/g, '');   // autres annotations (%evp, %clk…) ignorées
-  return { text: s.replace(/\s+/g,' ').trim(), shapes };
-}
+// _parseShapes → lib/editor-core.js
 
 function _editorShapesSVG(files, ranks) {
   const shapes = (_E.node && _E.node.shapes) || [];
@@ -4290,18 +4214,7 @@ function editorToggleShape(from, to, color) {
 }
 function editorClearShapes() { if (_E.node) { _E.node.shapes = []; renderEditorBoard(); } }
 
-function _shapesToPGN(node) {
-  if (!node.shapes || !node.shapes.length) return '';
-  const INV = { green:'G', red:'R', yellow:'Y', blue:'B' };
-  const a = node.shapes.filter(s=>s.type==='arrow').map(s => (INV[s.color]||'G')+s.from+s.to);
-  const c = node.shapes.filter(s=>s.type==='circle').map(s => (INV[s.color]||'G')+s.square);
-  let o = ''; if (a.length) o += '[%cal '+a.join(',')+']'; if (c.length) o += '[%csl '+c.join(',')+']';
-  return o;
-}
-function _commentWithShapes(node) {
-  const sh = _shapesToPGN(node), cm = node.comment || '';
-  return sh ? (sh + (cm ? ' ' + cm : '')) : cm;
-}
+// _shapesToPGN + _commentWithShapes → lib/editor-core.js
 
 function renderEditorBoard() {
   const grid = document.getElementById('editor-board-grid'); if (!grid) return;
@@ -4479,13 +4392,10 @@ function editorPromoteMain() {
 }
 
 // ── Annotations NAG (!, ?, !?, ±, ⩲, …) ───────────────────
-const NAG_GLYPH = {1:'!',2:'?',3:'!!',4:'??',5:'!?',6:'?!',10:'=',13:'∞',14:'⩲',15:'⩱',16:'±',17:'∓',18:'+−',19:'−+'};
+// NAG_GLYPH → lib/editor-core.js (importé ; NAG_QUALITY/NAG_EVAL restent ici, config UI)
 const NAG_QUALITY = [3,1,5,6,2,4];          // !! ! !? ?! ? ??
 const NAG_EVAL    = [10,13,14,15,16,17,18,19];
-function nagGlyphs(node) {
-  return (node && node.nags && node.nags.length) ? node.nags.map(n => NAG_GLYPH[n] || ('$'+n)).join('') : '';
-}
-function _nagGroup(n) { return (n>=1 && n<=9) ? 'q' : 'e'; }   // qualité du coup vs évaluation
+// nagGlyphs + _nagGroup → lib/editor-core.js
 function editorToggleNag(n) {
   if (!_E.node || !_E.node.san) return;
   const had = (_E.node.nags||[]).includes(n);
@@ -4556,30 +4466,10 @@ function renderEditorNotation() {
   el.innerHTML = nodeHTML(_E.root,[],false) || '<span style="color:var(--dim);font-size:.8rem">Aucun coup — jouez sur l\'échiquier pour commencer</span>';
 }
 
-function editorTreeToPGN() {
-  function ser(node, forceNum) {
-    if (!node.children.length) return '';
-    const main=node.children[0], vars=node.children.slice(1);
-    const turn=main.fenBefore.split(' ')[1], num=main.fenBefore.split(' ')[5];
-    const pre=(turn==='w'||forceNum) ? num+(turn==='w'?'. ':'... ') : '';
-    let s=pre+main.san;
-    if (main.nags && main.nags.length) s+=' '+main.nags.map(n=>'$'+n).join(' ');
-    { const _cm=_commentWithShapes(main); if (_cm) s+=' {'+_cm+'}'; }
-    vars.forEach(v => {
-      const vt=v.fenBefore.split(' ')[1], vn=v.fenBefore.split(' ')[5];
-      s+=' ('+vn+(vt==='w'?'. ':'... ')+v.san;
-      if (v.nags && v.nags.length) s+=' '+v.nags.map(n=>'$'+n).join(' ');
-      { const _cm=_commentWithShapes(v); if (_cm) s+=' {'+_cm+'}'; }
-      s+=ser(v, vt==='b'); s+=')';
-    });
-    s+=ser(main, vars.length>0);
-    return ' '+s.trimStart();
-  }
-  return ser(_E.root, false).trim()+' *';
-}
+// editorTreeToPGN(root) → lib/editor-core.js
 
 function saveEditorDrill() {
-  const pgn  = editorTreeToPGN();
+  const pgn  = editorTreeToPGN(_E.root);
   const name = (document.getElementById('editor-drill-name').value || '').trim();
   const side =  document.getElementById('editor-side').value || 'w';
   const level = document.getElementById('editor-level').value || 'Intermédiaire';

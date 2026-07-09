@@ -51,16 +51,17 @@ L’application doit permettre :
 
 | Fichier | Rôle | Taille |
 |---------|------|--------|
-| `app.js` | Cœur applicatif : vues login/coach/drill/prof/élève, drill engine, éditeur PGN, accès Supabase, pont `window` | ~254 Ko · 5016 lignes |
+| `app.js` | Cœur applicatif : vues login/coach/drill/prof/élève, drill engine, éditeur PGN, accès Supabase, pont `window` | ~249 Ko · 4906 lignes |
 | `index.html` | Structure statique des écrans (montés/pilotés par `app.js`) | ~46 Ko |
 | `style.css` | Styles : design system (variables `--cyan`, `--surf`, `--border`…) + tous les écrans | ~54 Ko |
 | `state.js` | État global réassignable → objet `G` (source unique) | ~1,5 Ko |
 | `lib/core.js` | Logique pure : SM-2, normalisation/parsing PGN | ~5 Ko |
 | `lib/dbmap.js` | Mappers objet ↔ lignes SQL (Supabase) | ~6,5 Ko |
 | `lib/tree.js` | Arbres d’ouverture, positions du joueur, indices matériels | ~3,5 Ko |
+| `lib/editor-core.js` | Éditeur — cœur pur : sérialisation PGN ↔ arbre, formes, NAG (testé, round-trip) | ~6,5 Ko |
 | `home.html` + `data.js` | Page marketing autonome (copiée telle quelle dans `dist/` au build) | — |
 
-> `lib/tree.js` est la dernière extraction « propre » (ESM + test dédié) : c’est le modèle à suivre pour les prochaines.
+> `lib/editor-core.js` est la dernière extraction « propre » (ESM + test round-trip) : modèle à suivre. Découpage de l’éditeur en cours (§5.1) — reste l’étape 1b : le DOM/drag/état `_E` → `lib/editor.js`.
 
 ### Commandes
 - **Dev** : `npm run dev` (Vite, HMR) — ou `npx serve .` (ESM natif, sans build)
