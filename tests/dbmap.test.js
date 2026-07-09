@@ -1,9 +1,8 @@
-import dbmap from '../lib/dbmap.js';
-const {
+import {
   _sbModuleToRow, _sbRowToModule, _sbClassToRow, _sbRowToClass,
   _sbResultToRow, _sbRowToResult, _sbPracticeToRow, _sbRowToPractice,
   _sbGameToRow, _sbRowToGame
-} = dbmap;
+} from '../lib/dbmap.js';
 
 describe('mapping module ↔ ligne SQL', () => {
   const drill = {

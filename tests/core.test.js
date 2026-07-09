@@ -1,5 +1,4 @@
-import core from '../lib/core.js';
-const { _normFen, sm2Schedule, normalizeSAN, extractAllLines } = core;
+import { _normFen, sm2Schedule, normalizeSAN, extractAllLines } from '../lib/core.js';
 
 // ─────────────────────────────────────────────────────────────
 describe('_normFen — clé de transposition', () => {

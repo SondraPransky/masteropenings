@@ -2,8 +2,12 @@
   "name": "eecoach",
   "version": "0.1.0",
   "private": true,
-  "description": "EECoach — outil pédagogique de révision d'ouvertures d'échecs. Outillage de DÉV uniquement (type-check + tests) — l'app reste sans build, chargée par <script> et déployée en statique.",
+  "description": "EECoach — outil pédagogique de révision d'ouvertures d'échecs. Build Vite (modules ES) ; déployé en statique.",
+  "type": "module",
   "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "typecheck": "tsc -p jsconfig.json",
     "test": "vitest run",
     "test:e2e": "playwright test",
@@ -14,6 +18,7 @@
     "@playwright/test": "^1.61.1",
     "chess.js": "^0.10.3",
     "typescript": "^6.0.3",
+    "vite": "^8.1.3",
     "vitest": "^4.1.9"
   }
 }

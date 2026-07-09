@@ -4,6 +4,9 @@ Thumbs.db
 *.log
 .claude/
 
+# Build Vite (artefact, régénéré par `npm run build`)
+/dist/
+
 # Env & secrets (jamais commités)
 .env
 

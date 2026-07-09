@@ -16,6 +16,6 @@
     "noImplicitAny": false,
     "strictNullChecks": false
   },
-  "include": ["app.js", "lib/**/*.js", "data.js", "firebase-config.js", "supabase-config.js", "supabase-data.js", "types/**/*.d.ts"],
+  "include": ["app.js", "lib/**/*.js", "data.js", "types/**/*.d.ts"],
   "exclude": ["node_modules"]
 }

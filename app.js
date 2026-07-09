@@ -1,4 +1,25 @@
 // ══════════════════════════════════════════════════════
+// MODULES ES (Vite) + vendors CDN
+// ══════════════════════════════════════════════════════
+// Vendors (chess.js, @supabase/supabase-js) restent chargés en CDN dans index.html.
+// Dans un module ES, un identifiant non déclaré (Chess, supabase) se résout sur
+// globalThis → `new Chess()` et `supabase.createClient` marchent sans import vendor.
+import { _normFen, sm2Schedule, normalizeSAN, extractAllLines } from './lib/core.js';
+import {
+  _sbModuleToRow, _sbRowToModule, _sbClassToRow, _sbRowToClass,
+  _sbResultToRow, _sbRowToResult, _sbPracticeToRow, _sbRowToPractice,
+  _sbGameToRow, _sbRowToGame
+} from './lib/dbmap.js';
+import { isPlayerMove, _buildDrillTree, _treePlayerPositions, _materialHint } from './lib/tree.js';
+
+// ── Configuration Supabase (client `sb`) ──────────────────
+// Clé « publishable » PUBLIQUE (protégée par RLS) → OK committée. Jamais de clé « secret » ici.
+const SUPABASE_URL = 'https://smoftbuyejoyxlonhjcu.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_Bn0asUgcNYPYA1wnl9bokw_k1xshFC4';
+const SUPABASE_CONFIGURED = (typeof supabase !== 'undefined') && !!supabase.createClient;
+const sb = SUPABASE_CONFIGURED ? supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY) : null;
+
+// ══════════════════════════════════════════════════════
 // ÉTAT GLOBAL — auth Supabase
 // ══════════════════════════════════════════════════════
 // « Mode comptes » : login obligatoire + backend distant (Supabase).
@@ -441,10 +462,7 @@ function totalSessions() {
   return d.sessions?.length || 1;
 }
 
-function isPlayerMove(fenBefore, side) {
-  const turn = fenBefore.split(' ')[1];
-  return side === 'both' || turn === side;
-}
+// isPlayerMove → lib/tree.js
 
 // ══════════════════════════════════════════════════════
 // NAVIGATION
@@ -571,39 +589,7 @@ function goPage(name) {
 // ══════════════════════════════════════════════════════
 
 // Détecte si un coup laisse du matériel en prise (heuristique 1 coup, prudente).
-function _materialHint(fenBefore, moveSan) {
-  try {
-    const g = new Chess(fenBefore);
-    if (!g.move(moveSan)) return '';
-    const val = { p:1, n:3, b:3, r:5, q:9, k:0 };
-    let worst = 0;
-    for (const c of g.moves({ verbose:true }).filter(m => m.captured)) {
-      const g2 = new Chess(g.fen()); g2.move(c.san);
-      const recap = g2.moves({ verbose:true }).some(m => m.to === c.to && m.captured);
-      const net = val[c.captured] - (recap ? val[c.piece] : 0);
-      if (net > worst) worst = net;
-    }
-    return worst >= 2 ? '⚠ ce coup semble laisser du matériel en prise' : '';
-  } catch(e) { return ''; }
-}
-
-function _buildDrillTree(allLines, side) {
-  const tree = {};
-  for (const line of allLines) {
-    const g = new Chess(line.startFen || new Chess().fen());
-    for (const mv of line.moves) {
-      const nf = _normFen(g.fen());
-      if (!tree[nf]) tree[nf] = { opp: [], player: [], startFen: g.fen() };
-      const isPlayer = isPlayerMove(g.fen(), side);
-      const bucket   = isPlayer ? 'player' : 'opp';
-      if (!tree[nf][bucket].find(m => m.san === mv.san)) {
-        tree[nf][bucket].push({ san: mv.san, comment: mv.comment || '' });
-      }
-      g.move(mv.san);
-    }
-  }
-  return tree;
-}
+// _materialHint + _buildDrillTree → lib/tree.js
 
 // ══════════════════════════════════════════════════════
 // IMPORT DRILL (création)
@@ -1903,37 +1889,7 @@ function _treeUnseenCount() {
 
 // ── Répétition espacée pour les modules arbre ──────────
 // Énumère chaque point de décision du joueur comme une flashcard stable (clé = FEN normalisé).
-function _treePlayerPositions(drill) {
-  const out = [];
-  if (drill.varmode !== 'tree' || !drill.tree) return out;
-  const side = drill.side;
-  const startFen = drill.sessions?.[0]?.startFen || new Chess().fen();
-  const seen = new Set();
-  const queue = [new Chess(startFen)];
-  while (queue.length) {
-    const g  = queue.shift();
-    const nf = _normFen(g.fen());
-    if (seen.has(nf)) continue;
-    seen.add(nf);
-    const node = drill.tree[nf];
-    if (!node) continue;
-    if (isPlayerMove(g.fen(), side) && node.player && node.player.length) {
-      const canon = node.player[0];
-      out.push({
-        fen: g.fen(),
-        masteryKey: nf + '_' + canon.san,
-        san: canon.san,
-        altSans: node.player.map(m => m.san),
-        comment: canon.comment || ''
-      });
-    }
-    [...(node.player || []), ...(node.opp || [])].forEach(mv => {
-      const g2 = new Chess(g.fen());
-      if (g2.move(mv.san)) queue.push(g2);
-    });
-  }
-  return out;
-}
+// _treePlayerPositions → lib/tree.js
 
 // BFS from root to find the path of opp choices that leads to the
 // shallowest unseen (or LRU) opp move. Returns {normFen: san} map
@@ -4702,3 +4658,353 @@ if (!ACCOUNTS_ON) {
 }
 setTimeout(resizeBoard, 50);
 _initA11y();
+
+
+// ══════════════════════════════════════════════════════
+// COUCHE SUPABASE (fusionnée depuis supabase-data.js)
+// ══════════════════════════════════════════════════════
+
+// Normalise un user Supabase vers la forme attendue par l'app (compat Firebase).
+function _sbUser(u) {
+  if (!u) return null;
+  const meta = u.user_metadata || {};
+  return { uid: u.id, email: u.email, displayName: meta.name || u.email };
+}
+
+// Messages d'erreur auth → français (équivalent de translateFirebaseError).
+function _sbAuthError(e) {
+  const m = (e && e.message) || '';
+  if (/Invalid login/i.test(m))                 return 'Email ou mot de passe incorrect.';
+  if (/already registered|already exists/i.test(m)) return 'Cet email est déjà utilisé.';
+  if (/Email not confirmed/i.test(m))           return 'Email non confirmé — vérifiez votre boîte mail.';
+  if (/at least 6|6 characters/i.test(m))       return 'Mot de passe trop court (6 caractères minimum).';
+  if (/rate limit|too many/i.test(m))           return 'Trop de tentatives. Réessayez plus tard.';
+  return 'Erreur : ' + m;
+}
+
+async function _sbLogin() {
+  const email = (document.getElementById('login-email')?.value || '').trim();
+  const pwd   =  document.getElementById('login-pwd')?.value   || '';
+  if (!email || !pwd) { showLoginError('Remplissez tous les champs.'); return; }
+  const { error } = await sb.auth.signInWithPassword({ email, password: pwd });
+  if (error) showLoginError(_sbAuthError(error));
+  // succès → _sbInitAuth (onAuthStateChange) prend le relais
+}
+
+async function _sbRegister() {
+  const name  = (document.getElementById('reg-name')?.value  || '').trim();
+  const email = (document.getElementById('reg-email')?.value || '').trim();
+  const pwd   =  document.getElementById('reg-pwd')?.value   || '';
+  const role  =  document.getElementById('reg-role')?.value  || 'student';
+  let pseudo  = (document.getElementById('reg-pseudo')?.value || '').trim().toLowerCase().replace(/\s+/g, '');
+  if (!name || !email || !pwd) { showLoginError('Remplissez tous les champs.'); return; }
+  if (pwd.length < 6) { showLoginError('Le mot de passe doit contenir au moins 6 caractères.'); return; }
+  if (!pseudo) pseudo = email.split('@')[0].toLowerCase();
+
+  // user_metadata transporte name/role/pseudo (le trigger crée la ligne profiles id+email).
+  const { data, error } = await sb.auth.signUp({
+    email, password: pwd, options: { data: { name, role, pseudo } }
+  });
+  if (error) { showLoginError(_sbAuthError(error)); return; }
+  // Complète le profil (le trigger n'a posé que id+email).
+  if (data.user) {
+    await sb.from('profiles').update({ name, role, pseudo }).eq('id', data.user.id);
+  }
+  // Confirmation email activée ⇒ pas de session immédiate.
+  if (!data.session) {
+    showLoginError('Compte créé. Confirmez votre email puis connectez-vous.');
+  }
+}
+
+async function _sbLogout() {
+  await sb.auth.signOut();
+}
+
+// Envoie l'email de réinitialisation (lien de récupération renvoyant vers l'app).
+async function _sbResetPassword(email) {
+  if (!email) { showLoginError('Entrez d\'abord votre email ci-dessus.'); return; }
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+  if (error) { showLoginError(_sbAuthError(error)); return; }
+  toast('📧 Email de réinitialisation envoyé — vérifiez vos mails (et les spams)', 'ok');
+}
+
+// Applique le nouveau mot de passe (session de récupération active). Renvoie un message FR ou null.
+async function _sbUpdatePassword(pwd) {
+  const { error } = await sb.auth.updateUser({ password: pwd });
+  return error ? _sbAuthError(error) : null;
+}
+
+// Équivalent de fbAuth.onAuthStateChanged : pilote la session + le routage.
+function _sbInitAuth() {
+  sb.auth.onAuthStateChange(async (event, session) => {
+    // Lien de réinitialisation cliqué → formulaire « nouveau mot de passe ».
+    if (event === 'PASSWORD_RECOVERY') { showRecoveryForm(); return; }
+    const u = session && session.user;
+    currentUser = _sbUser(u);
+    if (!u) { updateNav(); goPage('login'); return; }
+    // rôle + pseudo depuis profiles
+    try {
+      const { data: prof } = await sb.from('profiles').select('role,pseudo').eq('id', u.id).maybeSingle();
+      currentRole   = (prof && prof.role)   || 'student';
+      currentPseudo = (prof && prof.pseudo) || null;
+    } catch (e) { currentRole = 'student'; currentPseudo = null; }
+    pendingRole = null;
+    updateNav();
+    await _sbLoadMastery();
+    if (currentRole === 'teacher') { await _sbLoadTeacherModules(); goPage('coach'); }
+    else { goPage('student-home'); await _sbLoadStudentModules(); }
+  });
+}
+
+// ════════════════════════════════════════════════════════════
+//  DONNÉES — modules & classes (côté enseignant)
+//  Étape SUIVANTE : élève (loadStudentModules), résultats, pratique, parties.
+// ════════════════════════════════════════════════════════════
+async function _sbLoadTeacherModules() {
+  if (!sb || !currentUser || currentRole !== 'teacher') return;
+  try {
+    const { data: mods, error: e1 } = await sb.from('modules').select('*').eq('teacher_id', currentUser.uid);
+    if (e1) throw e1;
+    drills = (mods || []).map(_sbRowToModule).sort((a, b) => (b.id || 0) - (a.id || 0));
+    save();
+    const { data: cls, error: e2 } = await sb.from('classes').select('*').eq('teacher_id', currentUser.uid);
+    if (e2) throw e2;
+    classes = (cls || []).map(_sbRowToClass);
+    saveClasses();
+    renderDrillList();
+    renderClassList();
+    renderClassModuleSelect();
+    updateStudentBar();
+  } catch (e) { console.error('_sbLoadTeacherModules', e); renderDrillList(); }
+}
+
+async function _sbSaveModule(drill) {
+  if (!sb || !currentUser || currentRole !== 'teacher') return;
+  try {
+    const row = _sbModuleToRow(drill);
+    row.teacher_id = currentUser.uid;   // garantir le propriétaire (RLS)
+    const { error } = await sb.from('modules').upsert(row);
+    if (error) throw error;
+  } catch (e) { console.error('_sbSaveModule', e); }
+}
+
+async function _sbDeleteModule(drillId) {
+  if (!sb || !currentUser || currentRole !== 'teacher') return;
+  try {
+    const { error } = await sb.from('modules').delete().eq('id', drillId);
+    if (error) throw error;
+  } catch (e) { console.error('_sbDeleteModule', e); }
+}
+
+async function _sbSaveClass(cls) {
+  if (!sb || !currentUser || currentRole !== 'teacher') return;
+  try {
+    const row = _sbClassToRow(cls);
+    row.teacher_id = currentUser.uid;
+    const { error } = await sb.from('classes').upsert(row);
+    if (error) throw error;
+  } catch (e) { console.error('_sbSaveClass', e); }
+}
+
+async function _sbDeleteClass(id) {
+  if (!sb || !currentUser) return;
+  try {
+    const { error } = await sb.from('classes').delete().eq('id', id);
+    if (error) throw error;
+  } catch (e) { console.error('_sbDeleteClass', e); }
+}
+
+// ════════════════════════════════════════════════════════════
+//  DONNÉES — élève + résultats / pratique / parties + mastery
+// ════════════════════════════════════════════════════════════
+async function _sbLoadStudentModules() {
+  if (!sb || !currentUser || currentRole !== 'student') return;
+  const listEl = document.getElementById('sh-module-list');
+  const nameEl = document.getElementById('sh-student-name');
+  if (nameEl) nameEl.textContent = currentUser.displayName || currentUser.email;
+
+  let assigned = [], personal = [];
+  try {
+    const ids = _myIdentifiers();
+    // Toutes les classes (RLS : lecture aux connectés) → filtrage client par identifiants.
+    const { data: allCls, error: ec } = await sb.from('classes').select('*');
+    if (ec) throw ec;
+    const myCls = (allCls || []).map(_sbRowToClass)
+      .filter(c => (c.students || []).some(s => ids.includes(String(s).toLowerCase())));
+    const moduleIds = new Set();
+    myCls.forEach(c => (c.moduleIds || []).forEach(id => moduleIds.add(Number(id))));
+    if (moduleIds.size) {
+      const { data: mods } = await sb.from('modules').select('*').in('id', [...moduleIds]);
+      assigned = (mods || []).map(_sbRowToModule);
+    }
+    // Noms des coachs (affichés si l'élève a plusieurs profs)
+    const coachIds = [...new Set(assigned.map(m => m.teacherId).filter(Boolean))];
+    const coachNames = {};
+    if (coachIds.length) {
+      const { data: profs } = await sb.from('profiles').select('id,name,pseudo,email').in('id', coachIds);
+      (profs || []).forEach(p => coachNames[p.id] = p.name || p.pseudo || p.email || 'Coach');
+    }
+    const multiCoach = coachIds.length > 1;
+    assigned.forEach(m => { m.coachName = coachNames[m.teacherId] || null; m._showCoach = multiCoach; });
+    // Modules perso de l'élève
+    const { data: pers } = await sb.from('modules').select('*').eq('owner_student_id', currentUser.uid);
+    personal = (pers || []).map(_sbRowToModule);
+    // Résultats + pratique de l'élève (dashboard multi-appareils)
+    const { data: rs } = await sb.from('results').select('*').eq('student_id', currentUser.uid);
+    results = (rs || []).map(_sbRowToResult); localStorage.setItem('mc_results', JSON.stringify(results));
+    const { data: ps } = await sb.from('practice').select('*').eq('student_id', currentUser.uid);
+    practiceLog = (ps || []).map(_sbRowToPractice); localStorage.setItem('mc_practice', JSON.stringify(practiceLog));
+  } catch (e) {
+    console.error('_sbLoadStudentModules', e);
+    if (listEl) listEl.innerHTML = '<div style="color:var(--red);padding:20px;text-align:center;font-size:.85rem">Erreur de chargement. Vérifiez votre connexion.</div>';
+    return;
+  }
+  drills = [...assigned, ...personal];
+  save();
+  renderStudentHome(assigned, personal);
+}
+
+async function _sbSaveStudentModule(d) {
+  if (!sb || !currentUser) return;
+  try {
+    const row = _sbModuleToRow(d);
+    row.owner_student_id = currentUser.uid;   // RLS : module perso de l'élève
+    const { error } = await sb.from('modules').upsert(row);
+    if (error) throw error;
+  } catch (e) { console.error('_sbSaveStudentModule', e); }
+}
+
+async function _sbDeleteStudentModule(id) {
+  if (!sb || !currentUser) return;
+  try {
+    const { error } = await sb.from('modules').delete().eq('id', id);
+    if (error) throw error;
+  } catch (e) { console.error('_sbDeleteStudentModule', e); }
+}
+
+async function _sbRecordResult(rec) {
+  if (!sb || !currentUser) return;
+  try { const { error } = await sb.from('results').insert(_sbResultToRow(rec)); if (error) throw error; }
+  catch (e) { console.error('_sbRecordResult', e); }
+}
+
+async function _sbRecordPractice(rec) {
+  if (!sb || !currentUser) return;
+  try { const { error } = await sb.from('practice').insert(_sbPracticeToRow(rec)); if (error) throw error; }
+  catch (e) { console.error('_sbRecordPractice', e); }
+}
+
+async function _sbSaveGame(rec) {
+  if (!sb || !currentUser) return;
+  try { const { error } = await sb.from('games').insert(_sbGameToRow(rec)); if (error) throw error; }
+  catch (e) { console.error('_sbSaveGame', e); }
+}
+
+// Vue Prof : résultats / pratique / parties portant sur les modules du prof.
+async function _sbLoadTeacherResults() {
+  if (!sb || !currentUser || currentRole !== 'teacher') return;
+  const ids = drills.map(d => String(d.id));
+  if (!ids.length) { results = []; localStorage.setItem('mc_results', '[]'); return; }
+  try {
+    const { data } = await sb.from('results').select('*').in('drill_id', ids);
+    results = (data || []).map(_sbRowToResult);
+    localStorage.setItem('mc_results', JSON.stringify(results));
+  } catch (e) { console.error('_sbLoadTeacherResults', e); }
+}
+
+async function _sbLoadTeacherPractice() {
+  if (!sb || !currentUser || currentRole !== 'teacher') return;
+  const ids = drills.map(d => String(d.id));
+  if (!ids.length) { practiceLog = []; localStorage.setItem('mc_practice', '[]'); return; }
+  try {
+    const { data } = await sb.from('practice').select('*').in('drill_id', ids);
+    practiceLog = (data || []).map(_sbRowToPractice);
+    localStorage.setItem('mc_practice', JSON.stringify(practiceLog));
+  } catch (e) { console.error('_sbLoadTeacherPractice', e); }
+}
+
+async function _sbLoadTeacherGames() {
+  if (!sb || !currentUser || currentRole !== 'teacher') return;
+  const ids = drills.map(d => String(d.id));
+  if (!ids.length) { savedGames = []; return; }
+  try {
+    const { data } = await sb.from('games').select('*').in('drill_id', ids);
+    savedGames = (data || []).map(_sbRowToGame);
+  } catch (e) { console.error('_sbLoadTeacherGames', e); }
+}
+
+// Progression SM-2 (mastery) — stockée dans profiles.mastery (jsonb).
+async function _sbSaveMastery() {
+  const student = currentUser && (currentUser.displayName || currentUser.email);
+  if (!sb || !currentUser || !student) return;
+  const prefix = student + '_';
+  const mine = {};
+  for (const k in masteryData) if (k.startsWith(prefix)) mine[k] = masteryData[k];
+  try { const { error } = await sb.from('profiles').update({ mastery: mine }).eq('id', currentUser.uid); if (error) throw error; }
+  catch (e) { console.error('_sbSaveMastery', e); }
+}
+
+async function _sbLoadMastery() {
+  if (!sb || !currentUser) return;
+  try {
+    const { data } = await sb.from('profiles').select('mastery').eq('id', currentUser.uid).maybeSingle();
+    const m = data && data.mastery;
+    if (m) {
+      for (const k in m) if (!masteryData[k] || (m[k].due || 0) > (masteryData[k].due || 0)) masteryData[k] = m[k];
+      localStorage.setItem('mc_mastery', JSON.stringify(masteryData));
+    }
+  } catch (e) { console.error('_sbLoadMastery', e); }
+}
+
+
+// ══════════════════════════════════════════════════════
+// PONT window — expose les fonctions du module aux handlers inline onclick=""
+// (genere : toutes les fonctions top-level du module ES)
+// ══════════════════════════════════════════════════════
+Object.assign(window, {
+  _afterMaiaReady, _buildDrillTree, _buildProfRoster, _buildProgressionHTML, _checkPTEnd, _classWeakSpots,
+  _commentDelay, _commentWithShapes, _computeForcedPath, _computeStreak, _deadlinePill, _download,
+  _drawBoardShapes, _drillSessions, _eResize, _edTab, _editorShapesSVG, _ensureEditorArrowHandlers,
+  _ensureOrt, _findNodeByFen, _getHintFrom, _getMaiaMove, _initA11y, _markModuleSeen, _markVersionSeen,
+  _masteryBadge, _materialHint, _mirrorFen, _mirrorUci, _moduleStats, _myIdentifiers, _nagGroup,
+  _parseShapes, _pickOppMove, _pieceFr, _renderRing, _sbAuthError, _sbDeleteClass, _sbDeleteModule,
+  _sbDeleteStudentModule, _sbInitAuth, _sbLoadMastery, _sbLoadStudentModules, _sbLoadTeacherGames,
+  _sbLoadTeacherModules, _sbLoadTeacherPractice, _sbLoadTeacherResults, _sbLogin, _sbLogout,
+  _sbRecordPractice, _sbRecordResult, _sbRegister, _sbResetPassword, _sbSaveClass, _sbSaveGame,
+  _sbSaveMastery, _sbSaveModule, _sbSaveStudentModule, _sbUpdatePassword, _sbUser, _scheduleMasterySync,
+  _seenKey, _seenModules, _seenVerKey, _seenVersions, _setStudyLayout, _shModuleCard, _shapesToPGN,
+  _sqCenter, _srAnswer, _srBilan, _srBuildQueue, _srBumpNewToday, _srClearSuspended, _srForecast,
+  _srIsSuspended, _srMyResults, _srNewLimit, _srNewToday, _srPositions, _srScopeList, _srSessionSize,
+  _srSetSuspended, _srSuspendedCount, _srSuspendedMap, _srTodayKey, _srToggleBar, _srUpdateBar,
+  _studyGuessPrompt, _studyGuessReady, _studyGuessSync, _studyMastery, _syncHeatmapFilters, _syncPartiesFilter,
+  _treeEnd, _treePlayerPositions, _treeUnseenCount, addFromLibrary, addLog, addStudent, advanceLine,
+  advanceTree, askName, autoFillFromPgn, canInteract, cancelDel, cancelEditClass, cancelPromo,
+  clearFeedback, clearLog, closeEditorModal, closeModal, confirmDel, confirmName, countPlayerMoves,
+  currentGame, currentSession, deleteClass, deleteDrill, deleteModuleFromFirestore, deleteStudentDrill,
+  dismissOnboarding, drawBoard, drawCoords, drawGhost, editorApplyMove, editorClearNags, editorClearShapes,
+  editorClickSq, editorClickSqLogic, editorDeleteNode, editorDragEnd, editorDragStart, editorDrop,
+  editorGoPath, editorNext, editorPrev, editorPromoteMain, editorSaveComment, editorToggleNag,
+  editorToggleShape, editorTouchStart, editorTreeToPGN, endLineDrill, endPositionsDrill, enginePlay,
+  enterTestPhase, escapeHtml, evXY, exportAll, exportCSV, exportPGN, exportPracticeCSV, fig,
+  flipBoard, flipEditorBoard, getPieceImg, goPage, importDrill, importStudentDrill, initDrillPage,
+  injectDemoDrill, isLineMode, isPlayerMove, launchDrill, learnNext, learnPrev, loadExample,
+  loadMaia, loadPgnFile, loadPosition, loadStudentModules, loadTeacherGames, loadTeacherModules,
+  loadTeacherPractice, loadTeacherResults, loginUser, logoutUser, nagGlyphs, nextDrill, nextSession,
+  openCreateDrillModal, openEditClass, openLibrary, openPgnEditor, openPgnEditorNew, openSrSettings,
+  openStudentImport, pgnToEditorTree, pickPromo, playVsMaia, posGhost, previewDrill, quitMaiaGame,
+  recordPracticeSession, recordResult, registerUser, renderClassList, renderClassModuleSelect,
+  renderClassWeakSpots, renderClassesTab, renderCoachOnboarding, renderDrillList, renderEditorBoard,
+  renderEditorNagBar, renderEditorNotation, renderHeatmap, renderLearnComment, renderLearnNotation,
+  renderLearnState, renderLibrary, renderNotation, renderPartiesTab, renderPosStrip, renderProfView,
+  renderSrDashboard, renderStudentHome, renderStudyBubble, renderStudyGuessLine, renderStudyTree,
+  replayErrors, requestPasswordReset, resizeBoard, reviserDrill, reviserTout, save, saveClass,
+  saveClasses, saveEditorDrill, saveGame, saveSrSettings, selectDrill, setBoardComment, setBoardPrompt,
+  setFeedback, shareDrill, showEndModal, showHint, showLoginError, showLoginTab, showPromoPicker,
+  showRecoveryForm, showStudentDetail, skipLinePosition, skipPosition, sm2Get, sm2Update, sqFromXY,
+  srStart, srSuspendCurrent, startDrill, startLearnPhase, startLineDrill, startPostTheory, startStudentDrill,
+  startStudyPhase, startTreeDrill, studyGoPath, studyNext, studyPrev, submitNewPassword, switchCoachSection,
+  syncModuleToFirestore, toast, toggleAdvOpts, toggleClassMode, togglePGN, togglePauseAdversary,
+  toggleStudyGuess, toggleTheme, totalSessions, tryMove, tryMoveInLine, tryMoveInPositions, tryMoveInTree,
+  tryMovePostTheory, tryStudyGuess, updateLearnProgress, updateLinePosInfo, updateNav, updatePosInfo,
+  updateReviserToutBadge, updateScores, updateSessionInfo, updateStudentBar, updateStudyProgress,
+});

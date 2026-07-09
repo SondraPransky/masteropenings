@@ -12,8 +12,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
 <!-- onnxruntime-web (~plusieurs Mo) : chargé À LA DEMANDE par loadMaia() lors de la 1re partie vs Maia, pas au démarrage -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-config.js"></script>
-<script src="supabase-data.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
@@ -782,8 +780,7 @@
 <div id="promo-pick"
   style="display:none;position:fixed;z-index:10000;flex-direction:row;gap:6px;border-radius:8px;padding:8px 10px;box-shadow:0 4px 20px rgba(0,0,0,.4);background:var(--surf);border:1px solid var(--border)"></div>
 
-<script src="lib/core.js"></script>
-<script src="lib/dbmap.js"></script>
-<script src="app.js"></script>
+<!-- App = un seul module ES (importe lib/core.js + lib/dbmap.js ; chess.js + supabase restent en CDN ci-dessus, globals window.Chess/window.supabase) -->
+<script type="module" src="./app.js"></script>
 </body>
 </html>
