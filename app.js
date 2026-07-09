@@ -122,12 +122,12 @@ function showLoginTab(tab) {
   if (err) err.style.display = 'none';
 }
 
-// ── Données — modules + classes (enseignant) ──────────
+// ── Données — modules + G.classes (enseignant) ──────────
 async function loadTeacherModules()          { return _sbLoadTeacherModules(); }
 async function syncModuleToFirestore(drill)   { return _sbSaveModule(drill); }
 async function deleteModuleFromFirestore(drillId) { return _sbDeleteModule(drillId); }
 
-// ── Identifiants de l'élève pour le matching des classes (pseudo, email, nom) ──
+// ── Identifiants de l'élève pour le matching des G.classes (pseudo, email, nom) ──
 function _myIdentifiers() {
   return [...new Set([
     G.currentPseudo,
@@ -210,7 +210,7 @@ function renderStudentHome(assigned, personal) {
 // Stats d'un module pour l'élève (depuis les résultats réels)
 function _moduleStats(m) {
   const student = S.student || (G.currentUser ? (G.currentUser.displayName || G.currentUser.email) : '');
-  const rs = results.filter(r => String(r.drillId) === String(m.id));
+  const rs = G.results.filter(r => String(r.drillId) === String(m.id));
   const total   = rs.length;
   const correct = rs.filter(r => r.correct).length;
   let pct = total ? Math.round(correct / total * 100) : null;
@@ -241,7 +241,7 @@ function _moduleStats(m) {
 function _computeStreak() {
   const days = new Set();
   const add = ts => { if (ts) days.add(new Date(ts).toDateString()); };
-  results.forEach(r => add(r.ts));
+  G.results.forEach(r => add(r.ts));
   (typeof G.practiceLog !== 'undefined' ? G.practiceLog : []).forEach(p => add(p.ts));
   if (!days.size) return 0;
   let streak = 0;
@@ -371,9 +371,6 @@ if (sb) _sbInitAuth();
 // DONNÉES
 // ══════════════════════════════════════════════════════
 // G.drills / G.practiceLog / G.savedGames / G.masteryData / G.oppSeen → state.js (G).
-// results + classes restent locaux le temps de traiter leurs collisions de chaînes.
-let results     = JSON.parse(localStorage.getItem('mc_results')   || '[]');
-let classes     = JSON.parse(localStorage.getItem('mc_classes')   || '[]');
 
 // ── Thème ──────────────────────────────────────────────
 function toggleTheme() {
@@ -960,7 +957,7 @@ function saveSrSettings() {
 // ── Tableau de bord élève : métriques + prévision 14 j (P3) ──
 function _srMyResults() {
   const id = S.student, email = G.currentUser && G.currentUser.email;
-  return results.filter(r => r.student === id || (email && r.studentEmail === email));
+  return G.results.filter(r => r.student === id || (email && r.studentEmail === email));
 }
 function renderSrDashboard() {
   const el = document.getElementById('sh-dashboard'); if (!el) return;
@@ -1007,7 +1004,7 @@ function confirmDel() {
   const toDel = G.drills.find(d=>d.id===id);
   if (toDel && toDel.demo) localStorage.setItem('mc_demo_seen','1');
   G.drills      = G.drills.filter(d=>String(d.id)!==String(id));
-  results     = results.filter(r=>String(r.drillId)!==String(id));
+  G.results     = G.results.filter(r=>String(r.drillId)!==String(id));
   G.practiceLog = G.practiceLog.filter(l=>String(l.drillId)!==String(id));
   G.savedGames  = G.savedGames.filter(g=>String(g.drillId)!==String(id));
   for (const k of Object.keys(G.masteryData)) {
@@ -1027,14 +1024,14 @@ function cancelDel() {
 
 function save() {
   localStorage.setItem('mc_drills',   JSON.stringify(G.drills));
-  localStorage.setItem('mc_results',  JSON.stringify(results));
+  localStorage.setItem('mc_results',  JSON.stringify(G.results));
   localStorage.setItem('mc_practice', JSON.stringify(G.practiceLog));
   localStorage.setItem('mc_games',    JSON.stringify(G.savedGames));
   localStorage.setItem('mc_mastery',  JSON.stringify(G.masteryData));
   localStorage.setItem('mc_opp_seen', JSON.stringify(G.oppSeen));
 }
 function saveClasses() {
-  localStorage.setItem('mc_classes', JSON.stringify(classes));
+  localStorage.setItem('mc_classes', JSON.stringify(G.classes));
 }
 
 function countPlayerMoves(drill) {
@@ -1080,7 +1077,7 @@ function renderCoachOnboarding() {
   if (!el) return;
   if (localStorage.getItem('mc_onboarding_done')) { el.innerHTML = ''; return; }
   const nbModules = G.drills.filter(d => !d.personal && !d.demo).length;
-  const nbClasses = (typeof classes !== 'undefined' ? classes : []).length;
+  const nbClasses = (typeof G.classes !== 'undefined' ? G.classes : []).length;
   const steps = [
     { done: true,          label: 'Compte professeur créé', cta: '' },
     { done: nbModules > 0, label: 'Créez votre premier module',
@@ -1183,7 +1180,7 @@ function renderDrillList() {
 function launchDrill(i) { S.idx=i; goPage('drill'); }
 
 // Partager un module = ouvrir le formulaire de classe avec ce module déjà coché.
-// Il ne reste au prof qu'à saisir les élèves puis valider (l'assignation passe par les classes).
+// Il ne reste au prof qu'à saisir les élèves puis valider (l'assignation passe par les G.classes).
 function shareDrill(i) {
   const d = G.drills[i];
   if (!d) return;
@@ -1203,7 +1200,7 @@ function shareDrill(i) {
 // ══════════════════════════════════════════════════════
 // PARTAGE PAR CODE
 // ══════════════════════════════════════════════════════
-// (Partage par code retiré — l'assignation se fait uniquement via les classes,
+// (Partage par code retiré — l'assignation se fait uniquement via les G.classes,
 //  et l'élève peut importer ses propres PGN depuis son espace.)
 
 // ══════════════════════════════════════════════════════
@@ -1241,13 +1238,13 @@ async function saveClass() {
   if (!selectedIds.length && !individual) { toast('⚠ Sélectionnez au moins un module','ko'); return; }
   if (!studentEmails.length){ toast(individual ? '⚠ Indiquez le pseudo ou l\'email de l\'élève' : '⚠ Ajoutez au moins un élève','ko'); return; }
 
-  let cls = (_editingClassId != null) ? classes.find(c => c.id === _editingClassId) : null;
+  let cls = (_editingClassId != null) ? G.classes.find(c => c.id === _editingClassId) : null;
   const isEdit = !!cls;
   if (cls) {
     cls.name = name; cls.moduleIds = selectedIds; cls.studentEmails = studentEmails; cls.students = studentEmails; cls.individual = individual;
   } else {
     cls = { id: Date.now(), name, moduleIds: selectedIds, moduleCodes: [], studentEmails, students: studentEmails, individual, created: new Date().toLocaleDateString('fr-FR') };
-    classes.push(cls);
+    G.classes.push(cls);
   }
   saveClasses();
   await _sbSaveClass(cls);
@@ -1258,7 +1255,7 @@ async function saveClass() {
 }
 
 function openEditClass(id) {
-  const cls = classes.find(c => c.id === id);
+  const cls = G.classes.find(c => c.id === id);
   if (!cls) return;
   _editingClassId = id;
   const indBox = document.getElementById('inp-cls-individual'); if (indBox) indBox.checked = !!cls.individual;
@@ -1303,7 +1300,7 @@ function addStudent() {
 
 function deleteClass(id) {
   if (!confirm('Supprimer cette classe ? Les élèves n\'y auront plus accès.')) return;
-  classes = classes.filter(c=>c.id!==id);
+  G.classes = G.classes.filter(c=>c.id!==id);
   saveClasses();
   _sbDeleteClass(id);
   if (_editingClassId === id) cancelEditClass();
@@ -1316,8 +1313,8 @@ function renderClassList() {
   renderCoachOnboarding();
   const el = document.getElementById('cls-list');
   if (!el) return;
-  if (!classes.length) { el.innerHTML=''; return; }
-  el.innerHTML = classes.map(cls => {
+  if (!G.classes.length) { el.innerHTML=''; return; }
+  el.innerHTML = G.classes.map(cls => {
     const modNames = (cls.moduleIds || []).map(id => { const d = G.drills.find(x => String(x.id) === String(id)); return d ? d.name : '— supprimé —'; });
     const stuList  = (cls.studentEmails || cls.students || []);
     return `<div style="padding:10px 12px;background:var(--surf2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px">
@@ -2651,7 +2648,7 @@ function recordResult(correct, kp) {
     correct,
     ts: Date.now()
   };
-  results.push(rec);
+  G.results.push(rec);
   save();
   _sbRecordResult(rec);
 }
@@ -3494,9 +3491,9 @@ function renderClassWeakSpots(arr) {
   </div>`;
 }
 
-// Roster unifié pour la Vue Prof : élèves des classes (pseudo/email) + élèves avec résultats, dédupliqués.
+// Roster unifié pour la Vue Prof : élèves des G.classes (pseudo/email) + élèves avec résultats, dédupliqués.
 function _buildProfRoster(filtered) {
-  const rosterIds = [...new Set(classes.flatMap(c => (c.studentEmails || c.students || [])))];
+  const rosterIds = [...new Set(G.classes.flatMap(c => (c.studentEmails || c.students || [])))];
   const keysOf = r => [(r.studentEmail||'').toLowerCase(), (r.studentPseudo||'').toLowerCase(), (r.student||'').toLowerCase()].filter(Boolean);
   const map = {};
   rosterIds.forEach(id => { map[id] = { key:id, label:id, total:0, correct:0, lastTs:0, played:false }; });
@@ -3518,9 +3515,9 @@ function _buildProfRoster(filtered) {
 function renderProfView(){
   selectedDrillFilter = document.getElementById('prof-drill-filter').value;
 
-  // Des élèves inscrits (via classes) suffisent à afficher le panneau, même sans résultat encore.
-  const hasStudents = classes.some(c => (c.studentEmails || c.students || []).length);
-  const hasAny = results.length || G.practiceLog.length || G.savedGames.length || hasStudents;
+  // Des élèves inscrits (via G.classes) suffisent à afficher le panneau, même sans résultat encore.
+  const hasStudents = G.classes.some(c => (c.studentEmails || c.students || []).length);
+  const hasAny = G.results.length || G.practiceLog.length || G.savedGames.length || hasStudents;
   document.getElementById('prof-empty').style.display = hasAny ? 'none' : 'block';
   document.getElementById('prof-ui').style.display    = hasAny ? ''     : 'none';
   if (!hasAny) return;
@@ -3532,7 +3529,7 @@ function renderProfView(){
     G.drills.map(d=>`<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('');
   filterEl.value = prev;
 
-  let filtered = selectedDrillFilter==='all' ? results : results.filter(r=>String(r.drillId)===selectedDrillFilter);
+  let filtered = selectedDrillFilter==='all' ? G.results : G.results.filter(r=>String(r.drillId)===selectedDrillFilter);
 
   // KPIs
   const students   = _buildProfRoster(filtered);
@@ -3555,7 +3552,7 @@ function renderProfView(){
   const eleveCount2 = document.getElementById('csnav-count-eleves2');
   if (eleveCount2) eleveCount2.textContent = students.length + ' élève' + (students.length>1?'s':'');
 
-  // Liste élèves : roster complet (depuis les classes) + élèves ayant joué
+  // Liste élèves : roster complet (depuis les G.classes) + élèves ayant joué
   const _now = Date.now();
   const _wkAgo = _now - 7 * 86400000;
   const _activeWk = students.filter(s => s.lastTs >= _wkAgo).length;
@@ -3591,7 +3588,7 @@ function showStudentDetail(id) {
   );
 
   const idLower = (id||'').toLowerCase();
-  let sr = results.filter(r =>
+  let sr = G.results.filter(r =>
     [(r.studentEmail||'').toLowerCase(), (r.studentPseudo||'').toLowerCase(), (r.student||'').toLowerCase()].includes(idLower)
     || (r.student||r.studentName) === id
   );
@@ -3762,7 +3759,7 @@ function _buildProgressionHTML(name) {
   ).sort((a,b)=>a.ts-b.ts);
 
   const errMap = {};
-  results.filter(r=>(r.student||r.studentName)===name &&
+  G.results.filter(r=>(r.student||r.studentName)===name &&
     (selectedDrillFilter==='all'||String(r.drillId)===selectedDrillFilter)
   ).forEach(r=>{
     const key = `${r.drillId}_${r.posIdx}_${r.san||''}`;
@@ -3839,7 +3836,7 @@ function renderHeatmap() {
   const el = document.getElementById('prof-heatmap-content');
   const drillId = (document.getElementById('hm-drill-filter') || document.getElementById('prof-drill-filter'))?.value || 'all';
 
-  let filtered = drillId === 'all' ? results : results.filter(r=>String(r.drillId)===drillId);
+  let filtered = drillId === 'all' ? G.results : G.results.filter(r=>String(r.drillId)===drillId);
 
   if (!filtered.length) {
     el.innerHTML = '<div class="empty" style="padding:40px"><div class="empty-ico">🔥</div>Sélectionnez un module pour voir la heatmap des erreurs</div>';
@@ -3893,15 +3890,15 @@ function renderHeatmap() {
 function renderClassesTab() {
   const el = document.getElementById('prof-classes-content');
   if (!el) return;
-  if (!classes.length) {
+  if (!G.classes.length) {
     el.innerHTML = '<div class="empty" style="padding:40px;border:1px dashed var(--border);border-radius:var(--r)"><div class="empty-ico">🏫</div>Aucune classe.<br>Créez-en une à gauche pour suivre vos élèves.</div>';
     return;
   }
   const now = Date.now();
-  el.innerHTML = classes.map(cls => {
+  el.innerHTML = G.classes.map(cls => {
     const modIds = (cls.moduleIds || []).map(String);
     const roster = (cls.studentEmails || cls.students || []);
-    const clsResults = results.filter(r => modIds.includes(String(r.drillId)));
+    const clsResults = G.results.filter(r => modIds.includes(String(r.drillId)));
     let activeCount = 0;
     const rows = roster.length ? roster.map(email => {
       const sr = clsResults.filter(r => [(r.studentEmail||'').toLowerCase(), (r.studentPseudo||'').toLowerCase(), (r.student||'').toLowerCase()].includes(email));
@@ -3970,7 +3967,7 @@ function _download(filename, content, mime='text/plain') {
 
 function exportCSV() {
   const header = 'étudiant,drill,position,coup,correct,horodatage\n';
-  const rows   = results.map(r=>
+  const rows   = G.results.map(r=>
     [r.student,r.drillName,r.posIdx+1,r.san||'',r.correct?'1':'0',new Date(r.ts).toISOString()].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')
   ).join('\n');
   _download('results.csv', header+rows, 'text/csv');
@@ -3993,7 +3990,7 @@ function exportPGN(idx) {
 }
 
 function exportAll() {
-  const data = { drills: G.drills, results, practiceLog: G.practiceLog, savedGames: G.savedGames, masteryData: G.masteryData, exportedAt: new Date().toISOString() };
+  const data = { drills: G.drills, results: G.results, practiceLog: G.practiceLog, savedGames: G.savedGames, masteryData: G.masteryData, exportedAt: new Date().toISOString() };
   _download('backup.json', JSON.stringify(data,null,2), 'application/json');
 }
 
@@ -4755,7 +4752,7 @@ function _sbInitAuth() {
 }
 
 // ════════════════════════════════════════════════════════════
-//  DONNÉES — modules & classes (côté enseignant)
+//  DONNÉES — modules & G.classes (côté enseignant)
 //  Étape SUIVANTE : élève (loadStudentModules), résultats, pratique, parties.
 // ════════════════════════════════════════════════════════════
 async function _sbLoadTeacherModules() {
@@ -4767,7 +4764,7 @@ async function _sbLoadTeacherModules() {
     save();
     const { data: cls, error: e2 } = await sb.from('classes').select('*').eq('teacher_id', G.currentUser.uid);
     if (e2) throw e2;
-    classes = (cls || []).map(_sbRowToClass);
+    G.classes = (cls || []).map(_sbRowToClass);
     saveClasses();
     renderDrillList();
     renderClassList();
@@ -4824,7 +4821,7 @@ async function _sbLoadStudentModules() {
   let assigned = [], personal = [];
   try {
     const ids = _myIdentifiers();
-    // Toutes les classes (RLS : lecture aux connectés) → filtrage client par identifiants.
+    // Toutes les G.classes (RLS : lecture aux connectés) → filtrage client par identifiants.
     const { data: allCls, error: ec } = await sb.from('classes').select('*');
     if (ec) throw ec;
     const myCls = (allCls || []).map(_sbRowToClass)
@@ -4849,7 +4846,7 @@ async function _sbLoadStudentModules() {
     personal = (pers || []).map(_sbRowToModule);
     // Résultats + pratique de l'élève (dashboard multi-appareils)
     const { data: rs } = await sb.from('results').select('*').eq('student_id', G.currentUser.uid);
-    results = (rs || []).map(_sbRowToResult); localStorage.setItem('mc_results', JSON.stringify(results));
+    G.results = (rs || []).map(_sbRowToResult); localStorage.setItem('mc_results', JSON.stringify(G.results));
     const { data: ps } = await sb.from('practice').select('*').eq('student_id', G.currentUser.uid);
     G.practiceLog = (ps || []).map(_sbRowToPractice); localStorage.setItem('mc_practice', JSON.stringify(G.practiceLog));
   } catch (e) {
@@ -4902,11 +4899,11 @@ async function _sbSaveGame(rec) {
 async function _sbLoadTeacherResults() {
   if (!sb || !G.currentUser || G.currentRole !== 'teacher') return;
   const ids = G.drills.map(d => String(d.id));
-  if (!ids.length) { results = []; localStorage.setItem('mc_results', '[]'); return; }
+  if (!ids.length) { G.results = []; localStorage.setItem('mc_results', '[]'); return; }
   try {
     const { data } = await sb.from('results').select('*').in('drill_id', ids);
-    results = (data || []).map(_sbRowToResult);
-    localStorage.setItem('mc_results', JSON.stringify(results));
+    G.results = (data || []).map(_sbRowToResult);
+    localStorage.setItem('mc_results', JSON.stringify(G.results));
   } catch (e) { console.error('_sbLoadTeacherResults', e); }
 }
 
