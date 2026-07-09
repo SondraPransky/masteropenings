@@ -265,26 +265,37 @@ function _renderRing(pct, colorVar) {
 }
 
 function _shModuleCard(m, idx, isNew, isPersonal) {
-  const st  = _moduleStats(m);
-  const ringCol = st.state === 'mastered' ? 'var(--green)' : st.state === 'review' ? 'var(--gold)' : 'var(--cyan)';
-  let chip;
-  if (isNew)                      chip = '<span class="sh-chip sh-chip-gold">🔔 Nouveau</span>';
-  else if (m._updated)            chip = '<span class="sh-chip sh-chip-cyan">✏️ Mis à jour</span>';
-  else if (st.state === 'new')    chip = '<span class="sh-chip sh-chip-cyan">À découvrir</span>';
-  else if (st.state === 'mastered') chip = '<span class="sh-chip sh-chip-green">✓ Maîtrisé</span>';
-  else                            chip = `<span class="sh-chip sh-chip-gold">↻ À revoir${st.due ? ` · ${st.due}` : ''}</span>`;
-  const coachBadge = (!isPersonal && m._showCoach && m.coachName) ? `<span class="sh-mod-side" style="background:var(--cyan-dim);color:var(--cyan)">👤 ${escapeHtml(m.coachName)}</span>` : '';
+  const st = _moduleStats(m);
+  const sideSym = m.side === 'w' ? '♔' : m.side === 'b' ? '♚' : '⇄';
+  const sideTxt = m.side === 'w' ? 'Blancs' : m.side === 'b' ? 'Noirs' : 'Les deux';
+  // État → classe + libellé de la pastille (new / review / mastered)
+  let stCls, stTxt;
+  if (isNew)                        { stCls = 'new';      stTxt = '🔔 Nouveau'; }
+  else if (m._updated)              { stCls = 'new';      stTxt = '✏️ Mis à jour'; }
+  else if (st.state === 'new')      { stCls = 'new';      stTxt = 'À découvrir'; }
+  else if (st.state === 'mastered') { stCls = 'mastered'; stTxt = '✓ Maîtrisé'; }
+  else                              { stCls = 'review';   stTxt = `↻ À revoir${st.due ? ` · ${st.due}` : ''}`; }
+  const pct = (st.pct == null) ? 0 : st.pct;
+  const coachBadge = (!isPersonal && m._showCoach && m.coachName)
+    ? `<span class="sh-mod-side" style="background:var(--cyan-dim);color:var(--cyan);padding:2px 9px;border-radius:999px">👤 ${escapeHtml(m.coachName)}</span>` : '';
   const edit = isPersonal ? `<button class="sh-card-act" onclick="event.stopPropagation();openPgnEditor(${idx})" title="Éditer sur échiquier">🎹</button>` : '';
   const del  = isPersonal ? `<button class="sh-card-act" onclick="event.stopPropagation();deleteStudentDrill('${m.id}')" title="Supprimer">🗑</button>` : '';
   return `<div class="sh-mod${isNew ? ' sh-mod-new' : ''}" onclick="startStudentDrill(${idx})">
-    ${_renderRing(st.pct, ringCol)}
-    <div class="sh-mod-body">
+    <div class="sh-mod-head">
       <div class="sh-mod-name">${escapeHtml(m.name)}</div>
-      <div class="sh-mod-chips">${chip}<span class="sh-mod-side">${m.side==='w'?'Blancs':m.side==='b'?'Noirs':'Les deux'}</span>${coachBadge}</div>
+      <div class="sh-mod-icon">${sideSym}</div>
     </div>
-    ${edit}${del}
-    <button class="sh-card-act" onclick="event.stopPropagation();playVsMaia(${idx})" title="Jouer contre Maia">🤖</button>
-    <button class="sh-card-act sh-card-play" title="Réviser">▶</button>
+    <div class="sh-mod-meta">
+      <span class="sh-mod-state ${stCls}">${stTxt}</span>
+      <span class="sh-mod-side">${sideTxt}</span>
+      ${coachBadge}
+    </div>
+    <div class="sh-mod-progress"><div class="sh-mod-progress-fill" style="width:${pct}%"></div></div>
+    <div class="sh-mod-actions">
+      ${edit}${del}
+      <button class="sh-card-act" onclick="event.stopPropagation();playVsMaia(${idx})" title="Jouer contre Maia">🤖</button>
+      <button class="sh-card-act sh-card-play" title="Réviser">▶</button>
+    </div>
   </div>`;
 }
 
