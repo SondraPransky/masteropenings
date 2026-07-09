@@ -11,6 +11,7 @@ import {
   _sbGameToRow, _sbRowToGame
 } from './lib/dbmap.js';
 import { isPlayerMove, _buildDrillTree, _treePlayerPositions, _materialHint } from './lib/tree.js';
+import { G } from './state.js';
 
 // ── Configuration Supabase (client `sb`) ──────────────────
 // Clé « publishable » PUBLIQUE (protégée par RLS) → OK committée. Jamais de clé « secret » ici.
@@ -24,7 +25,7 @@ const sb = SUPABASE_CONFIGURED ? supabase.createClient(SUPABASE_URL, SUPABASE_PU
 // ══════════════════════════════════════════════════════
 // « Mode comptes » : login obligatoire + backend distant (Supabase).
 const ACCOUNTS_ON = (typeof SUPABASE_CONFIGURED !== 'undefined') && SUPABASE_CONFIGURED;
-let currentUser = null, currentRole = null, pendingRole = null, currentPseudo = null;
+// G.currentUser / G.currentRole / G.pendingRole / G.currentPseudo → state.js (G)
 
 // ── Mise à jour de la nav selon le rôle ───────────────
 function updateNav() {
@@ -41,12 +42,12 @@ function updateNav() {
 
   if (!ACCOUNTS_ON) return;
 
-  const isTeacher = currentRole === 'teacher';
-  const isStudent = currentRole === 'student';
+  const isTeacher = G.currentRole === 'teacher';
+  const isStudent = G.currentRole === 'student';
 
-  if (currentUser) {
+  if (G.currentUser) {
     // Nom utilisateur
-    navUser.textContent   = currentUser.displayName || currentUser.email;
+    navUser.textContent   = G.currentUser.displayName || G.currentUser.email;
     navUser.style.display = '';
     // Bouton déconnexion
     btnLogout.style.display = '';
@@ -129,9 +130,9 @@ async function deleteModuleFromFirestore(drillId) { return _sbDeleteModule(drill
 // ── Identifiants de l'élève pour le matching des classes (pseudo, email, nom) ──
 function _myIdentifiers() {
   return [...new Set([
-    currentPseudo,
-    (currentUser?.email || '').toLowerCase(),
-    (currentUser?.displayName || '').toLowerCase()
+    G.currentPseudo,
+    (G.currentUser?.email || '').toLowerCase(),
+    (G.currentUser?.displayName || '').toLowerCase()
   ].filter(Boolean))].slice(0, 10);
 }
 
@@ -141,8 +142,8 @@ async function loadStudentModules() { return _sbLoadStudentModules(); }
 function renderStudentHome(assigned, personal) {
   assigned = assigned || [];
   personal = personal || [];
-  const first = currentUser ? (currentUser.displayName || currentUser.email).split(' ')[0] : '';
-  if (currentUser) S.student = currentUser.displayName || currentUser.email;
+  const first = G.currentUser ? (G.currentUser.displayName || G.currentUser.email).split(' ')[0] : '';
+  if (G.currentUser) S.student = G.currentUser.displayName || G.currentUser.email;
   const nameEl = document.getElementById('sh-student-name');
   if (nameEl) nameEl.textContent = 'Salut ' + first;
 
@@ -208,7 +209,7 @@ function renderStudentHome(assigned, personal) {
 
 // Stats d'un module pour l'élève (depuis les résultats réels)
 function _moduleStats(m) {
-  const student = S.student || (currentUser ? (currentUser.displayName || currentUser.email) : '');
+  const student = S.student || (G.currentUser ? (G.currentUser.displayName || G.currentUser.email) : '');
   const rs = results.filter(r => String(r.drillId) === String(m.id));
   const total   = rs.length;
   const correct = rs.filter(r => r.correct).length;
@@ -219,7 +220,7 @@ function _moduleStats(m) {
     totalPos = positions.length;
     const did = String(m.id), now = Date.now();
     positions.forEach(p => {
-      const mm = masteryData[`${student}_${did}_${p.masteryKey}`];
+      const mm = G.masteryData[`${student}_${did}_${p.masteryKey}`];
       if (mm) played = true;
       if (!mm || mm.due <= now) due++;
     });
@@ -241,7 +242,7 @@ function _computeStreak() {
   const days = new Set();
   const add = ts => { if (ts) days.add(new Date(ts).toDateString()); };
   results.forEach(r => add(r.ts));
-  (typeof practiceLog !== 'undefined' ? practiceLog : []).forEach(p => add(p.ts));
+  (typeof G.practiceLog !== 'undefined' ? G.practiceLog : []).forEach(p => add(p.ts));
   if (!days.size) return 0;
   let streak = 0;
   const d = new Date();
@@ -288,7 +289,7 @@ function _shModuleCard(m, idx, isNew, isPersonal) {
 }
 
 // ── Suivi "déjà vu" pour la notification (local par élève) ──
-function _seenKey()    { return 'mc_seen_modules_' + (currentUser?.uid || 'anon'); }
+function _seenKey()    { return 'mc_seen_modules_' + (G.currentUser?.uid || 'anon'); }
 function _seenModules(){ try { return JSON.parse(localStorage.getItem(_seenKey()) || '[]'); } catch(e){ return []; } }
 function _markModuleSeen(id) {
   const seen = _seenModules();
@@ -296,7 +297,7 @@ function _markModuleSeen(id) {
 }
 
 // Suivi de la version vue — pour notifier les modules ÉDITÉS par le coach
-function _seenVerKey()   { return 'mc_seen_versions_' + (currentUser?.uid || 'anon'); }
+function _seenVerKey()   { return 'mc_seen_versions_' + (G.currentUser?.uid || 'anon'); }
 function _seenVersions() { try { return JSON.parse(localStorage.getItem(_seenVerKey()) || '{}'); } catch(e){ return {}; } }
 function _markVersionSeen(id, ver) {
   const v = _seenVersions();
@@ -305,9 +306,9 @@ function _markVersionSeen(id, ver) {
 }
 
 function startStudentDrill(idx) {
-  S.student = currentUser?.displayName || currentUser?.email || 'Élève';
+  S.student = G.currentUser?.displayName || G.currentUser?.email || 'Élève';
   localStorage.setItem('mc_student', S.student);
-  const d = drills[idx];
+  const d = G.drills[idx];
   if (d) { _markModuleSeen(d.id); _markVersionSeen(d.id, d.updatedAt || 0); }
   goPage('drill');
   startDrill(idx);
@@ -339,10 +340,10 @@ function importStudentDrill() {
     sessions: [{ label: 'Arbre complet', startFen: new Chess().fen(), moves: [], kps: [] }],
     hideComments: false, deadline: null,
     personal: true,
-    ownerStudentId: currentUser?.uid || null,
+    ownerStudentId: G.currentUser?.uid || null,
     created: new Date().toLocaleDateString('fr-FR')
   };
-  drills.push(d);
+  G.drills.push(d);
   save();
   _sbSaveStudentModule(d);
   closeModal('modal-student-import');
@@ -352,7 +353,7 @@ function importStudentDrill() {
 
 function deleteStudentDrill(id) {
   if (!confirm('Supprimer cette révision perso ?')) return;
-  drills = drills.filter(d => String(d.id) !== String(id));
+  G.drills = G.drills.filter(d => String(d.id) !== String(id));
   save();
   _sbDeleteStudentModule(id);
   loadStudentModules();
@@ -369,12 +370,9 @@ if (sb) _sbInitAuth();
 // ══════════════════════════════════════════════════════
 // DONNÉES
 // ══════════════════════════════════════════════════════
-let drills      = JSON.parse(localStorage.getItem('mc_drills')    || '[]');
+// G.drills / G.practiceLog / G.savedGames / G.masteryData / G.oppSeen → state.js (G).
+// results + classes restent locaux le temps de traiter leurs collisions de chaînes.
 let results     = JSON.parse(localStorage.getItem('mc_results')   || '[]');
-let practiceLog = JSON.parse(localStorage.getItem('mc_practice')  || '[]');
-let savedGames  = JSON.parse(localStorage.getItem('mc_games')     || '[]');
-let masteryData = JSON.parse(localStorage.getItem('mc_mastery')   || '{}');
-let oppSeen     = JSON.parse(localStorage.getItem('mc_opp_seen')  || '{}');
 let classes     = JSON.parse(localStorage.getItem('mc_classes')   || '[]');
 
 // ── Thème ──────────────────────────────────────────────
@@ -524,7 +522,7 @@ function openLibrary() { renderLibrary(); document.getElementById('modal-library
 function renderLibrary() {
   const el = document.getElementById('library-list');
   if (!el) return;
-  const verb = (currentRole === 'teacher') ? 'Ajouter' : 'Apprendre';
+  const verb = (G.currentRole === 'teacher') ? 'Ajouter' : 'Apprendre';
   el.innerHTML = OPENINGS_LIBRARY.map((o, i) => `
     <div class="lib-row">
       <div class="lib-info">
@@ -538,7 +536,7 @@ function renderLibrary() {
 function addFromLibrary(idx) {
   const o = OPENINGS_LIBRARY[idx];
   if (!o) return;
-  const asStudent = (currentRole !== 'teacher');
+  const asStudent = (G.currentRole !== 'teacher');
   let allLines;
   try { allLines = extractAllLines(o.pgn); } catch(e) { toast('❌ Erreur de chargement', 'ko'); return; }
   const tree = _buildDrillTree(allLines, o.side);
@@ -552,10 +550,10 @@ function addFromLibrary(idx) {
     fromLibrary: true,
     created: new Date().toLocaleDateString('fr-FR')
   };
-  if (asStudent) { d.personal = true; d.ownerStudentId = currentUser?.uid || null; }
-  drills.push(d);
+  if (asStudent) { d.personal = true; d.ownerStudentId = G.currentUser?.uid || null; }
+  G.drills.push(d);
   save();
-  if (currentUser) {
+  if (G.currentUser) {
     if (asStudent) _sbSaveStudentModule(d);
     else syncModuleToFirestore(d);
   }
@@ -579,7 +577,7 @@ function goPage(name) {
   if (name === 'coach') { renderClassModuleSelect(); }
   // Bouton retour visible sur la page drill pour les élèves Firebase
   const btnBack = document.getElementById('btn-back-student');
-  if (btnBack) btnBack.style.display = (ACCOUNTS_ON && currentRole === 'student' && name === 'drill') ? '' : 'none';
+  if (btnBack) btnBack.style.display = (ACCOUNTS_ON && G.currentRole === 'student' && name === 'drill') ? '' : 'none';
 }
 
 // ══════════════════════════════════════════════════════
@@ -691,8 +689,8 @@ function importDrill() {
     created: new Date().toLocaleDateString('fr-FR'),
     updatedAt: Date.now()
   };
-  drills.push(newDrill);
-  S.idx = drills.length - 1;
+  G.drills.push(newDrill);
+  S.idx = G.drills.length - 1;
 
   save();
   syncModuleToFirestore(newDrill);
@@ -752,8 +750,8 @@ function _srPositions(d) {
 }
 
 function _srScopeList(scope, drillIdx) {
-  return scope === 'drill' ? (drills[drillIdx] ? [{ d: drills[drillIdx], i: drillIdx }] : [])
-                           : drills.map((d, i) => ({ d, i }));
+  return scope === 'drill' ? (G.drills[drillIdx] ? [{ d: G.drills[drillIdx], i: drillIdx }] : [])
+                           : G.drills.map((d, i) => ({ d, i }));
 }
 
 // File d'une session : révisions dues + quota de nouvelles, mélangées.
@@ -765,7 +763,7 @@ function _srBuildQueue(scopeList, student) {
     _srPositions(d).forEach(p => {
       const fullKey = `${student}_${did}_${p.masteryKey}`;
       if (_srIsSuspended(fullKey)) return;                  // position suspendue → ignorée
-      const rec = masteryData[fullKey];
+      const rec = G.masteryData[fullKey];
       const card = { ...p, _drill: d, _drillIdx: i, attempted: false, correct: false };
       if (!rec) news.push(card);
       else if (rec.due <= now) reviews.push(card);
@@ -782,7 +780,7 @@ function _srBuildQueue(scopeList, student) {
 
 // Nombre de cartes qu'une session contiendrait maintenant (compteurs hero/badge).
 function _srSessionSize(scope, drillIdx) {
-  const student = S.student || (currentUser ? (currentUser.displayName || currentUser.email) : '');
+  const student = S.student || (G.currentUser ? (G.currentUser.displayName || G.currentUser.email) : '');
   if (!student) return 0;
   return _srBuildQueue(_srScopeList(scope, drillIdx), student).queue.length;
 }
@@ -878,7 +876,7 @@ function _srForecast(scopeList, student, days) {
   scopeList.forEach(({ d }) => {
     const did = String(d.id);
     _srPositions(d).forEach(p => {
-      const rec = masteryData[`${student}_${did}_${p.masteryKey}`];
+      const rec = G.masteryData[`${student}_${did}_${p.masteryKey}`];
       if (!rec) return;
       const off = Math.floor((rec.due - startToday) / 86400000);
       if (off >= 1 && off <= days) counts[off - 1]++;
@@ -961,21 +959,21 @@ function saveSrSettings() {
 
 // ── Tableau de bord élève : métriques + prévision 14 j (P3) ──
 function _srMyResults() {
-  const id = S.student, email = currentUser && currentUser.email;
+  const id = S.student, email = G.currentUser && G.currentUser.email;
   return results.filter(r => r.student === id || (email && r.studentEmail === email));
 }
 function renderSrDashboard() {
   const el = document.getElementById('sh-dashboard'); if (!el) return;
   const student = S.student;
   if (!student) { el.innerHTML = ''; return; }
-  const recKeys = Object.keys(masteryData).filter(k => k.startsWith(student + '_'));
+  const recKeys = Object.keys(G.masteryData).filter(k => k.startsWith(student + '_'));
   const seen = recKeys.length, dueNow = _srSessionSize('all');
   if (!seen && !dueNow) { el.innerHTML = ''; return; }
-  const mature = recKeys.filter(k => (masteryData[k].interval || 0) >= 21).length;
+  const mature = recKeys.filter(k => (G.masteryData[k].interval || 0) >= 21).length;
   const cutoff = Date.now() - 30 * 86400000;
   const rr = _srMyResults().filter(r => r.ts >= cutoff);
   const retention = rr.length ? Math.round(rr.filter(r => r.correct).length / rr.length * 100) : null;
-  const fc = _srForecast(drills.map((d, i) => ({ d, i })), student, 13);
+  const fc = _srForecast(G.drills.map((d, i) => ({ d, i })), student, 13);
   const series = [dueNow].concat(fc), maxV = Math.max(1, ...series);
   const lbl = i => i === 0 ? 'auj.' : i === 7 ? '+7j' : i === 13 ? '+13j' : '';
   const bars = series.map((c, i) => `<div class="srdash-bar-col" title="${c} due${c > 1 ? 's' : ''}">`
@@ -1006,14 +1004,14 @@ function deleteDrill(id) {
 function confirmDel() {
   const id = _pendingDelId;
   cancelDel();
-  const toDel = drills.find(d=>d.id===id);
+  const toDel = G.drills.find(d=>d.id===id);
   if (toDel && toDel.demo) localStorage.setItem('mc_demo_seen','1');
-  drills      = drills.filter(d=>String(d.id)!==String(id));
+  G.drills      = G.drills.filter(d=>String(d.id)!==String(id));
   results     = results.filter(r=>String(r.drillId)!==String(id));
-  practiceLog = practiceLog.filter(l=>String(l.drillId)!==String(id));
-  savedGames  = savedGames.filter(g=>String(g.drillId)!==String(id));
-  for (const k of Object.keys(masteryData)) {
-    if (k.includes(`_${id}_`)) delete masteryData[k];
+  G.practiceLog = G.practiceLog.filter(l=>String(l.drillId)!==String(id));
+  G.savedGames  = G.savedGames.filter(g=>String(g.drillId)!==String(id));
+  for (const k of Object.keys(G.masteryData)) {
+    if (k.includes(`_${id}_`)) delete G.masteryData[k];
   }
   save();
   deleteModuleFromFirestore(id);
@@ -1028,12 +1026,12 @@ function cancelDel() {
 }
 
 function save() {
-  localStorage.setItem('mc_drills',   JSON.stringify(drills));
+  localStorage.setItem('mc_drills',   JSON.stringify(G.drills));
   localStorage.setItem('mc_results',  JSON.stringify(results));
-  localStorage.setItem('mc_practice', JSON.stringify(practiceLog));
-  localStorage.setItem('mc_games',    JSON.stringify(savedGames));
-  localStorage.setItem('mc_mastery',  JSON.stringify(masteryData));
-  localStorage.setItem('mc_opp_seen', JSON.stringify(oppSeen));
+  localStorage.setItem('mc_practice', JSON.stringify(G.practiceLog));
+  localStorage.setItem('mc_games',    JSON.stringify(G.savedGames));
+  localStorage.setItem('mc_mastery',  JSON.stringify(G.masteryData));
+  localStorage.setItem('mc_opp_seen', JSON.stringify(G.oppSeen));
 }
 function saveClasses() {
   localStorage.setItem('mc_classes', JSON.stringify(classes));
@@ -1056,7 +1054,7 @@ function injectDemoDrill() {
     const allLines = extractAllLines(pgn);
     if (!allLines.length) return;
     const line = allLines[0];
-    drills.push({
+    G.drills.push({
       id: 9e8,            // id fixe réservé au démo
       name: 'Espagnole – Plan de Breyer',
       level: 'Intermédiaire',
@@ -1081,7 +1079,7 @@ function renderCoachOnboarding() {
   const el = document.getElementById('coach-onboarding');
   if (!el) return;
   if (localStorage.getItem('mc_onboarding_done')) { el.innerHTML = ''; return; }
-  const nbModules = drills.filter(d => !d.personal && !d.demo).length;
+  const nbModules = G.drills.filter(d => !d.personal && !d.demo).length;
   const nbClasses = (typeof classes !== 'undefined' ? classes : []).length;
   const steps = [
     { done: true,          label: 'Compte professeur créé', cta: '' },
@@ -1120,7 +1118,7 @@ function dismissOnboarding() {
 function renderDrillList() {
   renderCoachOnboarding();
   const grid = document.getElementById('module-cards-grid');
-  const n    = drills.length;
+  const n    = G.drills.length;
 
   // Update sidebar badge + subtitle
   const countBadge = document.getElementById('csnav-count-modules');
@@ -1141,12 +1139,12 @@ function renderDrillList() {
   }
 
   const now = Date.now();
-  grid.innerHTML = drills.map((d,i) => {
+  grid.innerHTML = G.drills.map((d,i) => {
     const ns = d.sessions?.length || 1;
     const count = d.varmode==='tree' ? Object.keys(d.tree||{}).length+' pos.' : countPlayerMoves(d)+(countPlayerMoves(d)===1?' coup':' coups');
     const side  = d.side==='w' ? '♔ Blancs' : d.side==='b' ? '♚ Noirs' : '⇄ Les deux';
 
-    const dueCount = Object.keys(masteryData).filter(k=>k.includes(`_${d.id}_`)&&masteryData[k].due<=now).length;
+    const dueCount = Object.keys(G.masteryData).filter(k=>k.includes(`_${d.id}_`)&&G.masteryData[k].due<=now).length;
     const dueBanner = dueCount>0
       ? `<div class="mcard-due-banner" onclick="event.stopPropagation();reviserDrill(${i})">↻ ${dueCount} coup${dueCount>1?'s':''} à réviser</div>`
       : '';
@@ -1187,7 +1185,7 @@ function launchDrill(i) { S.idx=i; goPage('drill'); }
 // Partager un module = ouvrir le formulaire de classe avec ce module déjà coché.
 // Il ne reste au prof qu'à saisir les élèves puis valider (l'assignation passe par les classes).
 function shareDrill(i) {
-  const d = drills[i];
+  const d = G.drills[i];
   if (!d) return;
   switchCoachSection('classes');
   cancelEditClass();            // repart d'un formulaire « nouvelle classe » vierge
@@ -1320,7 +1318,7 @@ function renderClassList() {
   if (!el) return;
   if (!classes.length) { el.innerHTML=''; return; }
   el.innerHTML = classes.map(cls => {
-    const modNames = (cls.moduleIds || []).map(id => { const d = drills.find(x => String(x.id) === String(id)); return d ? d.name : '— supprimé —'; });
+    const modNames = (cls.moduleIds || []).map(id => { const d = G.drills.find(x => String(x.id) === String(id)); return d ? d.name : '— supprimé —'; });
     const stuList  = (cls.studentEmails || cls.students || []);
     return `<div style="padding:10px 12px;background:var(--surf2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
@@ -1343,11 +1341,11 @@ function renderClassModuleSelect() {
   const el = document.getElementById('inp-cls-modules');
   if (!el) return;
   const prev = [...el.querySelectorAll('input[type=checkbox]:checked')].map(c => c.value);
-  if (!drills.length) {
+  if (!G.drills.length) {
     el.innerHTML = '<div style="padding:8px;font-size:.8rem;color:var(--dim)">Aucun module créé</div>';
     return;
   }
-  el.innerHTML = drills.map(d =>
+  el.innerHTML = G.drills.map(d =>
     `<label><input type="checkbox" value="${d.id}"${prev.includes(String(d.id))?' checked':''}> ${escapeHtml(d.name)}</label>`
   ).join('');
 }
@@ -1358,8 +1356,8 @@ function renderClassModuleSelect() {
 // ══════════════════════════════════════════════════════
 function askName(restrictedStudents) {
   // Avec Firebase : le nom vient du compte, pas d'un prompt
-  if (ACCOUNTS_ON && currentUser) {
-    S.student = currentUser.displayName || currentUser.email;
+  if (ACCOUNTS_ON && G.currentUser) {
+    S.student = G.currentUser.displayName || G.currentUser.email;
     localStorage.setItem('mc_student', S.student);
     updateStudentBar();
     return;
@@ -1424,7 +1422,7 @@ function updateStudentBar() {
 // PAGE DRILL — INIT
 // ══════════════════════════════════════════════════════
 function initDrillPage() {
-  if (!drills.length) {
+  if (!G.drills.length) {
     document.getElementById('no-drill').style.display='block';
     document.getElementById('drill-ui').style.display='none';
     return;
@@ -1433,7 +1431,7 @@ function initDrillPage() {
   document.getElementById('drill-ui').style.display='block';
 
   const sel = document.getElementById('drill-sel');
-  sel.innerHTML = drills.map((d,i)=>`<option value="${i}">${escapeHtml(d.name)}</option>`).join('');
+  sel.innerHTML = G.drills.map((d,i)=>`<option value="${i}">${escapeHtml(d.name)}</option>`).join('');
   sel.value = S.idx;
 
   updateStudentBar();
@@ -1458,13 +1456,13 @@ function updateSessionInfo() {
 }
 
 function startDrill(i) {
-  const d = drills[i];
+  const d = G.drills[i];
   if (!d) return;
   document.getElementById('btn-quit-maia').style.display = 'none';   // aucune partie Maia en cours en mode drill
   S.sr = null;   // sortie d'une éventuelle session de révision espacée
   // Avec Firebase : le nom vient du compte
-  if (ACCOUNTS_ON && currentUser && !S.student) {
-    S.student = currentUser.displayName || currentUser.email;
+  if (ACCOUNTS_ON && G.currentUser && !S.student) {
+    S.student = G.currentUser.displayName || G.currentUser.email;
     localStorage.setItem('mc_student', S.student);
     updateStudentBar();
   }
@@ -1858,19 +1856,19 @@ function _pickOppMove(nf, moves) {
     const forcedSan = S._forcedPath[nf];
     const forced = moves.find(m => m.san === forcedSan);
     if (forced) {
-      oppSeen[`${st}__${did}__${nf}__${forced.san}`] = Date.now();
-      localStorage.setItem('mc_opp_seen', JSON.stringify(oppSeen));
+      G.oppSeen[`${st}__${did}__${nf}__${forced.san}`] = Date.now();
+      localStorage.setItem('mc_opp_seen', JSON.stringify(G.oppSeen));
       return forced;
     }
   }
   // Normal LRU fallback
-  const tsOf  = san => oppSeen[`${st}__${did}__${nf}__${san}`] || 0;
+  const tsOf  = san => G.oppSeen[`${st}__${did}__${nf}__${san}`] || 0;
   const unseen = moves.filter(m => !tsOf(m.san));
   const chosen = unseen.length
     ? unseen[Math.floor(Math.random() * unseen.length)]
     : [...moves].sort((a, b) => tsOf(a.san) - tsOf(b.san))[0];
-  oppSeen[`${st}__${did}__${nf}__${chosen.san}`] = Date.now();
-  localStorage.setItem('mc_opp_seen', JSON.stringify(oppSeen));
+  G.oppSeen[`${st}__${did}__${nf}__${chosen.san}`] = Date.now();
+  localStorage.setItem('mc_opp_seen', JSON.stringify(G.oppSeen));
   return chosen;
 }
 
@@ -1881,7 +1879,7 @@ function _treeUnseenCount() {
   let n = 0;
   for (const [nf, node] of Object.entries(S.drill.tree || {})) {
     for (const mv of node.opp) {
-      if (!oppSeen[`${st}__${did}__${nf}__${mv.san}`]) n++;
+      if (!G.oppSeen[`${st}__${did}__${nf}__${mv.san}`]) n++;
     }
   }
   return n;
@@ -1911,7 +1909,7 @@ function _computeForcedPath(student, drillId, tree, drillSide) {
     const moves = playerTurn ? (node.player || []) : (node.opp || []);
     if (!playerTurn) {
       for (const mv of moves) {
-        const ts = oppSeen[`${student}__${drillId}__${nf}__${mv.san}`] ?? 0;
+        const ts = G.oppSeen[`${student}__${drillId}__${nf}__${mv.san}`] ?? 0;
         if (ts < bestTs) {
           bestTs = ts;
           bestPath = { ...oppPath, [nf]: mv.san };
@@ -2192,9 +2190,9 @@ function updateStudyProgress() {
 function _studyMastery(node) {
   if (!node || !node.san || typeof _normFen !== 'function') return null;
   if (!isPlayerMove(node.fenBefore, S.drill?.side)) return null;   // seuls les coups de l'élève sont révisés
-  const student = S.student || currentUser?.displayName || currentUser?.email || 'Anonyme';
+  const student = S.student || G.currentUser?.displayName || G.currentUser?.email || 'Anonyme';
   const did = String(S.drill?.id ?? '');
-  const m = masteryData[`${student}_${did}_${_normFen(node.fenBefore)}_${node.san}`];
+  const m = G.masteryData[`${student}_${did}_${_normFen(node.fenBefore)}_${node.san}`];
   if (!m) return null;                              // jamais révisé
   return m.due <= Date.now() ? 'due' : 'known';
 }
@@ -2515,10 +2513,10 @@ function showEndModal(pct) {
         nextBtn.style.color = 'var(--dim)';
         nextBtn.onclick     = () => { closeModal('modal-end'); startDrill(S.idx); };
       } else {
-        nextBtn.textContent = drills.length > 1 ? 'Module suivant →' : '✅ Tout revu';
-        nextBtn.className   = drills.length > 1 ? 'btn btn-gold' : 'btn btn-ghost';
+        nextBtn.textContent = G.drills.length > 1 ? 'Module suivant →' : '✅ Tout revu';
+        nextBtn.className   = G.drills.length > 1 ? 'btn btn-gold' : 'btn btn-ghost';
         nextBtn.style.color = '';
-        nextBtn.onclick     = drills.length > 1 ? () => { closeModal('modal-end'); nextDrill(); } : null;
+        nextBtn.onclick     = G.drills.length > 1 ? () => { closeModal('modal-end'); nextDrill(); } : null;
       }
     }
   } else {
@@ -2528,7 +2526,7 @@ function showEndModal(pct) {
       replayBtn.onclick     = () => { closeModal('modal-end'); startDrill(S.idx); };
     }
     if (nextBtn) {
-      if (drills.length <= 1) {
+      if (G.drills.length <= 1) {
         nextBtn.textContent = '↺ Rejouer';
         nextBtn.onclick = () => { closeModal('modal-end'); startDrill(S.idx); };
       } else {
@@ -2572,25 +2570,25 @@ function replayErrors() {
 }
 
 function closeModal(id){document.getElementById(id).classList.remove('on');}
-function nextDrill(){S.idx=(S.idx+1)%drills.length; initDrillPage();}
+function nextDrill(){S.idx=(S.idx+1)%G.drills.length; initDrillPage();}
 
 // ── SM-2 spaced repetition ────────────────────────────
 // ── Synchronisation SM-2 multi-appareils (profiles.mastery, Supabase) ──
 let _masterySyncTimer = null;
 function _scheduleMasterySync() {
-  if (!sb || !currentUser) return;
+  if (!sb || !G.currentUser) return;
   clearTimeout(_masterySyncTimer);
   _masterySyncTimer = setTimeout(_sbSaveMastery, 2500);
 }
 
 function sm2Update(student, drillId, posKey, correct) {
   const key = `${student}_${drillId}_${posKey}`;
-  masteryData[key] = sm2Schedule(masteryData[key], correct, Date.now());
+  G.masteryData[key] = sm2Schedule(G.masteryData[key], correct, Date.now());
   _scheduleMasterySync();
 }
 
 function sm2Get(student, drillId, posKey) {
-  return masteryData[`${student}_${drillId}_${posKey}`] || null;
+  return G.masteryData[`${student}_${drillId}_${posKey}`] || null;
 }
 
 // ── Enregistrement de session ─────────────────────────
@@ -2598,15 +2596,15 @@ function recordPracticeSession(pct) {
   const rec = {
     drillId:      String(S.drill.id),
     drillName:    S.drill.name,
-    student:      S.student || currentUser?.displayName || currentUser?.email || 'Anonyme',
-    studentEmail:  currentUser?.email || null,
-    studentPseudo: currentPseudo      || null,
-    studentId:     currentUser?.uid   || null,
+    student:      S.student || G.currentUser?.displayName || G.currentUser?.email || 'Anonyme',
+    studentEmail:  G.currentUser?.email || null,
+    studentPseudo: G.currentPseudo      || null,
+    studentId:     G.currentUser?.uid   || null,
     pct,
     sessionIdx:   S.sessionIdx,
     ts: Date.now()
   };
-  practiceLog.push(rec);
+  G.practiceLog.push(rec);
   save();
   _sbRecordPractice(rec);
 }
@@ -2622,31 +2620,31 @@ function saveGame() {
     id:        Date.now(),
     drillId:   String(S.drill.id),
     drillName: S.drill.name,
-    student:   S.student || currentUser?.displayName || currentUser?.email || 'Anonyme',
-    studentEmail: currentUser?.email || null,
-    studentId:    currentUser?.uid   || null,
+    student:   S.student || G.currentUser?.displayName || G.currentUser?.email || 'Anonyme',
+    studentEmail: G.currentUser?.email || null,
+    studentId:    G.currentUser?.uid   || null,
     level:     S.drill.level,
     side:      S.drill.side,
     pgn,
     result:    res,
     ts:        Date.now()
   };
-  savedGames.push(rec);
+  G.savedGames.push(rec);
   save();
   _sbSaveGame(rec);
 }
 
 function recordResult(correct, kp) {
-  const student = S.student || currentUser?.displayName || currentUser?.email || 'Anonyme';
+  const student = S.student || G.currentUser?.displayName || G.currentUser?.email || 'Anonyme';
   const posKey  = kp.masteryKey || (kp.posIdx + '_' + (kp.san||''));
   sm2Update(student, S.drill.id, posKey, correct);
   const rec = {
     drillId:      String(S.drill.id),
     drillName:    S.drill.name,
     student,
-    studentEmail:  currentUser?.email  || null,
-    studentPseudo: currentPseudo       || null,
-    studentId:     currentUser?.uid    || null,
+    studentEmail:  G.currentUser?.email  || null,
+    studentPseudo: G.currentPseudo       || null,
+    studentId:     G.currentUser?.uid    || null,
     posIdx:       kp.posIdx,
     san:          kp.san,
     comment:      kp.comment,
@@ -2978,14 +2976,14 @@ function quitMaiaGame() {
   document.getElementById('btn-quit-maia').style.display = 'none';
   document.getElementById('test-btns').style.display = 'none';
   toast(played ? '✓ Partie enregistrée dans Vue Prof' : 'Partie quittée', 'ok');
-  goPage(currentRole === 'teacher' ? 'coach' : 'student-home');
+  goPage(G.currentRole === 'teacher' ? 'coach' : 'student-home');
 }
 
 // Jouer une partie contre Maia depuis une ouverture (accès direct, 1 clic)
 function playVsMaia(idx) {
-  const d = drills[idx];
+  const d = G.drills[idx];
   if (!d) return;
-  S.student = currentUser?.displayName || currentUser?.email || S.student || 'Élève';
+  S.student = G.currentUser?.displayName || G.currentUser?.email || S.student || 'Élève';
   S.drill = d; S.idx = idx;
   S.flipped = (d.side === 'b');
   // Jouer la ligne principale jusqu'à la sortie du répertoire
@@ -3438,10 +3436,10 @@ let selectedStudent=null, selectedDrillFilter='all', _profTab='presence';
 
 function _masteryBadge(name) {
   const now = Date.now();
-  const keys = Object.keys(masteryData).filter(k=>k.startsWith(name+'_'));
+  const keys = Object.keys(G.masteryData).filter(k=>k.startsWith(name+'_'));
   if (!keys.length) return '';
-  const due = keys.filter(k=>masteryData[k].due<=now).length;
-  const learned = keys.filter(k=>masteryData[k].interval>=7).length;
+  const due = keys.filter(k=>G.masteryData[k].due<=now).length;
+  const learned = keys.filter(k=>G.masteryData[k].interval>=7).length;
   if (due > 0) return `<span class="mastery-pill low">⚠ ${due} à réviser</span>`;
   if (learned === keys.length) return `<span class="mastery-pill ok">✓ Maîtrisé</span>`;
   return `<span class="mastery-pill mid">${learned}/${keys.length} appris</span>`;
@@ -3513,7 +3511,7 @@ function _buildProfRoster(filtered) {
     if (isResult) { s.total++; if (r.correct) s.correct++; }
   };
   filtered.forEach(r => attach(r, true));
-  practiceLog.forEach(l => attach(l, false));
+  G.practiceLog.forEach(l => attach(l, false));
   return Object.values(map).sort((a,b) => b.lastTs - a.lastTs);
 }
 
@@ -3522,7 +3520,7 @@ function renderProfView(){
 
   // Des élèves inscrits (via classes) suffisent à afficher le panneau, même sans résultat encore.
   const hasStudents = classes.some(c => (c.studentEmails || c.students || []).length);
-  const hasAny = results.length || practiceLog.length || savedGames.length || hasStudents;
+  const hasAny = results.length || G.practiceLog.length || G.savedGames.length || hasStudents;
   document.getElementById('prof-empty').style.display = hasAny ? 'none' : 'block';
   document.getElementById('prof-ui').style.display    = hasAny ? ''     : 'none';
   if (!hasAny) return;
@@ -3531,7 +3529,7 @@ function renderProfView(){
   const filterEl = document.getElementById('prof-drill-filter');
   const prev = filterEl.value;
   filterEl.innerHTML = '<option value="all">Tous les modules</option>' +
-    drills.map(d=>`<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('');
+    G.drills.map(d=>`<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('');
   filterEl.value = prev;
 
   let filtered = selectedDrillFilter==='all' ? results : results.filter(r=>String(r.drillId)===selectedDrillFilter);
@@ -3541,12 +3539,12 @@ function renderProfView(){
   const totalRes   = filtered.length;
   const correct    = filtered.filter(r=>r.correct).length;
   const avgPct     = totalRes ? Math.round(correct/totalRes*100) : 0;
-  const sessions   = selectedDrillFilter==='all' ? practiceLog : practiceLog.filter(l=>String(l.drillId)===selectedDrillFilter);
+  const sessions   = selectedDrillFilter==='all' ? G.practiceLog : G.practiceLog.filter(l=>String(l.drillId)===selectedDrillFilter);
   document.getElementById('prof-kpis').innerHTML=`
     <div class="cs-kpi"><div class="cs-kpi-val" style="color:var(--blue)">${students.length}</div><div class="cs-kpi-lbl">Élèves</div></div>
     <div class="cs-kpi"><div class="cs-kpi-val" style="color:var(--cyan)">${sessions.length}</div><div class="cs-kpi-lbl">Sessions</div></div>
     <div class="cs-kpi"><div class="cs-kpi-val" style="color:${avgPct>=70?'var(--green)':'var(--red)'}">${avgPct}%</div><div class="cs-kpi-lbl">Réussite</div></div>
-    <div class="cs-kpi"><div class="cs-kpi-val" style="color:var(--blue)">${savedGames.length}</div><div class="cs-kpi-lbl">Parties Maia</div></div>`;
+    <div class="cs-kpi"><div class="cs-kpi-val" style="color:var(--blue)">${G.savedGames.length}</div><div class="cs-kpi-lbl">Parties Maia</div></div>`;
 
   // Points faibles de la classe (insight actionnable)
   renderClassWeakSpots(filtered);
@@ -3566,7 +3564,7 @@ function renderProfView(){
   document.getElementById('student-list').innerHTML = _srSummary + students.map(s => {
     const pct = s.total ? Math.round(s.correct/s.total*100) : 0;
     const since = s.lastTs ? Math.floor((_now-s.lastTs)/86400000) : null;
-    const dueCount = Object.keys(masteryData).filter(k => k.startsWith(s.label+'_') && masteryData[k].due<=_now).length;
+    const dueCount = Object.keys(G.masteryData).filter(k => k.startsWith(s.label+'_') && G.masteryData[k].due<=_now).length;
     const alertCls = dueCount > 0 ? ' alert' : '';
     const dotColor = !s.played ? 'var(--dim)' : since===0 ? 'var(--green)' : since<=7 ? '#d97706' : 'var(--dim)';
     const isOn = s.key===selectedStudent ? ' on' : '';
@@ -3613,7 +3611,7 @@ function showStudentDetail(id) {
   const total = sr.length, correctN = sr.filter(r => r.correct).length;
   const pct = total ? Math.round(correctN / total * 100) : 0;
   const lastDate = total ? new Date(Math.max(...sr.map(r => r.ts))).toLocaleDateString('fr-FR') : '—';
-  const sessCount = practiceLog.filter(l => l.student === name).length;
+  const sessCount = G.practiceLog.filter(l => l.student === name).length;
   const drillCount = Object.keys(byDrill).length;
 
   // ── Header ──
@@ -3649,7 +3647,7 @@ function showStudentDetail(id) {
     const posArr = Object.values(ddata.positions).sort((a,b) => a.posIdx - b.posIdx);
     const dc = posArr.filter(p => p.correct).length;
     const dp = posArr.length ? Math.round(dc / posArr.length * 100) : 0;
-    const drillSessions = practiceLog
+    const drillSessions = G.practiceLog
       .filter(l => l.student === name && String(l.drillId) === String(ddata.id))
       .sort((a,b) => a.ts - b.ts).slice(-12);
     const n = drillSessions.length;
@@ -3670,7 +3668,7 @@ function showStudentDetail(id) {
       const dt = new Date(s.ts).toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
       return `<div class="ed-mini-bar" title="${dt} — ${s.pct}%" style="height:${h}px;background:${col};opacity:.85"></div>`;
     }).join('');
-    const drill = drills.find(d => d.id === ddata.id);
+    const drill = G.drills.find(d => d.id === ddata.id);
     resumeHtml += `<div class="ed-mod-row">
       <div class="ed-mod-name" title="${escapeHtml(drillName)}">${escapeHtml(drillName)}</div>
       <div class="ed-mini-bars">${bars}</div>
@@ -3716,7 +3714,7 @@ function showStudentDetail(id) {
       .map(([key,p]) => ({ ...p, key, sm2: sm2Get(name, ddata.id, key) }));
     const dc = posArr.filter(p => p.correct).length;
     const dp = posArr.length ? Math.round(dc / posArr.length * 100) : 0;
-    const drill = drills.find(d => d.id === ddata.id);
+    const drill = G.drills.find(d => d.id === ddata.id);
     posHtml += `<div style="margin-bottom:22px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px">
         <div style="font-weight:700;font-size:.88rem">📖 ${escapeHtml(drillName)}</div>
@@ -3759,7 +3757,7 @@ function _edTab(btn, tab) {
 }
 
 function _buildProgressionHTML(name) {
-  const log = practiceLog.filter(l=>l.student===name &&
+  const log = G.practiceLog.filter(l=>l.student===name &&
     (selectedDrillFilter==='all'||String(l.drillId)===selectedDrillFilter)
   ).sort((a,b)=>a.ts-b.ts);
 
@@ -3931,8 +3929,8 @@ function renderClassesTab() {
 function renderPartiesTab() {
   const el = document.getElementById('prof-parties-content');
   const partiesFilter = (document.getElementById('parties-drill-filter') || document.getElementById('prof-drill-filter'))?.value || 'all';
-  const games = partiesFilter==='all' ? savedGames
-    : savedGames.filter(g=>String(g.drillId)===partiesFilter);
+  const games = partiesFilter==='all' ? G.savedGames
+    : G.savedGames.filter(g=>String(g.drillId)===partiesFilter);
   if (!games.length) {
     el.innerHTML='<div class="empty" style="padding:40px"><div class="empty-ico">♟</div>Aucune partie enregistrée</div>'; return;
   }
@@ -3980,14 +3978,14 @@ function exportCSV() {
 
 function exportPracticeCSV() {
   const header = 'étudiant,drill,session,score%,horodatage\n';
-  const rows   = practiceLog.map(l=>
+  const rows   = G.practiceLog.map(l=>
     [l.student,l.drillName,l.sessionIdx+1,l.pct,new Date(l.ts).toISOString()].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')
   ).join('\n');
   _download('sessions.csv', header+rows, 'text/csv');
 }
 
 function exportPGN(idx) {
-  const sorted = [...savedGames].sort((a,b)=>b.ts-a.ts);
+  const sorted = [...G.savedGames].sort((a,b)=>b.ts-a.ts);
   const games  = idx===null ? sorted : [sorted[idx]].filter(Boolean);
   if (!games.length) { toast('Aucune partie à exporter','ko'); return; }
   const out = games.map(g=>`[Event "${g.drillName}"]\n[White "${g.side==='w'?g.student:'Maia'}"]\n[Black "${g.side==='b'?g.student:'Maia'}"]\n[Result "${g.result}"]\n[Date "${new Date(g.ts).toISOString().slice(0,10)}"]\n\n${g.pgn}\n`).join('\n\n');
@@ -3995,7 +3993,7 @@ function exportPGN(idx) {
 }
 
 function exportAll() {
-  const data = { drills, results, practiceLog, savedGames, masteryData, exportedAt: new Date().toISOString() };
+  const data = { drills: G.drills, results, practiceLog: G.practiceLog, savedGames: G.savedGames, masteryData: G.masteryData, exportedAt: new Date().toISOString() };
   _download('backup.json', JSON.stringify(data,null,2), 'application/json');
 }
 
@@ -4075,7 +4073,7 @@ function pgnToEditorTree(pgn, startFen) {
 }
 
 function openPgnEditor(i) {
-  const d = drills[i];
+  const d = G.drills[i];
   _E.drillIdx = i;
   _E.startFen = d.sessions?.[0]?.startFen || new Chess().fen();
   _E.flipped  = (d.side === 'b');
@@ -4598,11 +4596,11 @@ function saveEditorDrill() {
       created: new Date().toLocaleDateString('fr-FR'),
       updatedAt: Date.now()
     };
-    if (_E.createRole === 'student') { d.personal = true; d.ownerStudentId = currentUser?.uid || null; }
-    drills.push(d);
+    if (_E.createRole === 'student') { d.personal = true; d.ownerStudentId = G.currentUser?.uid || null; }
+    G.drills.push(d);
   } else {
     // Modification
-    d = drills[_E.drillIdx];
+    d = G.drills[_E.drillIdx];
     d.name = name; d.side = side; d.pgn = pgn; d.level = level;
     d.varmode = 'tree'; d.mode = 'line';
     d.tree = tree; d.sessions = sessions;
@@ -4612,13 +4610,13 @@ function saveEditorDrill() {
   save(); closeEditorModal();
 
   // Persistance selon la propriété du module
-  if (currentUser) {
+  if (G.currentUser) {
     if (d.personal) _sbSaveStudentModule(d);
-    else if (currentRole === 'teacher') syncModuleToFirestore(d);
+    else if (G.currentRole === 'teacher') syncModuleToFirestore(d);
   }
 
   // Rafraîchir la bonne vue
-  if (currentRole === 'student') loadStudentModules();
+  if (G.currentRole === 'student') loadStudentModules();
   else { renderDrillList(); renderClassModuleSelect(); }
 
   toast(isNew ? '✓ Module créé' : '✓ Module mis à jour', 'ok');
@@ -4638,7 +4636,7 @@ document.addEventListener('keydown', e => {
 // ══════════════════════════════════════════════════════
 if (!ACCOUNTS_ON) {
   // Mode local : pas de Firebase, comportement original
-  if (!drills.length && !localStorage.getItem('mc_demo_seen')) {
+  if (!G.drills.length && !localStorage.getItem('mc_demo_seen')) {
     injectDemoDrill();
     setTimeout(() => toast('👋 Bienvenue ! Un module Espagnole de démo a été chargé — cliquez ▶ Jouer pour essayer.', 'ok'), 500);
   }
@@ -4646,7 +4644,7 @@ if (!ACCOUNTS_ON) {
   renderClassList();
   renderClassModuleSelect();
   updateStudentBar();
-  if (!drills.length) {
+  if (!G.drills.length) {
     document.getElementById('no-drill').style.display = 'block';
   } else {
     document.getElementById('no-drill').style.display = 'none';
@@ -4740,18 +4738,18 @@ function _sbInitAuth() {
     // Lien de réinitialisation cliqué → formulaire « nouveau mot de passe ».
     if (event === 'PASSWORD_RECOVERY') { showRecoveryForm(); return; }
     const u = session && session.user;
-    currentUser = _sbUser(u);
+    G.currentUser = _sbUser(u);
     if (!u) { updateNav(); goPage('login'); return; }
     // rôle + pseudo depuis profiles
     try {
       const { data: prof } = await sb.from('profiles').select('role,pseudo').eq('id', u.id).maybeSingle();
-      currentRole   = (prof && prof.role)   || 'student';
-      currentPseudo = (prof && prof.pseudo) || null;
-    } catch (e) { currentRole = 'student'; currentPseudo = null; }
-    pendingRole = null;
+      G.currentRole   = (prof && prof.role)   || 'student';
+      G.currentPseudo = (prof && prof.pseudo) || null;
+    } catch (e) { G.currentRole = 'student'; G.currentPseudo = null; }
+    G.pendingRole = null;
     updateNav();
     await _sbLoadMastery();
-    if (currentRole === 'teacher') { await _sbLoadTeacherModules(); goPage('coach'); }
+    if (G.currentRole === 'teacher') { await _sbLoadTeacherModules(); goPage('coach'); }
     else { goPage('student-home'); await _sbLoadStudentModules(); }
   });
 }
@@ -4761,13 +4759,13 @@ function _sbInitAuth() {
 //  Étape SUIVANTE : élève (loadStudentModules), résultats, pratique, parties.
 // ════════════════════════════════════════════════════════════
 async function _sbLoadTeacherModules() {
-  if (!sb || !currentUser || currentRole !== 'teacher') return;
+  if (!sb || !G.currentUser || G.currentRole !== 'teacher') return;
   try {
-    const { data: mods, error: e1 } = await sb.from('modules').select('*').eq('teacher_id', currentUser.uid);
+    const { data: mods, error: e1 } = await sb.from('modules').select('*').eq('teacher_id', G.currentUser.uid);
     if (e1) throw e1;
-    drills = (mods || []).map(_sbRowToModule).sort((a, b) => (b.id || 0) - (a.id || 0));
+    G.drills = (mods || []).map(_sbRowToModule).sort((a, b) => (b.id || 0) - (a.id || 0));
     save();
-    const { data: cls, error: e2 } = await sb.from('classes').select('*').eq('teacher_id', currentUser.uid);
+    const { data: cls, error: e2 } = await sb.from('classes').select('*').eq('teacher_id', G.currentUser.uid);
     if (e2) throw e2;
     classes = (cls || []).map(_sbRowToClass);
     saveClasses();
@@ -4779,17 +4777,17 @@ async function _sbLoadTeacherModules() {
 }
 
 async function _sbSaveModule(drill) {
-  if (!sb || !currentUser || currentRole !== 'teacher') return;
+  if (!sb || !G.currentUser || G.currentRole !== 'teacher') return;
   try {
     const row = _sbModuleToRow(drill);
-    row.teacher_id = currentUser.uid;   // garantir le propriétaire (RLS)
+    row.teacher_id = G.currentUser.uid;   // garantir le propriétaire (RLS)
     const { error } = await sb.from('modules').upsert(row);
     if (error) throw error;
   } catch (e) { console.error('_sbSaveModule', e); }
 }
 
 async function _sbDeleteModule(drillId) {
-  if (!sb || !currentUser || currentRole !== 'teacher') return;
+  if (!sb || !G.currentUser || G.currentRole !== 'teacher') return;
   try {
     const { error } = await sb.from('modules').delete().eq('id', drillId);
     if (error) throw error;
@@ -4797,17 +4795,17 @@ async function _sbDeleteModule(drillId) {
 }
 
 async function _sbSaveClass(cls) {
-  if (!sb || !currentUser || currentRole !== 'teacher') return;
+  if (!sb || !G.currentUser || G.currentRole !== 'teacher') return;
   try {
     const row = _sbClassToRow(cls);
-    row.teacher_id = currentUser.uid;
+    row.teacher_id = G.currentUser.uid;
     const { error } = await sb.from('classes').upsert(row);
     if (error) throw error;
   } catch (e) { console.error('_sbSaveClass', e); }
 }
 
 async function _sbDeleteClass(id) {
-  if (!sb || !currentUser) return;
+  if (!sb || !G.currentUser) return;
   try {
     const { error } = await sb.from('classes').delete().eq('id', id);
     if (error) throw error;
@@ -4818,10 +4816,10 @@ async function _sbDeleteClass(id) {
 //  DONNÉES — élève + résultats / pratique / parties + mastery
 // ════════════════════════════════════════════════════════════
 async function _sbLoadStudentModules() {
-  if (!sb || !currentUser || currentRole !== 'student') return;
+  if (!sb || !G.currentUser || G.currentRole !== 'student') return;
   const listEl = document.getElementById('sh-module-list');
   const nameEl = document.getElementById('sh-student-name');
-  if (nameEl) nameEl.textContent = currentUser.displayName || currentUser.email;
+  if (nameEl) nameEl.textContent = G.currentUser.displayName || G.currentUser.email;
 
   let assigned = [], personal = [];
   try {
@@ -4847,35 +4845,35 @@ async function _sbLoadStudentModules() {
     const multiCoach = coachIds.length > 1;
     assigned.forEach(m => { m.coachName = coachNames[m.teacherId] || null; m._showCoach = multiCoach; });
     // Modules perso de l'élève
-    const { data: pers } = await sb.from('modules').select('*').eq('owner_student_id', currentUser.uid);
+    const { data: pers } = await sb.from('modules').select('*').eq('owner_student_id', G.currentUser.uid);
     personal = (pers || []).map(_sbRowToModule);
     // Résultats + pratique de l'élève (dashboard multi-appareils)
-    const { data: rs } = await sb.from('results').select('*').eq('student_id', currentUser.uid);
+    const { data: rs } = await sb.from('results').select('*').eq('student_id', G.currentUser.uid);
     results = (rs || []).map(_sbRowToResult); localStorage.setItem('mc_results', JSON.stringify(results));
-    const { data: ps } = await sb.from('practice').select('*').eq('student_id', currentUser.uid);
-    practiceLog = (ps || []).map(_sbRowToPractice); localStorage.setItem('mc_practice', JSON.stringify(practiceLog));
+    const { data: ps } = await sb.from('practice').select('*').eq('student_id', G.currentUser.uid);
+    G.practiceLog = (ps || []).map(_sbRowToPractice); localStorage.setItem('mc_practice', JSON.stringify(G.practiceLog));
   } catch (e) {
     console.error('_sbLoadStudentModules', e);
     if (listEl) listEl.innerHTML = '<div style="color:var(--red);padding:20px;text-align:center;font-size:.85rem">Erreur de chargement. Vérifiez votre connexion.</div>';
     return;
   }
-  drills = [...assigned, ...personal];
+  G.drills = [...assigned, ...personal];
   save();
   renderStudentHome(assigned, personal);
 }
 
 async function _sbSaveStudentModule(d) {
-  if (!sb || !currentUser) return;
+  if (!sb || !G.currentUser) return;
   try {
     const row = _sbModuleToRow(d);
-    row.owner_student_id = currentUser.uid;   // RLS : module perso de l'élève
+    row.owner_student_id = G.currentUser.uid;   // RLS : module perso de l'élève
     const { error } = await sb.from('modules').upsert(row);
     if (error) throw error;
   } catch (e) { console.error('_sbSaveStudentModule', e); }
 }
 
 async function _sbDeleteStudentModule(id) {
-  if (!sb || !currentUser) return;
+  if (!sb || !G.currentUser) return;
   try {
     const { error } = await sb.from('modules').delete().eq('id', id);
     if (error) throw error;
@@ -4883,27 +4881,27 @@ async function _sbDeleteStudentModule(id) {
 }
 
 async function _sbRecordResult(rec) {
-  if (!sb || !currentUser) return;
+  if (!sb || !G.currentUser) return;
   try { const { error } = await sb.from('results').insert(_sbResultToRow(rec)); if (error) throw error; }
   catch (e) { console.error('_sbRecordResult', e); }
 }
 
 async function _sbRecordPractice(rec) {
-  if (!sb || !currentUser) return;
+  if (!sb || !G.currentUser) return;
   try { const { error } = await sb.from('practice').insert(_sbPracticeToRow(rec)); if (error) throw error; }
   catch (e) { console.error('_sbRecordPractice', e); }
 }
 
 async function _sbSaveGame(rec) {
-  if (!sb || !currentUser) return;
+  if (!sb || !G.currentUser) return;
   try { const { error } = await sb.from('games').insert(_sbGameToRow(rec)); if (error) throw error; }
   catch (e) { console.error('_sbSaveGame', e); }
 }
 
 // Vue Prof : résultats / pratique / parties portant sur les modules du prof.
 async function _sbLoadTeacherResults() {
-  if (!sb || !currentUser || currentRole !== 'teacher') return;
-  const ids = drills.map(d => String(d.id));
+  if (!sb || !G.currentUser || G.currentRole !== 'teacher') return;
+  const ids = G.drills.map(d => String(d.id));
   if (!ids.length) { results = []; localStorage.setItem('mc_results', '[]'); return; }
   try {
     const { data } = await sb.from('results').select('*').in('drill_id', ids);
@@ -4913,45 +4911,45 @@ async function _sbLoadTeacherResults() {
 }
 
 async function _sbLoadTeacherPractice() {
-  if (!sb || !currentUser || currentRole !== 'teacher') return;
-  const ids = drills.map(d => String(d.id));
-  if (!ids.length) { practiceLog = []; localStorage.setItem('mc_practice', '[]'); return; }
+  if (!sb || !G.currentUser || G.currentRole !== 'teacher') return;
+  const ids = G.drills.map(d => String(d.id));
+  if (!ids.length) { G.practiceLog = []; localStorage.setItem('mc_practice', '[]'); return; }
   try {
     const { data } = await sb.from('practice').select('*').in('drill_id', ids);
-    practiceLog = (data || []).map(_sbRowToPractice);
-    localStorage.setItem('mc_practice', JSON.stringify(practiceLog));
+    G.practiceLog = (data || []).map(_sbRowToPractice);
+    localStorage.setItem('mc_practice', JSON.stringify(G.practiceLog));
   } catch (e) { console.error('_sbLoadTeacherPractice', e); }
 }
 
 async function _sbLoadTeacherGames() {
-  if (!sb || !currentUser || currentRole !== 'teacher') return;
-  const ids = drills.map(d => String(d.id));
-  if (!ids.length) { savedGames = []; return; }
+  if (!sb || !G.currentUser || G.currentRole !== 'teacher') return;
+  const ids = G.drills.map(d => String(d.id));
+  if (!ids.length) { G.savedGames = []; return; }
   try {
     const { data } = await sb.from('games').select('*').in('drill_id', ids);
-    savedGames = (data || []).map(_sbRowToGame);
+    G.savedGames = (data || []).map(_sbRowToGame);
   } catch (e) { console.error('_sbLoadTeacherGames', e); }
 }
 
 // Progression SM-2 (mastery) — stockée dans profiles.mastery (jsonb).
 async function _sbSaveMastery() {
-  const student = currentUser && (currentUser.displayName || currentUser.email);
-  if (!sb || !currentUser || !student) return;
+  const student = G.currentUser && (G.currentUser.displayName || G.currentUser.email);
+  if (!sb || !G.currentUser || !student) return;
   const prefix = student + '_';
   const mine = {};
-  for (const k in masteryData) if (k.startsWith(prefix)) mine[k] = masteryData[k];
-  try { const { error } = await sb.from('profiles').update({ mastery: mine }).eq('id', currentUser.uid); if (error) throw error; }
+  for (const k in G.masteryData) if (k.startsWith(prefix)) mine[k] = G.masteryData[k];
+  try { const { error } = await sb.from('profiles').update({ mastery: mine }).eq('id', G.currentUser.uid); if (error) throw error; }
   catch (e) { console.error('_sbSaveMastery', e); }
 }
 
 async function _sbLoadMastery() {
-  if (!sb || !currentUser) return;
+  if (!sb || !G.currentUser) return;
   try {
-    const { data } = await sb.from('profiles').select('mastery').eq('id', currentUser.uid).maybeSingle();
+    const { data } = await sb.from('profiles').select('mastery').eq('id', G.currentUser.uid).maybeSingle();
     const m = data && data.mastery;
     if (m) {
-      for (const k in m) if (!masteryData[k] || (m[k].due || 0) > (masteryData[k].due || 0)) masteryData[k] = m[k];
-      localStorage.setItem('mc_mastery', JSON.stringify(masteryData));
+      for (const k in m) if (!G.masteryData[k] || (m[k].due || 0) > (G.masteryData[k].due || 0)) G.masteryData[k] = m[k];
+      localStorage.setItem('mc_mastery', JSON.stringify(G.masteryData));
     }
   } catch (e) { console.error('_sbLoadMastery', e); }
 }
