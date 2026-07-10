@@ -71,3 +71,63 @@ interface EventTarget {
   checked?: boolean;
   dataset?: any;
 }
+
+// ════════════════════════════════════════════════════════════
+//  Pont `window` — fonctions/assets partagés entre modules ES.
+//  `app.js` expose ses fonctions via Object.assign(window, {…}) ; les modules
+//  `lib/*` les résolvent au runtime (`window.foo?.(…)`) et exposent en retour
+//  leurs propres fonctions. On les DÉCLARE ici (optionnelles, assignées au
+//  runtime) pour supprimer le bruit du type-check SANS index signature
+//  `[key:string]:any` — ainsi une vraie faute de frappe sur `window.xxx`
+//  reste détectée. À compléter au fil des extractions.
+// ════════════════════════════════════════════════════════════
+interface Window {
+  // — Assets partagés (données) —
+  PIECE_CDN?: string;
+  pieceImgs?: any;
+  _E?: any;            // état éditeur (lib/editor.js)
+
+  // — Helpers / vues (app.js) —
+  fig?: (...a: any[]) => any;
+  escapeHtml?: (...a: any[]) => any;
+  toast?: (...a: any[]) => any;
+  save?: (...a: any[]) => any;
+  showPromoPicker?: (...a: any[]) => any;
+  renderDrillList?: (...a: any[]) => any;
+  renderClassModuleSelect?: (...a: any[]) => any;
+  loadStudentModules?: (...a: any[]) => any;
+  syncModuleToFirestore?: (...a: any[]) => any;
+  _sbSaveStudentModule?: (...a: any[]) => any;
+  renderEditorBoard?: (...a: any[]) => any;
+
+  // — Board / feedback / score (app.js) —
+  drawBoard?: (...a: any[]) => any;
+  setFeedback?: (...a: any[]) => any;
+  clearFeedback?: (...a: any[]) => any;
+  setBoardComment?: (...a: any[]) => any;
+  setBoardPrompt?: (...a: any[]) => any;
+  addLog?: (...a: any[]) => any;
+  updateScores?: (...a: any[]) => any;
+
+  // — Sessions / enregistrement (app.js) —
+  currentSession?: (...a: any[]) => any;
+  totalSessions?: (...a: any[]) => any;
+  recordResult?: (...a: any[]) => any;
+  recordPracticeSession?: (...a: any[]) => any;
+  showEndModal?: (...a: any[]) => any;
+  updateReviserToutBadge?: (...a: any[]) => any;
+
+  // — Répétition espacée (SR, app.js → futur lib/sr.js) —
+  _srToggleBar?: (...a: any[]) => any;
+  _srUpdateBar?: (...a: any[]) => any;
+  _srAnswer?: (...a: any[]) => any;
+  _srBilan?: (...a: any[]) => any;
+
+  // — Drill (lib/drill.js) —
+  startLineDrill?: (...a: any[]) => any;
+  tryMoveInLine?: (...a: any[]) => any;
+  skipLinePosition?: (...a: any[]) => any;
+  loadPosition?: (...a: any[]) => any;
+  renderPosStrip?: (...a: any[]) => any;
+  tryMoveInPositions?: (...a: any[]) => any;
+}
