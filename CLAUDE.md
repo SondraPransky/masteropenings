@@ -51,7 +51,7 @@ L’application doit permettre :
 
 | Fichier | Rôle | Taille |
 |---------|------|--------|
-| `app.js` | Cœur applicatif : vues login/coach/drill/prof/élève, phases apprentissage/test, SR, échiquier, accès Supabase, pont `window` | ~187 Ko · 3643 lignes |
+| `app.js` | Cœur applicatif : vues login/coach/drill/prof/élève, phases apprentissage/test, échiquier, Maia, accès Supabase, pont `window` | ~172 Ko · 3362 lignes |
 | `index.html` | Structure statique des écrans (montés/pilotés par `app.js`) | ~46 Ko |
 | `style.css` | Styles : design system (variables `--cyan`, `--surf`, `--border`…) + tous les écrans | ~54 Ko |
 | `state.js` | État global réassignable → objet `G` (source unique) | ~1,5 Ko |
@@ -63,6 +63,7 @@ L’application doit permettre :
 | `lib/editor.js` | Éditeur de variantes — UI : plateau, drag, annotations (NAG/formes), sauvegarde (DOM) | ~27 Ko |
 | `lib/drill-core.js` | Drill — cœur pur : sessions, choix du coup adverse (LRU/forced path), `oppSeenKey`, délais commentaires (testé) | ~4 Ko |
 | `lib/drill.js` | Drill — UI modes ligne + positions clés/flash + arbre/étude : jeu coup par coup, auto-play adverse, notation, forced path, phase apprentissage (arbre), « devine le coup » (`S` partagé, app-level/SR via pont `window`) | ~28 Ko |
+| `lib/sr.js` | Répétition espacée : file de session (nouveaux/dus + quota), réponse/étape, bilan + prévision, suspension, réglages, tableau de bord élève | ~20 Ko |
 | `home.html` + `data.js` | Page marketing autonome (copiée telle quelle dans `dist/` au build) | — |
 
 > Découpage de l’éditeur **terminé** (§5.1) : cœur pur `lib/editor-core.js` (testé) + UI `lib/editor.js` (DOM, état `_E` local ; fonctions app-level résolues au runtime via le pont `window` ; assets partagés `pieceImgs`/`PIECE_CDN` exposés sur `window` par `app.js`). Le sélecteur de promotion reste dans `app.js` (partagé avec l’échiquier principal).
@@ -75,7 +76,8 @@ L’application doit permettre :
 >   - **Mode positions clés/flash fait** : `loadPosition`, `updatePosInfo`, `renderPosStrip`, `tryMoveInPositions`, `endPositionsDrill`. Couplage bidirectionnel avec le moteur SR (resté dans `app.js`) : `drill.js` bridge `_srToggleBar`/`_srUpdateBar`/`_srAnswer`/`_srBilan` via `window`, et le SR appelle `window.loadPosition?.()` etc. `_materialHint` importé de `lib/tree.js`.
 >   - **Mode arbre/étude fait** : révision arbre (`startTreeDrill`, `advanceTree`, `tryMoveInTree`, `_treeEnd`) + wrappers stateful (`_pickOppMove`, `_treeUnseenCount`, `_computeForcedPath` → `G.oppSeen`) + phase apprentissage arbre (`startStudyPhase`, `studyGoPath`, `renderStudyTree`, navigation, « devine le coup » : `toggleStudyGuess`/`tryStudyGuess`/`_studyGuess*`). Imports ajoutés dans `drill.js` : `G` (state.js), `_normFen` (core.js), `pickOppMove`/`computeForcedPath`/`treeUnseenCount`/`oppSeenKey` (drill-core.js), `pgnToEditorTree`/`nagGlyphs` (editor-core.js).
 >   - Côté `app.js`, toutes ces fonctions sont appelées via `window.xxx?.()`. **Type-check** : le pont `window` est déclaré dans `types/globals.d.ts` (0 erreur).
-> - **Prochaines étapes** : phases apprentissage/test (mode ligne) encore dans `app.js` — extraction possible. Puis extraire le moteur de répétition espacée (SR) → futur `lib/sr.js`.
+> - **SR extrait** : le moteur de répétition espacée est désormais dans `lib/sr.js` (27 fonctions : `srStart`, `_srBuildQueue`, `_srAnswer`, `_srBilan`, `_srForecast`, suspension, réglages, `renderSrDashboard`). Couplage bidirectionnel avec `lib/drill.js` via le pont `window` : `sr.js` appelle `window.loadPosition?.()` (mode positions), et `drill.js` appelle `window._srToggleBar/_srUpdateBar/_srAnswer/_srBilan`. Imports : `S`, `G`, `_treePlayerPositions`/`_materialHint` (tree.js), `_drillSessions` (drill-core.js).
+> - **Prochaines étapes** : phases apprentissage/test (mode ligne) encore dans `app.js` — extraction possible vers `lib/drill.js`. Ensuite : vues coach/élève (§5.3).
 
 ### Commandes
 - **Dev** : `npm run dev` (Vite, HMR) — ou `npx serve .` (ESM natif, sans build)

@@ -107,7 +107,11 @@ interface Window {
   setBoardComment?: (...a: any[]) => any;
   setBoardPrompt?: (...a: any[]) => any;
   addLog?: (...a: any[]) => any;
+  clearLog?: (...a: any[]) => any;
+  drawCoords?: (...a: any[]) => any;
   updateScores?: (...a: any[]) => any;
+  goPage?: (...a: any[]) => any;
+  closeModal?: (...a: any[]) => any;
 
   // — Sessions / enregistrement (app.js) —
   currentSession?: (...a: any[]) => any;
@@ -119,11 +123,13 @@ interface Window {
   showEndModal?: (...a: any[]) => any;
   updateReviserToutBadge?: (...a: any[]) => any;
 
-  // — Répétition espacée (SR, app.js → futur lib/sr.js) —
+  // — Répétition espacée (lib/sr.js) —
   _srToggleBar?: (...a: any[]) => any;
   _srUpdateBar?: (...a: any[]) => any;
   _srAnswer?: (...a: any[]) => any;
   _srBilan?: (...a: any[]) => any;
+  _srSessionSize?: (...a: any[]) => any;
+  renderSrDashboard?: (...a: any[]) => any;
 
   // — Drill (lib/drill.js) —
   startLineDrill?: (...a: any[]) => any;
