@@ -112,6 +112,9 @@ interface Window {
   updateScores?: (...a: any[]) => any;
   goPage?: (...a: any[]) => any;
   closeModal?: (...a: any[]) => any;
+  isLineMode?: (...a: any[]) => any;
+  startDrill?: (...a: any[]) => any;
+  nextDrill?: (...a: any[]) => any;
 
   // — Sessions / enregistrement (app.js) —
   currentSession?: (...a: any[]) => any;
@@ -150,4 +153,11 @@ interface Window {
   toggleStudyGuess?: (...a: any[]) => any;
   tryStudyGuess?: (...a: any[]) => any;
   _studyGuessReady?: (...a: any[]) => any;
+  // phases apprentissage/test
+  startLearnPhase?: (...a: any[]) => any;
+  learnNext?: (...a: any[]) => any;
+  learnPrev?: (...a: any[]) => any;
+  enterTestPhase?: (...a: any[]) => any;
+  showEndModal?: (...a: any[]) => any;
+  replayErrors?: (...a: any[]) => any;
 }

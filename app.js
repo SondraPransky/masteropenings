@@ -1204,7 +1204,7 @@ function startDrill(i) {
     document.getElementById('notation-card').style.display='none';
     document.getElementById('pos-card').style.display='none';
     document.getElementById('test-btns').style.display='none';
-    startLearnPhase();
+    window.startLearnPhase?.();
   } else {
     document.getElementById('learn-card').style.display='none';
     document.getElementById('notation-card').style.display='none';
@@ -1228,7 +1228,7 @@ function nextSession() {
   updateScores(); clearLog(); clearFeedback();
   const sess = currentSession();
   if (S.drill.mode === 'line' && sess?.moves?.length) {
-    startLearnPhase();
+    window.startLearnPhase?.();
   } else {
     const kps = sess?.kps || [];
     S.kps = kps.map(p=>({...p, attempted:false, correct:false}));
@@ -1259,308 +1259,10 @@ function nextSession() {
 // startStudyPhase, studyGoPath, tryStudyGuess, renderStudyTree, _pickOppMove...)
 // → lib/drill.js (exposées sur window, appelées via window.xxx?.() côté app.js)
 
-function startLearnPhase() {
-  const d    = S.drill;
-  const sess = currentSession();
-  const startFen = sess.startFen || new Chess().fen();
-  S.phase    = 'learn';
-  S.learnIdx = 0;
-
-  // Préparer la liste des coups (même structure que le test)
-  S.lineAllMoves = sess.moves.map((mv, i) => ({
-    ...mv,
-    isPlayer: isPlayerMove(mv.fenBefore, d.side),
-    idx: i,
-    result: null
-  }));
-  S.lineGame = new Chess(startFen);
-  // Cursor starts on first move, not position de départ
-  if (S.lineAllMoves.length > 0) {
-    S.lineGame.move(S.lineAllMoves[0].san);
-    S.learnIdx = 1;
-  } else {
-    S.learnIdx = 0;
-  }
-  updateSessionInfo();
-
-  window._setStudyLayout?.(false);   // mode ligne : info-card visible, panneau standard
-  document.getElementById('learn-card').style.display = 'block';
-  document.getElementById('notation-card').style.display = 'none';
-  document.getElementById('test-btns').style.display = 'none';
-  document.getElementById('score-card').style.display = 'none';
-  document.getElementById('history-card').style.display = 'none';
-  clearFeedback();
-  renderLearnState();
-  drawBoard();
-}
-
-function learnNext() {
-  if (S.phase === 'study') return window.studyNext?.();
-  if (S.learnIdx >= S.lineAllMoves.length) return;
-  clearFeedback();
-  const mv = S.lineAllMoves[S.learnIdx];
-  S.lineGame.move(mv.san);
-  S.learnIdx++;
-  renderLearnState();
-  drawBoard();
-  // Fin de ligne : animation bouton
-  if (S.learnIdx >= S.lineAllMoves.length) {
-    setFeedback('ok', '✓ Tu as tout vu — lance le test !', '');
-  }
-}
-
-function learnPrev() {
-  if (S.phase === 'study') return window.studyPrev?.();
-  if (S.learnIdx <= 0) return;
-  clearFeedback();
-  S.learnIdx--;
-  const startFen = currentSession().startFen || new Chess().fen();
-  S.lineGame = new Chess(startFen);
-  for (let i = 0; i < S.learnIdx; i++) S.lineGame.move(S.lineAllMoves[i].san);
-  renderLearnState();
-  drawBoard();
-}
-
-function renderLearnState() {
-  renderLearnNotation();
-  renderLearnComment();
-  updateLearnProgress();
-}
-
-function renderLearnNotation() {
-  const el = document.getElementById('learn-notation');
-  if (!el) return;
-  if (!S.lineAllMoves.length) { el.innerHTML = '<span style="color:var(--dim)">—</span>'; return; }
-
-  const rows = [];
-  let cur = null;
-  S.lineAllMoves.forEach((mv, i) => {
-    const turn = mv.fenBefore.split(' ')[1];
-    const num  = mv.fenBefore.split(' ')[5];
-    if (turn === 'w') { cur = { num, white:{mv,i}, black:null }; rows.push(cur); }
-    else if (i === 0) { cur = { num: num+'…', white:null, black:{mv,i} }; rows.push(cur); }
-    else if (cur) cur.black = {mv,i};
-  });
-
-  const cell = (entry) => {
-    if (!entry) return '<td style="padding:2px 6px 2px 0"></td>';
-    const {mv, i} = entry;
-    let style;
-    if (i === S.learnIdx - 1) {
-      // Coup courant : une seule surbrillance, sobre, sans bordure (pas de saut de hauteur)
-      style = 'background:var(--cyan-dim);color:var(--cyan);padding:0 7px;border-radius:5px;font-weight:600;display:inline-block';
-    } else if (i < S.learnIdx) {
-      // Déjà joués : poids CONSTANT, distinction du camp par la couleur seulement
-      style = `color:${mv.isPlayer ? 'var(--text)' : 'var(--text-2)'};font-weight:500`;
-    } else {
-      // Pas encore atteints : estompés, même poids (plus de gras/non-gras qui saute)
-      style = 'color:var(--dim);opacity:.5;font-weight:500';
-    }
-    return `<td style="padding:2px 6px 2px 0"><span style="${style}">${fig(mv.san)}</span></td>`;
-  };
-
-  const activeRowIdx = S.learnIdx > 0 ? rows.findIndex(r =>
-    (r.white && r.white.i === S.learnIdx - 1) || (r.black && r.black.i === S.learnIdx - 1)
-  ) : -1;
-
-  el.innerHTML = '<table style="border-collapse:collapse;width:100%;font-size:.82rem">' +
-    rows.map((r, ri) => `<tr${ri === activeRowIdx ? ' id="learn-notation-active"' : ''}>
-      <td style="color:var(--dim);font-size:.7rem;padding:2px 6px 2px 0;white-space:nowrap;min-width:24px;user-select:none">${r.num}.</td>
-      ${cell(r.white)}${cell(r.black)}
-    </tr>`).join('') + '</table>';
-
-  requestAnimationFrame(() => {
-    const a = document.getElementById('learn-notation-active');
-    if (a) a.scrollIntoView({ block: 'nearest', behavior: 'instant' });
-  });
-}
-
-function renderLearnComment() {
-  const el = document.getElementById('learn-comment');
-  if (!el) return;
-  // Si la ligne n'a aucun commentaire, on masque entièrement la boîte (pas d'espace vide inutile).
-  const lineHasComments = (S.lineAllMoves || []).some(m => m && m.comment);
-  if (!lineHasComments) { el.style.display = 'none'; return; }
-  el.style.display = '';
-  const mv = S.learnIdx > 0 ? S.lineAllMoves[S.learnIdx - 1] : null;
-  const comment = mv && mv.comment ? mv.comment : '';
-  if (comment) {
-    el.style.background = 'var(--bg)';
-    el.innerHTML = `<span style="color:var(--cyan);margin-right:5px">💬</span>${escapeHtml(comment)}`;
-  } else {
-    // Coup sans commentaire (mais la ligne en a ailleurs) : boîte invisible mais hauteur conservée → aucun mouvement.
-    el.style.background = 'transparent';
-    el.innerHTML = '';
-  }
-  el.scrollTop = 0;
-}
-
-function updateLearnProgress() {
-  const total = S.lineAllMoves.length;
-  document.getElementById('learn-prog').textContent = S.learnIdx + ' / ' + total;
-  const pct = total > 0 ? Math.round(S.learnIdx / total * 100) : 0;
-  const fill = document.getElementById('learn-prog-fill');
-  if (fill) fill.style.width = pct + '%';
-  let label, labelColor;
-  if (S.learnIdx === 0) {
-    label = 'Position de départ'; labelColor = 'var(--dim)';
-  } else if (S.learnIdx === total) {
-    label = '✓ Fin de la ligne'; labelColor = 'var(--green)';
-  } else {
-    const mv = S.lineAllMoves[S.learnIdx - 1];
-    label = mv.isPlayer ? 'Votre coup' : 'Adversaire';
-    labelColor = mv.isPlayer ? 'var(--cyan)' : 'var(--dim)';
-  }
-  const lnum = document.getElementById('learn-pos-num');
-  lnum.textContent = label;
-  lnum.style.color = labelColor;
-  document.getElementById('learn-prev-btn').disabled = S.learnIdx <= 0;
-  document.getElementById('learn-next-btn').disabled = S.learnIdx >= total;
-  // Bouton test : s'illumine quand la ligne est vue en entier
-  const testBtn = document.querySelector('#learn-card .btn-gold');
-  if (testBtn) {
-    const done = S.learnIdx >= total;
-    testBtn.textContent = done ? '🚀 Commencer le test' : '🎯 Je connais la ligne — Tester';
-    testBtn.style.opacity = done ? '1' : '0.75';
-    testBtn.style.transform = done ? 'scale(1.02)' : '';
-    testBtn.style.boxShadow = done ? '0 0 12px var(--cyan-glow)' : '';
-  }
-}
-
-function enterTestPhase() {
-  if (S.phase === 'study') return window.startTreeDrill?.();
-  S.phase      = 'test';
-  S.ok         = 0;
-  S.ko         = 0;
-  S.hintSquare = null;
-  updateScores();
-  clearLog();
-  document.getElementById('learn-card').style.display = 'none';
-  document.getElementById('notation-card').style.display = 'block';
-  document.getElementById('test-btns').style.display = '';
-  document.getElementById('score-card').style.display = '';
-  document.getElementById('history-card').style.display = '';
-  clearFeedback();
-  const pauseBtn = document.getElementById('btn-pause-adv');
-  if (pauseBtn) { pauseBtn.style.display = ''; pauseBtn.textContent = S.pauseAdversary ? '▶ Adv.' : '⏸ Auto'; }
-  resizeBoard();
-  window.startLineDrill?.();
-}
-
-// ══════════════════════════════════════════════════════
-// FIN DE DRILL (commun)
-// ══════════════════════════════════════════════════════
-function showEndModal(pct) {
-  const _et = document.getElementById('end-title'); if (_et) _et.textContent = '🏁 Module terminé !';
-  const msg = pct>=85?'🌟 Excellent ! Maîtrise parfaite.':pct>=60?'👍 Bon travail, continuez !':'💪 Persistez, vous progressez !';
-  const showContinue = (isLineMode() || S.drill?.varmode === 'tree') && S.lineGame && !S.lineGame.game_over();
-
-  let errRecap = '';
-  if (isLineMode() && S.ko > 0 && S.lineAllMoves?.length) {
-    const failed = S.lineAllMoves.filter(m => m.isPlayer && m.result === 'ko');
-    if (failed.length) {
-      errRecap = `<div style="margin:12px 0 0;padding:10px 12px;background:var(--red-dim);border:1px solid rgba(225,29,72,.15);border-radius:var(--rs);text-align:left">
-        <div style="font-size:.7rem;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Coups à retravailler</div>
-        ${failed.map(m=>`<div style="display:flex;align-items:baseline;gap:8px;font-size:.82rem;padding:2px 0">
-          <span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--text)">${fig(m.san)}</span>
-          ${m.comment?`<span style="color:var(--text-2);font-size:.75rem;line-height:1.35">${escapeHtml(m.comment.slice(0,70))}${m.comment.length>70?'…':''}</span>`:''}
-        </div>`).join('')}
-      </div>`;
-    }
-  }
-
-  document.getElementById('end-body').innerHTML=`
-    <div class="scores-row" style="margin-bottom:14px">
-      <div class="score-box"><div class="score-val" style="color:var(--green)">${S.ok}</div><div class="score-lbl">Corrects</div></div>
-      <div class="score-box"><div class="score-val" style="color:var(--red)">${S.ko}</div><div class="score-lbl">Erreurs</div></div>
-      <div class="score-box"><div class="score-val" style="color:var(--cyan)">${pct}%</div><div class="score-lbl">Réussite</div></div>
-    </div>
-    <p style="font-size:.84rem;color:var(--dim)">${msg}</p>
-    ${errRecap}
-    ${showContinue?`<button class="btn" onclick="startPostTheory()" style="margin-top:10px;width:100%;background:var(--cyan);color:#000;font-weight:600">▶ Continuer la partie</button>`:''}`;
-  const errBtn = document.getElementById('btn-replay-errors');
-  const hasTreeErrors = S.drill?.varmode === 'tree' && S._treeErrors?.length > 0;
-  const hasLineErrors = isLineMode() && S.ko > 0;
-  if (errBtn) {
-    errBtn.style.display = (hasLineErrors || hasTreeErrors) ? '' : 'none';
-    if (hasTreeErrors) {
-      const n = S._treeErrors.length;
-      errBtn.textContent = `🔄 Réviser les erreurs (${n})`;
-    } else {
-      errBtn.textContent = '↩ Erreurs seules';
-    }
-  }
-  const nextBtn   = document.getElementById('btn-next-drill');
-  const replayBtn = document.getElementById('btn-replay');
-  if (S.drill?.varmode === 'tree') {
-    const unseen = window._treeUnseenCount?.();
-    if (replayBtn) {
-      replayBtn.textContent = '▶ Poursuivre la révision';
-      replayBtn.className   = 'btn btn-blue';
-      replayBtn.onclick     = () => { closeModal('modal-end'); startDrill(S.idx); };
-    }
-    if (nextBtn) {
-      if (unseen > 0) {
-        nextBtn.textContent = `${unseen} variante${unseen > 1 ? 's' : ''} restante${unseen > 1 ? 's' : ''}`;
-        nextBtn.className   = 'btn btn-ghost';
-        nextBtn.style.color = 'var(--dim)';
-        nextBtn.onclick     = () => { closeModal('modal-end'); startDrill(S.idx); };
-      } else {
-        nextBtn.textContent = G.drills.length > 1 ? 'Module suivant →' : '✅ Tout revu';
-        nextBtn.className   = G.drills.length > 1 ? 'btn btn-gold' : 'btn btn-ghost';
-        nextBtn.style.color = '';
-        nextBtn.onclick     = G.drills.length > 1 ? () => { closeModal('modal-end'); nextDrill(); } : null;
-      }
-    }
-  } else {
-    if (replayBtn) {
-      replayBtn.textContent = '↺ Rejouer';
-      replayBtn.className   = 'btn btn-ghost';
-      replayBtn.onclick     = () => { closeModal('modal-end'); startDrill(S.idx); };
-    }
-    if (nextBtn) {
-      if (G.drills.length <= 1) {
-        nextBtn.textContent = '↺ Rejouer';
-        nextBtn.onclick = () => { closeModal('modal-end'); startDrill(S.idx); };
-      } else {
-        nextBtn.textContent = 'Module suivant →';
-        nextBtn.onclick = () => { closeModal('modal-end'); nextDrill(); };
-      }
-      nextBtn.className   = 'btn btn-gold';
-      nextBtn.style.color = '';
-    }
-  }
-  document.getElementById('modal-end').classList.add('on');
-}
-
-function replayErrors() {
-  if (S.drill?.varmode === 'tree') {
-    const errors = S._treeErrors || [];
-    if (!errors.length) return;
-    S.kps = errors.map(e => ({ fen: e.fen, san: e.san, comment: e.comment, attempted: false, correct: false }));
-    S.ok = 0; S.ko = 0; S.posIdx = 0; S.sel = null;
-    S.unifiedReview = true;
-    closeModal('modal-end');
-    document.getElementById('learn-card').style.display    = 'none';
-    document.getElementById('notation-card').style.display = 'none';
-    document.getElementById('pos-card').style.display      = 'block';
-    document.getElementById('test-btns').style.display     = '';
-    document.getElementById('score-card').style.display    = '';
-    document.getElementById('history-card').style.display  = '';
-    S.phase = 'test';
-    updateScores(); clearLog(); clearFeedback();
-    window.renderPosStrip?.();
-    window.loadPosition?.(0);
-    const n = S.kps.length;
-    setFeedback('hint', `🔄 ${n} erreur${n>1?'s':''} à corriger — jouez le bon coup`, '');
-    return;
-  }
-  const failed = (S.lineAllMoves||[]).filter(m => m.isPlayer && m.result === 'ko');
-  if (!failed.length) return;
-  S.errorOnlySet = new Set(failed.map(m => m.idx));
-  closeModal('modal-end');
-  enterTestPhase();
-}
+// Phases apprentissage/test (mode ligne) + fin de drill commune :
+// startLearnPhase / learnNext / learnPrev / renderLearnState / renderLearnNotation
+// renderLearnComment / updateLearnProgress / enterTestPhase / showEndModal / replayErrors
+// -> lib/drill.js (exposees sur window ; appelees via window.xxx?.() cote app.js)
 
 function closeModal(id){document.getElementById(id).classList.remove('on');}
 function nextDrill(){S.idx=(S.idx+1)%G.drills.length; initDrillPage();}
@@ -1726,8 +1428,8 @@ document.addEventListener('keydown', e => {
   if (S.phase !== 'learn' && S.phase !== 'study') return;
   const tag = document.activeElement?.tagName;
   if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-  if (e.key === 'ArrowRight') { e.preventDefault(); learnNext(); }
-  if (e.key === 'ArrowLeft')  { e.preventDefault(); learnPrev(); }
+  if (e.key === 'ArrowRight') { e.preventDefault(); window.learnNext?.(); }
+  if (e.key === 'ArrowLeft')  { e.preventDefault(); window.learnPrev?.(); }
 });
 
 function drawCoords() {
@@ -3341,22 +3043,22 @@ Object.assign(window, {
   _syncHeatmapFilters, _syncPartiesFilter, _treePlayerPositions, addFromLibrary, addLog, addStudent, askName, autoFillFromPgn, canInteract, cancelDel, cancelEditClass, cancelPromo, clearFeedback, clearLog,
   closeModal, confirmDel, confirmName, countPlayerMoves, currentGame, currentSession, deleteClass, deleteDrill,
   deleteModuleFromFirestore, deleteStudentDrill, dismissOnboarding, drawBoard, drawCoords, drawGhost,
-  editorTreeToPGN, enginePlay, enterTestPhase, escapeHtml, evXY, exportAll,
+  editorTreeToPGN, enginePlay, escapeHtml, evXY, exportAll,
   exportCSV, exportPGN, exportPracticeCSV, fig, flipBoard, getPieceImg, goPage, importDrill,
-  importStudentDrill, initDrillPage, injectDemoDrill, isLineMode, isPlayerMove, launchDrill, learnNext,
-  learnPrev, loadExample, loadMaia, loadPgnFile, loadStudentModules, loadTeacherGames,
+  importStudentDrill, initDrillPage, injectDemoDrill, isLineMode, isPlayerMove, launchDrill, 
+  loadExample, loadMaia, loadPgnFile, loadStudentModules, loadTeacherGames,
   loadTeacherModules, loadTeacherPractice, loadTeacherResults, loginUser, logoutUser, nagGlyphs, nextDrill,
   nextSession, openCreateDrillModal, openEditClass, openLibrary, openStudentImport,
   pgnToEditorTree, pickPromo, playVsMaia, posGhost, previewDrill, quitMaiaGame, recordPracticeSession,
   recordResult, registerUser, renderClassList, renderClassModuleSelect, renderClassWeakSpots, renderClassesTab,
-  renderCoachOnboarding, renderDrillList, renderHeatmap, renderLearnComment, renderLearnNotation,
-  renderLearnState, renderLibrary, renderPartiesTab, renderProfView,
-  renderStudentHome, replayErrors,
+  renderCoachOnboarding, renderDrillList, renderHeatmap, 
+  renderLibrary, renderPartiesTab, renderProfView,
+  renderStudentHome, 
   requestPasswordReset, resizeBoard, save, saveClass, saveClasses, saveGame,
-  selectDrill, setBoardComment, setBoardPrompt, setFeedback, shareDrill, showEndModal,
+  selectDrill, setBoardComment, setBoardPrompt, setFeedback, shareDrill, 
   showHint, showLoginError, showLoginTab, showPromoPicker, showRecoveryForm, showStudentDetail,
   skipPosition, sm2Get, sm2Update, sqFromXY, startDrill,
-  startLearnPhase, startPostTheory, startStudentDrill, submitNewPassword, switchCoachSection, syncModuleToFirestore, toast,
+  startPostTheory, startStudentDrill, submitNewPassword, switchCoachSection, syncModuleToFirestore, toast,
   toggleAdvOpts, toggleClassMode, togglePGN, toggleTheme,
-  totalSessions, tryMove, tryMovePostTheory, updateLearnProgress, updateNav, updateScores,
+  totalSessions, tryMove, tryMovePostTheory, updateNav, updateScores,
   updateSessionInfo, updateStudentBar, });

@@ -51,7 +51,7 @@ L’application doit permettre :
 
 | Fichier | Rôle | Taille |
 |---------|------|--------|
-| `app.js` | Cœur applicatif : vues login/coach/drill/prof/élève, phases apprentissage/test, échiquier, Maia, accès Supabase, pont `window` | ~172 Ko · 3362 lignes |
+| `app.js` | Cœur applicatif : vues login/coach/prof/élève, échiquier (canvas, drag, dispatch), Maia, accès Supabase, pont `window` | ~157 Ko · 3064 lignes |
 | `index.html` | Structure statique des écrans (montés/pilotés par `app.js`) | ~46 Ko |
 | `style.css` | Styles : design system (variables `--cyan`, `--surf`, `--border`…) + tous les écrans | ~54 Ko |
 | `state.js` | État global réassignable → objet `G` (source unique) | ~1,5 Ko |
@@ -62,7 +62,7 @@ L’application doit permettre :
 | `lib/editor-core.js` | Éditeur — cœur pur : sérialisation PGN ↔ arbre, formes, NAG, `_SHAPE_COL` (testé, round-trip) | ~7 Ko |
 | `lib/editor.js` | Éditeur de variantes — UI : plateau, drag, annotations (NAG/formes), sauvegarde (DOM) | ~27 Ko |
 | `lib/drill-core.js` | Drill — cœur pur : sessions, choix du coup adverse (LRU/forced path), `oppSeenKey`, délais commentaires (testé) | ~4 Ko |
-| `lib/drill.js` | Drill — UI modes ligne + positions clés/flash + arbre/étude : jeu coup par coup, auto-play adverse, notation, forced path, phase apprentissage (arbre), « devine le coup » (`S` partagé, app-level/SR via pont `window`) | ~28 Ko |
+| `lib/drill.js` | Drill — **toute l'UI** : modes ligne / positions clés-flash / arbre-étude, phases apprentissage & test, fin de drill (`showEndModal`, `replayErrors`). `S` partagé ; app-level/SR via pont `window` | ~48 Ko |
 | `lib/sr.js` | Répétition espacée : file de session (nouveaux/dus + quota), réponse/étape, bilan + prévision, suspension, réglages, tableau de bord élève | ~20 Ko |
 | `home.html` + `data.js` | Page marketing autonome (copiée telle quelle dans `dist/` au build) | — |
 
@@ -77,7 +77,12 @@ L’application doit permettre :
 >   - **Mode arbre/étude fait** : révision arbre (`startTreeDrill`, `advanceTree`, `tryMoveInTree`, `_treeEnd`) + wrappers stateful (`_pickOppMove`, `_treeUnseenCount`, `_computeForcedPath` → `G.oppSeen`) + phase apprentissage arbre (`startStudyPhase`, `studyGoPath`, `renderStudyTree`, navigation, « devine le coup » : `toggleStudyGuess`/`tryStudyGuess`/`_studyGuess*`). Imports ajoutés dans `drill.js` : `G` (state.js), `_normFen` (core.js), `pickOppMove`/`computeForcedPath`/`treeUnseenCount`/`oppSeenKey` (drill-core.js), `pgnToEditorTree`/`nagGlyphs` (editor-core.js).
 >   - Côté `app.js`, toutes ces fonctions sont appelées via `window.xxx?.()`. **Type-check** : le pont `window` est déclaré dans `types/globals.d.ts` (0 erreur).
 > - **SR extrait** : le moteur de répétition espacée est désormais dans `lib/sr.js` (27 fonctions : `srStart`, `_srBuildQueue`, `_srAnswer`, `_srBilan`, `_srForecast`, suspension, réglages, `renderSrDashboard`). Couplage bidirectionnel avec `lib/drill.js` via le pont `window` : `sr.js` appelle `window.loadPosition?.()` (mode positions), et `drill.js` appelle `window._srToggleBar/_srUpdateBar/_srAnswer/_srBilan`. Imports : `S`, `G`, `_treePlayerPositions`/`_materialHint` (tree.js), `_drillSessions` (drill-core.js).
-> - **Prochaines étapes** : phases apprentissage/test (mode ligne) encore dans `app.js` — extraction possible vers `lib/drill.js`. Ensuite : vues coach/élève (§5.3).
+>   - **Phases apprentissage/test + fin de drill faites** : `startLearnPhase`, `learnNext/Prev`, `renderLearn*`, `updateLearnProgress`, `enterTestPhase`, `showEndModal`, `replayErrors`. `showEndModal` étant désormais local à `drill.js`, son pont `window` a été supprimé et ses 3 appels sont directs. Nouveaux ponts : `clearLog`, `closeModal`, `isLineMode`, `startDrill`, `nextDrill`.
+> - **Découpage du drill engine TERMINÉ** (§5.2) : `app.js` 4412 → 3064 lignes. Il ne reste dans `app.js` que l'échiquier (canvas/drag/dispatch `tryMove`/`canInteract`), Maia, les vues et l'accès Supabase.
+>
+> ⚠️ **Bug pré-existant repéré** (antérieur au refactor, cf. commit `72027c8`) : le bouton « ↩ Erreurs seules » du mode ligne ne filtre rien — `replayErrors()` pose `S.errorOnlySet`, puis `enterTestPhase()` → `startLineDrill()` fait `S.errorOnlySet = null` avant qu'`advanceLine()` ne le lise. Le chemin arbre (`varmode === 'tree'`) n'est pas touché. Non corrigé ici (extraction à comportement constant).
+>
+> - **Prochaines étapes (§5.3)** : extraire les vues coach/élève (`renderProfView`, `showStudentDetail`, `renderHeatmap`, `renderDrillList`…) → `lib/coach.js` / `lib/student.js`. Puis l'échiquier → `lib/board.js`.
 
 ### Commandes
 - **Dev** : `npm run dev` (Vite, HMR) — ou `npx serve .` (ESM natif, sans build)
