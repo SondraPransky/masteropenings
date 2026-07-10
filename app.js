@@ -801,7 +801,7 @@ function srStart(scope, drillIdx) {
   document.getElementById('score-card').style.display    = '';
   document.getElementById('history-card').style.display  = '';
   clearFeedback(); clearLog(); updateScores(); drawCoords(); resizeBoard();
-  loadPosition(0);
+  window.loadPosition?.(0);
   goPage('drill');
   toast(`↻ ${revTotal} révision${revTotal > 1 ? 's' : ''} · ${newTotal} nouveau${newTotal > 1 ? 'x' : ''}`, 'ok');
 }
@@ -848,7 +848,7 @@ function _srAnswer(kp, played, isCorrect) {
     setFeedback('ok', '✓ ' + fig(kp.san), S.drill?.hideComments ? '' : kp.comment);
     addLog(kp.san, true, S.posIdx + 1);
     drawBoard(); _srUpdateBar();
-    setTimeout(() => loadPosition(S.posIdx + 1), 850);
+    setTimeout(() => window.loadPosition?.(S.posIdx + 1), 850);
   } else {
     const matHint = played ? _materialHint(S.game.fen(), played.san) : '';
     setFeedback('ko', '✗ Le coup était : ' + fig(kp.san) + (matHint ? ' · ' + matHint : '') + '  ↻ revu plus tard', S.drill?.hideComments ? '' : kp.comment);
@@ -856,7 +856,7 @@ function _srAnswer(kp, played, isCorrect) {
     const insertAt = Math.min(S.posIdx + 3, S.kps.length);   // étape : remis plus loin dans la session
     S.kps.splice(insertAt, 0, { ...kp, attempted: false, correct: false, _requeued: true });
     drawBoard(); _srUpdateBar();
-    setTimeout(() => loadPosition(S.posIdx + 1), 1400);
+    setTimeout(() => window.loadPosition?.(S.posIdx + 1), 1400);
   }
 }
 
@@ -927,7 +927,7 @@ function srSuspendCurrent() {
     S.sr.total = Math.max(S.sr.passed.size, S.sr.total - 1);
   }
   toast('⏸ Position suspendue (réglages pour réactiver)', 'ok');
-  loadPosition(S.posIdx + 1);
+  window.loadPosition?.(S.posIdx + 1);
 }
 
 // ── Réglages de la révision (P4) ──
@@ -1496,8 +1496,8 @@ function startDrill(i) {
     const kps = sess?.kps || d.kps || [];
     S.kps    = kps.map(p=>({...p, attempted:false, correct:false}));
     updateSessionInfo();
-    renderPosStrip();
-    loadPosition(0);
+    window.renderPosStrip?.();
+    window.loadPosition?.(0);
   }
 }
 
@@ -1513,87 +1513,17 @@ function nextSession() {
     S.kps = kps.map(p=>({...p, attempted:false, correct:false}));
     S.posIdx = 0;
     updateSessionInfo();
-    renderPosStrip();
-    loadPosition(0);
+    window.renderPosStrip?.();
+    window.loadPosition?.(0);
   }
 }
 
 // ══════════════════════════════════════════════════════
 // MODE POSITIONS CLÉS
 // ══════════════════════════════════════════════════════
-function loadPosition(posIdx) {
-  if (posIdx>=S.kps.length) { endPositionsDrill(); return; }
-  S.posIdx = posIdx;
-  if (S.kps[posIdx]._drill) { S.drill = S.kps[posIdx]._drill; S.idx = S.kps[posIdx]._drillIdx; }
-  S.sel    = null;
-  S.game   = new Chess(S.kps[posIdx].fen);
-  clearFeedback();
-  renderPosStrip();
-  updatePosInfo();
-  drawBoard();
-  _srToggleBar(!!(S.sr && S.sr.active));
-  if (S.sr && S.sr.active) _srUpdateBar();
-}
-
-function updatePosInfo() {
-  document.getElementById('pos-prog').textContent = (S.posIdx+1)+' / '+S.kps.length;
-  const t = S.game?.turn()||'w';
-  document.getElementById('s-turn').textContent = t==='w'?'⬜ Blancs jouent':'⬛ Noirs jouent';
-  document.getElementById('s-turn').style.color = 'var(--dim)';
-}
-
-function renderPosStrip() {
-  document.getElementById('pos-strip').innerHTML = S.kps.map((p,i)=>{
-    let cls='pos-dot';
-    if(i===S.posIdx) cls+=' current';
-    else if(p.attempted&&p.correct) cls+=' done-ok';
-    else if(p.attempted) cls+=' done-ko';
-    return `<div class="${cls}" title="Position ${i+1}">${i+1}</div>`;
-  }).join('');
-}
-
-function tryMoveInPositions(from, to) {
-  const legal = S.game.moves({square:from,verbose:true}).find(m=>m.to===to);
-  if (!legal) { drawBoard(); return; }
-  const tmp = new Chess(S.game.fen());
-  const played = tmp.move({from,to,promotion:'q'});
-  if (!played) { drawBoard(); return; }
-
-  const norm = s=>s.replace(/[+#!?]/g,'');
-  const kp = S.kps[S.posIdx];
-  const accept = [kp.san, ...(kp.altSans||[])].map(norm);
-  const isCorrect = accept.includes(norm(played.san));
-  if (S.sr && S.sr.active) { _srAnswer(kp, played, isCorrect); return; }
-  kp.attempted=true; kp.correct=isCorrect;
-
-  if (isCorrect) {
-    S.game.move({from,to,promotion:'q'});
-    S.ok++;
-    setFeedback('ok',
-      '✓ Correct ! '+fig(played.san)+(kp.isCapture?' — bonne capture !':kp.isCastle?' — roque !':kp.isCheck?' — échec !':''),
-      S.drill.hideComments ? '' : kp.comment);
-    addLog(played.san, true, S.posIdx+1);
-  } else {
-    S.ko++;
-    const matHint = _materialHint(S.game.fen(), played.san);
-    setFeedback('ko','✗ Pas tout à fait. Le coup attendu était : '+fig(kp.san)+(matHint?' · '+matHint:''), S.drill.hideComments ? '' : kp.comment);
-    addLog(played.san+' ✗', false, S.posIdx+1);
-  }
-
-  updateScores(); renderPosStrip(); drawBoard();
-  recordResult(isCorrect, {san:kp.san, comment:kp.comment, posIdx:S.posIdx});
-  if (isCorrect) setTimeout(()=>loadPosition(S.posIdx+1), 1100);
-}
-
-function endPositionsDrill() {
-  if (S.sr && S.sr.active) { _srBilan(); return; }
-  const done = S.ok+S.ko;
-  const pct  = done ? Math.round(S.ok/done*100) : 0;
-  if (!S.unifiedReview) recordPracticeSession(pct);
-  S.unifiedReview = false;
-  updateReviserToutBadge();
-  showEndModal(pct);
-}
+// Mode positions clés / flash (loadPosition, updatePosInfo, renderPosStrip,
+// tryMoveInPositions, endPositionsDrill) → lib/drill.js
+// (exposées sur window ; appelées via window.xxx?.() côté app.js et SR)
 
 // ══════════════════════════════════════════════════════
 // MODE LIGNE COMPLÈTE
@@ -2284,8 +2214,8 @@ function replayErrors() {
     document.getElementById('history-card').style.display  = '';
     S.phase = 'test';
     updateScores(); clearLog(); clearFeedback();
-    renderPosStrip();
-    loadPosition(0);
+    window.renderPosStrip?.();
+    window.loadPosition?.(0);
     const n = S.kps.length;
     setFeedback('hint', `🔄 ${n} erreur${n>1?'s':''} à corriger — jouez le bon coup`, '');
     return;
@@ -2976,11 +2906,11 @@ cvs.addEventListener('click',e=>{
 
 function tryMove(from, to) {
   if(S.phase==='study') { tryStudyGuess(from,to); return; }
-  if(S.sr && S.sr.active) { tryMoveInPositions(from,to); return; }   // session SR : toujours le flux « positions » (quel que soit le varmode)
+  if(S.sr && S.sr.active) { window.tryMoveInPositions?.(from,to); return; }   // session SR : toujours le flux « positions » (quel que soit le varmode)
   if(S.postTheory) tryMovePostTheory(from,to);
   else if(S.drill?.varmode==='tree') tryMoveInTree(from,to);
   else if(isLineMode()) window.tryMoveInLine?.(from,to);
-  else tryMoveInPositions(from,to);
+  else window.tryMoveInPositions?.(from,to);
 }
 
 function flipBoard(){S.flipped=!S.flipped;drawCoords();drawBoard();}
@@ -3023,9 +2953,9 @@ function skipPosition(){
   if(S.sr && S.sr.active){ _srAnswer(kp, null, false); return; }   // « voir la réponse » = raté
   kp.attempted=true; kp.correct=false;
   setFeedback('ko','→ Le coup était : '+fig(kp.san), S.drill.hideComments ? '' : kp.comment);
-  S.ko++; updateScores(); renderPosStrip();
+  S.ko++; updateScores(); window.renderPosStrip?.();
   recordResult(false,{san:kp.san,comment:kp.comment,posIdx:S.posIdx});
-  setTimeout(()=>loadPosition(S.posIdx+1),1300);
+  setTimeout(()=>window.loadPosition?.(S.posIdx+1),1300);
 }
 
 // ══════════════════════════════════════════════════════
@@ -4081,16 +4011,16 @@ Object.assign(window, {
   askName, autoFillFromPgn, canInteract, cancelDel, cancelEditClass, cancelPromo, clearFeedback, clearLog,
   closeModal, confirmDel, confirmName, countPlayerMoves, currentGame, currentSession, deleteClass, deleteDrill,
   deleteModuleFromFirestore, deleteStudentDrill, dismissOnboarding, drawBoard, drawCoords, drawGhost,
-  editorTreeToPGN, endPositionsDrill, enginePlay, enterTestPhase, escapeHtml, evXY, exportAll,
+  editorTreeToPGN, enginePlay, enterTestPhase, escapeHtml, evXY, exportAll,
   exportCSV, exportPGN, exportPracticeCSV, fig, flipBoard, getPieceImg, goPage, importDrill,
   importStudentDrill, initDrillPage, injectDemoDrill, isLineMode, isPlayerMove, launchDrill, learnNext,
-  learnPrev, loadExample, loadMaia, loadPgnFile, loadPosition, loadStudentModules, loadTeacherGames,
+  learnPrev, loadExample, loadMaia, loadPgnFile, loadStudentModules, loadTeacherGames,
   loadTeacherModules, loadTeacherPractice, loadTeacherResults, loginUser, logoutUser, nagGlyphs, nextDrill,
   nextSession, openCreateDrillModal, openEditClass, openLibrary, openSrSettings, openStudentImport,
   pgnToEditorTree, pickPromo, playVsMaia, posGhost, previewDrill, quitMaiaGame, recordPracticeSession,
   recordResult, registerUser, renderClassList, renderClassModuleSelect, renderClassWeakSpots, renderClassesTab,
   renderCoachOnboarding, renderDrillList, renderHeatmap, renderLearnComment, renderLearnNotation,
-  renderLearnState, renderLibrary, renderPartiesTab, renderPosStrip, renderProfView,
+  renderLearnState, renderLibrary, renderPartiesTab, renderProfView,
   renderSrDashboard, renderStudentHome, renderStudyBubble, renderStudyGuessLine, renderStudyTree, replayErrors,
   requestPasswordReset, resizeBoard, reviserDrill, reviserTout, save, saveClass, saveClasses, saveGame,
   saveSrSettings, selectDrill, setBoardComment, setBoardPrompt, setFeedback, shareDrill, showEndModal,
@@ -4099,7 +4029,7 @@ Object.assign(window, {
   startLearnPhase, startPostTheory, startStudentDrill, startStudyPhase, startTreeDrill,
   studyGoPath, studyNext, studyPrev, submitNewPassword, switchCoachSection, syncModuleToFirestore, toast,
   toggleAdvOpts, toggleClassMode, togglePGN, toggleStudyGuess, toggleTheme,
-  totalSessions, tryMove, tryMoveInPositions, tryMoveInTree, tryMovePostTheory, tryStudyGuess,
-  updateLearnProgress, updateNav, updatePosInfo, updateReviserToutBadge, updateScores,
+  totalSessions, tryMove, tryMoveInTree, tryMovePostTheory, tryStudyGuess,
+  updateLearnProgress, updateNav, updateReviserToutBadge, updateScores,
   updateSessionInfo, updateStudentBar, updateStudyProgress,
 });

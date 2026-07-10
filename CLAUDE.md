@@ -51,7 +51,7 @@ L’application doit permettre :
 
 | Fichier | Rôle | Taille |
 |---------|------|--------|
-| `app.js` | Cœur applicatif : vues login/coach/drill/prof/élève, drill engine (modes flash/arbre/apprentissage), échiquier, accès Supabase, pont `window` | ~209 Ko · 4105 lignes |
+| `app.js` | Cœur applicatif : vues login/coach/drill/prof/élève, drill engine (modes arbre/apprentissage, SR), échiquier, accès Supabase, pont `window` | ~206 Ko · 4035 lignes |
 | `index.html` | Structure statique des écrans (montés/pilotés par `app.js`) | ~46 Ko |
 | `style.css` | Styles : design system (variables `--cyan`, `--surf`, `--border`…) + tous les écrans | ~54 Ko |
 | `state.js` | État global réassignable → objet `G` (source unique) | ~1,5 Ko |
@@ -62,7 +62,7 @@ L’application doit permettre :
 | `lib/editor-core.js` | Éditeur — cœur pur : sérialisation PGN ↔ arbre, formes, NAG, `_SHAPE_COL` (testé, round-trip) | ~7 Ko |
 | `lib/editor.js` | Éditeur de variantes — UI : plateau, drag, annotations (NAG/formes), sauvegarde (DOM) | ~27 Ko |
 | `lib/drill-core.js` | Drill — cœur pur : sessions, choix du coup adverse (LRU/forced path), `oppSeenKey`, délais commentaires (testé) | ~4 Ko |
-| `lib/drill.js` | Drill — UI mode ligne : jeu coup par coup, auto-play adverse, notation, fin de session (`S` partagé, fonctions app-level via pont `window`) | ~9 Ko |
+| `lib/drill.js` | Drill — UI modes ligne + positions clés/flash : jeu coup par coup, auto-play adverse, notation, positions clés, fin de session (`S` partagé, fonctions app-level/SR via pont `window`) | ~13 Ko |
 | `home.html` + `data.js` | Page marketing autonome (copiée telle quelle dans `dist/` au build) | — |
 
 > Découpage de l’éditeur **terminé** (§5.1) : cœur pur `lib/editor-core.js` (testé) + UI `lib/editor.js` (DOM, état `_E` local ; fonctions app-level résolues au runtime via le pont `window` ; assets partagés `pieceImgs`/`PIECE_CDN` exposés sur `window` par `app.js`). Le sélecteur de promotion reste dans `app.js` (partagé avec l’échiquier principal).
@@ -70,8 +70,11 @@ L’application doit permettre :
 > Découpage du drill engine **en cours** (§5.2).
 > - **Étape A faite** : cœur pur `lib/drill-core.js` (testé) — logique déterministe sans DOM ni état `S` : `_commentDelay`, `_drillSessions`, `countPlayerMoves`, `computeForcedPath`, `pickOppMove`, `treeUnseenCount`, `oppSeenKey`. Dans `app.js`, `_pickOppMove`/`_treeUnseenCount`/`_computeForcedPath` sont des **wrappers minces** qui lisent `S`/`G.oppSeen` et délèguent au cœur pur.
 > - **Étape B faite** : état session `S` promu en module partagé `lib/session.js` (jamais réassigné, seulement muté → `import` ES en lecture seule suffit). Importé par `app.js` **et** `lib/drill.js`.
-> - **Étape C en cours** : extraction de l’UI **un mode à la fois** vers `lib/drill.js`, fonctions app-level (board, feedback, score, enregistrement) résolues au runtime via le pont `window` (patron identique à `lib/editor.js`). **Mode ligne fait** : `startLineDrill`, `advanceLine`, `tryMoveInLine`, `skipLinePosition`, `updateLinePosInfo`, `renderNotation`, `endLineDrill`, `togglePauseAdversary` (+ `_pendingAdversaryMv` désormais local au module). Côté `app.js`, ces fonctions sont appelées via `window.xxx?.()`.
-> - **Prochaines étapes** : extraire les autres modes vers `lib/drill.js` (positions clés/flash, puis arbre/étude, puis phases apprentissage/test). Laisser le moteur de répétition espacée (SR) hors périmètre → futur `lib/sr.js`.
+> - **Étape C en cours** : extraction de l’UI **un mode à la fois** vers `lib/drill.js`, fonctions app-level (board, feedback, score, enregistrement) résolues au runtime via le pont `window` (patron identique à `lib/editor.js`).
+>   - **Mode ligne fait** : `startLineDrill`, `advanceLine`, `tryMoveInLine`, `skipLinePosition`, `updateLinePosInfo`, `renderNotation`, `endLineDrill`, `togglePauseAdversary` (+ `_pendingAdversaryMv` désormais local au module).
+>   - **Mode positions clés/flash fait** : `loadPosition`, `updatePosInfo`, `renderPosStrip`, `tryMoveInPositions`, `endPositionsDrill`. Couplage bidirectionnel avec le moteur SR (resté dans `app.js`) : `drill.js` bridge `_srToggleBar`/`_srUpdateBar`/`_srAnswer`/`_srBilan` via `window`, et le SR appelle `window.loadPosition?.()` etc. `_materialHint` importé de `lib/tree.js`.
+>   - Côté `app.js`, toutes ces fonctions sont appelées via `window.xxx?.()`.
+> - **Prochaines étapes** : extraire les modes restants vers `lib/drill.js` (arbre/étude, puis phases apprentissage/test). Laisser le moteur de répétition espacée (SR) hors périmètre → futur `lib/sr.js`.
 
 ### Commandes
 - **Dev** : `npm run dev` (Vite, HMR) — ou `npx serve .` (ESM natif, sans build)
