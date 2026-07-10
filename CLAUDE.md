@@ -51,7 +51,7 @@ L’application doit permettre :
 
 | Fichier | Rôle | Taille |
 |---------|------|--------|
-| `app.js` | Cœur applicatif : login, gestion modules/classes, échiquier (canvas, drag, dispatch), Maia, accès Supabase, pont `window` | ~116 Ko · 2264 lignes |
+| `app.js` | Cœur applicatif : login, échiquier (canvas, drag, dispatch), Maia, accès Supabase, `save`/`saveClasses`/`goPage`, pont `window` | ~80 Ko · 1734 lignes |
 | `index.html` | Structure statique des écrans (montés/pilotés par `app.js`) | ~46 Ko |
 | `style.css` | Styles : design system (variables `--cyan`, `--surf`, `--border`…) + tous les écrans | ~54 Ko |
 | `state.js` | État global réassignable → objet `G` (source unique) | ~1,5 Ko |
@@ -66,6 +66,7 @@ L’application doit permettre :
 | `lib/sr.js` | Répétition espacée : file de session (nouveaux/dus + quota), réponse/étape, bilan + prévision, suspension, réglages, tableau de bord élève | ~20 Ko |
 | `lib/coach.js` | Vue coach — suivi élèves : onglets présence/progression/classes/parties, heatmap, exports CSV/PGN/JSON. État local (`selectedStudent`, `_profTab`) ; ne lit que `G` | ~36 Ko |
 | `lib/student.js` | Accueil élève — cartes de modules (assignés + perso), stats, série, anneaux, import/suppression de révisions perso | ~16 Ko |
+| `lib/modules.js` | Gestion modules & classes — création/import PGN (`previewDrill`, `importDrill`, `loadPgnFile`), bibliothèque d'ouvertures (`OPENINGS_LIBRARY`), cartes coach (`renderDrillList`), partage/assignation (`shareDrill`), drill de démo, onboarding prof, CRUD classes/cours particuliers. État local (`_pendingDelId`, `_editingClassId`) ; lit `G`/`S`, ponts `window` pour app-level/Supabase | ~32 Ko |
 | `home.html` + `data.js` | Page marketing autonome (copiée telle quelle dans `dist/` au build) | — |
 
 > Découpage de l’éditeur **terminé** (§5.1) : cœur pur `lib/editor-core.js` (testé) + UI `lib/editor.js` (DOM, état `_E` local ; fonctions app-level résolues au runtime via le pont `window` ; assets partagés `pieceImgs`/`PIECE_CDN` exposés sur `window` par `app.js`). Le sélecteur de promotion reste dans `app.js` (partagé avec l’échiquier principal).
@@ -87,7 +88,9 @@ L’application doit permettre :
 > **§5.3 en cours — vues.**
 > - **Vue coach faite** : `lib/coach.js` (18 fonctions : `renderProfView`, `showStudentDetail`, `_buildProgressionHTML`, `renderHeatmap`, `renderClassesTab`, `renderPartiesTab`, exports). Bloc idéalement isolé : état module local (`selectedStudent`, `selectedDrillFilter`, `_profTab`) qui ne fuit nulle part, aucune dépendance à `S`/`localStorage`/`Chess` — seulement `G` + 5 ponts `window` (`escapeHtml`, `fig`, `switchCoachSection`, `sm2Get`, `toast`). 7 sites d'appel entrants convertis.
 > - **Accueil élève fait** : `lib/student.js` (16 fonctions : `renderStudentHome`, `_moduleStats`, `_computeStreak`, `_renderRing`, `_shModuleCard`, `_seen*`, `startStudentDrill`, `importStudentDrill`…). Le wrapper Supabase `loadStudentModules` reste dans `app.js` et est bridgé. 2 sites d'appel entrants convertis (tous deux dans `_sbLoadStudentModules`).
-> - **Prochaines étapes** : gestion modules/classes (`renderDrillList`, `openCreateDrillModal`, `importDrill`, `saveClass`, `renderClassList`…) → `lib/modules.js`. Enfin l'échiquier (canvas, drag, `tryMove`/`canInteract`) → `lib/board.js`.
+> - **Gestion modules & classes faite** : `lib/modules.js` (27 fonctions : `openCreateDrillModal`, `previewDrill`/`importDrill`/`loadPgnFile`, bibliothèque `openLibrary`/`renderLibrary`/`addFromLibrary`, cartes `renderDrillList`/`launchDrill`/`shareDrill`, `deleteDrill`/`confirmDel`/`cancelDel`, `injectDemoDrill`, `renderCoachOnboarding`/`dismissOnboarding`, CRUD classes `saveClass`/`openEditClass`/`deleteClass`/`renderClassList`/`renderClassModuleSelect`/`toggleClassMode`/`addStudent`). Bloc **non contigu** dans `app.js` : `goPage`, `save`, `saveClasses` (cœur, utilisés partout) restaient intercalés → extraction chirurgicale en 3 îlots, ces 3 fonctions **restées dans `app.js`** et bridgées. Imports : `G` (state), `S` (session), `extractAllLines` (core), `_buildDrillTree`/`isPlayerMove` (tree), `countPlayerMoves` (drill-core). 12 ponts `window` (dont `save`/`saveClasses`/`goPage`/`switchCoachSection`/Supabase). 7 sites d'appel entrants convertis (`switchCoachSection`, `goPage`, blocs init local + `_sbLoadTeacherModules`). `app.js` 2264 → 1734 lignes.
+>   - ✅ **Bug pré-existant corrigé en passant** : `loadExample` (bouton « Charger un exemple » du modal de création) faisait `getElementById('inp-drillmode').value = 'line'`, mais l'id `inp-drillmode` n'existe plus dans `index.html` → l'appel levait `TypeError` avant de remplir le PGN (présent tel quel avant l'extraction). Ligne supprimée dans `lib/modules.js` ; `loadExample` remplit désormais nom + PGN sans erreur (vérifié navigateur).
+> - **Prochaine étape** : l'échiquier (canvas, drag, `tryMove`/`canInteract`) → `lib/board.js`.
 
 ### Commandes
 - **Dev** : `npm run dev` (Vite, HMR) — ou `npx serve .` (ESM natif, sans build)

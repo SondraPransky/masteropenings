@@ -175,4 +175,12 @@ interface Window {
   enterTestPhase?: (...a: any[]) => any;
   showEndModal?: (...a: any[]) => any;
   replayErrors?: (...a: any[]) => any;
+
+  // — Gestion modules & classes (lib/modules.js) —
+  injectDemoDrill?: (...a: any[]) => any;
+  renderClassList?: (...a: any[]) => any;
+  saveClasses?: (...a: any[]) => any;
+  deleteModuleFromFirestore?: (...a: any[]) => any;
+  _sbSaveClass?: (...a: any[]) => any;
+  _sbDeleteClass?: (...a: any[]) => any;
 }
