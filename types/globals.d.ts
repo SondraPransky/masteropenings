@@ -115,6 +115,15 @@ interface Window {
   isLineMode?: (...a: any[]) => any;
   startDrill?: (...a: any[]) => any;
   nextDrill?: (...a: any[]) => any;
+  switchCoachSection?: (...a: any[]) => any;
+  sm2Get?: (...a: any[]) => any;
+
+  // — Vue coach / suivi élèves (lib/coach.js) —
+  renderProfView?: (...a: any[]) => any;
+  renderHeatmap?: (...a: any[]) => any;
+  renderClassesTab?: (...a: any[]) => any;
+  renderPartiesTab?: (...a: any[]) => any;
+  _deadlinePill?: (...a: any[]) => any;
 
   // — Sessions / enregistrement (app.js) —
   currentSession?: (...a: any[]) => any;

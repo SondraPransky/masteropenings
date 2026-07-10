@@ -51,7 +51,7 @@ L’application doit permettre :
 
 | Fichier | Rôle | Taille |
 |---------|------|--------|
-| `app.js` | Cœur applicatif : vues login/coach/prof/élève, échiquier (canvas, drag, dispatch), Maia, accès Supabase, pont `window` | ~157 Ko · 3064 lignes |
+| `app.js` | Cœur applicatif : login, accueil élève, gestion modules/classes, échiquier (canvas, drag, dispatch), Maia, accès Supabase, pont `window` | ~128 Ko · 2500 lignes |
 | `index.html` | Structure statique des écrans (montés/pilotés par `app.js`) | ~46 Ko |
 | `style.css` | Styles : design system (variables `--cyan`, `--surf`, `--border`…) + tous les écrans | ~54 Ko |
 | `state.js` | État global réassignable → objet `G` (source unique) | ~1,5 Ko |
@@ -64,6 +64,7 @@ L’application doit permettre :
 | `lib/drill-core.js` | Drill — cœur pur : sessions, choix du coup adverse (LRU/forced path), `oppSeenKey`, délais commentaires (testé) | ~4 Ko |
 | `lib/drill.js` | Drill — **toute l'UI** : modes ligne / positions clés-flash / arbre-étude, phases apprentissage & test, fin de drill (`showEndModal`, `replayErrors`). `S` partagé ; app-level/SR via pont `window` | ~48 Ko |
 | `lib/sr.js` | Répétition espacée : file de session (nouveaux/dus + quota), réponse/étape, bilan + prévision, suspension, réglages, tableau de bord élève | ~20 Ko |
+| `lib/coach.js` | Vue coach — suivi élèves : onglets présence/progression/classes/parties, heatmap, exports CSV/PGN/JSON. État local (`selectedStudent`, `_profTab`) ; ne lit que `G` | ~36 Ko |
 | `home.html` + `data.js` | Page marketing autonome (copiée telle quelle dans `dist/` au build) | — |
 
 > Découpage de l’éditeur **terminé** (§5.1) : cœur pur `lib/editor-core.js` (testé) + UI `lib/editor.js` (DOM, état `_E` local ; fonctions app-level résolues au runtime via le pont `window` ; assets partagés `pieceImgs`/`PIECE_CDN` exposés sur `window` par `app.js`). Le sélecteur de promotion reste dans `app.js` (partagé avec l’échiquier principal).
@@ -82,7 +83,9 @@ L’application doit permettre :
 >
 > ✅ **Bug pré-existant corrigé** (antérieur au refactor, cf. commit `72027c8`) : le bouton « ↩ Erreurs seules » du mode ligne ne filtrait rien — `replayErrors()` posait `S.errorOnlySet`, puis `enterTestPhase()` → `startLineDrill()` faisait `S.errorOnlySet = null` avant qu'`advanceLine()` ne le lise. **Le reset vit désormais dans `startLearnPhase`** : `startLineDrill` est traversé par deux chemins (démarrage du test *et* rejeu des erreurs), alors que `startLearnPhase` n'est atteint que depuis `startDrill`/`nextSession`, les deux entrées d'une session neuve. Le chemin arbre (`varmode === 'tree'`) n'était pas touché.
 >
-> - **Prochaines étapes (§5.3)** : extraire les vues coach/élève (`renderProfView`, `showStudentDetail`, `renderHeatmap`, `renderDrillList`…) → `lib/coach.js` / `lib/student.js`. Puis l'échiquier → `lib/board.js`.
+> **§5.3 en cours — vues.**
+> - **Vue coach faite** : `lib/coach.js` (18 fonctions : `renderProfView`, `showStudentDetail`, `_buildProgressionHTML`, `renderHeatmap`, `renderClassesTab`, `renderPartiesTab`, exports). Bloc idéalement isolé : état module local (`selectedStudent`, `selectedDrillFilter`, `_profTab`) qui ne fuit nulle part, aucune dépendance à `S`/`localStorage`/`Chess` — seulement `G` + 5 ponts `window` (`escapeHtml`, `fig`, `switchCoachSection`, `sm2Get`, `toast`). 7 sites d'appel entrants convertis.
+> - **Prochaines étapes** : accueil élève (`renderStudentHome`, `_moduleStats`, `_shModuleCard`, `_seen*`, `importStudentDrill`…) → `lib/student.js`. Puis gestion modules/classes → `lib/modules.js`. Enfin l'échiquier (canvas, drag, `tryMove`/`canInteract`) → `lib/board.js`.
 
 ### Commandes
 - **Dev** : `npm run dev` (Vite, HMR) — ou `npx serve .` (ESM natif, sans build)
