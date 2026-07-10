@@ -86,6 +86,7 @@ interface Window {
   PIECE_CDN?: string;
   pieceImgs?: any;
   _E?: any;            // état éditeur (lib/editor.js)
+  _lastMoveXY?: { x: number; y: number };   // dernières coords pointeur (board → lib/maia.js promo)
 
   // — Helpers / vues (app.js) —
   fig?: (...a: any[]) => any;
@@ -128,7 +129,6 @@ interface Window {
   // — Accueil élève (lib/student.js) —
   _myIdentifiers?: (...a: any[]) => any;
   renderStudentHome?: (...a: any[]) => any;
-  playVsMaia?: (...a: any[]) => any;
   _sbDeleteStudentModule?: (...a: any[]) => any;
 
   // — Sessions / enregistrement (app.js) —
@@ -183,4 +183,15 @@ interface Window {
   deleteModuleFromFirestore?: (...a: any[]) => any;
   _sbSaveClass?: (...a: any[]) => any;
   _sbDeleteClass?: (...a: any[]) => any;
+
+  // — Moteur Maia (lib/maia.js) —
+  saveGame?: (...a: any[]) => any;   // reste dans app.js, appelé par maia.js
+  loadMaia?: (...a: any[]) => any;
+  enginePlay?: (...a: any[]) => any;
+  startPostTheory?: (...a: any[]) => any;
+  quitMaiaGame?: (...a: any[]) => any;
+  playVsMaia?: (...a: any[]) => any;
+  tryMovePostTheory?: (...a: any[]) => any;
+  _afterMaiaReady?: (...a: any[]) => any;
+  _checkPTEnd?: (...a: any[]) => any;
 }
