@@ -125,6 +125,12 @@ interface Window {
   renderPartiesTab?: (...a: any[]) => any;
   _deadlinePill?: (...a: any[]) => any;
 
+  // — Accueil élève (lib/student.js) —
+  _myIdentifiers?: (...a: any[]) => any;
+  renderStudentHome?: (...a: any[]) => any;
+  playVsMaia?: (...a: any[]) => any;
+  _sbDeleteStudentModule?: (...a: any[]) => any;
+
   // — Sessions / enregistrement (app.js) —
   currentSession?: (...a: any[]) => any;
   totalSessions?: (...a: any[]) => any;
