@@ -1463,7 +1463,7 @@ function startDrill(i) {
   S.flipped    = (d.side === 'b');
   S.sessionIdx = 0;   // toujours repartir de la session 1
   S.postTheory = false;
-  _setStudyLayout(false);   // reset propre (réactivé par startStudyPhase si arbre)
+  window._setStudyLayout?.(false);   // reset propre (réactivé par startStudyPhase si arbre)
 
   // Badges info
   document.getElementById('s-name').textContent  = d.name;
@@ -1477,7 +1477,7 @@ function startDrill(i) {
 
   const sess = currentSession();
   if (d.varmode === 'tree' && d.tree) {
-    startStudyPhase();
+    window.startStudyPhase?.();
   } else if (d.mode==='line' && sess?.moves?.length) {
     document.getElementById('learn-card').style.display='none';
     document.getElementById('notation-card').style.display='none';
@@ -1534,395 +1534,9 @@ function nextSession() {
 // updateLinePosInfo, renderNotation, endLineDrill, togglePauseAdversary)
 // → lib/drill.js (exposées sur window, appelées via window.xxx?.() côté app.js)
 
-// ══════════════════════════════════════════════════════
-// MODE ARBRE DYNAMIQUE
-// ══════════════════════════════════════════════════════
-function startTreeDrill() {
-  const d = S.drill;
-  S._treeGen = (S._treeGen || 0) + 1;
-  S.lineGame = new Chess(d.sessions?.[0]?.startFen || new Chess().fen());
-  S.ok = 0; S.ko = 0; S.sel = null; S.postTheory = false;
-  S.waitingForPlayer = false;
-  S.phase = 'tree';
-  S._forcedPath = _computeForcedPath(S.student || '', String(d.id ?? ''), d.tree || {}, d.side);
-  S._treeErrors = [];
-  updateScores(); updateSessionInfo();
-  _setStudyLayout(false);   // sortie de l'apprentissage → réaffiche l'info-card
-  document.getElementById('learn-card').style.display    = 'none';
-  document.getElementById('notation-card').style.display = 'none';
-  document.getElementById('pos-card').style.display      = 'none';
-  document.getElementById('test-btns').style.display     = 'none';
-  document.getElementById('score-card').style.display    = '';
-  document.getElementById('history-card').style.display  = '';
-  clearFeedback(); drawBoard();
-  const unseen = _treeUnseenCount();
-  if (unseen > 0) setFeedback('hint', `🗺 ${unseen} branche${unseen>1?'s':''} non explorée${unseen>1?'s':''} — session ciblée`, '');
-  const gen = S._treeGen;
-  setTimeout(() => { if (S._treeGen === gen) advanceTree(); }, 200);
-}
-
-// Wrapper stateful : lit S/G.oppSeen, délègue le choix à pickOppMove (pur),
-// puis enregistre le coup retenu dans G.oppSeen (+ localStorage).
-function _pickOppMove(nf, moves) {
-  const st  = S.student || '';
-  const did = String(S.drill?.id ?? '');
-  const seenTs = {};
-  for (const m of moves) seenTs[m.san] = G.oppSeen[oppSeenKey(st, did, nf, m.san)] || 0;
-  const chosen = pickOppMove(moves, seenTs, S._forcedPath?.[nf]);
-  G.oppSeen[oppSeenKey(st, did, nf, chosen.san)] = Date.now();
-  localStorage.setItem('mc_opp_seen', JSON.stringify(G.oppSeen));
-  return chosen;
-}
-
-function _treeUnseenCount() {
-  if (S.drill?.varmode !== 'tree') return 0;
-  return treeUnseenCount(S.drill.tree || {}, S.student || '', String(S.drill?.id ?? ''), G.oppSeen);
-}
-
-// ── Répétition espacée pour les modules arbre ──────────
-// Énumère chaque point de décision du joueur comme une flashcard stable (clé = FEN normalisé).
-// _treePlayerPositions → lib/tree.js
-
-// BFS from root to find the path of opp choices that leads to the
-// shallowest unseen (or LRU) opp move. Returns {normFen: san} map
-// used by _pickOppMove to deterministically steer the opp each session.
-// Wrapper stateful : injecte G.oppSeen dans computeForcedPath (pur).
-function _computeForcedPath(student, drillId, tree, drillSide) {
-  return computeForcedPath(student, drillId, tree, drillSide, G.oppSeen);
-}
-
-function advanceTree() {
-  const gen = S._treeGen;
-  const g = S.lineGame;
-  if (!g || g.game_over()) {
-    _treeEnd(); return;
-  }
-  const nf   = _normFen(g.fen());
-  const node = S.drill.tree?.[nf];
-  if (!node) { _treeEnd(); return; }
-
-  const playerTurn = isPlayerMove(g.fen(), S.drill.side);
-
-  if (!playerTurn && node.opp.length) {
-    S.waitingForPlayer = false;
-    const mv = _pickOppMove(nf, node.opp);
-    const r  = g.move(mv.san);
-    if (r) { S.last = { from: r.from, to: r.to }; drawBoard(); }
-    setTimeout(() => { if (S._treeGen === gen) advanceTree(); }, 350);
-  } else if (playerTurn && node.player.length) {
-    S.waitingForPlayer = true;
-    setFeedback('hint', '🎯 Jouez le bon coup !', '');
-    drawBoard();
-  } else {
-    _treeEnd();
-  }
-}
-
-function _treeEnd() {
-  S.waitingForPlayer = false;
-  const done = S.ok + S.ko;
-  const pct  = done ? Math.round(S.ok / done * 100) : 100;
-  recordPracticeSession(pct);
-  showEndModal(pct);
-}
-
-function tryMoveInTree(from, to) {
-  if (!S.waitingForPlayer) return;
-  const g  = S.lineGame;
-  if (!g || g.game_over()) return;
-  const nf   = _normFen(g.fen());
-  const node = S.drill.tree?.[nf];
-  if (!node) return;
-  const legal = g.moves({ square: from, verbose: true }).find(m => m.to === to);
-  if (!legal) { drawBoard(); return; }
-  const isValid = node.player.find(m => m.san === legal.san);
-  if (isValid) {
-    const posIdx = S.ok + S.ko;
-    g.move(legal.san);
-    S.last = { from, to }; S.sel = null; S.ok++;
-    updateScores(); setFeedback('ok', `✓ ${legal.san}`, S.drill.hideComments ? '' : (isValid.comment||'')); drawBoard();
-    addLog(legal.san, true, S.ok + S.ko);
-    recordResult(true, {san: legal.san, comment: isValid.comment||'', posIdx, masteryKey: nf + '_' + node.player[0].san});
-    S.waitingForPlayer = false;
-    setTimeout(advanceTree, 600);
-  } else {
-    const posIdx = S.ok + S.ko;
-    S.waitingForPlayer = false;
-    S.ko++; S.sel = null; updateScores();
-    const expected = node.player.map(m => m.san).join(' / ');
-    const corrComment = node.player[0].comment||'';
-    const matHint = _materialHint(g.fen(), legal.san);
-    setFeedback('ko', `✗ ${legal.san} — attendu : ${expected}${matHint ? ' · ' + matHint : ''}`, S.drill.hideComments ? '' : corrComment); drawBoard();
-    addLog(legal.san + ' ✗', false, S.ok + S.ko);
-    recordResult(false, {san: node.player[0].san, comment: corrComment, posIdx, masteryKey: nf + '_' + node.player[0].san});
-    if (!S._treeErrors) S._treeErrors = [];
-    S._treeErrors.push({ fen: g.fen(), san: node.player[0].san, comment: corrComment });
-    setTimeout(() => {
-      const corr = node.player[0];
-      const r    = g.move(corr.san);
-      if (r) { S.last = { from: r.from, to: r.to }; drawBoard(); }
-      setTimeout(advanceTree, 800);
-    }, 1600);
-  }
-}
-
-// ══════════════════════════════════════════════════════
-// PHASE APPRENTISSAGE — Navigation libre avant le test
-// ══════════════════════════════════════════════════════
-// ══════════════════════════════════════════════════════
-// PHASE APPRENTISSAGE (arbre) — explorer TOUT le PGN avant la révision
-// ══════════════════════════════════════════════════════
-function startStudyPhase() {
-  const d = S.drill;
-  const startFen = d.sessions?.[0]?.startFen || new Chess().fen();
-  let root = null;
-  if (d.pgn) { try { root = pgnToEditorTree(d.pgn, startFen); } catch(e) { root = null; } }
-  if (!root || !root.children.length) { startTreeDrill(); return; }   // pas d'arbre exploitable → révision directe
-  S.phase = 'study';
-  S.studyStartFen = startFen;
-  S.studyTree = root;
-  S.studyMaxDepth = (function md(n, depth){ let m = depth; n.children.forEach(c => { m = Math.max(m, md(c, depth+1)); }); return m; })(root, 0);
-  S.hintSquare = null; S.sel = null;
-  document.getElementById('learn-card').style.display    = 'block';
-  document.getElementById('notation-card').style.display = 'none';
-  document.getElementById('pos-card').style.display      = 'none';
-  document.getElementById('test-btns').style.display     = 'none';
-  document.getElementById('score-card').style.display    = 'none';
-  document.getElementById('history-card').style.display  = 'none';
-  _setStudyLayout(true);
-  clearFeedback();
-  studyGoPath([0]);
-}
-
-// Bascule la mise en page « apprentissage » : info-card masquée, panneau des
-// coups élargi (CSS) + plus haut + police plus grande pour mieux voir les coups.
-function _setStudyLayout(on) {
-  const grid  = document.getElementById('drill-grid');
-  const info  = document.getElementById('drill-info-card');
-  const title = document.getElementById('learn-card-title');
-  const nota  = document.getElementById('learn-notation');
-  const cm    = document.getElementById('learn-comment');
-  const card  = document.getElementById('learn-card');
-  const guessRow = document.getElementById('study-guess-row');
-  if (grid) grid.classList.toggle('study-mode', on);
-  if (info) info.style.display = on ? 'none' : '';
-  if (guessRow) guessRow.style.display = on ? 'block' : 'none';
-  S.studyGuess = false;   // « devine le coup » toujours désactivé à l'entrée/sortie de l'étude
-  const gb = document.getElementById('study-guess-btn');
-  if (gb) { gb.classList.remove('active'); gb.textContent = '🎯 Devine le coup'; }
-  if (on) {
-    if (nota)  { nota.style.maxHeight = 'min(50vh, 440px)'; nota.style.fontSize = '13.5px'; nota.style.lineHeight = '1.85'; }
-    if (cm)    { cm.style.display = 'none'; }   // commentaires déjà affichés en ligne dans le PGN → boîte inutile
-    if (card)  { card.style.marginTop = '0'; card.style.paddingTop = '14px'; }   // remonte le bloc (pas d'espace perdu au-dessus)
-    if (title) title.textContent = '📖 ' + (S.drill?.name || 'Apprentissage');
-  } else {
-    if (nota)  { nota.style.maxHeight = '160px'; nota.style.fontSize = ''; nota.style.lineHeight = ''; }
-    if (cm)    { cm.style.display = ''; cm.style.height = '58px'; cm.style.minHeight = ''; cm.style.maxHeight = ''; cm.style.fontSize = ''; }
-    if (card)  { card.style.marginTop = ''; card.style.paddingTop = ''; }
-    const bubble = document.getElementById('study-bubble'); if (bubble) { bubble.style.display = 'none'; bubble.innerHTML = ''; }
-    if (title) title.textContent = '📖 Apprentissage';
-  }
-  resizeBoard();   // re-ajuste le plateau à la nouvelle largeur de colonne
-}
-
-function studyGoPath(path) {
-  if (!S.studyTree) return;
-  let node = S.studyTree, g = new Chess(S.studyStartFen);
-  const valid = [];
-  for (const idx of path) { if (!node.children[idx]) break; node = node.children[idx]; g.move(node.san); valid.push(idx); }
-  S.studyPath = valid;
-  S.studyNode = node;
-  S.lineGame  = g;
-  drawBoard();
-  renderStudyTree();
-  updateStudyProgress();
-  renderStudyBubble();
-}
-
-// Bulle façon Duolingo : commentaire du coup courant (rien à afficher → masquée)
-function renderStudyBubble() {
-  const el = document.getElementById('study-bubble'); if (!el) return;
-  const c = S.studyNode && S.studyNode.comment ? S.studyNode.comment : '';
-  if (!c) { el.style.display = 'none'; el.innerHTML = ''; return; }
-  el.innerHTML = `<span class="bubble-avatar">💡</span>${escapeHtml(c)}`;
-  el.style.display = 'block';
-  el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');   // relance l'animation d'apparition
-}
-
-// ── « Devine le coup » : rappel actif pendant l'étude (testing effect) ──
-// L'élève joue le prochain coup sur l'échiquier au lieu de le lire.
-function _studyGuessReady() {
-  if (!S.studyGuess || !S.studyNode) return false;
-  const nxt = S.studyNode.children && S.studyNode.children[0];
-  return !!(nxt && isPlayerMove(nxt.fenBefore, S.drill?.side));
-}
-
-function toggleStudyGuess() {
-  S.studyGuess = !S.studyGuess;
-  const btn = document.getElementById('study-guess-btn');
-  if (btn) { btn.classList.toggle('active', S.studyGuess); btn.textContent = S.studyGuess ? '🎯 Devine : activé' : '🎯 Devine le coup'; }
-  S.sel = null;
-  if (S.studyGuess) { _studyGuessSync(); _studyGuessPrompt(); }
-  else { clearFeedback(); studyGoPath(S.studyPath || []); }
-}
-
-// Révèle automatiquement les coups adverses : l'élève ne devine que SES coups.
-function _studyGuessSync() {
-  let path = (S.studyPath || []).slice(), node = S.studyNode, guard = 0;
-  while (guard++ < 300) {
-    const nxt = node && node.children && node.children[0];
-    if (!nxt || isPlayerMove(nxt.fenBefore, S.drill?.side)) break;
-    path.push(0); node = nxt;
-  }
-  studyGoPath(path);
-}
-
-function _studyGuessPrompt() {
-  if (_studyGuessReady()) setFeedback('hint', '🎯 Joue le prochain coup sur l\'échiquier', '');
-  else if (!(S.studyNode && S.studyNode.children && S.studyNode.children.length)) setFeedback('ok', '✓ Ligne terminée — bravo !', '');
-  else clearFeedback();
-}
-
-function tryStudyGuess(from, to) {
-  const expected = S.studyNode && S.studyNode.children && S.studyNode.children[0];
-  if (!expected) return;
-  const g = new Chess(S.lineGame.fen());
-  const mv = g.move({ from, to, promotion: 'q' });
-  S.sel = null;
-  if (!mv) { drawBoard(); return; }                       // coup illégal → on ignore
-  if (mv.san === expected.san) {
-    studyGoPath([...(S.studyPath || []), 0]);             // révèle le bon coup
-    _studyGuessSync();                                     // révèle la réponse adverse, repasse le trait à l'élève
-    _studyGuessPrompt();
-  } else {
-    drawBoard();
-    setFeedback('ko', "✗ Ce n'est pas le coup principal — réessaie", '');
-    const cv = document.getElementById('board');
-    if (cv) { cv.classList.remove('shake'); void cv.offsetWidth; cv.classList.add('shake'); }
-  }
-}
-
-// Vue resserrée en mode devine : coups joués + « ? » pour le coup à trouver.
-function renderStudyGuessLine() {
-  const el = document.getElementById('learn-notation'); if (!el) return;
-  let node = S.studyTree, h = '', first = true;
-  for (const idx of (S.studyPath || [])) {
-    node = node.children[idx]; if (!node) break;
-    const white = node.fenBefore.split(' ')[1] === 'w';
-    const lead = first ? '' : 'margin-left:6px;';
-    if (white) h += `<span style="color:var(--dim);font-size:.72rem;${lead}">${node.fenBefore.split(' ')[5]}.</span><span style="color:var(--text);font-weight:600;padding:1px 3px">${fig(node.san)}</span>`;
-    else h += `<span style="${lead}color:var(--text);font-weight:600;padding:1px 3px">${fig(node.san)}</span>`;
-    first = false;
-  }
-  const nxt = node && node.children && node.children[0];
-  if (nxt) {
-    const white = nxt.fenBefore.split(' ')[1] === 'w';
-    h += `<span style="color:var(--dim);font-size:.72rem;margin-left:6px;">${nxt.fenBefore.split(' ')[5]}${white?'.':'…'}</span>`;
-    h += `<span style="margin-left:1px;border:1px dashed var(--cyan);color:var(--cyan);padding:0 7px;border-radius:5px;font-weight:700">?</span>`;
-  } else {
-    h += `<span style="margin-left:8px;color:#22c55e;font-weight:600">✓ Ligne terminée</span>`;
-  }
-  el.innerHTML = h;
-}
-
-function studyNext() { if (S.studyNode && S.studyNode.children && S.studyNode.children.length) studyGoPath([...(S.studyPath || []), 0]); }
-function studyPrev() { if (S.studyPath && S.studyPath.length) studyGoPath(S.studyPath.slice(0, -1)); }
-
-function updateStudyProgress() {
-  const lnum = document.getElementById('learn-pos-num');
-  if (lnum) {
-    const n = S.studyNode;
-    if (!n || !n.san) { lnum.textContent = 'Position de départ'; lnum.style.color = 'var(--dim)'; }
-    else { const isP = isPlayerMove(n.fenBefore, S.drill?.side); lnum.textContent = isP ? '● Ton coup' : "○ Coup adverse"; lnum.style.color = isP ? 'var(--cyan)' : 'var(--dim)'; }
-  }
-  const depth = (S.studyPath || []).length;
-  const prog = document.getElementById('learn-prog'); if (prog) prog.textContent = depth + ' / ' + (S.studyMaxDepth || depth);
-  const fill = document.getElementById('learn-prog-fill'); if (fill) fill.style.width = (S.studyMaxDepth ? Math.round(depth / S.studyMaxDepth * 100) : 0) + '%';
-  const prevB = document.getElementById('learn-prev-btn'); if (prevB) prevB.disabled = depth === 0;
-  const nextB = document.getElementById('learn-next-btn'); if (nextB) nextB.disabled = !(S.studyNode && S.studyNode.children && S.studyNode.children.length);
-  const testBtn = document.querySelector('#learn-card .btn-gold'); if (testBtn) testBtn.textContent = '🚀 Commencer la révision';
-}
-
-// État de maîtrise SM-2 d'un coup de l'élève dans l'arbre d'étude.
-// → 'known' (révisé, pas encore dû), 'due' (à revoir), ou null (pas un coup élève / jamais vu).
-function _studyMastery(node) {
-  if (!node || !node.san || typeof _normFen !== 'function') return null;
-  if (!isPlayerMove(node.fenBefore, S.drill?.side)) return null;   // seuls les coups de l'élève sont révisés
-  const student = S.student || G.currentUser?.displayName || G.currentUser?.email || 'Anonyme';
-  const did = String(S.drill?.id ?? '');
-  const m = G.masteryData[`${student}_${did}_${_normFen(node.fenBefore)}_${node.san}`];
-  if (!m) return null;                              // jamais révisé
-  return m.due <= Date.now() ? 'due' : 'known';
-}
-
-function renderStudyTree() {
-  const el = document.getElementById('learn-notation'); if (!el) return;
-  if (S.studyGuess) return renderStudyGuessLine();   // mode rappel actif : on masque les coups à venir
-  const curStr = JSON.stringify(S.studyPath || []);
-  // Pastille discrète : ce coup a un commentaire (affiché en bulle quand on est dessus)
-  const dot = '<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--cyan);vertical-align:middle;margin-left:3px;opacity:.85"></span>';
-  // Indicateurs de maîtrise (réutilise les données SM-2 de la révision)
-  const masteredMark = '<span title="Maîtrisé" style="color:#22c55e;font-size:.82em;font-weight:700;margin-left:3px">✓</span>';
-  const dueMark = '<span title="À revoir" style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#f59e0b;vertical-align:middle;margin-left:3px"></span>';
-
-  // Palette de profondeur : chaque niveau d'imbrication a SA couleur (rail + flèche + teinte)
-  const VAR_COL = ['#6366f1', '#3b82f6', '#0ea5e9', '#06b6d4', '#14b8a6'];   // Océan : indigo → bleu → ciel → cyan → teal
-  const depthCol = d => VAR_COL[(d - 1) % VAR_COL.length];
-  // depth 0 = ligne principale (forte) ; depth ≥ 1 = variante, texte estompé par paliers
-  const VAR_SHADE = ['var(--text-2)', 'var(--dim)'];
-  const moveSpan = (node, path, depth, lead) => {
-    const isCur = JSON.stringify(path) === curStr;
-    const s = isCur ? 'background:var(--cyan);color:#fff;font-weight:700'
-            : depth === 0 ? 'color:var(--text);font-weight:600'
-            : `color:${VAR_SHADE[Math.min(depth - 1, VAR_SHADE.length - 1)]};font-weight:500`;
-    const fs = depth === 0 ? '' : 'font-size:.93em;';
-    return `<span ${isCur?'id="study-active"':''} onclick="studyGoPath(${JSON.stringify(path)})" style="cursor:pointer;${lead||''}${s};${fs}padding:1px 3px;border-radius:5px">${fig(node.san)}${nagGlyphs(node)}</span>`;
-  };
-  // Un demi-coup : numéro (blanc, ou début de ligne forcé) + coup + pastille éventuelle.
-  // `first` supprime l'espacement de tête (début de ligne / juste après la flèche ↳).
-  const ply = (node, path, depth, showNum, first) => {
-    const white = node.fenBefore.split(' ')[1] === 'w';
-    const lead = first ? '' : 'margin-left:6px;';
-    let h = '';
-    if (showNum) {
-      h += `<span style="color:var(--dim);font-size:.72rem;${lead}">${node.fenBefore.split(' ')[5]}${white?'.':'…'}</span>`;
-      h += moveSpan(node, path, depth, '');
-    } else {
-      h += moveSpan(node, path, depth, lead);
-    }
-    if (node.comment) h += dot;
-    const mast = _studyMastery(node);
-    if (mast === 'known') h += masteredMark;
-    else if (mast === 'due') h += dueMark;
-    return h;
-  };
-  // Ligne principale en fil ; chaque variante part dans un bloc indenté à SA couleur de
-  // profondeur (rail gauche + flèche ↳ + teinte de fond) → niveaux nettement différenciés.
-  function mainline(pos, path, depth, freshFirst) {
-    let h = '', first = true, fresh = freshFirst;
-    while (pos.children && pos.children.length) {
-      const mv = pos.children[0], mvPath = [...path, 0];
-      const white = mv.fenBefore.split(' ')[1] === 'w';
-      h += ply(mv, mvPath, depth, white || fresh, first);
-      pos.children.slice(1).forEach((v, vi) => {
-        const vPath = [...path, vi + 1];
-        const col = depthCol(depth + 1);
-        h += `<div class="study-var" style="border-left-color:${col};background:${col}1f">`
-           + `<span class="study-var-arrow" style="color:${col}">↳</span>`
-           + ply(v, vPath, depth + 1, true, true)
-           + mainline(v, vPath, depth + 1, false)
-           + `</div>`;
-      });
-      fresh = pos.children.length > 1;   // après une variante on réaffiche le numéro
-      first = false;
-      pos = mv; path = mvPath;
-    }
-    return h;
-  }
-  const body = mainline(S.studyTree, [], 0, false);   // mode unique : arbre complet (toutes les sous-variantes nichées)
-  el.innerHTML = body || '<span style="color:var(--dim)">Aucun coup.</span>';
-  requestAnimationFrame(() => { const a = document.getElementById('study-active'); if (a) a.scrollIntoView({ block:'nearest', behavior:'instant' }); });
-}
+// Mode arbre/etude + phase apprentissage arbre (startTreeDrill, advanceTree, tryMoveInTree,
+// startStudyPhase, studyGoPath, tryStudyGuess, renderStudyTree, _pickOppMove...)
+// → lib/drill.js (exposées sur window, appelées via window.xxx?.() côté app.js)
 
 function startLearnPhase() {
   const d    = S.drill;
@@ -1948,7 +1562,7 @@ function startLearnPhase() {
   }
   updateSessionInfo();
 
-  _setStudyLayout(false);   // mode ligne : info-card visible, panneau standard
+  window._setStudyLayout?.(false);   // mode ligne : info-card visible, panneau standard
   document.getElementById('learn-card').style.display = 'block';
   document.getElementById('notation-card').style.display = 'none';
   document.getElementById('test-btns').style.display = 'none';
@@ -1960,7 +1574,7 @@ function startLearnPhase() {
 }
 
 function learnNext() {
-  if (S.phase === 'study') return studyNext();
+  if (S.phase === 'study') return window.studyNext?.();
   if (S.learnIdx >= S.lineAllMoves.length) return;
   clearFeedback();
   const mv = S.lineAllMoves[S.learnIdx];
@@ -1975,7 +1589,7 @@ function learnNext() {
 }
 
 function learnPrev() {
-  if (S.phase === 'study') return studyPrev();
+  if (S.phase === 'study') return window.studyPrev?.();
   if (S.learnIdx <= 0) return;
   clearFeedback();
   S.learnIdx--;
@@ -2093,7 +1707,7 @@ function updateLearnProgress() {
 }
 
 function enterTestPhase() {
-  if (S.phase === 'study') return startTreeDrill();
+  if (S.phase === 'study') return window.startTreeDrill?.();
   S.phase      = 'test';
   S.ok         = 0;
   S.ko         = 0;
@@ -2158,7 +1772,7 @@ function showEndModal(pct) {
   const nextBtn   = document.getElementById('btn-next-drill');
   const replayBtn = document.getElementById('btn-replay');
   if (S.drill?.varmode === 'tree') {
-    const unseen = _treeUnseenCount();
+    const unseen = window._treeUnseenCount?.();
     if (replayBtn) {
       replayBtn.textContent = '▶ Poursuivre la révision';
       replayBtn.className   = 'btn btn-blue';
@@ -2822,7 +2436,7 @@ function drawGhost(piece){
 function posGhost(cx,cy){ghost.style.left=(cx-SQ/2)+'px';ghost.style.top=(cy-SQ/2)+'px';}
 
 function canInteract() {
-  if (S.phase === 'study') return _studyGuessReady();   // interactif seulement en mode « devine le coup »
+  if (S.phase === 'study') return window._studyGuessReady?.();   // interactif seulement en mode « devine le coup »
   if (S.phase === 'learn') return false;
   const g=currentGame();
   if(!g) return false;
@@ -2905,10 +2519,10 @@ cvs.addEventListener('click',e=>{
 });
 
 function tryMove(from, to) {
-  if(S.phase==='study') { tryStudyGuess(from,to); return; }
+  if(S.phase==='study') { window.tryStudyGuess?.(from,to); return; }
   if(S.sr && S.sr.active) { window.tryMoveInPositions?.(from,to); return; }   // session SR : toujours le flux « positions » (quel que soit le varmode)
   if(S.postTheory) tryMovePostTheory(from,to);
-  else if(S.drill?.varmode==='tree') tryMoveInTree(from,to);
+  else if(S.drill?.varmode==='tree') window.tryMoveInTree?.(from,to);
   else if(isLineMode()) window.tryMoveInLine?.(from,to);
   else window.tryMoveInPositions?.(from,to);
 }
@@ -3994,21 +3608,18 @@ async function _sbLoadMastery() {
 // ══════════════════════════════════════════════════════
 Object.assign(window, {
   _afterMaiaReady, _buildDrillTree, _buildProfRoster, _buildProgressionHTML, _checkPTEnd, _classWeakSpots,
-  _commentDelay, _commentWithShapes, _computeForcedPath, _computeStreak, _deadlinePill, _download,
+  _commentDelay, _commentWithShapes, _computeStreak, _deadlinePill, _download,
   _drawBoardShapes, _drillSessions, _edTab, _ensureOrt, _findNodeByFen, _getHintFrom, _getMaiaMove, _initA11y,
   _markModuleSeen, _markVersionSeen, _masteryBadge, _materialHint, _mirrorFen, _mirrorUci, _moduleStats,
-  _myIdentifiers, _nagGroup, _parseShapes, _pickOppMove, _pieceFr, _renderRing, _sbAuthError, _sbDeleteClass,
+  _myIdentifiers, _nagGroup, _parseShapes, _pieceFr, _renderRing, _sbAuthError, _sbDeleteClass,
   _sbDeleteModule, _sbDeleteStudentModule, _sbInitAuth, _sbLoadMastery, _sbLoadStudentModules,
   _sbLoadTeacherGames, _sbLoadTeacherModules, _sbLoadTeacherPractice, _sbLoadTeacherResults, _sbLogin,
   _sbLogout, _sbRecordPractice, _sbRecordResult, _sbRegister, _sbResetPassword, _sbSaveClass, _sbSaveGame,
   _sbSaveMastery, _sbSaveModule, _sbSaveStudentModule, _sbUpdatePassword, _sbUser, _scheduleMasterySync,
-  _seenKey, _seenModules, _seenVerKey, _seenVersions, _setStudyLayout, _shModuleCard, _shapesToPGN, _sqCenter,
+  _seenKey, _seenModules, _seenVerKey, _seenVersions, _shModuleCard, _shapesToPGN, _sqCenter,
   _srAnswer, _srBilan, _srBuildQueue, _srBumpNewToday, _srClearSuspended, _srForecast, _srIsSuspended,
   _srMyResults, _srNewLimit, _srNewToday, _srPositions, _srScopeList, _srSessionSize, _srSetSuspended,
-  _srSuspendedCount, _srSuspendedMap, _srTodayKey, _srToggleBar, _srUpdateBar, _studyGuessPrompt,
-  _studyGuessReady, _studyGuessSync, _studyMastery, _syncHeatmapFilters, _syncPartiesFilter, _treeEnd,
-  _treePlayerPositions, _treeUnseenCount, addFromLibrary, addLog, addStudent, advanceTree,
-  askName, autoFillFromPgn, canInteract, cancelDel, cancelEditClass, cancelPromo, clearFeedback, clearLog,
+  _srSuspendedCount, _srSuspendedMap, _srTodayKey, _srToggleBar, _srUpdateBar, _syncHeatmapFilters, _syncPartiesFilter, _treePlayerPositions, addFromLibrary, addLog, addStudent, askName, autoFillFromPgn, canInteract, cancelDel, cancelEditClass, cancelPromo, clearFeedback, clearLog,
   closeModal, confirmDel, confirmName, countPlayerMoves, currentGame, currentSession, deleteClass, deleteDrill,
   deleteModuleFromFirestore, deleteStudentDrill, dismissOnboarding, drawBoard, drawCoords, drawGhost,
   editorTreeToPGN, enginePlay, enterTestPhase, escapeHtml, evXY, exportAll,
@@ -4021,15 +3632,12 @@ Object.assign(window, {
   recordResult, registerUser, renderClassList, renderClassModuleSelect, renderClassWeakSpots, renderClassesTab,
   renderCoachOnboarding, renderDrillList, renderHeatmap, renderLearnComment, renderLearnNotation,
   renderLearnState, renderLibrary, renderPartiesTab, renderProfView,
-  renderSrDashboard, renderStudentHome, renderStudyBubble, renderStudyGuessLine, renderStudyTree, replayErrors,
+  renderSrDashboard, renderStudentHome, replayErrors,
   requestPasswordReset, resizeBoard, reviserDrill, reviserTout, save, saveClass, saveClasses, saveGame,
   saveSrSettings, selectDrill, setBoardComment, setBoardPrompt, setFeedback, shareDrill, showEndModal,
   showHint, showLoginError, showLoginTab, showPromoPicker, showRecoveryForm, showStudentDetail,
   skipPosition, sm2Get, sm2Update, sqFromXY, srStart, srSuspendCurrent, startDrill,
-  startLearnPhase, startPostTheory, startStudentDrill, startStudyPhase, startTreeDrill,
-  studyGoPath, studyNext, studyPrev, submitNewPassword, switchCoachSection, syncModuleToFirestore, toast,
-  toggleAdvOpts, toggleClassMode, togglePGN, toggleStudyGuess, toggleTheme,
-  totalSessions, tryMove, tryMoveInTree, tryMovePostTheory, tryStudyGuess,
-  updateLearnProgress, updateNav, updateReviserToutBadge, updateScores,
-  updateSessionInfo, updateStudentBar, updateStudyProgress,
-});
+  startLearnPhase, startPostTheory, startStudentDrill, submitNewPassword, switchCoachSection, syncModuleToFirestore, toast,
+  toggleAdvOpts, toggleClassMode, togglePGN, toggleTheme,
+  totalSessions, tryMove, tryMovePostTheory, updateLearnProgress, updateNav, updateReviserToutBadge, updateScores,
+  updateSessionInfo, updateStudentBar, });

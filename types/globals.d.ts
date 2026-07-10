@@ -112,6 +112,8 @@ interface Window {
   // — Sessions / enregistrement (app.js) —
   currentSession?: (...a: any[]) => any;
   totalSessions?: (...a: any[]) => any;
+  updateSessionInfo?: (...a: any[]) => any;
+  resizeBoard?: (...a: any[]) => any;
   recordResult?: (...a: any[]) => any;
   recordPracticeSession?: (...a: any[]) => any;
   showEndModal?: (...a: any[]) => any;
@@ -130,4 +132,16 @@ interface Window {
   loadPosition?: (...a: any[]) => any;
   renderPosStrip?: (...a: any[]) => any;
   tryMoveInPositions?: (...a: any[]) => any;
+  // arbre/étude
+  startTreeDrill?: (...a: any[]) => any;
+  tryMoveInTree?: (...a: any[]) => any;
+  _treeUnseenCount?: (...a: any[]) => any;
+  startStudyPhase?: (...a: any[]) => any;
+  _setStudyLayout?: (...a: any[]) => any;
+  studyGoPath?: (...a: any[]) => any;
+  studyNext?: (...a: any[]) => any;
+  studyPrev?: (...a: any[]) => any;
+  toggleStudyGuess?: (...a: any[]) => any;
+  tryStudyGuess?: (...a: any[]) => any;
+  _studyGuessReady?: (...a: any[]) => any;
 }
