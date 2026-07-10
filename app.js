@@ -22,6 +22,7 @@ import {
 import { G } from './state.js';
 import { S } from './lib/session.js';
 import './lib/editor.js';
+import './lib/drill.js';
 
 // ── Configuration Supabase (client `sb`) ──────────────────
 // Clé « publishable » PUBLIQUE (protégée par RLS) → OK committée. Jamais de clé « secret » ici.
@@ -1599,209 +1600,9 @@ function endPositionsDrill() {
 // ══════════════════════════════════════════════════════
 // _commentDelay → lib/drill-core.js
 
-function startLineDrill() {
-  const d    = S.drill;
-  const sess = currentSession();
-  const startFen = sess.startFen || new Chess().fen();
-  S.hintSquare   = null;
-  S.errorOnlySet = null;
-  S.pauseAdversary = S.pauseAdversary || false;
-  _pendingAdversaryMv = null;
-  S.lineGame = new Chess(startFen);
-  S.lineAllMoves = sess.moves.map((mv,i)=>({
-    ...mv,
-    isPlayer: isPlayerMove(mv.fenBefore, d.side),
-    idx: i,
-    result: null  // null | 'ok' | 'ko' | 'auto'
-  }));
-  S.lineMoveIdx      = 0;
-  S.waitingForPlayer = false;
-  S.lineErrorCounted = false;
-  S.postTheory       = false;
-
-  renderNotation();
-  updateLinePosInfo();
-  drawBoard();
-  setTimeout(advanceLine, 300);
-}
-
-function advanceLine() {
-  if (S.lineMoveIdx >= S.lineAllMoves.length) { endLineDrill(); return; }
-
-  const mv = S.lineAllMoves[S.lineMoveIdx];
-  updateLinePosInfo();
-  renderNotation();
-  drawBoard();
-
-  if (!mv.isPlayer) {
-    S.waitingForPlayer = false;
-    if (S.pauseAdversary) {
-      _pendingAdversaryMv = mv;
-      setFeedback('hint', '⏸ Prêt — cliquez ▶ Adv. pour que les noirs jouent', '');
-      return;
-    }
-    setFeedback('hint', '⟳ Adversaire réfléchit…', '');
-    setTimeout(() => {
-      if (!S.lineGame) return;
-      const r = S.lineGame.move(mv.san);
-      mv.result = 'auto';
-      S.lineMoveIdx++;
-      if (mv.comment) {
-        setFeedback('hint', '📘 ' + fig(mv.san), mv.comment);
-      } else {
-        clearFeedback();
-      }
-      renderNotation();
-      drawBoard();
-      setTimeout(advanceLine, _commentDelay(mv.comment));
-    }, 650);
-  } else {
-    // Mode "erreurs seulement" : auto-jouer les coups déjà sus
-    if (S.errorOnlySet?.size && !S.errorOnlySet.has(mv.idx)) {
-      S.lineGame.move(mv.san);
-      mv.result = 'ok';
-      S.lineMoveIdx++;
-      renderNotation(); drawBoard();
-      setTimeout(advanceLine, 80);
-      return;
-    }
-    S.waitingForPlayer = true;
-    S.lineErrorCounted = false;
-    setFeedback('hint', '🎯 À vous — trouvez le bon coup !', '');
-  }
-}
-
-function tryMoveInLine(from, to) {
-  if (!S.waitingForPlayer) return;
-  const mv = S.lineAllMoves[S.lineMoveIdx];
-  if (!mv) return;
-
-  const tmp = new Chess(S.lineGame.fen());
-  const played = tmp.move({from, to, promotion:'q'});
-  if (!played) { drawBoard(); return; }
-
-  const norm = s=>s.replace(/[+#!?]/g,'');
-  const isCorrect = norm(played.san)===norm(mv.san);
-  S.hintSquare = null;
-
-  if (isCorrect) {
-    S.lineGame.move({from, to, promotion:'q'});
-    mv.result = 'ok';
-    S.ok++;
-    S.waitingForPlayer = false;
-    setFeedback('ok', '✓ '+fig(played.san), S.drill.hideComments ? '' : mv.comment);
-    addLog(played.san, true, Math.ceil((S.lineMoveIdx+1)/2));
-    updateScores();
-    renderNotation();
-    recordResult(true, {san:mv.san, comment:mv.comment, posIdx:Math.ceil((S.lineMoveIdx+1)/2)-1});
-    S.lineMoveIdx++;
-    setTimeout(advanceLine, (!S.drill.hideComments && mv.comment) ? _commentDelay(mv.comment) : 800);
-  } else {
-    if (!S.lineErrorCounted) {
-      S.ko++;
-      S.lineErrorCounted = true;
-      mv.result = 'ko';
-      recordResult(false, {san:mv.san, comment:mv.comment, posIdx:Math.ceil((S.lineMoveIdx+1)/2)-1});
-      updateScores();
-    }
-    setFeedback('ko', '✗ Pas tout à fait — réessaie !', '');
-    addLog(played.san+' ✗', false, Math.ceil((S.lineMoveIdx+1)/2));
-    renderNotation();
-    drawBoard();
-    const _cvs = document.getElementById('board');
-    _cvs.classList.remove('shake'); void _cvs.offsetWidth; _cvs.classList.add('shake');
-  }
-}
-
-function skipLinePosition() {
-  if (!S.waitingForPlayer) return;
-  const mv = S.lineAllMoves[S.lineMoveIdx];
-  if (!mv) return;
-
-  if (!S.lineErrorCounted) {
-    S.ko++; mv.result='ko';
-    S.lineErrorCounted = true;
-    recordResult(false, {san:mv.san, comment:mv.comment, posIdx:Math.ceil((S.lineMoveIdx+1)/2)-1});
-    updateScores();
-  }
-  S.lineGame.move(mv.san);
-  setFeedback('ko', '→ Le coup était : '+fig(mv.san), S.drill.hideComments ? '' : mv.comment);
-  S.waitingForPlayer = false;
-  S.lineMoveIdx++;
-  renderNotation(); drawBoard();
-  setTimeout(advanceLine, S.drill.hideComments ? 1200 : _commentDelay(mv.comment));
-}
-
-function updateLinePosInfo() {
-  const playerMoves = S.lineAllMoves.filter(m=>m.isPlayer);
-  const done = S.lineAllMoves.slice(0, S.lineMoveIdx).filter(m=>m.isPlayer).length;
-  document.getElementById('pos-prog-line').textContent = done+' / '+playerMoves.length;
-  const t = S.lineGame?.turn()||'w';
-  document.getElementById('s-turn').textContent = t==='w'?'⬜ Blancs jouent':'⬛ Noirs jouent';
-  document.getElementById('s-turn').style.color = 'var(--dim)';
-}
-
-function renderNotation() {
-  const el = document.getElementById('notation-moves');
-  if (!el) return;
-  let html = '';
-
-  S.lineAllMoves.forEach((mv, i) => {
-    const turn = mv.fenBefore.split(' ')[1];
-    const num  = mv.fenBefore.split(' ')[5];
-
-    if (turn==='w') {
-      html += `<span style="color:var(--dim);margin-right:2px">${num}.</span>`;
-    } else if (i===0) {
-      html += `<span style="color:var(--dim);margin-right:2px">${num}…</span>`;
-    }
-
-    // Coup en cours que le joueur doit trouver
-    if (i===S.lineMoveIdx && S.waitingForPlayer && mv.isPlayer) {
-      html += `<span id="notation-active" style="background:var(--cyan);color:#111;padding:1px 7px;border-radius:4px;font-weight:700;margin-right:4px">?</span>`;
-    } else if (mv.result==='ok') {
-      html += `<span style="color:var(--green);margin-right:4px" title="${escapeHtml(mv.comment)}">${fig(mv.san)}</span>`;
-    } else if (mv.result==='ko') {
-      html += `<span style="color:var(--red);margin-right:4px" title="${escapeHtml(mv.comment)}">${fig(mv.san)}</span>`;
-    } else if (mv.result==='auto' || (!mv.isPlayer && i<S.lineMoveIdx)) {
-      html += `<span style="color:var(--dim);margin-right:4px">${fig(mv.san)}</span>`;
-    } else if (i>S.lineMoveIdx) {
-      if (mv.isPlayer) {
-        html += `<span style="color:var(--cyan);opacity:.35;margin-right:4px;font-style:italic;font-size:.78em">?</span>`;
-      } else {
-        html += `<span style="color:var(--dim);opacity:.25;margin-right:4px">·</span>`;
-      }
-    } else {
-      html += `<span style="color:var(--dim);margin-right:4px">${fig(mv.san)}</span>`;
-    }
-  });
-
-  el.innerHTML = html;
-  requestAnimationFrame(() => {
-    const a = document.getElementById('notation-active');
-    if (a) a.scrollIntoView({ block: 'nearest', behavior: 'instant' });
-  });
-}
-
-function endLineDrill() {
-  const playerMoves = S.lineAllMoves.filter(m=>m.isPlayer);
-  const pct = playerMoves.length ? Math.min(100, Math.round(S.ok/playerMoves.length*100)) : 100;
-  const total = totalSessions();
-
-  if (S.sessionIdx < total - 1) {
-    recordPracticeSession(pct);
-    const nextSess = (S.drill.sessions || [])[S.sessionIdx + 1] || { label: 'Session suivante' };
-    const el = document.getElementById('feedback');
-    el.className = 'feedback ok';
-    el.innerHTML = `<div>✓ Session ${S.sessionIdx+1}/${total} terminée — ${pct}%</div>
-      <button class="btn btn-gold" style="margin-top:10px;width:100%;font-size:.84rem"
-        onclick="nextSession()">📖 Session suivante : ${escapeHtml(nextSess.label)} →</button>`;
-    setBoardComment(''); setBoardPrompt('ok', `✓ ${pct}% — Session ${S.sessionIdx+1}/${total}`);
-  } else {
-    recordPracticeSession(pct);
-    showEndModal(pct);
-  }
-}
+// Mode ligne (startLineDrill, advanceLine, tryMoveInLine, skipLinePosition,
+// updateLinePosInfo, renderNotation, endLineDrill, togglePauseAdversary)
+// → lib/drill.js (exposées sur window, appelées via window.xxx?.() côté app.js)
 
 // ══════════════════════════════════════════════════════
 // MODE ARBRE DYNAMIQUE
@@ -2378,7 +2179,7 @@ function enterTestPhase() {
   const pauseBtn = document.getElementById('btn-pause-adv');
   if (pauseBtn) { pauseBtn.style.display = ''; pauseBtn.textContent = S.pauseAdversary ? '▶ Adv.' : '⏸ Auto'; }
   resizeBoard();
-  startLineDrill();
+  window.startLineDrill?.();
 }
 
 // ══════════════════════════════════════════════════════
@@ -2681,8 +2482,6 @@ function drawCoords() {
 const MAIA_MODEL_URL = 'https://www.maiachess.com/maia3/maia3_simplified.onnx';
 const MAIA_MOVES_URL = 'https://raw.githubusercontent.com/CSSLab/maia-platform-frontend/main/src/lib/engine/data/all_moves_maia3.json';
 const MAIA_ELO = { 'Débutant':900, 'Intermédiaire':1300, 'Avancé':1600, 'Expert':1900, 'Maître':2200, 'Grand-Maître':2500 };
-
-let _pendingAdversaryMv = null;
 
 let _maiaSession  = null;
 let _maiaUci2Idx  = null;   // "e2e4" → 1234
@@ -3180,32 +2979,12 @@ function tryMove(from, to) {
   if(S.sr && S.sr.active) { tryMoveInPositions(from,to); return; }   // session SR : toujours le flux « positions » (quel que soit le varmode)
   if(S.postTheory) tryMovePostTheory(from,to);
   else if(S.drill?.varmode==='tree') tryMoveInTree(from,to);
-  else if(isLineMode()) tryMoveInLine(from,to);
+  else if(isLineMode()) window.tryMoveInLine?.(from,to);
   else tryMoveInPositions(from,to);
 }
 
 function flipBoard(){S.flipped=!S.flipped;drawCoords();drawBoard();}
 
-function togglePauseAdversary() {
-  S.pauseAdversary = !S.pauseAdversary;
-  const btn = document.getElementById('btn-pause-adv');
-  if (btn) btn.textContent = S.pauseAdversary ? '▶ Adv.' : '⏸ Auto';
-  if (!S.pauseAdversary && _pendingAdversaryMv) {
-    const mv = _pendingAdversaryMv;
-    _pendingAdversaryMv = null;
-    setFeedback('hint', '⟳ Adversaire réfléchit…', '');
-    setTimeout(() => {
-      if (!S.lineGame) return;
-      S.lineGame.move(mv.san);
-      mv.result = 'auto';
-      S.lineMoveIdx++;
-      if (mv.comment) setFeedback('hint', '📘 ' + fig(mv.san), mv.comment);
-      else clearFeedback();
-      renderNotation(); drawBoard();
-      setTimeout(advanceLine, _commentDelay(mv.comment));
-    }, 400);
-  }
-}
 
 function _getHintFrom(san,fen){
   const tmp=new Chess(fen);
@@ -3239,7 +3018,7 @@ function showHint(){
 }
 
 function skipPosition(){
-  if(isLineMode()) { skipLinePosition(); return; }
+  if(isLineMode()) { window.skipLinePosition?.(); return; }
   const kp=S.kps[S.posIdx]; if(!kp) return;
   if(S.sr && S.sr.active){ _srAnswer(kp, null, false); return; }   // « voir la réponse » = raté
   kp.attempted=true; kp.correct=false;
@@ -4298,11 +4077,11 @@ Object.assign(window, {
   _srMyResults, _srNewLimit, _srNewToday, _srPositions, _srScopeList, _srSessionSize, _srSetSuspended,
   _srSuspendedCount, _srSuspendedMap, _srTodayKey, _srToggleBar, _srUpdateBar, _studyGuessPrompt,
   _studyGuessReady, _studyGuessSync, _studyMastery, _syncHeatmapFilters, _syncPartiesFilter, _treeEnd,
-  _treePlayerPositions, _treeUnseenCount, addFromLibrary, addLog, addStudent, advanceLine, advanceTree,
+  _treePlayerPositions, _treeUnseenCount, addFromLibrary, addLog, addStudent, advanceTree,
   askName, autoFillFromPgn, canInteract, cancelDel, cancelEditClass, cancelPromo, clearFeedback, clearLog,
   closeModal, confirmDel, confirmName, countPlayerMoves, currentGame, currentSession, deleteClass, deleteDrill,
   deleteModuleFromFirestore, deleteStudentDrill, dismissOnboarding, drawBoard, drawCoords, drawGhost,
-  editorTreeToPGN, endLineDrill, endPositionsDrill, enginePlay, enterTestPhase, escapeHtml, evXY, exportAll,
+  editorTreeToPGN, endPositionsDrill, enginePlay, enterTestPhase, escapeHtml, evXY, exportAll,
   exportCSV, exportPGN, exportPracticeCSV, fig, flipBoard, getPieceImg, goPage, importDrill,
   importStudentDrill, initDrillPage, injectDemoDrill, isLineMode, isPlayerMove, launchDrill, learnNext,
   learnPrev, loadExample, loadMaia, loadPgnFile, loadPosition, loadStudentModules, loadTeacherGames,
@@ -4311,16 +4090,16 @@ Object.assign(window, {
   pgnToEditorTree, pickPromo, playVsMaia, posGhost, previewDrill, quitMaiaGame, recordPracticeSession,
   recordResult, registerUser, renderClassList, renderClassModuleSelect, renderClassWeakSpots, renderClassesTab,
   renderCoachOnboarding, renderDrillList, renderHeatmap, renderLearnComment, renderLearnNotation,
-  renderLearnState, renderLibrary, renderNotation, renderPartiesTab, renderPosStrip, renderProfView,
+  renderLearnState, renderLibrary, renderPartiesTab, renderPosStrip, renderProfView,
   renderSrDashboard, renderStudentHome, renderStudyBubble, renderStudyGuessLine, renderStudyTree, replayErrors,
   requestPasswordReset, resizeBoard, reviserDrill, reviserTout, save, saveClass, saveClasses, saveGame,
   saveSrSettings, selectDrill, setBoardComment, setBoardPrompt, setFeedback, shareDrill, showEndModal,
   showHint, showLoginError, showLoginTab, showPromoPicker, showRecoveryForm, showStudentDetail,
-  skipLinePosition, skipPosition, sm2Get, sm2Update, sqFromXY, srStart, srSuspendCurrent, startDrill,
-  startLearnPhase, startLineDrill, startPostTheory, startStudentDrill, startStudyPhase, startTreeDrill,
+  skipPosition, sm2Get, sm2Update, sqFromXY, srStart, srSuspendCurrent, startDrill,
+  startLearnPhase, startPostTheory, startStudentDrill, startStudyPhase, startTreeDrill,
   studyGoPath, studyNext, studyPrev, submitNewPassword, switchCoachSection, syncModuleToFirestore, toast,
-  toggleAdvOpts, toggleClassMode, togglePGN, togglePauseAdversary, toggleStudyGuess, toggleTheme,
-  totalSessions, tryMove, tryMoveInLine, tryMoveInPositions, tryMoveInTree, tryMovePostTheory, tryStudyGuess,
-  updateLearnProgress, updateLinePosInfo, updateNav, updatePosInfo, updateReviserToutBadge, updateScores,
+  toggleAdvOpts, toggleClassMode, togglePGN, toggleStudyGuess, toggleTheme,
+  totalSessions, tryMove, tryMoveInPositions, tryMoveInTree, tryMovePostTheory, tryStudyGuess,
+  updateLearnProgress, updateNav, updatePosInfo, updateReviserToutBadge, updateScores,
   updateSessionInfo, updateStudentBar, updateStudyProgress,
 });
