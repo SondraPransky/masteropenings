@@ -12,6 +12,10 @@ import {
 } from './lib/dbmap.js';
 import { isPlayerMove, _buildDrillTree, _treePlayerPositions, _materialHint } from './lib/tree.js';
 import {
+  oppSeenKey, _commentDelay, _drillSessions, countPlayerMoves,
+  computeForcedPath, pickOppMove, treeUnseenCount
+} from './lib/drill-core.js';
+import {
   NAG_GLYPH, _parseShapes, _shapesToPGN, _commentWithShapes, nagGlyphs, _nagGroup,
   _findNodeByFen, pgnToEditorTree, editorTreeToPGN, _SHAPE_COL
 } from './lib/editor-core.js';
@@ -718,9 +722,7 @@ function importDrill() {
   toast(`✓ Module créé — ${Object.keys(tree).length} positions indexées`, 'ok');
 }
 
-function _drillSessions(d) {
-  return d.sessions?.length ? d.sessions : (d.kps?.length ? [{kps:d.kps, startFen:d.startFen}] : []);
-}
+// _drillSessions → lib/drill-core.js
 
 function updateReviserToutBadge() {
   const btn = document.getElementById('reviser-tout-btn');
@@ -1050,15 +1052,7 @@ function saveClasses() {
   localStorage.setItem('mc_classes', JSON.stringify(G.classes));
 }
 
-function countPlayerMoves(drill) {
-  const allSessions = drill.sessions ||
-    [{ moves: drill.moves||[], kps: drill.kps||[] }];
-  if (drill.mode==='line') {
-    return allSessions.reduce((sum, s) =>
-      sum + (s.moves||[]).filter(m=>isPlayerMove(m.fenBefore, drill.side)).length, 0);
-  }
-  return allSessions.reduce((sum, s) => sum + (s.kps||[]).length, 0);
-}
+// countPlayerMoves → lib/drill-core.js
 
 // ── Drill de démo : injecté automatiquement au premier lancement ──────────
 function injectDemoDrill() {
@@ -1628,7 +1622,7 @@ function endPositionsDrill() {
 // ══════════════════════════════════════════════════════
 // MODE LIGNE COMPLÈTE
 // ══════════════════════════════════════════════════════
-function _commentDelay(c){ return c ? Math.min(5000, Math.max(1500, c.length * 45)) : 180; }
+// _commentDelay → lib/drill-core.js
 
 function startLineDrill() {
   const d    = S.drill;
@@ -1861,41 +1855,22 @@ function startTreeDrill() {
   setTimeout(() => { if (S._treeGen === gen) advanceTree(); }, 200);
 }
 
+// Wrapper stateful : lit S/G.oppSeen, délègue le choix à pickOppMove (pur),
+// puis enregistre le coup retenu dans G.oppSeen (+ localStorage).
 function _pickOppMove(nf, moves) {
   const st  = S.student || '';
   const did = String(S.drill?.id ?? '');
-  // Forced path: drive opp toward the shallowest unseen branch
-  if (S._forcedPath?.[nf]) {
-    const forcedSan = S._forcedPath[nf];
-    const forced = moves.find(m => m.san === forcedSan);
-    if (forced) {
-      G.oppSeen[`${st}__${did}__${nf}__${forced.san}`] = Date.now();
-      localStorage.setItem('mc_opp_seen', JSON.stringify(G.oppSeen));
-      return forced;
-    }
-  }
-  // Normal LRU fallback
-  const tsOf  = san => G.oppSeen[`${st}__${did}__${nf}__${san}`] || 0;
-  const unseen = moves.filter(m => !tsOf(m.san));
-  const chosen = unseen.length
-    ? unseen[Math.floor(Math.random() * unseen.length)]
-    : [...moves].sort((a, b) => tsOf(a.san) - tsOf(b.san))[0];
-  G.oppSeen[`${st}__${did}__${nf}__${chosen.san}`] = Date.now();
+  const seenTs = {};
+  for (const m of moves) seenTs[m.san] = G.oppSeen[oppSeenKey(st, did, nf, m.san)] || 0;
+  const chosen = pickOppMove(moves, seenTs, S._forcedPath?.[nf]);
+  G.oppSeen[oppSeenKey(st, did, nf, chosen.san)] = Date.now();
   localStorage.setItem('mc_opp_seen', JSON.stringify(G.oppSeen));
   return chosen;
 }
 
 function _treeUnseenCount() {
   if (S.drill?.varmode !== 'tree') return 0;
-  const st  = S.student || '';
-  const did = String(S.drill?.id ?? '');
-  let n = 0;
-  for (const [nf, node] of Object.entries(S.drill.tree || {})) {
-    for (const mv of node.opp) {
-      if (!G.oppSeen[`${st}__${did}__${nf}__${mv.san}`]) n++;
-    }
-  }
-  return n;
+  return treeUnseenCount(S.drill.tree || {}, S.student || '', String(S.drill?.id ?? ''), G.oppSeen);
 }
 
 // ── Répétition espacée pour les modules arbre ──────────
@@ -1905,45 +1880,9 @@ function _treeUnseenCount() {
 // BFS from root to find the path of opp choices that leads to the
 // shallowest unseen (or LRU) opp move. Returns {normFen: san} map
 // used by _pickOppMove to deterministically steer the opp each session.
+// Wrapper stateful : injecte G.oppSeen dans computeForcedPath (pur).
 function _computeForcedPath(student, drillId, tree, drillSide) {
-  if (!tree || !Object.keys(tree).length) return null;
-  const initFen = new Chess().fen();
-  const startNf = _normFen(initFen);
-  let bestTs = Infinity, bestPath = null;
-  const q = [{ nf: startNf, g: new Chess(), oppPath: {} }];
-  const visited = new Set();
-  while (q.length) {
-    const { nf, g, oppPath } = q.shift();
-    if (visited.has(nf)) continue;
-    visited.add(nf);
-    const node = tree[nf];
-    if (!node) continue;
-    const playerTurn = isPlayerMove(g.fen(), drillSide);
-    const moves = playerTurn ? (node.player || []) : (node.opp || []);
-    if (!playerTurn) {
-      for (const mv of moves) {
-        const ts = G.oppSeen[`${student}__${drillId}__${nf}__${mv.san}`] ?? 0;
-        if (ts < bestTs) {
-          bestTs = ts;
-          bestPath = { ...oppPath, [nf]: mv.san };
-          if (ts === 0) return bestPath; // unseen found — shortest path wins
-        }
-      }
-    }
-    for (const mv of moves) {
-      const g2 = new Chess(g.fen());
-      if (!g2.move(mv.san)) continue;
-      const nf2 = _normFen(g2.fen());
-      if (!visited.has(nf2)) {
-        q.push({
-          nf: nf2,
-          g: g2,
-          oppPath: playerTurn ? oppPath : { ...oppPath, [nf]: mv.san }
-        });
-      }
-    }
-  }
-  return bestTs < Infinity ? bestPath : null;
+  return computeForcedPath(student, drillId, tree, drillSide, G.oppSeen);
 }
 
 function advanceTree() {
