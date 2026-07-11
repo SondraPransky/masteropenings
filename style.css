@@ -704,6 +704,17 @@ textarea {
   to   { transform: scale(1)   translateY(0);   opacity: 1; }
 }
 .modal-title { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; margin-bottom: 6px; }
+
+/* En-tete de l'editeur — responsive (evite le chevauchement titre/champs/boutons) */
+#editor-header { flex-wrap: wrap; row-gap: 8px; }
+#editor-title { min-width: 0; }              /* peut retrecir/passer a la ligne, sans grandir */
+#editor-meta-fields { flex: 1 1 240px; }     /* prend l'espace ; passe en pleine largeur en mobile */
+/* Les selects heritent de `select { width:100% }` (global) -> les brider en largeur auto,
+   sinon ils occupent toute la barre et ecrasent le champ nom. */
+#editor-side, #editor-level { width: auto; }
+@media (max-width: 760px) {
+  #editor-meta-fields { order: 3; flex-basis: 100%; }   /* champs sur leur propre ligne, sous titre + actions */
+}
 .modal-sub   { font-size: .84rem; color: var(--text-2); margin-bottom: 22px; line-height: 1.55; }
 .modal-foot  { display: flex; gap: 8px; justify-content: flex-end; margin-top: 22px; }
 
