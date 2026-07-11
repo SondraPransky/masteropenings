@@ -244,7 +244,7 @@ select { appearance: auto; }
 textarea {
   min-height: 130px;
   resize: vertical;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: .74rem;
   line-height: 1.65;
   background: var(--surf2);
@@ -1095,7 +1095,7 @@ textarea {
 .sh-card-act:hover { filter:brightness(1.06); border-color:var(--cyan); color:var(--cyan); }
 .sh-card-play { background:var(--cyan); color:#fff; border-color:var(--cyan); margin-left:auto; }
 .sh-card-play:hover { color:#fff; }
-.sh-empty { font-size:.8rem; color:var(--dim); padding:16px; text-align:center; border:1px dashed var(--border); border-radius:var(--r); }
+.sh-empty { font-size:.82rem; color:var(--dim); padding:26px 18px; text-align:center; line-height:1.6; border:1px solid var(--border); border-radius:12px; background:var(--surf); }
 .onb-card { background:var(--cyan-dim); border:1px solid rgba(99,102,241,.25); border-radius:var(--r); padding:14px 16px; margin-bottom:16px; }
 .onb-head { display:flex; align-items:center; gap:10px; font-weight:700; font-size:.92rem; margin-bottom:8px; }
 .onb-prog { font-size:.72rem; font-weight:700; color:var(--cyan); background:var(--surf); border:1px solid var(--border); border-radius:999px; padding:2px 9px; }
@@ -1288,18 +1288,18 @@ textarea {
 }
 .mcard-due-banner:hover { background: rgba(225,29,72,.14); }
 
-/* Empty state for modules */
+/* Empty state for modules — on-brand (trame echiquier discrete) */
 .mcard-empty {
   grid-column: 1 / -1;
   background: var(--surf);
-  border: 2px dashed var(--border);
-  border-radius: var(--r);
-  padding: 60px 20px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 56px 24px;
   text-align: center;
   color: var(--dim);
 }
-.mcard-empty-ico { font-size: 2.5rem; margin-bottom: 12px; }
-.mcard-empty-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.mcard-empty-ico { font-size: 2.2rem; margin-bottom: 10px; }
+.mcard-empty-title { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
 .mcard-empty-sub { font-size: .82rem; margin-bottom: 20px; line-height: 1.6; }
 
 /* ════════════════════════════════════════════════════════════
@@ -1309,11 +1309,9 @@ textarea {
    de coordonnées de l'échiquier comme dispositif structurant.
 ════════════════════════════════════════════════════════════ */
 :root {
-  --wood-l: #e8c99b;   /* case claire */
+  --wood-l: #e8c99b;   /* case claire — icône dossier (mini-échiquier) */
   --wood-d: #b58863;   /* case foncée */
-  --wood-tint: rgba(181,136,99,.055);
 }
-[data-theme="dark"] { --wood-tint: rgba(181,136,99,.09); }
 
 .lib-wrap { max-width: 1080px; margin: 0 auto; }
 
@@ -1398,8 +1396,6 @@ textarea {
 .lib-empty {
   text-align: center; padding: 54px 24px; border-radius: 14px;
   border: 1px solid var(--border); background: var(--surf);
-  background-image: repeating-conic-gradient(var(--wood-tint) 0 25%, transparent 0 50%);
-  background-size: 46px 46px; background-position: center;
 }
 .lib-empty-ico { font-size: 2rem; margin-bottom: 10px; }
 .lib-empty-title { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; margin-bottom: 6px; }
