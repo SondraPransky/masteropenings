@@ -909,9 +909,21 @@ async function _sbLoadStudentModules() {
       .filter(c => (c.students || []).some(s => ids.includes(String(s).toLowerCase())));
     const moduleIds = new Set();
     myCls.forEach(c => (c.moduleIds || []).forEach(id => moduleIds.add(Number(id))));
+    // Échéance d'assignation par module : la plus proche parmi les classes de l'élève.
+    // (dates 'YYYY-MM-DD' → comparaison lexicographique = chronologique)
+    const assignDeadline = {};
+    myCls.forEach(c => {
+      const dls = c.moduleDeadlines || {};
+      Object.keys(dls).forEach(mid => {
+        const d = dls[mid]; if (!d) return;
+        if (!assignDeadline[mid] || d < assignDeadline[mid]) assignDeadline[mid] = d;
+      });
+    });
     if (moduleIds.size) {
       const { data: mods } = await sb.from('modules').select('*').in('id', [...moduleIds]);
       assigned = (mods || []).map(_sbRowToModule);
+      // L'échéance de l'assignation prime sur celle du module.
+      assigned.forEach(m => { const d = assignDeadline[String(m.id)]; if (d) m.deadline = d; });
     }
     // Noms des coachs (affichés si l'élève a plusieurs profs)
     const coachIds = [...new Set(assigned.map(m => m.teacherId).filter(Boolean))];

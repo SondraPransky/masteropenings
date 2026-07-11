@@ -127,12 +127,18 @@ L’application doit permettre :
 
 ## 6. Priorités Actuelles
 
-1. **Réduire la taille de `app.js`** (extractions progressives)
+1. ✅ **Réduire la taille de `app.js`** (extractions §5 terminées : 4412 → 1057 lignes)
 2. Améliorer le moteur de révision et les exercices
 3. Créer une bibliothèque d’exercices partagée
-4. Implémenter l’assignation d’exercices
+4. Implémenter l’assignation d’exercices *(en cours)*
 5. Améliorer le suivi des progrès des élèves
 6. Améliorer le design et l’UX
+
+### §6 #4 — Assignation : échéance par module dans la classe (incrément 1, fait)
+- **Modèle** : une classe porte `moduleDeadlines = { moduleId: 'YYYY-MM-DD' }` (échéance d’assignation, par module). **Persisté dans la colonne `extra` (jsonb) de `classes`** (`extra.deadlines`) → **aucune migration de schéma** (`lib/dbmap.js`).
+- **Coach** : formulaire de classe (`lib/modules.js`) — un date-picker par module, révélé quand la case est cochée (`_toggleModDeadline`) ; `saveClass` collecte les dates ; `openEditClass` les repeuple. `renderClassList` affiche l’échéance à côté du nom du module.
+- **Élève** : `_sbLoadStudentModules` (app.js) applique sur chaque module assigné l’échéance d’assignation **la plus proche** parmi ses classes (prime sur la `deadline` du module). `_shModuleCard` (student.js) affiche un badge (⚠ en retard / ⏰ Nj / 📅 date).
+- **Reste** : incrément 2 — suivi **par module × élève** dans `renderClassesTab` (coach.js), aujourd’hui agrégé par élève seulement.
 
 ## 7. Règles de Développement
 
