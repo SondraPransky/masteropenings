@@ -185,8 +185,14 @@ interface Window {
   _sbSaveClass?: (...a: any[]) => any;
   _sbDeleteClass?: (...a: any[]) => any;
 
+  // — Mastery & enregistrement (lib/mastery.js) — writers Supabase restés dans app.js —
+  _sbRecordResult?: (...a: any[]) => any;
+  _sbRecordPractice?: (...a: any[]) => any;
+  _sbSaveGame?: (...a: any[]) => any;
+  _sbSaveMastery?: (...a: any[]) => any;
+
   // — Moteur Maia (lib/maia.js) —
-  saveGame?: (...a: any[]) => any;   // reste dans app.js, appelé par maia.js
+  saveGame?: (...a: any[]) => any;   // reste dans app.js, appelé par maia.js (défini dans lib/mastery.js)
   loadMaia?: (...a: any[]) => any;
   enginePlay?: (...a: any[]) => any;
   startPostTheory?: (...a: any[]) => any;

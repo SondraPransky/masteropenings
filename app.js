@@ -29,6 +29,7 @@ import './lib/student.js';
 import './lib/modules.js';
 import './lib/maia.js';
 import './lib/board.js';
+import './lib/mastery.js';
 
 // ── Configuration Supabase (client `sb`) ──────────────────
 // Clé « publishable » PUBLIQUE (protégée par RLS) → OK committée. Jamais de clé « secret » ici.
@@ -513,89 +514,7 @@ function nextSession() {
 function closeModal(id){document.getElementById(id).classList.remove('on');}
 function nextDrill(){S.idx=(S.idx+1)%G.drills.length; initDrillPage();}
 
-// ── SM-2 spaced repetition ────────────────────────────
-// ── Synchronisation SM-2 multi-appareils (profiles.mastery, Supabase) ──
-let _masterySyncTimer = null;
-function _scheduleMasterySync() {
-  if (!sb || !G.currentUser) return;
-  clearTimeout(_masterySyncTimer);
-  _masterySyncTimer = setTimeout(_sbSaveMastery, 2500);
-}
-
-function sm2Update(student, drillId, posKey, correct) {
-  const key = `${student}_${drillId}_${posKey}`;
-  G.masteryData[key] = sm2Schedule(G.masteryData[key], correct, Date.now());
-  _scheduleMasterySync();
-}
-
-function sm2Get(student, drillId, posKey) {
-  return G.masteryData[`${student}_${drillId}_${posKey}`] || null;
-}
-
-// ── Enregistrement de session ─────────────────────────
-function recordPracticeSession(pct) {
-  const rec = {
-    drillId:      String(S.drill.id),
-    drillName:    S.drill.name,
-    student:      S.student || G.currentUser?.displayName || G.currentUser?.email || 'Anonyme',
-    studentEmail:  G.currentUser?.email || null,
-    studentPseudo: G.currentPseudo      || null,
-    studentId:     G.currentUser?.uid   || null,
-    pct,
-    sessionIdx:   S.sessionIdx,
-    ts: Date.now()
-  };
-  G.practiceLog.push(rec);
-  save();
-  _sbRecordPractice(rec);
-}
-
-// ── Sauvegarde de partie Maia ─────────────────────────
-function saveGame() {
-  const g = S.lineGame;
-  if (!g || !g.history().length) return;
-  const pgn = g.pgn({ sloppy: true });
-  const res = g.in_checkmate() ? (g.turn()==='w' ? '0-1' : '1-0')
-            : (g.in_draw()||g.in_stalemate()) ? '½-½' : '*';
-  const rec = {
-    id:        Date.now(),
-    drillId:   String(S.drill.id),
-    drillName: S.drill.name,
-    student:   S.student || G.currentUser?.displayName || G.currentUser?.email || 'Anonyme',
-    studentEmail: G.currentUser?.email || null,
-    studentId:    G.currentUser?.uid   || null,
-    level:     S.drill.level,
-    side:      S.drill.side,
-    pgn,
-    result:    res,
-    ts:        Date.now()
-  };
-  G.savedGames.push(rec);
-  save();
-  _sbSaveGame(rec);
-}
-
-function recordResult(correct, kp) {
-  const student = S.student || G.currentUser?.displayName || G.currentUser?.email || 'Anonyme';
-  const posKey  = kp.masteryKey || (kp.posIdx + '_' + (kp.san||''));
-  sm2Update(student, S.drill.id, posKey, correct);
-  const rec = {
-    drillId:      String(S.drill.id),
-    drillName:    S.drill.name,
-    student,
-    studentEmail:  G.currentUser?.email  || null,
-    studentPseudo: G.currentPseudo       || null,
-    studentId:     G.currentUser?.uid    || null,
-    posIdx:       kp.posIdx,
-    san:          kp.san,
-    comment:      kp.comment,
-    correct,
-    ts: Date.now()
-  };
-  G.results.push(rec);
-  save();
-  _sbRecordResult(rec);
-}
+// SM-2 + enregistrement (sm2Update/Get, recordResult, recordPracticeSession, saveGame, sync mastery) -> lib/mastery.js
 
 // ══════════════════════════════════════════════════════
 // ÉCHIQUIER
@@ -652,7 +571,7 @@ function showHint(){
     if(!mv||!S.waitingForPlayer) return;
     if(!S.lineErrorCounted){
       S.ko++;S.lineErrorCounted=true;mv.result='ko';
-      recordResult(false,{san:mv.san,comment:mv.comment,posIdx:Math.ceil((S.lineMoveIdx+1)/2)-1});
+      window.recordResult?.(false,{san:mv.san,comment:mv.comment,posIdx:Math.ceil((S.lineMoveIdx+1)/2)-1});
       updateScores();
     }
     const from=_getHintFrom(mv.san,S.lineGame.fen());
@@ -674,7 +593,7 @@ function skipPosition(){
   kp.attempted=true; kp.correct=false;
   setFeedback('ko','→ Le coup était : '+fig(kp.san), S.drill.hideComments ? '' : kp.comment);
   S.ko++; updateScores(); window.renderPosStrip?.();
-  recordResult(false,{san:kp.san,comment:kp.comment,posIdx:S.posIdx});
+  window.recordResult?.(false,{san:kp.san,comment:kp.comment,posIdx:S.posIdx});
   setTimeout(()=>window.loadPosition?.(S.posIdx+1),1300);
 }
 
@@ -1125,15 +1044,14 @@ Object.assign(window, {
   _sbLoadStudentModules, _sbLoadTeacherGames, _sbLoadTeacherModules, _sbLoadTeacherPractice,
   _sbLoadTeacherResults, _sbLogin, _sbLogout, _sbRecordPractice, _sbRecordResult, _sbRegister,
   _sbResetPassword, _sbSaveClass, _sbSaveGame, _sbSaveMastery, _sbSaveModule,
-  _sbSaveStudentModule, _sbUpdatePassword, _sbUser, _scheduleMasterySync, _shapesToPGN,
-  _syncHeatmapFilters, _syncPartiesFilter, _treePlayerPositions, addLog, askName, clearFeedback,
-  clearLog, closeModal, confirmName, countPlayerMoves, currentGame, currentSession,
-  deleteModuleFromFirestore, editorTreeToPGN, escapeHtml, fig, goPage, initDrillPage, isLineMode,
-  isPlayerMove, loadStudentModules, loadTeacherGames, loadTeacherModules, loadTeacherPractice,
+  _sbSaveStudentModule, _sbUpdatePassword, _sbUser, _shapesToPGN, _syncHeatmapFilters,
+  _syncPartiesFilter, _treePlayerPositions, addLog, askName, clearFeedback, clearLog, closeModal,
+  confirmName, countPlayerMoves, currentGame, currentSession, deleteModuleFromFirestore,
+  editorTreeToPGN, escapeHtml, fig, goPage, initDrillPage, isLineMode, isPlayerMove,
+  loadStudentModules, loadTeacherGames, loadTeacherModules, loadTeacherPractice,
   loadTeacherResults, loginUser, logoutUser, nagGlyphs, nextDrill, nextSession, pgnToEditorTree,
-  recordPracticeSession, recordResult, registerUser, requestPasswordReset, save, saveClasses,
-  saveGame, selectDrill, setBoardComment, setBoardPrompt, setFeedback, showHint, showLoginError,
-  showLoginTab, showRecoveryForm, skipPosition, sm2Get, sm2Update, startDrill, submitNewPassword,
-  switchCoachSection, syncModuleToFirestore, toast, toggleTheme, totalSessions, updateNav,
-  updateScores, updateSessionInfo, updateStudentBar,
+  registerUser, requestPasswordReset, save, saveClasses, selectDrill, setBoardComment,
+  setBoardPrompt, setFeedback, showHint, showLoginError, showLoginTab, showRecoveryForm,
+  skipPosition, startDrill, submitNewPassword, switchCoachSection, syncModuleToFirestore, toast,
+  toggleTheme, totalSessions, updateNav, updateScores, updateSessionInfo, updateStudentBar,
 });
