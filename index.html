@@ -585,6 +585,40 @@
   </div>
 </div>
 
+<div class="overlay" id="modal-new-game">
+  <div class="modal" style="max-width:600px;width:96vw;max-height:92vh;overflow-y:auto;padding:28px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div class="modal-title" style="margin:0">♟️ Nouvelle partie</div>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-new-game')">✕</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="frow" style="margin:0"><label>Blancs</label><input type="text" id="ng-white" placeholder="Nom des Blancs"></div>
+      <div class="frow" style="margin:0"><label>Noirs</label><input type="text" id="ng-black" placeholder="Nom des Noirs"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1.2fr;gap:10px;margin-top:10px">
+      <div class="frow" style="margin:0"><label>Tournoi</label><input type="text" id="ng-event" placeholder="Ex : Open de Cannes"></div>
+      <div class="frow" style="margin:0"><label>Elo B.</label><input type="text" id="ng-welo" inputmode="numeric" placeholder="—"></div>
+      <div class="frow" style="margin:0"><label>Elo N.</label><input type="text" id="ng-belo" inputmode="numeric" placeholder="—"></div>
+      <div class="frow" style="margin:0"><label>Résultat</label>
+        <select id="ng-result"><option value="*">En cours / ?</option><option value="1-0">1-0</option><option value="0-1">0-1</option><option value="1/2-1/2">½-½</option></select>
+      </div>
+    </div>
+
+    <div class="frow" style="margin-top:14px">
+      <label>PGN <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--dim);font-size:.72rem">— colle ta partie (les en-têtes pré-remplissent les champs)</span></label>
+      <textarea id="ng-pgn" spellcheck="false" autocorrect="off" autocomplete="off" style="height:130px"
+        oninput="_ngPrefillFromPgn()"
+        placeholder="1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 ..."></textarea>
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-new-game')">Annuler</button>
+      <button class="btn btn-gold btn-sm" onclick="saveGameEntry()">✓ Enregistrer la partie</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="modal-create-drill">
   <div class="modal" style="max-width:620px;width:96vw;max-height:92vh;overflow-y:auto;padding:28px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
