@@ -13,39 +13,40 @@ L’application doit permettre :
 
 **Principe** : On fait évoluer l’application de façon progressive, sans tout réécrire.
 
-## 2. État Actuel du Projet (Juillet 2026)
+## 2. État Actuel du Projet (mise à jour : juillet 2026)
+
+**Phase : le refactoring est terminé → on entre dans la construction produit.**
+Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un prof — toi — + ses élèves) ; le **multi-coachs viendra après**. Pas encore d’utilisateurs réels.
 
 ### Points forts
-- Migration Supabase bien avancée
-- Début de modularisation réussi (`state.js`, `lib/core.js`, `lib/dbmap.js`, `lib/tree.js`)
-- Passage à **Vite + modules ES**
-- **Déployé en ligne** : GitHub Pages via GitHub Actions → `https://sondrapransky.github.io/masteropenings/` (redéploie à chaque push sur `main`)
-- `CLAUDE.md` présent et utilisé
+- Backend **Supabase** (source de vérité) opérationnel : auth, modules, classes, résultats, pratique, parties, mastery.
+- **Modularisation aboutie** : ~15 modules `lib/*` (voir Carte des fichiers). `app.js` réduit de **4412 → 1057 lignes (−76 %)** — il ne reste que login/auth, la couche Supabase `_sb*`, l’init, les helpers UI et le pont `window`.
+- **Vite + modules ES** ; tests Vitest (logique pure) + `typecheck` ; **déployé** sur GitHub Pages (Actions, redéploie à chaque push sur `main`) → `https://sondrapransky.github.io/masteropenings/`.
 
-### Problèmes majeurs
-- `app.js` reste **très volumineux** (~254 Ko, ~5000 lignes) malgré les extractions
-- Beaucoup de logique encore mélangée dans `app.js`
-- Responsabilités encore trop centralisées
+### Angle mort à lever avant le lancement (**gate de release**)
+- **Chemin connecté jamais testé en réel** : tout est validé en anonyme (via `G`/`S` injectés) ou avec des stubs. Le **vrai aller-retour réseau Supabase** (write/read `results` / `profiles.mastery` / `classes.extra` …) n’a jamais été confirmé en session connectée. → **à valider en ligne avant mi-septembre.**
 
-## 3. Dette Technique
+## 3. Dette Technique (résiduelle)
 
-| Problème                          | Impact     | Priorité |
-|----------------------------------|------------|----------|
-| Taille excessive de `app.js`     | Très élevé | **Critique** |
-| Mélange des responsabilités      | Élevé      | Critique |
-| Manque d’extraction des domaines | Élevé      | Haute    |
-| Transition incomplète vers modules | Moyen    | Haute    |
+La dette « critique » (taille d’`app.js`) est **résolue** (extractions §5 terminées). Reste :
+
+| Point | Impact | Note |
+|-------|--------|------|
+| Chemin connecté Supabase non testé | **Élevé** | Gate de release (§2). Aucune couverture E2E connectée. |
+| RLS : `_sbLoadStudentModules` lit **toutes** les `classes` puis filtre côté client | Moyen | Un élève connecté peut lire les classes des autres → à durcir avant l’ouverture multi-coachs. |
+| Pont `window` encore large (~90 fonctions) | Faible | Cosmétique, par choix (`onclick` inline). |
+| Couche `_sb*` toujours dans `app.js` | Faible | Volontaire : noyau backend cohérent. |
 
 ## 4. Architecture Actuelle
 
 - **Build** : Vite (modules ES)
 - **Backend** : Supabase (source de vérité). Clé « publishable » PUBLIQUE (protégée par RLS) → OK committée ; **jamais** de clé « secret » dans le code.
 - **État global** : `state.js` → objet `G` (bon pattern)
-- **Modules extraits** : `lib/core.js` (SM-2, parsing PGN), `lib/dbmap.js` (mappers objet↔SQL), `lib/tree.js` (arbres d’ouverture)
+- **Modules `lib/*`** : ~15 modules extraits — voir la **Carte des fichiers** ci-dessous (cœurs purs testés `*-core.js` + UI). Cœurs partagés : `state.js` (`G`), `lib/session.js` (`S`).
 - **Vendors** : `chess.js` et `@supabase/supabase-js` chargés en CDN (globals `window.Chess` / `window.supabase`) ; dans un module ES, un identifiant non déclaré se résout sur `globalThis`, donc pas besoin de les importer.
-- **Pont `window`** : `app.js` expose ~280 fonctions aux `onclick=""` via `Object.assign(window, {…})` — à réduire au fil des extractions.
+- **Pont `window`** : `app.js` **et** les modules `lib/*` exposent leurs fonctions via `Object.assign(window, {…})` ; les autres modules les résolvent au runtime (`window.foo?.(…)`). Types déclarés dans `types/globals.d.ts` (0 erreur typecheck).
 
-`app.js` reste le fichier principal et contient encore la majorité de la logique.
+`app.js` est désormais un **noyau mince** (auth + couche `_sb*` + init + helpers) ; la logique métier vit dans `lib/*`.
 
 ### Carte des fichiers
 
@@ -72,33 +73,7 @@ L’application doit permettre :
 | `lib/mastery.js` | Mastery & enregistrement — SM-2 (`sm2Update`/`sm2Get` sur `G.masteryData`), synchro mastery multi-appareils (debounce 2,5 s → `_sbSaveMastery`, gardée par `G.currentUser`), enregistrement des sessions : résultats (`recordResult`), pratique (`recordPracticeSession`), parties Maia (`saveGame`). Cœur pur SM-2 = `sm2Schedule` (core.js). Importe `G`/`S`/`sm2Schedule` ; writers `_sb*` restés dans app.js via `window` | ~8 Ko |
 | `home.html` + `data.js` | Page marketing autonome (copiée telle quelle dans `dist/` au build) | — |
 
-> Découpage de l’éditeur **terminé** (§5.1) : cœur pur `lib/editor-core.js` (testé) + UI `lib/editor.js` (DOM, état `_E` local ; fonctions app-level résolues au runtime via le pont `window` ; assets partagés `pieceImgs`/`PIECE_CDN` exposés sur `window` par `app.js`). Le sélecteur de promotion reste dans `app.js` (partagé avec l’échiquier principal).
-
-> Découpage du drill engine **en cours** (§5.2).
-> - **Étape A faite** : cœur pur `lib/drill-core.js` (testé) — logique déterministe sans DOM ni état `S` : `_commentDelay`, `_drillSessions`, `countPlayerMoves`, `computeForcedPath`, `pickOppMove`, `treeUnseenCount`, `oppSeenKey`. Dans `app.js`, `_pickOppMove`/`_treeUnseenCount`/`_computeForcedPath` sont des **wrappers minces** qui lisent `S`/`G.oppSeen` et délèguent au cœur pur.
-> - **Étape B faite** : état session `S` promu en module partagé `lib/session.js` (jamais réassigné, seulement muté → `import` ES en lecture seule suffit). Importé par `app.js` **et** `lib/drill.js`.
-> - **Étape C en cours** : extraction de l’UI **un mode à la fois** vers `lib/drill.js`, fonctions app-level (board, feedback, score, enregistrement) résolues au runtime via le pont `window` (patron identique à `lib/editor.js`).
->   - **Mode ligne fait** : `startLineDrill`, `advanceLine`, `tryMoveInLine`, `skipLinePosition`, `updateLinePosInfo`, `renderNotation`, `endLineDrill`, `togglePauseAdversary` (+ `_pendingAdversaryMv` désormais local au module).
->   - **Mode positions clés/flash fait** : `loadPosition`, `updatePosInfo`, `renderPosStrip`, `tryMoveInPositions`, `endPositionsDrill`. Couplage bidirectionnel avec le moteur SR (resté dans `app.js`) : `drill.js` bridge `_srToggleBar`/`_srUpdateBar`/`_srAnswer`/`_srBilan` via `window`, et le SR appelle `window.loadPosition?.()` etc. `_materialHint` importé de `lib/tree.js`.
->   - **Mode arbre/étude fait** : révision arbre (`startTreeDrill`, `advanceTree`, `tryMoveInTree`, `_treeEnd`) + wrappers stateful (`_pickOppMove`, `_treeUnseenCount`, `_computeForcedPath` → `G.oppSeen`) + phase apprentissage arbre (`startStudyPhase`, `studyGoPath`, `renderStudyTree`, navigation, « devine le coup » : `toggleStudyGuess`/`tryStudyGuess`/`_studyGuess*`). Imports ajoutés dans `drill.js` : `G` (state.js), `_normFen` (core.js), `pickOppMove`/`computeForcedPath`/`treeUnseenCount`/`oppSeenKey` (drill-core.js), `pgnToEditorTree`/`nagGlyphs` (editor-core.js).
->   - Côté `app.js`, toutes ces fonctions sont appelées via `window.xxx?.()`. **Type-check** : le pont `window` est déclaré dans `types/globals.d.ts` (0 erreur).
-> - **SR extrait** : le moteur de répétition espacée est désormais dans `lib/sr.js` (27 fonctions : `srStart`, `_srBuildQueue`, `_srAnswer`, `_srBilan`, `_srForecast`, suspension, réglages, `renderSrDashboard`). Couplage bidirectionnel avec `lib/drill.js` via le pont `window` : `sr.js` appelle `window.loadPosition?.()` (mode positions), et `drill.js` appelle `window._srToggleBar/_srUpdateBar/_srAnswer/_srBilan`. Imports : `S`, `G`, `_treePlayerPositions`/`_materialHint` (tree.js), `_drillSessions` (drill-core.js).
->   - **Phases apprentissage/test + fin de drill faites** : `startLearnPhase`, `learnNext/Prev`, `renderLearn*`, `updateLearnProgress`, `enterTestPhase`, `showEndModal`, `replayErrors`. `showEndModal` étant désormais local à `drill.js`, son pont `window` a été supprimé et ses 3 appels sont directs. Nouveaux ponts : `clearLog`, `closeModal`, `isLineMode`, `startDrill`, `nextDrill`.
-> - **Découpage du drill engine TERMINÉ** (§5.2) : `app.js` 4412 → 3064 lignes. Il ne reste dans `app.js` que l'échiquier (canvas/drag/dispatch `tryMove`/`canInteract`), Maia, les vues et l'accès Supabase.
->
-> ✅ **Bug pré-existant corrigé** (antérieur au refactor, cf. commit `72027c8`) : le bouton « ↩ Erreurs seules » du mode ligne ne filtrait rien — `replayErrors()` posait `S.errorOnlySet`, puis `enterTestPhase()` → `startLineDrill()` faisait `S.errorOnlySet = null` avant qu'`advanceLine()` ne le lise. **Le reset vit désormais dans `startLearnPhase`** : `startLineDrill` est traversé par deux chemins (démarrage du test *et* rejeu des erreurs), alors que `startLearnPhase` n'est atteint que depuis `startDrill`/`nextSession`, les deux entrées d'une session neuve. Le chemin arbre (`varmode === 'tree'`) n'était pas touché.
->
-> **§5.3 en cours — vues.**
-> - **Vue coach faite** : `lib/coach.js` (18 fonctions : `renderProfView`, `showStudentDetail`, `_buildProgressionHTML`, `renderHeatmap`, `renderClassesTab`, `renderPartiesTab`, exports). Bloc idéalement isolé : état module local (`selectedStudent`, `selectedDrillFilter`, `_profTab`) qui ne fuit nulle part, aucune dépendance à `S`/`localStorage`/`Chess` — seulement `G` + 5 ponts `window` (`escapeHtml`, `fig`, `switchCoachSection`, `sm2Get`, `toast`). 7 sites d'appel entrants convertis.
-> - **Accueil élève fait** : `lib/student.js` (16 fonctions : `renderStudentHome`, `_moduleStats`, `_computeStreak`, `_renderRing`, `_shModuleCard`, `_seen*`, `startStudentDrill`, `importStudentDrill`…). Le wrapper Supabase `loadStudentModules` reste dans `app.js` et est bridgé. 2 sites d'appel entrants convertis (tous deux dans `_sbLoadStudentModules`).
-> - **Gestion modules & classes faite** : `lib/modules.js` (27 fonctions : `openCreateDrillModal`, `previewDrill`/`importDrill`/`loadPgnFile`, bibliothèque `openLibrary`/`renderLibrary`/`addFromLibrary`, cartes `renderDrillList`/`launchDrill`/`shareDrill`, `deleteDrill`/`confirmDel`/`cancelDel`, `injectDemoDrill`, `renderCoachOnboarding`/`dismissOnboarding`, CRUD classes `saveClass`/`openEditClass`/`deleteClass`/`renderClassList`/`renderClassModuleSelect`/`toggleClassMode`/`addStudent`). Bloc **non contigu** dans `app.js` : `goPage`, `save`, `saveClasses` (cœur, utilisés partout) restaient intercalés → extraction chirurgicale en 3 îlots, ces 3 fonctions **restées dans `app.js`** et bridgées. Imports : `G` (state), `S` (session), `extractAllLines` (core), `_buildDrillTree`/`isPlayerMove` (tree), `countPlayerMoves` (drill-core). 12 ponts `window` (dont `save`/`saveClasses`/`goPage`/`switchCoachSection`/Supabase). 7 sites d'appel entrants convertis (`switchCoachSection`, `goPage`, blocs init local + `_sbLoadTeacherModules`). `app.js` 2264 → 1734 lignes.
->   - ✅ **Bug pré-existant corrigé en passant** : `loadExample` (bouton « Charger un exemple » du modal de création) faisait `getElementById('inp-drillmode').value = 'line'`, mais l'id `inp-drillmode` n'existe plus dans `index.html` → l'appel levait `TypeError` avant de remplir le PGN (présent tel quel avant l'extraction). Ligne supprimée dans `lib/modules.js` ; `loadExample` remplit désormais nom + PGN sans erreur (vérifié navigateur).
-> - **Moteur Maia fait** : `lib/maia.js` (12 fonctions : `loadMaia`/`_ensureOrt`, `_getMaiaMove`/`_mirrorFen`/`_mirrorUci`, `enginePlay`/`_checkPTEnd`/`_afterMaiaReady`, `startPostTheory`/`quitMaiaGame`/`playVsMaia`/`tryMovePostTheory`). Bloc **contigu** (688-972) qui coupait l'échiquier en deux → l'extraire **en premier** a dé-entrelacé la zone board (`drawCoords` et `drawBoard` désormais adjacents). Imports : `G` (state), `S` (session), `_normFen` (core), `isPlayerMove` (tree) ; `ort`/`Chess` = globals. 8 ponts `window` (board/feedback/`saveGame`/`goPage`…). Seul appel entrant de code converti : `tryMove` → `window.tryMovePostTheory?.()`. **Couplage board→maia** : `tryMovePostTheory` lit les dernières coords pointeur pour le sélecteur de promo → `_lastMoveXY` (app.js) transformé en **objet stable muté en place** et exposé `window._lastMoveXY` (4 réassignations → mutations). `app.js` 1734 → 1448 lignes. Round-trip promo vérifié navigateur (sans télécharger le modèle 43 Mo).
-> - **Échiquier fait** : `lib/board.js` (16 fonctions : `drawBoard`/`drawCoords`/`getPieceImg`, `resizeBoard`, `_sqCenter`/`_drawBoardShapes`, `sqFromXY`/`evXY`/`drawGhost`/`posGhost`, `canInteract`, `tryMove`, `flipBoard`, `showPromoPicker`/`pickPromo`/`cancelPromo`) + listeners `#board` (mouse/touch/click) et nav clavier ← →, attachés **au chargement du module**. Extrait en 4 îlots (séparés par `setBoardComment`/`setBoardPrompt` — **restés dans app.js**, pilotés par `setFeedback` — et par les helpers hint/feedback). Imports : `S` (session), `_SHAPE_COL` (editor-core). 2 ponts `window` (`currentGame`, `isLineMode`, restés dans app.js) ; drill/maia/editor déjà via `window`. 4 appels entrants convertis (`drawCoords`/`resizeBoard`×2/`drawBoard`). 16 noms retirés de l'`Object.assign`. `_lastMoveXY` (déjà exposé `window` pour maia) déménagé avec le board. `app.js` 1448 → 1139 lignes. **Vérif navigateur** : path pointeur complet (mousedown→sélection+ghost, mouseup→dispatch `tryMove` `{e2,e4}`), rendu canvas, `flipBoard`, dispatch ligne/arbre, sélecteur de promo — OK, 0 erreur console.
->   - ✅ **Bug pré-existant corrigé en passant** : annuler une promotion sur le **board principal** via `#promo-backdrop` → `cancelPromo` appelle `window.renderEditorBoard?.()` (editor.js), qui faisait `new Chess(_E.node.fenAfter)` **sans garder `_E.node`** → `TypeError` si l'éditeur PGN n'avait jamais été ouvert (`_E.node` null). Antérieur au refactor. Garde ajoutée `if (!_E?.node) return;` dans `renderEditorBoard` (lib/editor.js), vérifiée navigateur.
-> - **Mastery & enregistrement fait** (§5 step 4) : `lib/mastery.js` (7 fonctions : `sm2Update`/`sm2Get`, `_scheduleMasterySync` (interne, debounce), `recordResult`, `recordPracticeSession`, `saveGame`). Bloc **contigu** (516-598). Imports : `G`/`S`/`sm2Schedule` (core). Writers `_sb*` (`_sbRecordResult`/`_sbRecordPractice`/`_sbSaveGame`/`_sbSaveMastery`) **restés dans app.js** (couche backend cohérente) → via `window`. La garde `if(!sb||!G.currentUser)` de `_scheduleMasterySync` devient `if(!G.currentUser)` (fidèle : `currentUser` n'est positionné que par l'auth Supabase → implique `sb`). 2 appels entrants convertis (`recordResult` dans `showHint`/`skipPosition`). 6 noms retirés de l'`Object.assign`. `app.js` 1139 → 1057 lignes. **Vérif navigateur** : `recordResult`/`recordPracticeSession`/`saveGame` → `G` + localStorage + writers `_sb*` (payloads OK) ; debounce mastery coalescé (2 `sm2Update` → 1 `_sbSaveMastery` après 2,5 s) sous garde `currentUser` — 0 erreur console.
-> - **§5 (extractions) TERMINÉ** : toutes les cibles de §5 sorties (éditeur, drill, vues, SM-2/mastery). `app.js` ne contient plus que login/auth Supabase, la couche `_sb*` (noyau backend, volontairement gardée), l'init, les helpers UI (`escapeHtml`/`fig`/`toast`/`setFeedback`/`updateScores`/`addLog`…), `currentGame`/`isLineMode`, `save`/`saveClasses`/`goPage` et le pont `window`. Depuis le début du refactor : `app.js` **4412 → 1057 lignes (−76 %)**. La dette « critique » de §3 est résolue → priorité aux objectifs produit §6 (#2 moteur de révision, #3 biblio partagée, #4 assignation).
->   - **Angle mort restant** : le refactor mastery a été validé en anonyme + via stubs simulant le chemin connecté (chaînage `recordResult`/`sm2Update`→`_sbSaveMastery` correct). Le **vrai aller-retour réseau Supabase** (write/read `results`/`profiles.mastery` connecté) reste à confirmer en session connectée en ligne.
+> **Refactoring (§5) terminé.** `app.js` **4412 → 1057 lignes (−76 %)** par extraction progressive (Strangler Fig) : éditeur (`editor-core`/`editor`), drill engine (`drill-core`/`drill`/`sr`/`session`), vues (`coach`/`student`/`modules`), échiquier (`board`), Maia (`maia`), SM-2/mastery (`mastery`). Détail par fichier → **Carte des fichiers** ci-dessus ; pas-à-pas → `git log` (commits `REFACTO :`). Patron appliqué : cœur pur testé + UI, fonctions app-level résolues via `window`, état partagé par `G`/`S`. Restés dans `app.js` par choix : couche `_sb*`, `save`/`saveClasses`/`goPage`, `currentGame`/`isLineMode`, `setBoardComment`/`setBoardPrompt`, sélecteur de promo (partagé board/éditeur).
 
 ### Commandes
 - **Dev** : `npm run dev` (Vite, HMR) — ou `npx serve .` (ESM natif, sans build)
@@ -108,62 +83,78 @@ L’application doit permettre :
 - **Déploiement** : `git push origin main` → GitHub Actions (`.github/workflows/deploy.yml`) build Vite + publie `dist/` sur Pages, automatiquement.
   - ⚠️ Après avoir touché aux dépendances : `npm install` **puis committer `package-lock.json`** — sinon `npm ci` échoue en CI.
 
-## 5. Stratégie de Refactoring Recommandée
+## 5. Stratégie de Développement
 
-**Approche** : Extraction progressive et sécurisée (pattern Strangler Fig).
+**Le refactoring est terminé** (voir §2 + résumé dans §4). Principes qui restent valables pour toute évolution :
 
-**Ordre de priorité des extractions** :
+- Changements **petits, testables, vérifiés** (Vitest pour la logique pure ; vérif navigateur pour l’UI) ; garder l’app fonctionnelle à chaque étape.
+- **`G` (state.js) = état partagé** ; état de session = `S` (session.js). Un `import` ES est en lecture seule → passer par les propriétés de `G` pour l’état réassignable.
+- **Migration-free d’abord** : les tables Supabase exposent une colonne `extra` (jsonb) sur `modules` / `classes` / `games` → y ranger les nouveaux champs plutôt que migrer le schéma (patron déjà utilisé : `classes.extra.deadlines`).
+- **Ne jamais committer/pousser sans feu vert.** Commits `TOPIC : desc` (FEAT / FIX / REFACTO…), sans accents, avec `Co-Authored-By`.
 
-1. **Éditeur PGN** (`modal-pgn-editor` + logique associée) → `lib/editor.js`
-2. **Drill Engine** (logique des modes `line` / `flash` / `tree`, sessions, etc.) → `lib/drill.js`
-3. **Vues et rendu** (coach + élève) → `lib/views.js` ou `lib/coach.js` + `lib/student.js`
-4. **Logique SM-2 / Mastery** → `lib/mastery.js`
+## 6. Roadmap de Lancement — cible mi-septembre 2026
 
-**Règles d’extraction** :
-- Faire des extractions **petites et testables**
-- Toujours garder l’application fonctionnelle après chaque extraction
-- Utiliser `G` (de `state.js`) comme point central d’état
-- Documenter les nouvelles fonctions dans ce fichier si nécessaire
+Lancement **single-coach** (toi + tes élèves). Priorité produit = **Pilier 1 : parties de l’élève + revue coach**. Bibliothèque partagée entre coachs et exercices tactiques/mats = **post-lancement**.
 
-## 6. Priorités Actuelles
+### Pilier 1 — Parties élève + revue coach (must-have, sans coupe)
 
-1. ✅ **Réduire la taille de `app.js`** (extractions §5 terminées : 4412 → 1057 lignes)
-2. Améliorer le moteur de révision et les exercices
-3. Créer une bibliothèque d’exercices partagée
-4. Implémenter l’assignation d’exercices *(en cours)*
-5. Améliorer le suivi des progrès des élèves
-6. Améliorer le design et l’UX
+**Décisions design (grill-me, juillet 2026) :**
+- **Stack : on reste vanilla.** Pas de re-platform React / Tailwind / shadcn avant le lancement — « moderne » est un **objectif design**, pas un changement de stack (une v2 React = décision post-lancement assumée). Réf : lichess lui-même = TS/Snabbdom + board `chessground` **framework-agnostique** ; le cœur échecs (board, éditeur, drill, Maia) ne gagne **rien** à React.
+- **Esthétique : académie structurée × outil clean** (Chessable × Linear), dans les tokens existants : hiérarchie forte, cadrage « travail → fais-le → progresse », mais sobre (blanc, neutres zinc, **indigo en accent précis**, cartes discrètes, micro-interactions subtiles) ; gamification existante (série/anneaux) en **signaux discrets**.
+- **IA** : élève → **onglets haut** « Révision » | **« Ma bibliothèque »** (ajuster `updateNav`, aujourd’hui masqué pour l’élève) ; coach → revue dans la section **« Parties »** existante (`csec-parties`).
 
-### §6 #4 — Assignation : échéance par module dans la classe (incrément 1, fait)
-- **Modèle** : une classe porte `moduleDeadlines = { moduleId: 'YYYY-MM-DD' }` (échéance d’assignation, par module). **Persisté dans la colonne `extra` (jsonb) de `classes`** (`extra.deadlines`) → **aucune migration de schéma** (`lib/dbmap.js`).
-- **Coach** : formulaire de classe (`lib/modules.js`) — un date-picker par module, révélé quand la case est cochée (`_toggleModDeadline`) ; `saveClass` collecte les dates ; `openEditClass` les repeuple. `renderClassList` affiche l’échéance à côté du nom du module.
-- **Élève** : `_sbLoadStudentModules` (app.js) applique sur chaque module assigné l’échéance d’assignation **la plus proche** parmi ses classes (prime sur la `deadline` du module). `_shModuleCard` (student.js) affiche un badge (⚠ en retard / ⏰ Nj / 📅 date).
-- **Suivi par module × élève (incrément 2, fait)** : `renderClassesTab` (coach.js) décompose chaque classe **par module assigné** (nom + pastille d’échéance via `_deadlinePill({deadline})` + compteur `✅ faits/roster`) **× élève** (fait `%·récence` 🟢 / en retard ⚠🔴 si échéance dépassée et non joué / pas commencé ⚪). L’agrégat par élève (`activeCount`) reste dans l’en-tête de classe.
+**Modèle de données :**
+- **Base personnelle** = `{ id, name, owner }` = **dossier PGN générique** nommé par l’élève (stocké côté profil élève). Migration-free.
+- **Entrée** = un PGN (réutilise la table `games`, `drill_id = null`, `base_id` dans `extra`) portant une **nature** (`partie` | `analyse`) ; **une base peut mélanger les deux**. Une entrée `partie` = en-têtes PGN (Blancs/Noirs/Event/Elo via `chess.js` `header()`) + résultat + action **partager au coach**. Les parties vs Maia peuvent se ranger auto dans une base dédiée.
+- **Annotation coach = couche additive-only** : le coach n’écrase **jamais** les coups de l’élève ; il **ajoute** sous-variantes (le bon coup là où l’élève s’est trompé) + commentaires, chaque nœud tagué `author:'coach'` et **rendu en couleur** dans le même arbre. L’éditeur (`editor.js` / `editor-core.js`) round-trip déjà PGN ↔ arbre (commentaires / variantes / NAG) → ajouter `author` au nœud + le colorer.
+- **Layout « Ma bibliothèque »** : drill-down en cartes (bases → entrées), mobile-friendly ; la vue des entrées d’une base = **liste recherchable/triable** (Blancs/Noirs/date/résultat — inspiration CARA). Couleurs/label coach + UX partage/notif (`sh-notif`) : peaufinés **en live** par tranche.
+
+Tranches à livrer **dans l’ordre** (chacune démontrable) :
+1. **P1.0** — modèle base (`games` + `base_id`, bases nommées) + page **« Ma bibliothèque »** (onglet élève).
+2. **P1.1** — saisie de partie (**éditeur échiquier + coller PGN**) + métadonnées PGN. *(Import en ligne Lichess/Chess.com = post-lancement.)*
+3. **P1.2** — créer / nommer plusieurs bases + choisir la base de destination + nature de l’entrée.
+4. **P1.3** — bouton **partager au coach** (flag + visibilité coach via `teacher_id` de la classe).
+5. **P1.4** — **revue coach** : ouvre la partie dans l’éditeur, ajoute sous-variantes + commentaires tagués `coach` colorés.
+6. **P1.5** — l’élève rouvre sa partie et voit les ajouts du coach en couleur.
+7. **Gate release** — **validation connectée Supabase** (round-trip parties / bases / partage / annotations) **avant le lancement**.
+
+### Post-lancement
+- **Import de parties en ligne** (Lichess / Chess.com) dans « Ma bibliothèque » : URL de partie Lichess → GET API publique → PGN (faible coût, gros gain d’usage). Chess.com ensuite.
+- **Exercices** (tactiques / mats) : « position → trouve le bon coup » → **réutilise le mode `positions` / flash existant** (peu coûteux le moment venu). Le prof pourra assigner des **bases d’exercices** comme il assigne déjà des ouvertures.
+- **Bibliothèque d’exercices partagée entre coachs** (+ durcissement RLS multi-coachs, cf. §3).
+- Une éventuelle **v2 en React / Tailwind / shadcn** (re-platform assumé) et une passe de **polish visuel global** — décidés explicitement, jamais mid-sprint.
+
+### Fait — §6 #4 Assignation : échéance par module dans la classe
+- **Modèle** : une classe porte `moduleDeadlines = { moduleId: 'YYYY-MM-DD' }`, persisté dans `classes.extra.deadlines` (jsonb) → aucune migration (`lib/dbmap.js`).
+- **Coach** : formulaire de classe (`lib/modules.js`) — date-picker par module (`_toggleModDeadline`) ; `saveClass` collecte, `openEditClass` repeuple ; `renderClassList` affiche l’échéance.
+- **Élève** : `_sbLoadStudentModules` applique l’échéance d’assignation **la plus proche** (prime sur la `deadline` du module) ; `_shModuleCard` affiche un badge (⚠ retard / ⏰ Nj / 📅 date).
+- **Suivi par module × élève** : `renderClassesTab` (coach.js) décompose chaque classe par module (pastille échéance + `✅ faits/roster`) × élève (fait `%·récence` / en retard / pas commencé).
 
 ## 7. Règles de Développement
 
-- Supabase est la source de vérité.
-- Toute modification importante dans `app.js` doit être justifiée.
-- Privilégier les extractions petites et incrémentales.
-- Toujours tester après une extraction.
-- Utiliser `state.js` (`G`) pour l’état partagé.
+- **Supabase est la source de vérité.** Clé « publishable » PUBLIQUE OK ; jamais de clé « secret ».
+- Toute modification importante dans `app.js` (noyau) doit être justifiée.
+- Features **petites et incrémentales** ; **vérifier au navigateur** (et Vitest pour la logique pure) avant de committer.
+- `state.js` (`G`) pour l’état partagé, `S` (session.js) pour la session.
+- Privilégier le **migration-free** (`extra` jsonb) ; si un vrai changement de schéma est nécessaire, le signaler explicitement (c’est toi qui gères Supabase).
 
 ## 8. Pièges Connus
 
-- Attention à la cohérence entre localStorage et Supabase pendant la transition.
-- L’éditeur PGN et le Drill Engine sont des zones sensibles.
-- Beaucoup de code expose encore des fonctions via `window` → à réduire progressivement.
-- Un `import` ES est en lecture seule : pour partager un état **réassignable** entre modules, passer par les propriétés de `G` (`G.drills = …`), jamais par un `let` importé.
+- **Cohérence localStorage ↔ Supabase** : l’app écrit les deux ; en connecté, `_sb*` prime au chargement. Attention aux désynchros.
+- L’**éditeur PGN** et le **drill engine** sont des zones sensibles ; l’**échiquier** (`lib/board.js`) attache ses listeners `#board` **au chargement du module** (ordre d’import).
+- Le **pont `window`** : un identifiant non déclaré dans un module ES se résout sur `globalThis`, mais on passe explicitement par `window.foo?.(…)` pour les fonctions d’un autre module (déclarées dans `types/globals.d.ts`).
+- Un `import` ES est en lecture seule : pour partager un état **réassignable**, passer par les propriétés de `G` (`G.drills = …`), jamais par un `let` importé.
 - Certains noms d’état entrent en collision avec des chaînes littérales (`'classes'`, `'results.csv'`) : attention aux remplacements globaux.
+- **RLS non durcie** (§3) : `_sbLoadStudentModules` lit toutes les `classes` côté client — à corriger avant l’ouverture multi-coachs.
 
 ## 9. Instructions pour Claude Code
 
-Tu es un ingénieur senior pragmatique.
+Tu es un ingénieur senior pragmatique. **Objectif courant : le Pilier 1 (roadmap §6) pour un lancement mi-septembre.**
 
 - Lis systématiquement ce fichier avant toute modification importante.
-- Propose des extractions **petites, testables et sécurisées**.
-- Demande confirmation avant de toucher aux zones critiques (`app.js`, éditeur, drill engine).
-- Documente les décisions d’architecture dans ce fichier.
+- Propose des changements **petits, testables et sécurisés** ; démontre chaque tranche au navigateur.
+- **Demande confirmation avant de toucher aux zones critiques** (`app.js`, éditeur, drill engine, échiquier) et **avant tout commit/push**.
+- Documente les décisions d’architecture et de données dans ce fichier (roadmap §6, modèle `extra` jsonb).
 - Privilégie la maintenabilité à long terme.
 
 ---
