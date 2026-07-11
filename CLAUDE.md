@@ -138,7 +138,7 @@ L’application doit permettre :
 - **Modèle** : une classe porte `moduleDeadlines = { moduleId: 'YYYY-MM-DD' }` (échéance d’assignation, par module). **Persisté dans la colonne `extra` (jsonb) de `classes`** (`extra.deadlines`) → **aucune migration de schéma** (`lib/dbmap.js`).
 - **Coach** : formulaire de classe (`lib/modules.js`) — un date-picker par module, révélé quand la case est cochée (`_toggleModDeadline`) ; `saveClass` collecte les dates ; `openEditClass` les repeuple. `renderClassList` affiche l’échéance à côté du nom du module.
 - **Élève** : `_sbLoadStudentModules` (app.js) applique sur chaque module assigné l’échéance d’assignation **la plus proche** parmi ses classes (prime sur la `deadline` du module). `_shModuleCard` (student.js) affiche un badge (⚠ en retard / ⏰ Nj / 📅 date).
-- **Reste** : incrément 2 — suivi **par module × élève** dans `renderClassesTab` (coach.js), aujourd’hui agrégé par élève seulement.
+- **Suivi par module × élève (incrément 2, fait)** : `renderClassesTab` (coach.js) décompose chaque classe **par module assigné** (nom + pastille d’échéance via `_deadlinePill({deadline})` + compteur `✅ faits/roster`) **× élève** (fait `%·récence` 🟢 / en retard ⚠🔴 si échéance dépassée et non joué / pas commencé ⚪). L’agrégat par élève (`activeCount`) reste dans l’en-tête de classe.
 
 ## 7. Règles de Développement
 
