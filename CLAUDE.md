@@ -110,7 +110,7 @@ Lancement **single-coach** (toi + tes élèves). Priorité produit = **Pilier 1 
 - **Layout « Ma bibliothèque »** : drill-down en cartes (bases → entrées), mobile-friendly ; la vue des entrées d’une base = **liste recherchable/triable** (Blancs/Noirs/date/résultat — inspiration CARA). Couleurs/label coach + UX partage/notif (`sh-notif`) : peaufinés **en live** par tranche.
 
 Tranches à livrer **dans l’ordre** (chacune démontrable) :
-1. **P1.0** — modèle base (`games` + `base_id`, bases nommées) + page **« Ma bibliothèque »** (onglet élève).
+1. ✅ **P1.0 fait** — modèle base + page **« Ma bibliothèque »**. `G.bases` (`{id,name,created}`, localStorage `mc_bases` + Supabase `profiles.extra.bases` défensif via `_sbSaveBases`/`_sbLoadBases`) ; `lib/library.js` (`renderMyLibrary`/`createBase`/`openBase`/`deleteBase` — préfixés pour éviter la collision avec `renderLibrary` de modules.js) ; onglets élève **Révision | Ma bibliothèque** (`updateNav` toggle `.tab-teacher`/`.tab-student`, `page-library`). Renommer base → P1.2 ; saisie de partie → P1.1. ⚠️ Migration à lancer côté Supabase : `alter table profiles add column if not exists extra jsonb default '{}';` (validée à la gate connectée).
 2. **P1.1** — saisie de partie (**éditeur échiquier + coller PGN**) + métadonnées PGN. *(Import en ligne Lichess/Chess.com = post-lancement.)*
 3. **P1.2** — créer / nommer plusieurs bases + choisir la base de destination + nature de l’entrée.
 4. **P1.3** — bouton **partager au coach** (flag + visibilité coach via `teacher_id` de la classe).

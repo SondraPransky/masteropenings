@@ -30,6 +30,7 @@ import './lib/modules.js';
 import './lib/maia.js';
 import './lib/board.js';
 import './lib/mastery.js';
+import './lib/library.js';
 
 // ── Configuration Supabase (client `sb`) ──────────────────
 // Clé « publishable » PUBLIQUE (protégée par RLS) → OK committée. Jamais de clé « secret » ici.
@@ -75,8 +76,10 @@ function updateNav() {
       navRoleChip.innerHTML = isTeacher ? '<i class="ti ti-clipboard-text" aria-hidden="true"></i> Prof' : '<i class="ti ti-user" aria-hidden="true"></i> Élève';
       navRoleChip.style.display = '';
     }
-    // Onglets : cachés pour les élèves
-    if (navTabs) navTabs.style.display = isStudent ? 'none' : '';
+    // Onglets selon le rôle : le coach voit les siens, l'élève voit « Révision » | « Ma bibliothèque »
+    if (navTabs) navTabs.style.display = '';
+    document.querySelectorAll('.tab-teacher').forEach(t => t.style.display = isTeacher ? '' : 'none');
+    document.querySelectorAll('.tab-student').forEach(t => t.style.display = isStudent ? '' : 'none');
     // Bouton retour élève : visible uniquement pour les élèves sur la page drill
     if (btnBack) btnBack.style.display = isStudent ? '' : 'none';
   } else {
@@ -265,10 +268,11 @@ function goPage(name) {
   document.querySelectorAll('nav .tab').forEach(t => t.classList.remove('on'));
   const pageEl = document.getElementById('page-' + name);
   if (pageEl) pageEl.classList.add('on');
-  const tabMap = { coach: 'tab-coach', drill: 'tab-drill' };
+  const tabMap = { coach: 'tab-coach', drill: 'tab-drill', 'student-home': 'tab-revision', library: 'tab-library' };
   if (tabMap[name]) document.getElementById(tabMap[name])?.classList.add('on');
   if (name === 'drill') initDrillPage();
   if (name === 'coach') { window.renderClassModuleSelect?.(); }
+  if (name === 'library') { window.renderMyLibrary?.(); }
   // Bouton retour visible sur la page drill pour les élèves Firebase
   const btnBack = document.getElementById('btn-back-student');
   if (btnBack) btnBack.style.display = (ACCOUNTS_ON && G.currentRole === 'student' && name === 'drill') ? '' : 'none';
@@ -292,6 +296,7 @@ function save() {
   localStorage.setItem('mc_games',    JSON.stringify(G.savedGames));
   localStorage.setItem('mc_mastery',  JSON.stringify(G.masteryData));
   localStorage.setItem('mc_opp_seen', JSON.stringify(G.oppSeen));
+  localStorage.setItem('mc_bases',    JSON.stringify(G.bases));
 }
 function saveClasses() {
   localStorage.setItem('mc_classes', JSON.stringify(G.classes));
@@ -828,7 +833,7 @@ function _sbInitAuth() {
     updateNav();
     await _sbLoadMastery();
     if (G.currentRole === 'teacher') { await _sbLoadTeacherModules(); goPage('coach'); }
-    else { goPage('student-home'); await _sbLoadStudentModules(); }
+    else { await _sbLoadBases(); goPage('student-home'); await _sbLoadStudentModules(); }
   });
 }
 
@@ -1044,6 +1049,26 @@ async function _sbLoadMastery() {
   } catch (e) { console.error('_sbLoadMastery', e); }
 }
 
+// ── Bases PGN personnelles (Pilier 1) — stockées dans profiles.extra.bases (jsonb) ──
+// Défensif : si la colonne `extra` n'existe pas encore, l'erreur est catchée sans
+// casser le reste (migration idempotente : alter table profiles add column if not exists extra jsonb default '{}';).
+async function _sbSaveBases() {
+  if (!sb || !G.currentUser || G.currentRole !== 'student') return;
+  try {
+    const { error } = await sb.from('profiles').update({ extra: { bases: G.bases } }).eq('id', G.currentUser.uid);
+    if (error) throw error;
+  } catch (e) { console.error('_sbSaveBases', e); }
+}
+
+async function _sbLoadBases() {
+  if (!sb || !G.currentUser) return;
+  try {
+    const { data } = await sb.from('profiles').select('extra').eq('id', G.currentUser.uid).maybeSingle();
+    G.bases = (data && data.extra && data.extra.bases) || [];
+    localStorage.setItem('mc_bases', JSON.stringify(G.bases));
+  } catch (e) { console.warn('_sbLoadBases (colonne extra manquante ?)', e); }
+}
+
 
 // ══════════════════════════════════════════════════════
 // PONT window — expose les fonctions du module aux handlers inline onclick=""
@@ -1055,7 +1080,7 @@ Object.assign(window, {
   _sbDeleteClass, _sbDeleteModule, _sbDeleteStudentModule, _sbInitAuth, _sbLoadMastery,
   _sbLoadStudentModules, _sbLoadTeacherGames, _sbLoadTeacherModules, _sbLoadTeacherPractice,
   _sbLoadTeacherResults, _sbLogin, _sbLogout, _sbRecordPractice, _sbRecordResult, _sbRegister,
-  _sbResetPassword, _sbSaveClass, _sbSaveGame, _sbSaveMastery, _sbSaveModule,
+  _sbResetPassword, _sbSaveClass, _sbSaveGame, _sbSaveMastery, _sbSaveModule, _sbSaveBases, _sbLoadBases,
   _sbSaveStudentModule, _sbUpdatePassword, _sbUser, _shapesToPGN, _syncHeatmapFilters,
   _syncPartiesFilter, _treePlayerPositions, addLog, askName, clearFeedback, clearLog, closeModal,
   confirmName, countPlayerMoves, currentGame, currentSession, deleteModuleFromFirestore,

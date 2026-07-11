@@ -20,4 +20,6 @@ export const G = {
   masteryData: JSON.parse(localStorage.getItem('mc_mastery')   || '{}'),
   oppSeen:     JSON.parse(localStorage.getItem('mc_opp_seen')  || '{}'),
   classes:     JSON.parse(localStorage.getItem('mc_classes')   || '[]'),
+  // — Pilier 1 : bases PGN personnelles de l'élève (dossiers { id, name, created }) —
+  bases:       JSON.parse(localStorage.getItem('mc_bases')     || '[]'),
 };

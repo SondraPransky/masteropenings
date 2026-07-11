@@ -24,8 +24,10 @@
     <div class="logo"><i class="ti ti-chess-knight" aria-hidden="true"></i> EE<em>Coach</em></div>
   </div>
   <div class="tabs" id="nav-tabs">
-    <button class="tab on"  id="tab-coach" onclick="goPage('coach')"><i class="ti ti-layout-dashboard" aria-hidden="true"></i><span class="tab-label"> Coach</span></button>
-    <button class="tab"     id="tab-drill" onclick="goPage('drill')"><i class="ti ti-player-play" aria-hidden="true"></i><span class="tab-label"> Réviser</span></button>
+    <button class="tab tab-teacher on" id="tab-coach" onclick="goPage('coach')"><i class="ti ti-layout-dashboard" aria-hidden="true"></i><span class="tab-label"> Coach</span></button>
+    <button class="tab tab-teacher"    id="tab-drill" onclick="goPage('drill')"><i class="ti ti-player-play" aria-hidden="true"></i><span class="tab-label"> Réviser</span></button>
+    <button class="tab tab-student"    id="tab-revision" onclick="goPage('student-home')" style="display:none"><i class="ti ti-player-play" aria-hidden="true"></i><span class="tab-label"> Révision</span></button>
+    <button class="tab tab-student"    id="tab-library"  onclick="goPage('library')"      style="display:none"><i class="ti ti-books" aria-hidden="true"></i><span class="tab-label"> Ma bibliothèque</span></button>
   </div>
   <button id="btn-back-student" onclick="goPage('student-home')" title="Retour à mes modules"><i class="ti ti-arrow-left" aria-hidden="true"></i> Mes modules</button>
   <button id="reviser-tout-btn" onclick="reviserTout()" style="display:none"><i class="ti ti-refresh" aria-hidden="true"></i><span class="tab-label"> Tout réviser</span> <span id="reviser-tout-count" style="background:rgba(0,0,0,.25);border-radius:10px;padding:1px 8px;font-size:.7rem;margin-left:2px"></span></button>
@@ -139,6 +141,21 @@
     <div style="text-align:center;margin-top:20px">
       <button class="btn btn-ghost btn-sm" onclick="loadStudentModules()" style="font-size:.75rem">↻ Actualiser</button>
     </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     PAGE MA BIBLIOTHÈQUE — bases PGN personnelles (élève, Pilier 1)
+════════════════════════════════════════ -->
+<div id="page-library" class="page">
+  <div class="sh-wrap">
+    <div class="sh-top">
+      <div>
+        <div class="sh-hello">Ma bibliothèque</div>
+        <div class="sh-hello-sub">Tes bases PGN : parties et analyses personnelles.</div>
+      </div>
+    </div>
+    <div id="library-content" style="margin-top:18px"></div>
   </div>
 </div>
 

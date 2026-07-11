@@ -191,6 +191,11 @@ interface Window {
   _sbSaveGame?: (...a: any[]) => any;
   _sbSaveMastery?: (...a: any[]) => any;
 
+  // — Ma bibliothèque / bases PGN (lib/library.js + app.js) — Pilier 1 —
+  renderMyLibrary?: (...a: any[]) => any;
+  _sbSaveBases?: (...a: any[]) => any;
+  _sbLoadBases?: (...a: any[]) => any;
+
   // — Moteur Maia (lib/maia.js) —
   saveGame?: (...a: any[]) => any;   // reste dans app.js, appelé par maia.js (défini dans lib/mastery.js)
   loadMaia?: (...a: any[]) => any;
