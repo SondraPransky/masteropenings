@@ -712,6 +712,13 @@ textarea {
 /* Les selects heritent de `select { width:100% }` (global) -> les brider en largeur auto,
    sinon ils occupent toute la barre et ecrasent le champ nom. */
 #editor-side, #editor-level { width: auto; }
+
+/* Colonne du plateau : ne jamais depasser la largeur dispo (sinon overflow + plateau
+   decentre en mobile, car les blocs annotation/commentaire forcent ~490px). */
+#editor-board-col { max-width: 100%; box-sizing: border-box; }
+@media (max-width: 860px) {
+  #editor-board-col { flex-basis: 100%; border-right: none; }   /* pleine largeur -> plateau centre */
+}
 @media (max-width: 760px) {
   #editor-meta-fields { order: 3; flex-basis: 100%; }   /* champs sur leur propre ligne, sous titre + actions */
 }
