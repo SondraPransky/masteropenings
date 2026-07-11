@@ -592,6 +592,15 @@
       <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-new-game')">✕</button>
     </div>
 
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-bottom:10px">
+      <div class="frow" style="margin:0"><label>Base de destination</label>
+        <select id="ng-base"></select>
+      </div>
+      <div class="frow" style="margin:0"><label>Nature</label>
+        <select id="ng-nature"><option value="partie">♟️ Partie</option><option value="analyse">📝 Analyse</option></select>
+      </div>
+    </div>
+
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div class="frow" style="margin:0"><label>Blancs</label><input type="text" id="ng-white" placeholder="Nom des Blancs"></div>
       <div class="frow" style="margin:0"><label>Noirs</label><input type="text" id="ng-black" placeholder="Nom des Noirs"></div>
