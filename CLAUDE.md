@@ -25,6 +25,7 @@ Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un pr
 
 ### Angle mort à lever avant le lancement (**gate de release**)
 - **Chemin connecté jamais testé en réel** : tout est validé en anonyme (via `G`/`S` injectés) ou avec des stubs. Le **vrai aller-retour réseau Supabase** (write/read `results` / `profiles.mastery` / `classes.extra` …) n’a jamais été confirmé en session connectée. → **à valider en ligne avant mi-septembre.**
+- **Trous du chemin connecté corrigés côté code (juillet 2026)** — audit de la gate Pilier 1 : (A) `_sbSaveGame` était `insert`-only → partage/annotation en échec ; ajout `_sbUpdateGame` (UPDATE) utilisé par `toggleShareGame`/`_reviewSaveDone`. (B) Nouvelle policy `games_update` (RLS). (C) L’élève ne rechargeait pas ses parties → `_sbLoadStudentGames` câblé au login élève. (D) Loaders coach (`_sbLoadTeacherResults`/`Practice`/`Games`) **jamais appelés** → câblés au login coach. (E) `_sbLoadTeacherGames` étendu aux parties bibliothèque partagées (`drill_id` null) + policy `games_read` élargie (helper `my_student_ids()`). (F) `_sbDeleteGame` câblé. **⚠️ À lancer côté Supabase : `supabase/migration-006-shared-games.sql`.** **Reste à faire : la validation connectée réelle** (write→read parties/bases/partage/annotation sur 2 comptes élève+coach) — non couverte en anonyme.
 
 ## 3. Dette Technique (résiduelle)
 

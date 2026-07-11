@@ -832,8 +832,13 @@ function _sbInitAuth() {
     G.pendingRole = null;
     updateNav();
     await _sbLoadMastery();
-    if (G.currentRole === 'teacher') { await _sbLoadTeacherModules(); goPage('coach'); }
-    else { await _sbLoadBases(); goPage('student-home'); await _sbLoadStudentModules(); }
+    if (G.currentRole === 'teacher') {
+      await _sbLoadTeacherModules(); goPage('coach');
+      // Résultats / pratique / parties des élèves (incl. parties partagées) → dashboard coach.
+      await _sbLoadTeacherResults(); await _sbLoadTeacherPractice(); await _sbLoadTeacherGames();
+      window.renderProfView?.();
+    }
+    else { await _sbLoadBases(); goPage('student-home'); await _sbLoadStudentModules(); await _sbLoadStudentGames(); }
   });
 }
 
@@ -993,6 +998,34 @@ async function _sbSaveGame(rec) {
   catch (e) { console.error('_sbSaveGame', e); }
 }
 
+// Mise à jour d'une partie existante (partage P1.3, annotation coach P1.4).
+// UPDATE et non insert → pas de conflit de PK ; RLS games_update autorise
+// l'élève (les siennes) ou le prof (parties partagées de ses élèves).
+async function _sbUpdateGame(rec) {
+  if (!sb || !G.currentUser) return;
+  try {
+    const row = _sbGameToRow(rec); delete row.id;   // ne pas réécrire la clé
+    const { error } = await sb.from('games').update(row).eq('id', rec.id);
+    if (error) throw error;
+  } catch (e) { console.error('_sbUpdateGame', e); }
+}
+
+async function _sbDeleteGame(id) {
+  if (!sb || !G.currentUser) return;
+  try { const { error } = await sb.from('games').delete().eq('id', id); if (error) throw error; }
+  catch (e) { console.error('_sbDeleteGame', e); }
+}
+
+// Parties de l'élève connecté (Maia + bibliothèque) → multi-appareils.
+async function _sbLoadStudentGames() {
+  if (!sb || !G.currentUser || G.currentRole !== 'student') return;
+  try {
+    const { data } = await sb.from('games').select('*').eq('student_id', G.currentUser.uid);
+    G.savedGames = (data || []).map(_sbRowToGame);
+    localStorage.setItem('mc_games', JSON.stringify(G.savedGames));
+  } catch (e) { console.error('_sbLoadStudentGames', e); }
+}
+
 // Vue Prof : résultats / pratique / parties portant sur les modules du prof.
 async function _sbLoadTeacherResults() {
   if (!sb || !G.currentUser || G.currentRole !== 'teacher') return;
@@ -1019,10 +1052,21 @@ async function _sbLoadTeacherPractice() {
 async function _sbLoadTeacherGames() {
   if (!sb || !G.currentUser || G.currentRole !== 'teacher') return;
   const ids = G.drills.map(d => String(d.id));
-  if (!ids.length) { G.savedGames = []; return; }
   try {
-    const { data } = await sb.from('games').select('*').in('drill_id', ids);
-    G.savedGames = (data || []).map(_sbRowToGame);
+    // 1) Parties Maia liées aux modules du prof (drill_id).
+    let maia = [];
+    if (ids.length) {
+      const { data } = await sb.from('games').select('*').in('drill_id', ids);
+      maia = (data || []).map(_sbRowToGame);
+    }
+    // 2) Parties bibliothèque partagées (drill_id null) — RLS games_read filtre aux élèves du prof.
+    const { data: libRows } = await sb.from('games').select('*').is('drill_id', null);
+    const lib = (libRows || []).map(_sbRowToGame).filter(g => g.shared);
+    // Fusion dédoublonnée par id.
+    const byId = {};
+    [...maia, ...lib].forEach(g => { byId[g.id] = g; });
+    G.savedGames = Object.values(byId);
+    localStorage.setItem('mc_games', JSON.stringify(G.savedGames));
   } catch (e) { console.error('_sbLoadTeacherGames', e); }
 }
 
@@ -1080,7 +1124,8 @@ Object.assign(window, {
   _sbDeleteClass, _sbDeleteModule, _sbDeleteStudentModule, _sbInitAuth, _sbLoadMastery,
   _sbLoadStudentModules, _sbLoadTeacherGames, _sbLoadTeacherModules, _sbLoadTeacherPractice,
   _sbLoadTeacherResults, _sbLogin, _sbLogout, _sbRecordPractice, _sbRecordResult, _sbRegister,
-  _sbResetPassword, _sbSaveClass, _sbSaveGame, _sbSaveMastery, _sbSaveModule, _sbSaveBases, _sbLoadBases,
+  _sbResetPassword, _sbSaveClass, _sbSaveGame, _sbUpdateGame, _sbDeleteGame, _sbLoadStudentGames,
+  _sbSaveMastery, _sbSaveModule, _sbSaveBases, _sbLoadBases,
   _sbSaveStudentModule, _sbUpdatePassword, _sbUser, _shapesToPGN, _syncHeatmapFilters,
   _syncPartiesFilter, _treePlayerPositions, addLog, askName, clearFeedback, clearLog, closeModal,
   confirmName, countPlayerMoves, currentGame, currentSession, deleteModuleFromFirestore,

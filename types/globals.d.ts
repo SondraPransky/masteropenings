@@ -189,6 +189,9 @@ interface Window {
   _sbRecordResult?: (...a: any[]) => any;
   _sbRecordPractice?: (...a: any[]) => any;
   _sbSaveGame?: (...a: any[]) => any;
+  _sbUpdateGame?: (...a: any[]) => any;      // UPDATE partie (partage/annotation, app.js)
+  _sbDeleteGame?: (...a: any[]) => any;      // DELETE partie (app.js)
+  _sbLoadStudentGames?: (...a: any[]) => any; // charge les parties de l'élève connecté (app.js)
   _sbSaveMastery?: (...a: any[]) => any;
 
   // — Ma bibliothèque / bases PGN (lib/library.js + app.js) — Pilier 1 —
