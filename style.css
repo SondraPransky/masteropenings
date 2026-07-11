@@ -705,6 +705,21 @@ textarea {
 }
 .modal-title { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; margin-bottom: 6px; }
 
+/* Choix de creation de module (modal-create-choice) */
+.create-choices { display: flex; flex-direction: column; gap: 10px; }
+.create-choice {
+  display: flex; align-items: center; gap: 14px; text-align: left; width: 100%;
+  padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px;
+  background: var(--surf); cursor: pointer; font-family: inherit;
+  transition: border-color .15s, box-shadow .15s, transform .08s;
+}
+.create-choice:hover { border-color: var(--cyan); box-shadow: 0 0 0 3px var(--cyan-dim); }
+.create-choice:active { transform: scale(.99); }
+.create-choice-ico { font-size: 1.5rem; flex-shrink: 0; }
+.create-choice-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.create-choice-txt b { font-family: var(--font-display); font-size: .95rem; font-weight: 700; color: var(--text); }
+.create-choice-txt small { font-size: .76rem; color: var(--dim); line-height: 1.4; }
+
 /* En-tete de l'editeur — responsive (evite le chevauchement titre/champs/boutons) */
 #editor-header { flex-wrap: wrap; row-gap: 8px; }
 #editor-title { min-width: 0; }              /* peut retrecir/passer a la ligne, sans grandir */
