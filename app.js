@@ -37,13 +37,20 @@ import './lib/library.js';
 const SUPABASE_URL = 'https://smoftbuyejoyxlonhjcu.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_Bn0asUgcNYPYA1wnl9bokw_k1xshFC4';
 const SUPABASE_CONFIGURED = (typeof supabase !== 'undefined') && !!supabase.createClient;
-const sb = SUPABASE_CONFIGURED ? supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY) : null;
+// ── DEV : sur localhost on saute la connexion et on coupe tout trafic Supabase ──
+// (app 100% locale via localStorage). En prod (GitHub Pages) : auth normale.
+// Pour tester le chemin connecté en local (gate), mettre DEV_SKIP_AUTH à false.
+const DEV_SKIP_AUTH = (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+const sb = (SUPABASE_CONFIGURED && !DEV_SKIP_AUTH) ? supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY) : null;
 
 // ══════════════════════════════════════════════════════
 // ÉTAT GLOBAL — auth Supabase
 // ══════════════════════════════════════════════════════
 // « Mode comptes » : login obligatoire + backend distant (Supabase).
 const ACCOUNTS_ON = (typeof SUPABASE_CONFIGURED !== 'undefined') && SUPABASE_CONFIGURED;
+
+// DEV_SKIP_AUTH est défini plus haut (au niveau de la config Supabase).
+let DEV_GUEST_ROLE = 'teacher';   // rôle de départ de l'invité dev : 'teacher' | 'student'
 // G.currentUser / G.currentRole / G.pendingRole / G.currentPseudo → state.js (G)
 
 // ── Mise à jour de la nav selon le rôle ───────────────
@@ -160,7 +167,7 @@ async function loadTeacherResults()  { return _sbLoadTeacherResults(); }
 async function loadTeacherPractice() { return _sbLoadTeacherPractice(); }
 async function loadTeacherGames()    { return _sbLoadTeacherGames(); }
 
-// ── Auth state (Supabase) ─────────────────────────────
+// ── Auth state (Supabase) — sb est null en mode DEV_SKIP_AUTH ──
 if (sb) _sbInitAuth();
 
 // ══════════════════════════════════════════════════════
@@ -733,12 +740,49 @@ if (!ACCOUNTS_ON) {
     document.getElementById('no-drill').style.display = 'none';
     goPage('drill');
   }
+} else if (DEV_SKIP_AUTH) {
+  // Mode dev local : entrée directe sans login (voir DEV_SKIP_AUTH ci-dessus)
+  _devGuestEnter(DEV_GUEST_ROLE);
 } else {
   // Mode Firebase : attendre onAuthStateChanged (déjà positionné plus haut)
   goPage('login');
 }
 setTimeout(()=>window.resizeBoard?.(), 50);
 _initA11y();
+
+// ── DEV : entrée invité + bascule de rôle (localhost uniquement) ──
+function _devGuestEnter(role) {
+  DEV_GUEST_ROLE = (role === 'student') ? 'student' : 'teacher';
+  G.currentUser   = { uid: 'dev-guest', email: 'dev@local', displayName: 'Invité (dev)' };
+  G.currentRole   = DEV_GUEST_ROLE;
+  G.currentPseudo = 'dev';
+  updateNav();
+  if (DEV_GUEST_ROLE === 'teacher') {
+    window.renderDrillList?.(); window.renderClassList?.(); window.renderClassModuleSelect?.();
+    window.renderProfView?.();
+    goPage('coach');
+  } else {
+    goPage('student-home');
+    window.renderStudentHome?.(
+      (G.drills || []).filter(d => !d.personal),
+      (G.drills || []).filter(d => d.personal)
+    );
+  }
+  _devRoleSwitch();
+}
+// Petit bouton flottant pour basculer Prof/Élève sans repasser par le login.
+function _devRoleSwitch() {
+  let b = document.getElementById('dev-role-switch');
+  if (!b) {
+    b = document.createElement('button');
+    b.id = 'dev-role-switch';
+    b.style.cssText = 'position:fixed;bottom:12px;right:12px;z-index:9999;font:600 12px/1 var(--font-ui,sans-serif);background:#18181b;color:#fff;border:none;border-radius:8px;padding:8px 12px;cursor:pointer;opacity:.82;box-shadow:0 4px 12px rgba(0,0,0,.25)';
+    b.title = 'Dev : basculer le rôle (localhost)';
+    b.onclick = () => _devGuestEnter(G.currentRole === 'teacher' ? 'student' : 'teacher');
+    document.body.appendChild(b);
+  }
+  b.textContent = '🛠 ' + (G.currentRole === 'teacher' ? 'Vue Prof → Élève' : 'Vue Élève → Prof');
+}
 
 
 // ══════════════════════════════════════════════════════
