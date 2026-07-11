@@ -197,6 +197,11 @@ interface Window {
   _sbLoadBases?: (...a: any[]) => any;
   openGameEditor?: (...a: any[]) => any;   // éditeur en mode saisie de partie (lib/editor.js)
   _boardEntryDone?: (...a: any[]) => any;  // callback retour éditeur → modal (lib/library.js)
+  openReviewEditor?: (...a: any[]) => any; // éditeur en mode revue coach (P1.4, lib/editor.js)
+  _reviewSaveDone?: (...a: any[]) => any;  // callback retour revue → bibliothèque (P1.4, lib/library.js)
+  toggleShareGame?: (...a: any[]) => any;  // partager une partie au coach (P1.3, lib/library.js)
+  openGameReview?: (...a: any[]) => any;   // élève ouvre sa partie annotée (P1.5, lib/library.js)
+  annotateSharedGame?: (...a: any[]) => any; // coach annote une partie partagée (P1.4, lib/coach.js)
 
   // — Moteur Maia (lib/maia.js) —
   saveGame?: (...a: any[]) => any;   // reste dans app.js, appelé par maia.js (défini dans lib/mastery.js)
