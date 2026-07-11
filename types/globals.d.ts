@@ -114,6 +114,7 @@ interface Window {
   goPage?: (...a: any[]) => any;
   closeModal?: (...a: any[]) => any;
   isLineMode?: (...a: any[]) => any;
+  currentGame?: (...a: any[]) => any;   // reste dans app.js, consommé par lib/board.js
   startDrill?: (...a: any[]) => any;
   nextDrill?: (...a: any[]) => any;
   switchCoachSection?: (...a: any[]) => any;
