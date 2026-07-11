@@ -41,6 +41,11 @@
   --text-2: #3f3f46;
   --dim:    #71717a;
 
+  /* ── Typographie ── */
+  --font-ui:      'Hanken Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;  /* corps / UI */
+  --font-display: 'Bricolage Grotesque', var(--font-ui);                            /* titres / hero */
+  --font-mono:    'JetBrains Mono', ui-monospace, monospace;                         /* notation / données */
+
   /* ── Mise en forme — shadcn ── */
   --r:    8px;
   --rs:    6px;
@@ -53,7 +58,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--font-ui);
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
@@ -81,8 +86,9 @@ nav {
 .nav-left { display: flex; align-items: center; gap: 10px; }
 
 .logo {
+  font-family: var(--font-display);
   font-weight: 800;
-  font-size: 1rem;
+  font-size: 1.05rem;
   letter-spacing: -.6px;
   display: flex;
   align-items: center;
@@ -263,9 +269,11 @@ textarea {
 .btn:active { transform: scale(.98); }
 .btn:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--surf), 0 0 0 4px var(--cyan-glow); }
 
-/* Amber — action principale chaleureuse */
+/* Action primaire = indigo (accent unique du brief).
+   NB : historiquement amber ; repointé sur l'indigo pour unifier les CTA.
+   La chaleur amber (--gold) reste réservée aux achievements/pastilles. */
 .btn-gold {
-  background: var(--gold);
+  background: var(--cyan);
   color: #fff;
 }
 .btn-gold:hover { filter: brightness(.93); }
@@ -781,7 +789,6 @@ textarea {
 }
 [data-theme="dark"] nav { background: rgba(9,9,11,.85); }
 [data-theme="dark"] .tab:hover:not(.on) { background: rgba(255,255,255,.04); }
-[data-theme="dark"] .btn-gold { color: #000; }
 [data-theme="dark"] .btn-blue { color: #000; }
 [data-theme="dark"] .badge-gold   { background: var(--gold-dim);    color: var(--gold);   border-color: rgba(245,158,11,.2); }
 [data-theme="dark"] .badge-blue   { background: var(--blue-dim);    color: var(--blue);   border-color: rgba(56,189,248,.2); }
@@ -957,13 +964,13 @@ textarea {
 .sh-section-head .sh-section-label { margin:0; }
 .sh-notif-banner { background:var(--gold-dim); border:1px solid rgba(217,119,6,.3); color:var(--gold); border-radius:var(--r); padding:11px 15px; font-size:.86rem; margin-bottom:4px; }
 .sh-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:16px; }
-.sh-hello { font-size:1.45rem; font-weight:800; letter-spacing:-.4px; }
+.sh-hello { font-family:var(--font-display); font-size:1.55rem; font-weight:800; letter-spacing:-.5px; }
 .sh-hello-sub { font-size:.82rem; color:var(--dim); margin-top:2px; }
 .sh-streak { font-size:.82rem; font-weight:700; color:var(--gold); background:var(--gold-dim); border:1px solid rgba(217,119,6,.25); padding:5px 11px; border-radius:999px; white-space:nowrap; flex-shrink:0; }
 .sh-streak:empty { display:none; }
 .sh-hero { background:linear-gradient(135deg,#6366f1,#4f46e5); color:#fff; border-radius:var(--r); padding:18px 20px; margin-bottom:16px; box-shadow:0 4px 16px rgba(99,102,241,.28); }
 [data-theme="dark"] .sh-hero { background:linear-gradient(135deg,#4338ca,#312e81); }
-.sh-hero-label { font-size:1.02rem; font-weight:800; margin-bottom:3px; }
+.sh-hero-label { font-family:var(--font-display); font-size:1.1rem; font-weight:800; letter-spacing:-.3px; margin-bottom:3px; }
 .sh-hero-sub { font-size:.82rem; opacity:.92; margin-bottom:14px; line-height:1.45; }
 .sh-hero-btn { background:#fff; color:#4f46e5; border:none; border-radius:var(--rs); padding:11px 16px; font-family:inherit; font-weight:700; font-size:.9rem; cursor:pointer; width:100%; transition:.12s; }
 .sh-hero-btn:hover { filter:brightness(.96); transform:translateY(-1px); }
@@ -976,7 +983,7 @@ textarea {
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 24px 26px;
-  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
   cursor: pointer;
   position: relative;
   overflow: hidden;
@@ -987,19 +994,19 @@ textarea {
   min-height: 168px;
 }
 .sh-mod:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.15);
-  border-color: var(--cyan);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
+  border-color: var(--border-h);
 }
-/* Barre colorée en haut au survol */
+/* Filet indigo en haut au survol — discret */
 .sh-mod::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 5px;
-  background: linear-gradient(90deg, var(--cyan), #6366f1, var(--blue));
+  height: 3px;
+  background: var(--cyan);
   opacity: 0;
-  transition: opacity 0.3s;
+  transition: opacity 0.18s;
 }
 .sh-mod:hover::before { opacity: 1; }
 /* Surbrillance « nouveau module assigné » */
@@ -1008,11 +1015,12 @@ textarea {
 /* En-tête : titre (gauche) + icône (droite) */
 .sh-mod-head { display: flex; align-items: flex-start; gap: 14px; }
 .sh-mod-name {
+  font-family: var(--font-display);
   flex: 1;
   min-width: 0;
   font-size: 1.15rem;
   font-weight: 700;
-  line-height: 1.3;
+  line-height: 1.25;
   color: var(--text);
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -1035,7 +1043,6 @@ textarea {
   transition: all 0.3s;
 }
 .sh-mod:hover .sh-mod-icon {
-  transform: scale(1.12) rotate(12deg);
   background: var(--cyan-dim);
   color: var(--cyan);
   border-color: var(--cyan);
@@ -1224,7 +1231,7 @@ textarea {
   gap: 12px;
   flex-wrap: wrap;
 }
-.cs-title { font-size: 1.45rem; font-weight: 800; letter-spacing: -.5px; margin-bottom: 2px; }
+.cs-title { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; letter-spacing: -.5px; margin-bottom: 2px; }
 .cs-sub { font-size: .78rem; color: var(--dim); }
 .cs-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; flex-wrap: wrap; max-width: 100%; }
 
@@ -1294,6 +1301,119 @@ textarea {
 .mcard-empty-ico { font-size: 2.5rem; margin-bottom: 12px; }
 .mcard-empty-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
 .mcard-empty-sub { font-size: .82rem; margin-bottom: 20px; line-height: 1.6; }
+
+/* ════════════════════════════════════════════════════════════
+   MA BIBLIOTHÈQUE — passe design (Pilier 1)
+   Signature : les tons bois de l'échiquier (#e8c99b / #b58863) comme
+   unique chaleur dans l'UI zinc ; la notation en monospace ; le repère
+   de coordonnées de l'échiquier comme dispositif structurant.
+════════════════════════════════════════════════════════════ */
+:root {
+  --wood-l: #e8c99b;   /* case claire */
+  --wood-d: #b58863;   /* case foncée */
+  --wood-tint: rgba(181,136,99,.055);
+}
+[data-theme="dark"] { --wood-tint: rgba(181,136,99,.09); }
+
+.lib-wrap { max-width: 1080px; margin: 0 auto; }
+
+/* Eyebrow « file d'échiquier » — dispositif structurant, pas décoratif */
+.lib-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .66rem; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--dim); margin-bottom: 14px;
+}
+.lib-eyebrow::before {
+  content: ''; width: 22px; height: 11px; border-radius: 2px;
+  background: linear-gradient(90deg, var(--wood-l) 0 50%, var(--wood-d) 50% 100%);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.08);
+}
+
+/* Barre de création de base */
+.lib-toolbar { display: flex; gap: 10px; margin-bottom: 22px; }
+.lib-toolbar input {
+  flex: 1; padding: 10px 13px; font-size: .9rem;
+  border: 1px solid var(--border); border-radius: var(--r);
+  background: var(--surf); color: var(--text); transition: border-color .12s, box-shadow .12s;
+}
+.lib-toolbar input:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 0 3px var(--cyan-dim); }
+
+/* Grille de bases */
+.lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+
+/* Carte base — la seule surface qui porte le bois */
+.lib-base {
+  position: relative; background: var(--surf);
+  border: 1px solid var(--border); border-radius: 14px;
+  padding: 18px; cursor: pointer;
+  transition: border-color .18s, box-shadow .18s, transform .18s;
+}
+.lib-base:hover { border-color: var(--border-h); box-shadow: var(--shadow); transform: translateY(-3px); }
+.lib-base:focus-visible { outline: none; border-color: var(--cyan); box-shadow: 0 0 0 3px var(--cyan-dim); }
+.lib-base-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.lib-folder {   /* mini-échiquier 2×2 en guise d'icône de dossier */
+  width: 30px; height: 30px; border-radius: 6px; overflow: hidden;
+  display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.08);
+}
+.lib-folder i:nth-child(1), .lib-folder i:nth-child(4) { background: var(--wood-l); }
+.lib-folder i:nth-child(2), .lib-folder i:nth-child(3) { background: var(--wood-d); }
+.lib-base-count { text-align: right; line-height: 1; }
+.lib-base-count b { font-family: 'JetBrains Mono', monospace; font-size: 1.15rem; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+.lib-base-count span { display: block; font-size: .62rem; text-transform: uppercase; letter-spacing: .6px; color: var(--dim); margin-top: 3px; }
+.lib-base-name { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; line-height: 1.2; }
+.lib-base-meta { font-family: 'JetBrains Mono', monospace; font-size: .7rem; color: var(--dim); margin-top: 4px; }
+.lib-base-actions { display: flex; gap: 6px; margin-top: 16px; }
+
+/* En-tête du détail d'une base */
+.lib-detail-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+.lib-detail-title { font-family: var(--font-display); display: flex; align-items: center; gap: 10px; font-size: 1.2rem; font-weight: 800; letter-spacing: -.3px; }
+.lib-detail-sub { font-family: 'JetBrains Mono', monospace; font-size: .72rem; color: var(--dim); margin-bottom: 18px; }
+
+/* Entrées d'une base = liste (inspiration CARA), pas des cartes */
+.lib-list { display: flex; flex-direction: column; gap: 8px; }
+.lib-entry {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--surf); border: 1px solid var(--border); border-radius: 10px;
+  padding: 12px 14px; transition: border-color .15s, box-shadow .15s;
+}
+.lib-entry:hover { border-color: var(--border-h); box-shadow: var(--shadow-xs); }
+.lib-entry-result {   /* pastille résultat, teintée comme une case */
+  flex-shrink: 0; width: 42px; height: 30px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace; font-size: .72rem; font-weight: 700;
+  background: var(--surf2); color: var(--text-2); box-shadow: inset 0 0 0 1px var(--border);
+}
+.lib-entry-result.win  { background: var(--green-dim); color: var(--green); box-shadow: inset 0 0 0 1px rgba(22,163,74,.25); }
+.lib-entry-result.loss { background: var(--red-dim);   color: var(--red);   box-shadow: inset 0 0 0 1px rgba(220,38,38,.25); }
+.lib-entry-main { flex: 1; min-width: 0; }
+.lib-entry-title { font-size: .9rem; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lib-entry-title .nat { color: var(--dim); font-weight: 500; }
+.lib-entry-meta { font-family: 'JetBrains Mono', monospace; font-size: .7rem; color: var(--dim); margin-top: 2px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.lib-chip-coach { display: inline-flex; align-items: center; gap: 3px; color: var(--violet); font-weight: 700; font-family: var(--font-ui); font-size: .68rem; }
+.lib-entry-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+/* État vide — porte le motif 8×8 */
+.lib-empty {
+  text-align: center; padding: 54px 24px; border-radius: 14px;
+  border: 1px solid var(--border); background: var(--surf);
+  background-image: repeating-conic-gradient(var(--wood-tint) 0 25%, transparent 0 50%);
+  background-size: 46px 46px; background-position: center;
+}
+.lib-empty-ico { font-size: 2rem; margin-bottom: 10px; }
+.lib-empty-title { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; margin-bottom: 6px; }
+.lib-empty-sub { font-size: .82rem; color: var(--dim); line-height: 1.65; }
+
+@media (max-width: 560px) {
+  .lib-entry { flex-wrap: wrap; }
+  .lib-entry-actions { width: 100%; }
+  .lib-entry-actions .btn { flex: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lib-base { transition: none; }
+  .lib-base:hover { transform: none; }
+}
 
 /* Élèves section */
 .eleve-layout {
@@ -1370,7 +1490,7 @@ textarea {
   padding: 20px 18px;
   text-align: center;
 }
-.cs-kpi-val { font-size: 1.9rem; font-weight: 800; line-height: 1; letter-spacing: -1px; }
+.cs-kpi-val { font-family: var(--font-mono); font-size: 1.85rem; font-weight: 700; line-height: 1; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
 .cs-kpi-lbl { font-size: .63rem; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; font-weight: 600; }
 
 /* Classes section */
@@ -1379,11 +1499,12 @@ textarea {
 .cls-list { display: flex; flex-direction: column; gap: 12px; }
 /* Responsive */
 @media (max-width: 960px) {
-  .coach-layout { grid-template-columns: 1fr; }
+  .coach-layout { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
   .coach-sidenav {
     position: static;
     height: auto;
     flex-direction: row;
+    align-items: center;      /* sinon les boutons s'étirent en hauteur (stretch par défaut) */
     overflow-x: auto;
     padding: 8px;
     border-right: none;
