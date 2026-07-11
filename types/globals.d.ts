@@ -195,6 +195,8 @@ interface Window {
   renderMyLibrary?: (...a: any[]) => any;
   _sbSaveBases?: (...a: any[]) => any;
   _sbLoadBases?: (...a: any[]) => any;
+  openGameEditor?: (...a: any[]) => any;   // éditeur en mode saisie de partie (lib/editor.js)
+  _boardEntryDone?: (...a: any[]) => any;  // callback retour éditeur → modal (lib/library.js)
 
   // — Moteur Maia (lib/maia.js) —
   saveGame?: (...a: any[]) => any;   // reste dans app.js, appelé par maia.js (défini dans lib/mastery.js)
