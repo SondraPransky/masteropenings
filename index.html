@@ -180,10 +180,6 @@
       <span class="csnav-lbl">Élèves</span>
       <span class="csnav-badge" id="csnav-count-eleves">0</span>
     </button>
-    <button class="csnav-btn" id="csnav-classes" onclick="switchCoachSection('classes')">
-      <span class="csnav-ico"><i class="ti ti-school" aria-hidden="true"></i></span>
-      <span class="csnav-lbl">Classes</span>
-    </button>
     <div class="csnav-divider"></div>
     <div class="csnav-group">Analyse</div>
     <button class="csnav-btn" id="csnav-heatmap" onclick="switchCoachSection('heatmap')">
@@ -269,13 +265,11 @@
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- ── SECTION : Classes ── -->
-    <div id="csec-classes" style="display:none">
-      <div class="cs-header">
+      <!-- ── Classes (fusionne dans l'onglet Eleves) ── -->
+      <div class="cs-header" style="margin-top:30px;padding-top:22px;border-top:1px solid var(--border)">
         <div>
-          <div class="cs-title">Mes classes</div>
+          <div class="cs-title">Classes</div>
           <div class="cs-sub">Organisez vos élèves en groupes et assignez-leur des modules</div>
         </div>
       </div>

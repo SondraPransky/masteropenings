@@ -240,15 +240,18 @@ function totalSessions() {
 // NAVIGATION
 // ══════════════════════════════════════════════════════
 function switchCoachSection(sec) {
-  const sections = ['modules','eleves','classes','heatmap','parties','export'];
+  const sections = ['modules','eleves','heatmap','parties','export'];
   sections.forEach(s => {
     const el = document.getElementById('csec-'+s);
     if (el) el.style.display = s===sec ? '' : 'none';
     const btn = document.getElementById('csnav-'+s);
     if (btn) btn.classList.toggle('on', s===sec);
   });
-  if (sec==='eleves')  { Promise.all([loadTeacherResults(), loadTeacherPractice(), loadTeacherGames()]).then(()=>window.renderProfView?.()); }
-  if (sec==='classes') { window.renderClassesTab?.(); window.renderClassModuleSelect?.(); }
+  if (sec==='eleves')  {
+    // L'onglet Élèves inclut désormais la gestion des classes (fusion).
+    Promise.all([loadTeacherResults(), loadTeacherPractice(), loadTeacherGames()]).then(()=>window.renderProfView?.());
+    window.renderClassesTab?.(); window.renderClassList?.(); window.renderClassModuleSelect?.();
+  }
   if (sec==='heatmap') { _syncHeatmapFilters(); window.renderHeatmap?.(); }
   if (sec==='parties') { loadTeacherGames().then(()=>{ _syncPartiesFilter(); window.renderPartiesTab?.(); }); }
 }
