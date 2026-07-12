@@ -1462,6 +1462,12 @@ textarea {
 .ed-review-item { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); }
 .ed-review-item:last-child { border-bottom: none; }
 .ed-review-move { font-family: var(--font-mono); font-weight: 700; font-size: .95rem; flex-shrink: 0; min-width: 42px; }
+
+/* Révisions ciblées assignées par le coach (accueil élève) */
+.sh-targeted-card { background: var(--cyan-dim); border: 1px solid var(--cyan-glow); border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; }
+.sh-targeted-head { display: flex; align-items: center; gap: 7px; font-weight: 700; color: var(--cyan); margin-bottom: 6px; }
+.sh-targeted-item { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid var(--cyan-glow); }
+.sh-targeted-move { font-family: var(--font-mono); font-weight: 700; font-size: 1rem; flex-shrink: 0; min-width: 42px; }
 .cs-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; flex-wrap: wrap; max-width: 100%; }
 
 /* Module cards */
