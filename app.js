@@ -1019,6 +1019,74 @@ async function _sbDeleteClass(id) {
 // ════════════════════════════════════════════════════════════
 //  DONNÉES — élève + résultats / pratique / parties + mastery
 // ════════════════════════════════════════════════════════════
+// Classes de l'élève connecté.
+// ⚠️ RLS (dette, cf. CLAUDE.md §3) : lit TOUTES les classes puis filtre côté
+// client (policy actuelle = lecture aux connectés). Le vrai durcissement est
+// une policy RLS côté Supabase (migration à appliquer par l'admin) — le filtre
+// client ne sécurise pas, il ne fait que réduire ce qu'on garde en mémoire.
+async function _sbFetchStudentClasses() {
+  const ids = window._myIdentifiers?.() || [];
+  const { data: allCls, error } = await sb.from('classes').select('*');
+  if (error) throw error;
+  return (allCls || []).map(_sbRowToClass)
+    .filter(c => (c.students || []).some(s => ids.includes(String(s).toLowerCase())));
+}
+
+// Échéance d'assignation la plus proche par module, parmi les classes de
+// l'élève. Dates 'YYYY-MM-DD' → comparaison lexicographique = chronologique. Pur.
+function _assignDeadlinesFrom(classes) {
+  const out = {};
+  classes.forEach(c => {
+    const dls = c.moduleDeadlines || {};
+    Object.keys(dls).forEach(mid => {
+      const d = dls[mid]; if (!d) return;
+      if (!out[mid] || d < out[mid]) out[mid] = d;
+    });
+  });
+  return out;
+}
+
+// Modules assignés à l'élève (via ses classes) : échéance d'assignation (prime
+// sur celle du module) + noms de coachs pour l'affichage multi-profs.
+async function _sbFetchAssignedModules(classes) {
+  const moduleIds = new Set();
+  classes.forEach(c => (c.moduleIds || []).forEach(id => moduleIds.add(Number(id))));
+  if (!moduleIds.size) return [];
+  const { data: mods } = await sb.from('modules').select('*').in('id', [...moduleIds]);
+  const assigned = (mods || []).map(_sbRowToModule);
+  const deadlines = _assignDeadlinesFrom(classes);
+  assigned.forEach(m => { const d = deadlines[String(m.id)]; if (d) m.deadline = d; });
+  await _sbApplyCoachNames(assigned);
+  return assigned;
+}
+
+// Renseigne coachName/_showCoach sur les modules assignés (badge si ≥ 2 profs).
+async function _sbApplyCoachNames(assigned) {
+  const coachIds = [...new Set(assigned.map(m => m.teacherId).filter(Boolean))];
+  const names = {};
+  if (coachIds.length) {
+    const { data: profs } = await sb.from('profiles').select('id,name,pseudo,email').in('id', coachIds);
+    (profs || []).forEach(p => names[p.id] = p.name || p.pseudo || p.email || 'Coach');
+  }
+  const multiCoach = coachIds.length > 1;
+  assigned.forEach(m => { m.coachName = names[m.teacherId] || null; m._showCoach = multiCoach; });
+}
+
+// Modules perso de l'élève.
+async function _sbFetchPersonalModules() {
+  const { data: pers } = await sb.from('modules').select('*').eq('owner_student_id', G.currentUser.uid);
+  return (pers || []).map(_sbRowToModule);
+}
+
+// Résultats + pratique de l'élève (dashboard multi-appareils) → G + cache.
+async function _sbFetchStudentActivity() {
+  const { data: rs } = await sb.from('results').select('*').eq('student_id', G.currentUser.uid);
+  G.results = (rs || []).map(_sbRowToResult); _cache('mc_results', G.results);
+  const { data: ps } = await sb.from('practice').select('*').eq('student_id', G.currentUser.uid);
+  G.practiceLog = (ps || []).map(_sbRowToPractice); _cache('mc_practice', G.practiceLog);
+}
+
+// Orchestration : mêmes étapes séquentielles qu'avant, découpées par rôle.
 async function _sbLoadStudentModules() {
   if (!sb || !G.currentUser || G.currentRole !== 'student') return;
   const listEl = document.getElementById('sh-module-list');
@@ -1027,47 +1095,10 @@ async function _sbLoadStudentModules() {
 
   let assigned = [], personal = [];
   try {
-    const ids = window._myIdentifiers?.() || [];
-    // Toutes les G.classes (RLS : lecture aux connectés) → filtrage client par identifiants.
-    const { data: allCls, error: ec } = await sb.from('classes').select('*');
-    if (ec) throw ec;
-    const myCls = (allCls || []).map(_sbRowToClass)
-      .filter(c => (c.students || []).some(s => ids.includes(String(s).toLowerCase())));
-    const moduleIds = new Set();
-    myCls.forEach(c => (c.moduleIds || []).forEach(id => moduleIds.add(Number(id))));
-    // Échéance d'assignation par module : la plus proche parmi les classes de l'élève.
-    // (dates 'YYYY-MM-DD' → comparaison lexicographique = chronologique)
-    const assignDeadline = {};
-    myCls.forEach(c => {
-      const dls = c.moduleDeadlines || {};
-      Object.keys(dls).forEach(mid => {
-        const d = dls[mid]; if (!d) return;
-        if (!assignDeadline[mid] || d < assignDeadline[mid]) assignDeadline[mid] = d;
-      });
-    });
-    if (moduleIds.size) {
-      const { data: mods } = await sb.from('modules').select('*').in('id', [...moduleIds]);
-      assigned = (mods || []).map(_sbRowToModule);
-      // L'échéance de l'assignation prime sur celle du module.
-      assigned.forEach(m => { const d = assignDeadline[String(m.id)]; if (d) m.deadline = d; });
-    }
-    // Noms des coachs (affichés si l'élève a plusieurs profs)
-    const coachIds = [...new Set(assigned.map(m => m.teacherId).filter(Boolean))];
-    const coachNames = {};
-    if (coachIds.length) {
-      const { data: profs } = await sb.from('profiles').select('id,name,pseudo,email').in('id', coachIds);
-      (profs || []).forEach(p => coachNames[p.id] = p.name || p.pseudo || p.email || 'Coach');
-    }
-    const multiCoach = coachIds.length > 1;
-    assigned.forEach(m => { m.coachName = coachNames[m.teacherId] || null; m._showCoach = multiCoach; });
-    // Modules perso de l'élève
-    const { data: pers } = await sb.from('modules').select('*').eq('owner_student_id', G.currentUser.uid);
-    personal = (pers || []).map(_sbRowToModule);
-    // Résultats + pratique de l'élève (dashboard multi-appareils)
-    const { data: rs } = await sb.from('results').select('*').eq('student_id', G.currentUser.uid);
-    G.results = (rs || []).map(_sbRowToResult); _cache('mc_results', G.results);
-    const { data: ps } = await sb.from('practice').select('*').eq('student_id', G.currentUser.uid);
-    G.practiceLog = (ps || []).map(_sbRowToPractice); _cache('mc_practice', G.practiceLog);
+    const myCls = await _sbFetchStudentClasses();
+    assigned = await _sbFetchAssignedModules(myCls);
+    personal = await _sbFetchPersonalModules();
+    await _sbFetchStudentActivity();
   } catch (e) {
     console.error('_sbLoadStudentModules', e);
     if (listEl) listEl.innerHTML = '<div style="color:var(--red);padding:20px;text-align:center;font-size:.85rem">Erreur de chargement. Vérifiez votre connexion.</div>';
