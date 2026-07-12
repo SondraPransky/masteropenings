@@ -199,6 +199,9 @@ interface Window {
   _sbSaveBases?: (...a: any[]) => any;
   _sbLoadBases?: (...a: any[]) => any;
   openGameEditor?: (...a: any[]) => any;   // éditeur en mode saisie de partie (lib/editor.js)
+  openPgnEditorNew?: (...a: any[]) => any;  // éditeur module vierge, startFen optionnel (lib/editor.js)
+  openPositionSetup?: (...a: any[]) => any; // éditeur de position module (tranche C, lib/setup.js)
+  openPositionSetupForGame?: (...a: any[]) => any; // éditeur de position partie (lib/setup.js)
   _boardEntryDone?: (...a: any[]) => any;  // callback retour éditeur → modal (lib/library.js)
   openReviewEditor?: (...a: any[]) => any; // éditeur en mode revue coach (P1.4, lib/editor.js)
   _reviewSaveDone?: (...a: any[]) => any;  // callback retour revue → bibliothèque (P1.4, lib/library.js)

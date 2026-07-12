@@ -31,6 +31,7 @@ import './lib/maia.js';
 import './lib/board.js';
 import './lib/mastery.js';
 import './lib/library.js';
+import './lib/setup.js';
 
 // ── Configuration Supabase (client `sb`) ──────────────────
 // Clé « publishable » PUBLIQUE (protégée par RLS) → OK committée. Jamais de clé « secret » ici.

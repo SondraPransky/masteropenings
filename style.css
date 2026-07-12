@@ -720,6 +720,24 @@ textarea {
 .create-choice-txt b { font-family: var(--font-display); font-size: .95rem; font-weight: 700; color: var(--text); }
 .create-choice-txt small { font-size: .76rem; color: var(--dim); line-height: 1.4; }
 
+/* Editeur de position (modal-position-setup) */
+.ps-layout { display: flex; gap: 18px; align-items: flex-start; flex-wrap: wrap; }
+.ps-board {
+  display: grid; grid-template-columns: repeat(8, 1fr);
+  width: min(340px, 78vw); aspect-ratio: 1; flex-shrink: 0;
+  border: 2px solid var(--border); border-radius: 4px; overflow: hidden;
+}
+.ps-panel { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 12px; }
+.ps-pal-row { display: flex; gap: 4px; flex-wrap: wrap; }
+.ps-pal {
+  width: 40px; height: 40px; flex-shrink: 0; padding: 2px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border); border-radius: 8px; background: var(--surf);
+  cursor: pointer; transition: border-color .12s, box-shadow .12s;
+}
+.ps-pal:hover { border-color: var(--border-h); }
+.ps-pal.on { border-color: var(--cyan); box-shadow: 0 0 0 2px var(--cyan-dim); background: var(--cyan-dim); }
+
 /* En-tete de l'editeur — responsive (evite le chevauchement titre/champs/boutons) */
 #editor-header { flex-wrap: wrap; row-gap: 8px; }
 #editor-title { min-width: 0; }              /* peut retrecir/passer a la ligne, sans grandir */

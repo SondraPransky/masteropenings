@@ -610,8 +610,11 @@
 
     <div class="frow" style="margin-top:14px">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
-        <label style="margin:0">PGN <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--dim);font-size:.72rem">— colle ta partie, ou saisis-la sur l'échiquier</span></label>
-        <button class="btn btn-blue btn-sm" style="font-size:.8rem;margin:0" onclick="openBoardEntry()">⛃ Saisir sur l'échiquier</button>
+        <label style="margin:0">PGN <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--dim);font-size:.72rem">— colle, saisis sur l'échiquier, ou pars d'une position</span></label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" style="font-size:.8rem;margin:0" onclick="openPositionEntry()">⚙️ Depuis une position</button>
+          <button class="btn btn-blue btn-sm" style="font-size:.8rem;margin:0" onclick="openBoardEntry()">⛃ Saisir sur l'échiquier</button>
+        </div>
       </div>
       <textarea id="ng-pgn" spellcheck="false" autocorrect="off" autocomplete="off" style="height:130px"
         oninput="_ngPrefillFromPgn()"
@@ -649,6 +652,42 @@
         <span class="create-choice-ico">📚</span>
         <span class="create-choice-txt"><b>Bibliothèque d'ouvertures</b><small>Pars d'une ouverture prête à l'emploi</small></span>
       </button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="modal-position-setup">
+  <div class="modal" style="max-width:660px;width:96vw;max-height:94vh;overflow-y:auto;padding:24px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div class="modal-title" style="margin:0">Position de départ</div>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-position-setup')">✕</button>
+    </div>
+    <div style="font-size:.82rem;color:var(--dim);margin-bottom:16px">Place les pièces (choisis-en une puis clique les cases), ou colle un FEN.</div>
+    <div class="ps-layout">
+      <div id="ps-board" class="ps-board"></div>
+      <div class="ps-panel">
+        <div class="ps-pal-row" id="ps-palette-w"></div>
+        <div class="ps-pal-row" id="ps-palette-b"></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+          <button class="btn btn-ghost btn-sm" onclick="_psInitial()">↺ Position initiale</button>
+          <button class="btn btn-ghost btn-sm" onclick="_psEmpty()">🗑 Vider</button>
+        </div>
+        <div class="frow" style="margin:0">
+          <label>Trait</label>
+          <select id="ps-side" onchange="_psSetSide(this.value)">
+            <option value="w">♔ Aux Blancs</option>
+            <option value="b">♚ Aux Noirs</option>
+          </select>
+        </div>
+        <div class="frow" style="margin:0">
+          <label>FEN</label>
+          <input id="ps-fen" spellcheck="false" onchange="_psApplyFen()" style="font-family:var(--font-mono);font-size:.72rem">
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-position-setup')">Annuler</button>
+      <button class="btn btn-gold btn-sm" onclick="_psValidate()">✓ Valider la position</button>
     </div>
   </div>
 </div>
