@@ -1440,6 +1440,23 @@ textarea {
 /* Sous-titre de bloc (onglet Élèves fusionné : « Mes classes », « Suivi par module ») */
 .cs-subhead { font-family: var(--font-display); font-size: .98rem; font-weight: 700; color: var(--text); margin: 0 0 10px; display: flex; align-items: center; gap: 7px; }
 .cls-block { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
+
+/* Points faibles — cartes actionnables (lot B) + bande d'aperçu */
+.wsx-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; margin-bottom: 18px; }
+.wsx-card { background: var(--surf); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
+.wsx-card.hot { border-color: rgba(220,38,38,.35); }
+.wsx-card-main { display: flex; gap: 12px; }
+.wsx-head { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; flex-wrap: wrap; }
+.wsx-move { font-family: var(--font-mono); font-size: 1rem; font-weight: 700; }
+.wsx-rate { font-size: .7rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+.wsx-sub { font-size: .75rem; color: var(--dim); }
+.wsx-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.wsx-chip { font-size: .7rem; padding: 2px 7px; border-radius: 999px; background: var(--red-dim); color: var(--red); }
+.wsx-comment { font-size: .75rem; color: var(--text-2); font-style: italic; line-height: 1.45; margin-top: 8px; }
+.wsx-actions { display: flex; gap: 8px; margin-top: 10px; }
+.wsx-actions .btn { flex: 1; }
+.wsx-strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 6px; }
+.wsx-cell { border-radius: 8px; padding: 8px 4px; text-align: center; border: 1px solid var(--border); }
 .cs-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; flex-wrap: wrap; max-width: 100%; }
 
 /* Module cards */
