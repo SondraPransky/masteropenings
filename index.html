@@ -259,6 +259,9 @@
         <div class="cs-actions">
           <button class="btn btn-primary btn-sm" onclick="addStudent()" title="Ajouter un élève seul"><i class="ti ti-user-plus" aria-hidden="true"></i> Ajouter un élève</button>
           <button class="btn btn-blue btn-sm" onclick="openClassForm()" title="Créer une classe (groupe d'élèves)"><i class="ti ti-school" aria-hidden="true"></i> Créer une classe</button>
+          <select id="prof-class-filter" onchange="renderProfView()" style="font-size:.8rem;width:auto;max-width:200px">
+            <option value="all">Toutes les classes</option>
+          </select>
           <select id="prof-drill-filter" onchange="renderProfView()" style="font-size:.8rem;width:auto;max-width:230px">
             <option value="all">Tous les modules</option>
           </select>
@@ -341,6 +344,9 @@
           <div class="cs-sub">Positions les plus ratées par vos élèves, triées par taux d'erreur</div>
         </div>
         <div class="cs-actions">
+          <select id="hm-class-filter" onchange="renderHeatmap()" style="font-size:.8rem;width:auto;max-width:200px">
+            <option value="all">Toutes les classes</option>
+          </select>
           <select id="hm-drill-filter" onchange="renderHeatmap()" style="font-size:.8rem;width:auto;max-width:230px">
             <option value="all">Tous les modules</option>
           </select>
