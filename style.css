@@ -521,13 +521,13 @@ textarea {
 
 /* Variantes en blocs indentés ; rail/fond/flèche colorés inline selon la profondeur */
 .study-var {
-  margin: 4px 0;
-  padding: 2px 8px;
+  margin: 3px 0 3px 2px;
+  padding: 1px 8px;
   border-left: 2px solid var(--border);
-  border-radius: 0 6px 6px 0;
-  line-height: 1.7;
+  border-radius: 0;
+  line-height: 1.6;
 }
-.study-var-arrow { margin-right: 3px; font-size: .82em; }
+.study-var-arrow { margin-right: 3px; font-size: .82em; color: var(--dim); }
 
 /* Toggle « devine le coup » actif */
 #study-guess-btn.active { background: var(--cyan); color: #fff; border-color: var(--cyan); }
