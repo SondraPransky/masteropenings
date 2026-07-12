@@ -468,12 +468,12 @@ textarea {
   border-radius: 50%;
   font-size: .95rem;
 }
-.study-bubble.pop { animation: bubblePop .32s cubic-bezier(.34, 1.56, .64, 1); }
+.study-bubble.pop { animation: bubblePop .3s cubic-bezier(.22, 1, .36, 1); }  /* ease-out-quint, sans rebond */
 @keyframes bubblePop {
-  0%   { opacity: 0; transform: translateY(-5px) scale(.92); }
-  60%  { opacity: 1; transform: translateY(0) scale(1.02); }
-  100% { transform: scale(1); }
+  0%   { opacity: 0; transform: translateY(-5px) scale(.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }
+@media (prefers-reduced-motion: reduce) { .study-bubble.pop { animation: none; } }
 
 /* Variantes en blocs indentés ; rail/fond/flèche colorés inline selon la profondeur */
 .study-var {
@@ -1135,10 +1135,11 @@ textarea {
 }
 .sh-mod-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--cyan), var(--blue));
+  background: var(--cyan);
   border-radius: 999px;
-  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);   /* ease-out-quint, sans rebond */
 }
+@media (prefers-reduced-motion: reduce) { .sh-mod-progress-fill { transition: none; } }
 
 /* Rangée de boutons d'action (bas de carte) */
 .sh-mod-actions { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
