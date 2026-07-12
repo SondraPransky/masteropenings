@@ -156,9 +156,7 @@
     <div class="sh-section-head" style="margin-top:22px">
       <div class="sh-section-label" style="margin:0">Mes révisions perso</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
-        <button class="btn btn-ghost btn-sm" onclick="openLibrary()" style="font-size:.74rem"><i class="ti ti-books" aria-hidden="true"></i> Ouvertures prêtes</button>
-        <button class="btn btn-ghost btn-sm" onclick="openPgnEditorNew('student')" style="font-size:.74rem"><i class="ti ti-edit" aria-hidden="true"></i> Créer</button>
-        <button class="btn btn-ghost btn-sm" onclick="openStudentImport()" style="font-size:.74rem"><i class="ti ti-upload" aria-hidden="true"></i> Importer</button>
+        <button class="btn btn-primary btn-sm" onclick="openStudentCreateChoice()" style="font-size:.74rem"><i class="ti ti-plus" aria-hidden="true"></i> Créer</button>
       </div>
     </div>
     <div id="sh-perso-list"></div>
@@ -577,6 +575,31 @@
     </div>
     <p style="font-size:.8rem;color:var(--dim);margin-bottom:16px">Choisis une ouverture prête à l'emploi pour commencer tout de suite — coups et commentaires inclus.</p>
     <div id="library-list"></div>
+  </div>
+</div>
+
+<!-- Menu de choix « Créer » côté élève (miroir de modal-create-choice du coach) -->
+<div class="overlay" id="modal-student-create-choice">
+  <div class="modal" style="max-width:460px;width:96vw;padding:24px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <div class="modal-title" style="margin:0">Créer une révision</div>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-student-create-choice')">✕</button>
+    </div>
+    <div style="font-size:.82rem;color:var(--dim);margin-bottom:18px">Comment veux-tu partir ? C'est <strong>privé</strong> — ton prof ne le voit pas.</div>
+    <div class="create-choices">
+      <button class="create-choice" onclick="closeModal('modal-student-create-choice');openPgnEditorNew('student')">
+        <span class="create-choice-ico"><i class="ti ti-chess-knight" aria-hidden="true"></i></span>
+        <span class="create-choice-txt"><b>Sur l'échiquier</b><small>Joue les coups depuis la position de départ</small></span>
+      </button>
+      <button class="create-choice" onclick="closeModal('modal-student-create-choice');openStudentImport()">
+        <span class="create-choice-ico"><i class="ti ti-clipboard-text" aria-hidden="true"></i></span>
+        <span class="create-choice-txt"><b>Coller un PGN</b><small>Importe une ouverture depuis un PGN</small></span>
+      </button>
+      <button class="create-choice" onclick="closeModal('modal-student-create-choice');openLibrary()">
+        <span class="create-choice-ico"><i class="ti ti-books" aria-hidden="true"></i></span>
+        <span class="create-choice-txt"><b>Ouvertures prêtes à l'emploi</b><small>Pars d'une ouverture toute faite, coups et commentaires inclus</small></span>
+      </button>
+    </div>
   </div>
 </div>
 
