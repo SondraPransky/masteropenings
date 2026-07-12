@@ -1560,7 +1560,17 @@ textarea {
 /* En-tête du détail d'une base */
 .lib-detail-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
 .lib-detail-title { font-family: var(--font-display); display: flex; align-items: center; gap: 10px; font-size: 1.2rem; font-weight: 800; letter-spacing: -.3px; }
-.lib-detail-sub { font-family: 'JetBrains Mono', monospace; font-size: .72rem; color: var(--dim); margin-bottom: 18px; }
+.lib-detail-sub { font-family: 'JetBrains Mono', monospace; font-size: .72rem; color: var(--dim); margin-bottom: 14px; }
+
+/* Barre recherche / tri / filtre de la vue d'une base (inspiration CARA) */
+.lib-detail-toolbar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.lib-search { flex: 1; min-width: 200px; display: flex; align-items: center; gap: 8px; padding: 0 12px;
+  background: var(--surf); border: 1px solid var(--border); border-radius: var(--rs); color: var(--dim); }
+.lib-search:focus-within { border-color: var(--cyan); box-shadow: 0 0 0 3px var(--cyan-dim); }
+.lib-search input { border: none; background: none; box-shadow: none; padding: 9px 0; flex: 1; }
+.lib-search input:focus { border: none; box-shadow: none; }
+.lib-detail-toolbar select { width: auto; min-width: 150px; flex-shrink: 0; }
+@media (max-width: 560px) { .lib-detail-toolbar select { flex: 1; min-width: 0; } }
 
 /* Entrées d'une base = liste (inspiration CARA), pas des cartes */
 .lib-list { display: flex; flex-direction: column; gap: 8px; }
