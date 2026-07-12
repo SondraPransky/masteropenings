@@ -35,7 +35,7 @@ La dette « critique » (taille d’`app.js`) est **résolue** (extractions §5 
 | Point | Impact | Note |
 |-------|--------|------|
 | Chemin connecté Supabase non testé | **Élevé** | Gate de release (§2). Aucune couverture E2E connectée. |
-| RLS : `_sbLoadStudentModules` lit **toutes** les `classes` puis filtre côté client | Moyen | Un élève connecté peut lire les classes des autres → à durcir avant l’ouverture multi-coachs. |
+| ~~RLS classes lisibles par tous~~ **RÉSOLU** | — | La policy `classes_read` (migration-005) restreint déjà la lecture aux classes dont l’élève est membre. **Vérifié appliqué sur le live** (12/07/2026, probe : élève voit 0 classe non-membre). Le `select('*')` côté client ne ramène que ses classes ; le filtre client est redondant. |
 | Pont `window` encore large (~66 fonctions) | Faible | Cosmétique, par choix (`onclick` inline). Nettoyé de 32 exports morts (juillet 2026). |
 | Couche `_sb*` toujours dans `app.js` | Faible | Volontaire : noyau backend cohérent. |
 

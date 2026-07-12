@@ -1019,10 +1019,10 @@ async function _sbDeleteClass(id) {
 //  DONNÉES — élève + résultats / pratique / parties + mastery
 // ════════════════════════════════════════════════════════════
 // Classes de l'élève connecté.
-// ⚠️ RLS (dette, cf. CLAUDE.md §3) : lit TOUTES les classes puis filtre côté
-// client (policy actuelle = lecture aux connectés). Le vrai durcissement est
-// une policy RLS côté Supabase (migration à appliquer par l'admin) — le filtre
-// client ne sécurise pas, il ne fait que réduire ce qu'on garde en mémoire.
+// RLS : la policy `classes_read` (migration-005, VÉRIFIÉE appliquée sur le live
+// 12/07/2026) restreint déjà `select *` aux classes dont l'élève est membre
+// (`students ?| my_identifiers()`). Le `select('*')` ne ramène donc QUE ses
+// classes ; le `.filter` client ci-dessous est une ceinture-bretelles redondante.
 async function _sbFetchStudentClasses() {
   const ids = window._myIdentifiers?.() || [];
   const { data: allCls, error } = await sb.from('classes').select('*');
