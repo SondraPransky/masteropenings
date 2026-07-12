@@ -88,12 +88,14 @@ function updateNav() {
       navRoleChip.innerHTML = isTeacher ? '<i class="ti ti-clipboard-text" aria-hidden="true"></i> Prof' : '<i class="ti ti-user" aria-hidden="true"></i> Élève';
       navRoleChip.style.display = '';
     }
-    // Onglets selon le rôle : le coach voit les siens, l'élève voit « Réviser » | « Ma bibliothèque »
+    // Onglets du haut : réservés à l'élève (Réviser | Ma bibliothèque).
+    // Le coach n'a PAS d'onglets du haut → sa nav unique est la sidebar ; il atteint
+    // l'échiquier via « Jouer » sur une carte de module, et en revient par le bouton retour.
     if (navTabs) navTabs.style.display = '';
-    document.querySelectorAll('.tab-teacher').forEach(t => t.style.display = isTeacher ? '' : 'none');
+    document.querySelectorAll('.tab-teacher').forEach(t => t.style.display = 'none');
     document.querySelectorAll('.tab-student').forEach(t => t.style.display = isStudent ? '' : 'none');
-    // Bouton retour élève : visible uniquement pour les élèves sur la page drill
-    if (btnBack) btnBack.style.display = isStudent ? '' : 'none';
+    // Bouton retour (page-drill) : visibilité/label pilotés par goPage selon le rôle.
+    if (btnBack) btnBack.style.display = 'none';
   } else {
     // Non connecté
     if (acctMenu)    acctMenu.style.display     = 'none';
@@ -337,10 +339,22 @@ function goPage(name) {
   if (name === 'drill') initDrillPage();
   if (name === 'coach') { window.renderClassModuleSelect?.(); }
   if (name === 'library') { window.renderMyLibrary?.(); }
-  // Bouton retour visible sur la page drill pour les élèves Firebase
+  // Bouton retour sur la page drill : élève → « Mes modules », coach → « Tableau de bord ».
   const btnBack = document.getElementById('btn-back-student');
-  if (btnBack) btnBack.style.display = (ACCOUNTS_ON && G.currentRole === 'student' && name === 'drill') ? '' : 'none';
+  if (btnBack) {
+    const onDrill = ACCOUNTS_ON && name === 'drill' && (G.currentRole === 'student' || G.currentRole === 'teacher');
+    btnBack.style.display = onDrill ? '' : 'none';
+    if (onDrill) {
+      const isT = G.currentRole === 'teacher';
+      const lbl = document.getElementById('btn-back-label');
+      if (lbl) lbl.textContent = isT ? 'Tableau de bord' : 'Mes modules';
+      btnBack.title = isT ? 'Retour au tableau de bord' : 'Retour à mes modules';
+    }
+  }
 }
+
+// Retour depuis l'échiquier (page-drill) vers l'accueil du rôle courant.
+function goBackFromDrill() { goPage(G.currentRole === 'teacher' ? 'coach' : 'student-home'); }
 
 // ══════════════════════════════════════════════════════
 // PARSING PGN + Leitner (cœur) + _normFen → déplacés dans lib/core.js
@@ -1293,7 +1307,7 @@ Object.assign(window, {
   _sbRecordPractice, _sbRecordResult, _sbSaveClass, _sbSaveGame, _sbUpdateGame, _sbDeleteGame,
   _sbSaveMastery, _sbSaveBases, _sbSaveStudentModule, _shapesToPGN, _treePlayerPositions,
   addLog, clearFeedback, clearLog, closeModal, confirmName, countPlayerMoves, currentGame,
-  currentSession, deleteModule, editorTreeToPGN, escapeHtml, fig, goPage, initDrillPage,
+  currentSession, deleteModule, editorTreeToPGN, escapeHtml, fig, goPage, goBackFromDrill, initDrillPage,
   isLineMode, isPlayerMove, loadStudentModules, loginUser, logoutUser, nagGlyphs, nextDrill,
   nextSession, pgnToEditorTree, registerUser, requestPasswordReset, save, saveClasses,
   selectDrill, setBoardComment, setBoardPrompt, setFeedback, showHint, signInGoogle,

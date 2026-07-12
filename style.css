@@ -255,12 +255,15 @@ textarea {
 }
 
 /* ══ BOUTONS ═════════════════════════════════ */
-/* ══ SYSTÈME DE BOUTONS — hiérarchie sémantique (refonte UX T1) ══
-   Règle : UNE seule action primaire visible par écran.
-     .btn-gold / .btn-primary → PRIMAIRE   (indigo plein) : l'action principale
-     .btn-blue                → SECONDAIRE (bleu plein)   : action importante non-principale
-     .btn-ghost               → TERTIAIRE  (outline)      : support, navigation locale
-     .btn-red                 → DANGER     (rouge plein)  : destructif uniquement
+/* ══ SYSTÈME DE BOUTONS — hiérarchie sémantique (refonte UX — indigo unique) ══
+   UNE seule teinte d'accent (indigo), déclinée en 3 niveaux de poids visuel.
+   Règle : UN seul bouton PLEIN (primaire) par zone d'écran.
+     .btn-gold / .btn-primary → PRIMAIRE   (indigo PLEIN)  : l'action principale, 1 par zone
+     .btn-blue                → SECONDAIRE (indigo TONAL)  : action importante non-principale
+     .btn-ghost               → TERTIAIRE  (outline neutre) : support, navigation locale
+     .btn-red                 → DANGER     (rouge plein)   : destructif uniquement
+   NB : .btn-gold est un alias historique de .btn-primary (même rendu) — préférer .btn-primary.
+        .btn-blue n'est plus un 2e plein saturé : c'est le secondaire tonal (même hue que le primaire).
    .btn-sm = variante compacte. L'emoji reste au contenu, pas aux libellés de boutons (cf. T5). */
 .btn {
   display: inline-flex;
@@ -312,9 +315,13 @@ textarea {
 }
 .shake { animation: shake .35s ease-in-out; }
 
-/* Info / import */
-.btn-blue { background: var(--blue); color: #fff; }
-.btn-blue:hover { filter: brightness(.93); }
+/* Secondaire tonal — même teinte indigo que le primaire, poids réduit */
+.btn-blue {
+  background: var(--cyan-dim);
+  color: var(--cyan);
+  border: 1px solid var(--cyan-glow);
+}
+.btn-blue:hover { background: var(--cyan-glow); color: #fff; }
 
 /* Primary indigo (accent) */
 .btn-primary { background: var(--cyan); color: #fff; }
@@ -761,6 +768,19 @@ textarea {
 .create-choice-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .create-choice-txt b { font-family: var(--font-display); font-size: .95rem; font-weight: 700; color: var(--text); }
 .create-choice-txt small { font-size: .76rem; color: var(--dim); line-height: 1.4; }
+/* Second rang de choix (moins central) : plus compact, sous un intitulé */
+.create-sep { font-size: .68rem; text-transform: uppercase; letter-spacing: .6px; color: var(--dim); font-weight: 600; margin: 16px 2px 8px; }
+.create-choice.sm { padding: 10px 14px; gap: 12px; }
+.create-choice.sm .create-choice-ico { font-size: 1.15rem; }
+.create-choice.sm .create-choice-txt b { font-size: .86rem; }
+
+/* Repli « Détails (optionnel) » dans les formulaires (ex : Nouvelle partie) */
+.ng-details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+.ng-details > summary { cursor: pointer; font-size: .82rem; font-weight: 600; color: var(--text-2); list-style: none; display: flex; align-items: center; gap: 6px; }
+.ng-details > summary::-webkit-details-marker { display: none; }
+.ng-details > summary::before { content: "\25B8"; color: var(--dim); font-size: .8rem; }
+.ng-details[open] > summary::before { content: "\25BE"; }
+.ng-details > summary:hover { color: var(--text); }
 
 /* Paquet d'exercices — plan de travail 2 colonnes (refonte T6) */
 .ex-workbench { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
@@ -891,7 +911,7 @@ textarea {
 }
 [data-theme="dark"] nav { background: rgba(9,9,11,.85); }
 [data-theme="dark"] .tab:hover:not(.on) { background: rgba(255,255,255,.04); }
-[data-theme="dark"] .btn-blue { color: #000; }
+[data-theme="dark"] .btn-blue:hover { color: #fff; }
 [data-theme="dark"] .badge-gold   { background: var(--gold-dim);    color: var(--gold);   border-color: rgba(245,158,11,.2); }
 [data-theme="dark"] .badge-blue   { background: var(--blue-dim);    color: var(--blue);   border-color: rgba(56,189,248,.2); }
 [data-theme="dark"] .badge-green  { background: var(--green-dim);   color: var(--green);  border-color: rgba(52,211,153,.2); }
