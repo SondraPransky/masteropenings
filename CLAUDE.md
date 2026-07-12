@@ -202,6 +202,7 @@ Retour utilisateur (screenshot) : l’apprentissage affichait **tout l’arbre a
 - **Ligne principale dominante** : texte fort (13.5px / 600), coup courant surligné indigo (inchangé).
 - **Sous-variantes reculées** : plus de **blocs colorés** (retrait des `background:${col}1f` / `border-left-color:${col}` inline et de la palette de profondeur `VAR_COL`) ; texte **estompé + plus petit** par profondeur (`.86em` puis `.8em`, poids 400, `var(--text-2)`→`var(--dim)`) ; simple **rail neutre** `var(--border)` + flèche `↳` en `var(--dim)` comme guide d’indentation. Toujours visibles et cliquables.
 - Aucune logique d’arbre modifiée (navigation `studyGoPath`, `nagGlyphs`, comments, mastery marks intacts). Vérifié navigateur (styles calculés) + typecheck/78 tests/build.
+- **Carte pédagogique du coup courant** (`renderStudyBubble`, `lib/drill.js`) : l’ancienne bulle 💡 devient une **carte** — en-tête = coup courant (numéro + figurine `fig` + NAG `nagGlyphs`), corps = **commentaire VERBATIM du PGN** du coach (jamais réécrit). Styles `.study-bubble`/`.study-card-head`/`.study-card-move`/`.study-card-body` (fond `--cyan-dim`, bordure `--cyan-glow`, icône `ti-bulb`) ; suppression de l’avatar/flèche de bulle. Masquée si le nœud n’a pas de commentaire (garde inchangée). Vérifié : en-tête figurine+NAG, corps verbatim, masquage sans commentaire.
 
 ## 7. Règles de Développement
 

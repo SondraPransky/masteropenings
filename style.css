@@ -482,36 +482,26 @@ textarea {
 }
 
 /* ══ BULLE COMMENTAIRE — phase apprentissage (façon Duolingo) ══ */
+/* Carte pédagogique du coup courant : en-tête (coup + NAG) + corps (commentaire prof) */
 .study-bubble {
-  position: relative;
   margin: 14px 0 6px;
-  padding: 11px 13px 11px 46px;
-  background: var(--surf2);
-  border: 1.5px solid var(--cyan);
-  border-radius: 14px;
+  padding: 12px 14px;
+  background: var(--cyan-dim);
+  border: 1px solid var(--cyan-glow);
+  border-radius: 12px;
   font-size: .84rem;
-  line-height: 1.5;
+  line-height: 1.55;
   color: var(--text);
 }
-.study-bubble::before {
-  content: '';
-  position: absolute;
-  top: -8px; left: 22px;
-  width: 13px; height: 13px;
-  background: var(--surf2);
-  border-left: 1.5px solid var(--cyan);
-  border-top: 1.5px solid var(--cyan);
-  transform: rotate(45deg);
+.study-card-head {
+  display: flex; align-items: center; gap: 7px;
+  color: var(--cyan);
+  font-weight: 700;
+  margin-bottom: 7px;
 }
-.study-bubble .bubble-avatar {
-  position: absolute;
-  left: 9px; top: 9px;
-  width: 28px; height: 28px;
-  display: flex; align-items: center; justify-content: center;
-  background: var(--cyan); color: #fff;
-  border-radius: 50%;
-  font-size: .95rem;
-}
+.study-card-head .ti { font-size: 1.05rem; flex-shrink: 0; }
+.study-card-move { font-family: var(--font-mono); font-size: .95rem; }
+.study-card-body { color: var(--text); }
 .study-bubble.pop { animation: bubblePop .3s cubic-bezier(.22, 1, .36, 1); }  /* ease-out-quint, sans rebond */
 @keyframes bubblePop {
   0%   { opacity: 0; transform: translateY(-5px) scale(.96); }
