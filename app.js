@@ -327,17 +327,25 @@ function goPage(name) {
 
 // Import/création de modules (preview, PGN, suppression) -> lib/modules.js
 
+// Miroir local d'une tranche de G (source de verite = Supabase en connecte).
+// Chemin UNIQUE et garde : localStorage peut jeter (mode prive/quota) sans que
+// ce soit fatal. Toute ecriture de cache d'une tranche de G passe par ici.
+function _cache(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); }
+  catch (e) { /* cache best-effort */ }
+}
+
 function save() {
-  localStorage.setItem('mc_drills',   JSON.stringify(G.drills));
-  localStorage.setItem('mc_results',  JSON.stringify(G.results));
-  localStorage.setItem('mc_practice', JSON.stringify(G.practiceLog));
-  localStorage.setItem('mc_games',    JSON.stringify(G.savedGames));
-  localStorage.setItem('mc_mastery',  JSON.stringify(G.masteryData));
-  localStorage.setItem('mc_opp_seen', JSON.stringify(G.oppSeen));
-  localStorage.setItem('mc_bases',    JSON.stringify(G.bases));
+  _cache('mc_drills',   G.drills);
+  _cache('mc_results',  G.results);
+  _cache('mc_practice', G.practiceLog);
+  _cache('mc_games',    G.savedGames);
+  _cache('mc_mastery',  G.masteryData);
+  _cache('mc_opp_seen', G.oppSeen);
+  _cache('mc_bases',    G.bases);
 }
 function saveClasses() {
-  localStorage.setItem('mc_classes', JSON.stringify(G.classes));
+  _cache('mc_classes', G.classes);
 }
 
 // countPlayerMoves → lib/drill-core.js
@@ -1057,9 +1065,9 @@ async function _sbLoadStudentModules() {
     personal = (pers || []).map(_sbRowToModule);
     // Résultats + pratique de l'élève (dashboard multi-appareils)
     const { data: rs } = await sb.from('results').select('*').eq('student_id', G.currentUser.uid);
-    G.results = (rs || []).map(_sbRowToResult); localStorage.setItem('mc_results', JSON.stringify(G.results));
+    G.results = (rs || []).map(_sbRowToResult); _cache('mc_results', G.results);
     const { data: ps } = await sb.from('practice').select('*').eq('student_id', G.currentUser.uid);
-    G.practiceLog = (ps || []).map(_sbRowToPractice); localStorage.setItem('mc_practice', JSON.stringify(G.practiceLog));
+    G.practiceLog = (ps || []).map(_sbRowToPractice); _cache('mc_practice', G.practiceLog);
   } catch (e) {
     console.error('_sbLoadStudentModules', e);
     if (listEl) listEl.innerHTML = '<div style="color:var(--red);padding:20px;text-align:center;font-size:.85rem">Erreur de chargement. Vérifiez votre connexion.</div>';
@@ -1126,7 +1134,7 @@ async function _sbLoadStudentGames() {
   return _sbRun('_sbLoadStudentGames', sb && G.currentUser && G.currentRole === 'student', async () => {
     const { data } = await sb.from('games').select('*').eq('student_id', G.currentUser.uid);
     G.savedGames = (data || []).map(_sbRowToGame);
-    localStorage.setItem('mc_games', JSON.stringify(G.savedGames));
+    _cache('mc_games', G.savedGames);
   });
 }
 
@@ -1134,20 +1142,20 @@ async function _sbLoadStudentGames() {
 async function _sbLoadTeacherResults() {
   return _sbRun('_sbLoadTeacherResults', sb && G.currentUser && G.currentRole === 'teacher', async () => {
     const ids = G.drills.map(d => String(d.id));
-    if (!ids.length) { G.results = []; localStorage.setItem('mc_results', '[]'); return; }
+    if (!ids.length) { G.results = []; _cache('mc_results', []); return; }
     const { data } = await sb.from('results').select('*').in('drill_id', ids);
     G.results = (data || []).map(_sbRowToResult);
-    localStorage.setItem('mc_results', JSON.stringify(G.results));
+    _cache('mc_results', G.results);
   });
 }
 
 async function _sbLoadTeacherPractice() {
   return _sbRun('_sbLoadTeacherPractice', sb && G.currentUser && G.currentRole === 'teacher', async () => {
     const ids = G.drills.map(d => String(d.id));
-    if (!ids.length) { G.practiceLog = []; localStorage.setItem('mc_practice', '[]'); return; }
+    if (!ids.length) { G.practiceLog = []; _cache('mc_practice', []); return; }
     const { data } = await sb.from('practice').select('*').in('drill_id', ids);
     G.practiceLog = (data || []).map(_sbRowToPractice);
-    localStorage.setItem('mc_practice', JSON.stringify(G.practiceLog));
+    _cache('mc_practice', G.practiceLog);
   });
 }
 
@@ -1167,7 +1175,7 @@ async function _sbLoadTeacherGames() {
     const byId = {};
     [...maia, ...lib].forEach(g => { byId[g.id] = g; });
     G.savedGames = Object.values(byId);
-    localStorage.setItem('mc_games', JSON.stringify(G.savedGames));
+    _cache('mc_games', G.savedGames);
   });
 }
 
@@ -1189,7 +1197,7 @@ async function _sbLoadMastery() {
     const m = data && data.mastery;
     if (m) {
       for (const k in m) if (!G.masteryData[k] || (m[k].due || 0) > (G.masteryData[k].due || 0)) G.masteryData[k] = m[k];
-      localStorage.setItem('mc_mastery', JSON.stringify(G.masteryData));
+      _cache('mc_mastery', G.masteryData);
     }
   });
 }
@@ -1209,7 +1217,7 @@ async function _sbLoadBases() {
   try {
     const { data } = await sb.from('profiles').select('extra').eq('id', G.currentUser.uid).maybeSingle();
     G.bases = (data && data.extra && data.extra.bases) || [];
-    localStorage.setItem('mc_bases', JSON.stringify(G.bases));
+    _cache('mc_bases', G.bases);
   } catch (e) { console.warn('_sbLoadBases (colonne extra manquante ?)', e); }
 }
 
