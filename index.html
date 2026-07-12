@@ -73,7 +73,7 @@
         <label>Mot de passe</label>
         <div class="pwd-wrap">
           <input type="password" id="login-pwd" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')loginUser()">
-          <button type="button" class="pwd-eye" aria-label="Afficher le mot de passe" onclick="togglePwd('login-pwd', this)">👁</button>
+          <button type="button" class="pwd-eye" aria-label="Afficher le mot de passe" onclick="togglePwd('login-pwd', this)"><i class="ti ti-eye" aria-hidden="true"></i></button>
         </div>
       </div>
       <button class="btn btn-primary" style="width:100%;margin-top:14px;padding:10px" onclick="loginUser()">Se connecter →</button>
@@ -94,7 +94,7 @@
         <label>Mot de passe <span style="font-weight:400;color:var(--dim);font-size:.72rem">— 6 caractères minimum</span></label>
         <div class="pwd-wrap">
           <input type="password" id="reg-pwd" placeholder="••••••••" autocomplete="new-password">
-          <button type="button" class="pwd-eye" aria-label="Afficher le mot de passe" onclick="togglePwd('reg-pwd', this)">👁</button>
+          <button type="button" class="pwd-eye" aria-label="Afficher le mot de passe" onclick="togglePwd('reg-pwd', this)"><i class="ti ti-eye" aria-hidden="true"></i></button>
         </div>
       </div>
       <div class="frow" style="margin-bottom:6px">
@@ -459,8 +459,8 @@
           <button class="btn btn-ghost btn-sm" onclick="flipBoard()"><i class="ti ti-arrows-exchange" aria-hidden="true"></i> Retourner</button>
           <span id="test-btns" style="display:inline-flex;gap:6px">
             <button class="btn btn-ghost btn-sm" onclick="showHint()"><i class="ti ti-bulb" aria-hidden="true"></i> Aide</button>
-            <button id="btn-pause-adv" class="btn btn-ghost btn-sm" onclick="togglePauseAdversary()" title="Pause avant coup adversaire" style="display:none">⏸ Auto</button>
-            <button id="sr-suspend-btn" class="btn btn-ghost btn-sm" onclick="srSuspendCurrent()" title="Retirer cette position de la révision espacée" style="display:none">⏸ Suspendre</button>
+            <button id="btn-pause-adv" class="btn btn-ghost btn-sm" onclick="togglePauseAdversary()" title="Pause avant coup adversaire" style="display:none"><i class="ti ti-player-pause" aria-hidden="true"></i> Auto</button>
+            <button id="sr-suspend-btn" class="btn btn-ghost btn-sm" onclick="srSuspendCurrent()" title="Retirer cette position de la révision espacée" style="display:none"><i class="ti ti-player-pause" aria-hidden="true"></i> Suspendre</button>
             <button class="btn btn-red btn-sm"   onclick="skipPosition()"><i class="ti ti-eye" aria-hidden="true"></i> Voir la réponse</button>
           </span>
           <button id="btn-quit-maia" class="btn btn-red btn-sm" onclick="quitMaiaGame()" title="Quitter la partie contre Maia" style="display:none">✕ Arrêter la partie</button>
@@ -482,7 +482,7 @@
             <span id="s-turn"  style="font-size:.77rem;color:var(--dim)"></span>
           </div>
           <div id="student-bar" style="display:none;margin-top:10px;padding:8px 10px;background:var(--bg);border-radius:7px;align-items:center;gap:8px">
-            <span style="font-size:1rem">👤</span>
+            <span style="font-size:1rem"><i class="ti ti-user" aria-hidden="true"></i></span>
             <span id="student-name-display" style="font-weight:600;font-size:.88rem"></span>
           </div>
         </div>
@@ -502,7 +502,7 @@
         <!-- Phase Apprentissage (ligne) -->
         <div class="card" id="learn-card" style="display:none">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-            <div class="clabel" id="learn-card-title" style="margin:0">📖 Apprentissage</div>
+            <div class="clabel" id="learn-card-title" style="margin:0"><i class="ti ti-book" aria-hidden="true"></i> Apprentissage</div>
             <span id="learn-prog" style="font-size:.75rem;color:var(--dim)">0 / 0</span>
           </div>
           <div class="prog-bar" style="margin-bottom:10px"><div id="learn-prog-fill" class="prog-fill" style="background:var(--cyan);width:0%;transition:width .3s"></div></div>
@@ -510,7 +510,7 @@
           <div id="learn-comment" style="font-size:.82rem;color:var(--text);line-height:1.55;padding:8px 10px;background:var(--bg);border-radius:7px;margin-bottom:10px;height:58px;overflow-y:auto"></div>
           <div id="study-bubble" class="study-bubble" style="display:none"></div>
           <div id="study-guess-row" style="display:none;margin-bottom:8px">
-            <button id="study-guess-btn" class="btn btn-ghost btn-sm" style="width:100%" onclick="toggleStudyGuess()">🎯 Devine le coup</button>
+            <button id="study-guess-btn" class="btn btn-ghost btn-sm" style="width:100%" onclick="toggleStudyGuess()"><i class="ti ti-target" aria-hidden="true"></i> Devine le coup</button>
           </div>
           <div style="display:flex;gap:6px;align-items:center;margin-bottom:4px">
             <button class="btn btn-ghost btn-sm" id="learn-prev-btn" onclick="learnPrev()">← Préc.</button>
@@ -518,7 +518,7 @@
             <button class="btn btn-ghost btn-sm" id="learn-next-btn" onclick="learnNext()">Suiv. →</button>
           </div>
           <div class="keyboard-hint" style="text-align:center;font-size:.65rem;color:var(--dim);margin-bottom:10px;opacity:.65">← → pour naviguer au clavier</div>
-          <button class="btn btn-gold" style="width:100%;font-size:.85rem" onclick="enterTestPhase()">🎯 Je connais la ligne — Tester</button>
+          <button class="btn btn-gold" style="width:100%;font-size:.85rem" onclick="enterTestPhase()"><i class="ti ti-target" aria-hidden="true"></i> Je connais la ligne — Tester</button>
         </div>
 
         <!-- Notation ligne complète -->
@@ -786,7 +786,7 @@
     </div>
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px">
       <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-exercise-pgn')">Annuler</button>
-      <button class="btn btn-gold btn-sm" onclick="exPgnRun()">✓ Importer</button>
+      <button class="btn btn-gold btn-sm" onclick="exPgnRun()"><i class="ti ti-check" aria-hidden="true"></i> Importer</button>
     </div>
   </div>
 </div>
@@ -837,7 +837,7 @@
     <div class="frow">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
         <label style="margin:0">PGN <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--dim);font-size:.72rem">— collez, ou importez un fichier</span></label>
-        <label class="btn btn-blue btn-sm" style="cursor:pointer;font-size:.8rem;margin:0;color:#fff">📁 Choisir un fichier .pgn<input type="file" accept=".pgn,.txt" onchange="loadPgnFile(event)" style="display:none"></label>
+        <label class="btn btn-blue btn-sm" style="cursor:pointer;font-size:.8rem;margin:0;color:#fff"><i class="ti ti-file-import" aria-hidden="true"></i> Choisir un fichier .pgn<input type="file" accept=".pgn,.txt" onchange="loadPgnFile(event)" style="display:none"></label>
       </div>
       <textarea id="inp-pgn" spellcheck="false" autocorrect="off" autocomplete="off"
         style="height:140px"
@@ -862,7 +862,7 @@
 
     <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
       <button onclick="toggleAdvOpts()" style="background:none;border:none;cursor:pointer;font-size:.78rem;color:var(--dim);display:flex;align-items:center;gap:5px;padding:0;font-family:inherit">
-        <span id="adv-arrow">▶</span> <span id="adv-label">⚙ Options avancées</span>
+        <span id="adv-arrow">▶</span> <span id="adv-label"><i class="ti ti-settings" aria-hidden="true"></i> Options avancées</span>
       </button>
       <div id="adv-opts" style="display:none;margin-top:12px">
         <div class="frow"><label>Niveau</label>
@@ -891,8 +891,8 @@
 
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
       <button class="btn btn-ghost" onclick="loadExample()">Exemple</button>
-      <button class="btn btn-ghost btn-sm" onclick="previewDrill()">👁 Aperçu</button>
-      <button class="btn btn-gold" onclick="importDrill()">⬆ Créer le module</button>
+      <button class="btn btn-ghost btn-sm" onclick="previewDrill()"><i class="ti ti-eye" aria-hidden="true"></i> Aperçu</button>
+      <button class="btn btn-gold" onclick="importDrill()"><i class="ti ti-plus" aria-hidden="true"></i> Créer le module</button>
     </div>
   </div>
 </div>
@@ -917,7 +917,7 @@
   <div aria-label="Éditeur de variantes" style="display:flex;flex-direction:column;height:100dvh;max-height:100dvh;background:var(--bg);width:100%;max-width:980px;margin:0 auto;box-shadow:var(--shadow)">
     <!-- Header -->
     <div id="editor-header" style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-bottom:1px solid var(--border);flex-shrink:0;gap:12px">
-      <div id="editor-title" style="font-weight:700;font-size:.95rem">🎹 Éditeur de variantes</div>
+      <div id="editor-title" style="font-weight:700;font-size:.95rem"><i class="ti ti-git-fork" aria-hidden="true"></i> Éditeur de variantes</div>
       <div id="editor-meta-fields" style="display:flex;gap:8px;align-items:center;min-width:0">
         <input id="editor-drill-name" placeholder="Nom du module…" style="flex:1;min-width:0;font-size:.84rem;padding:6px 10px;background:var(--surf);border:1px solid var(--border);border-radius:var(--rs);color:var(--text)">
         <select id="editor-side" title="Quel camp l'élève joue" style="flex-shrink:0;font-size:.8rem;padding:6px 8px;background:var(--surf);border:1px solid var(--border);border-radius:var(--rs);color:var(--text)">
@@ -934,7 +934,7 @@
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0">
         <button class="btn btn-ghost btn-sm" onclick="closeEditorModal()">✕ Fermer</button>
-        <button id="editor-save-btn" class="btn btn-gold btn-sm" onclick="saveEditorDrill()">💾 Enregistrer</button>
+        <button id="editor-save-btn" class="btn btn-gold btn-sm" onclick="saveEditorDrill()"><i class="ti ti-device-floppy" aria-hidden="true"></i> Enregistrer</button>
       </div>
     </div>
     <!-- Body -->
@@ -955,7 +955,7 @@
           <button class="btn btn-ghost btn-sm" onclick="editorNext()">Suiv. →</button>
         </div>
         <div style="display:flex;gap:6px">
-          <button class="btn btn-ghost btn-sm" style="font-size:.72rem;color:var(--red)" onclick="editorDeleteNode()">🗑 Supprimer</button>
+          <button class="btn btn-ghost btn-sm" style="font-size:.72rem;color:var(--red)" onclick="editorDeleteNode()"><i class="ti ti-trash" aria-hidden="true"></i> Supprimer</button>
           <button class="btn btn-ghost btn-sm" style="font-size:.72rem;color:var(--dim)" onclick="editorPromoteMain()" title="Faire de ce coup la ligne principale">↑ Ligne princ.</button>
         </div>
         <!-- Annotation NAG -->
@@ -965,7 +965,7 @@
         </div>
         <!-- Comment -->
         <div style="width:100%">
-          <label style="font-size:.68rem;color:var(--dim);display:block;margin-bottom:3px">💬 Commentaire sur ce coup</label>
+          <label style="font-size:.68rem;color:var(--dim);display:block;margin-bottom:3px"><i class="ti ti-message" aria-hidden="true"></i> Commentaire sur ce coup</label>
           <textarea id="editor-comment" rows="3" oninput="editorSaveComment()" placeholder="Ex : Idée clé de la variante…"
             style="width:100%;font-size:.78rem;resize:none;padding:6px 8px;background:var(--surf);border:1px solid var(--border);border-radius:var(--rs);color:var(--text)"></textarea>
         </div>

@@ -158,7 +158,7 @@ function togglePwd(id, btn) {
   if (!inp) return;
   const show = inp.type === 'password';
   inp.type = show ? 'text' : 'password';
-  if (btn) { btn.textContent = show ? '🙈' : '👁'; btn.setAttribute('aria-label', show ? 'Masquer le mot de passe' : 'Afficher le mot de passe'); }
+  if (btn) { btn.innerHTML = show ? '<i class="ti ti-eye-off" aria-hidden="true"></i>' : '<i class="ti ti-eye" aria-hidden="true"></i>'; btn.setAttribute('aria-label', show ? 'Masquer le mot de passe' : 'Afficher le mot de passe'); }
 }
 
 // ── Réinitialisation du mot de passe ──────────────────
