@@ -886,6 +886,10 @@
       <input id="sr-set-newlimit" type="number" min="0" max="100" class="sr-set-input" style="width:80px">
     </label>
     <label class="sr-set-row">
+      <span>Révisions max par session<br><span style="font-size:.72rem;color:var(--dim)">0 = illimité</span></span>
+      <input id="sr-set-duelimit" type="number" min="0" max="500" class="sr-set-input" style="width:80px">
+    </label>
+    <label class="sr-set-row">
       <span>Ordre des cartes</span>
       <select id="sr-set-order" class="sr-set-input">
         <option value="mixed">Mélangé</option>
@@ -896,6 +900,25 @@
       <span>Positions suspendues</span>
       <span id="sr-set-suspended" style="font-size:.82rem;color:var(--dim)"></span>
     </div>
+
+    <!-- Échelle Leitner (paliers de révision) — éditable par le coach -->
+    <div style="margin-top:6px;padding-top:12px;border-top:1px solid var(--border)">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
+        <span style="font-weight:600">Échelle de révision</span>
+        <div class="sr-ladder-presets" style="display:flex;gap:4px">
+          <button type="button" class="btn btn-ghost btn-sm" onclick="_srApplyPreset('standard')">Standard</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="_srApplyPreset('agressif')">Agressif</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="_srApplyPreset('detendu')">Détendu</button>
+        </div>
+      </div>
+      <div style="font-size:.72rem;color:var(--dim);margin-bottom:8px">Un bon coup fait monter la position d'un palier ; un raté la ramène au 1er. Délai avant la prochaine révision par palier.</div>
+      <div id="sr-set-ladder" style="display:flex;flex-direction:column;gap:5px"></div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button type="button" class="btn btn-ghost btn-sm" onclick="_srLadderAddRung()">＋ Palier</button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="_srLadderRemoveRung()">－ Palier</button>
+      </div>
+    </div>
+
     <button class="btn btn-gold" style="width:100%;margin-top:18px" onclick="saveSrSettings()">Enregistrer</button>
   </div>
 </div>

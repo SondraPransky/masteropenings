@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite';
-import { copyFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync } from 'node:fs';
 
 // EECoach — build Vite (modules ES).
 // base './' = chemins relatifs → déployable sous un sous-répertoire (GitHub Pages projet).
@@ -26,6 +26,11 @@ export default defineConfig({
       closeBundle() {
         copyFileSync('home.html', 'dist/home.html');
         copyFileSync('data.js', 'dist/data.js');
+        // Pièces d'échecs bundlées en local (cburnett) → dist/pieces/cburnett/.
+        // Servies à la racine (relatif base './'), sans dépendance CDN.
+        mkdirSync('dist/pieces/cburnett', { recursive: true });
+        for (const p of ['wK','wQ','wR','wB','wN','wP','bK','bQ','bR','bB','bN','bP'])
+          copyFileSync(`pieces/cburnett/${p}.svg`, `dist/pieces/cburnett/${p}.svg`);
       },
     },
   ],

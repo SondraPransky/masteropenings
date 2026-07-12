@@ -431,11 +431,39 @@ textarea {
 .notation-moves {
   font-family: 'JetBrains Mono', monospace;
   font-size: .84rem;
-  line-height: 2.4;
+  line-height: 2.1;
   padding: 4px 0;
   word-break: break-word;
 }
 .notation-moves span { cursor: default; }
+
+/* ── Feuille de coups unifiée (flux soigné + clic-navigation) ── */
+.mv-num { color: var(--dim); font-size: .78em; margin: 0 1px 0 5px; user-select: none; }
+.mv-num:first-child { margin-left: 0; }
+.mv {
+  display: inline-block; padding: 1px 5px; margin-right: 1px; border-radius: 5px;
+  color: var(--text-2); font-weight: 500; border: 1px solid transparent;
+  transition: background-color .12s, color .12s;
+}
+.mv.clickable { cursor: pointer; }
+.mv.clickable:hover { background: var(--surf2); color: var(--text); }
+.mv.played  { color: var(--text); }
+.mv.auto    { color: var(--dim); }
+.mv.ok      { color: var(--green); }
+.mv.ko      { color: var(--red); }
+.mv.coach   { color: #7c3aed; }                     /* nœud coach (revue) — cohérent violet */
+.mv.ask {                                            /* coup courant à trouver (test) */
+  background: var(--cyan); color: #111; font-weight: 700; padding: 1px 8px;
+}
+.mv.future { color: var(--dim); opacity: .32; }      /* coup futur caché */
+.mv.cur    { border-color: var(--cyan); background: var(--cyan-dim); color: var(--cyan); font-weight: 600; }
+/* Bandeau d'aperçu (navigation dans une position passée) */
+.mv-preview-bar {
+  display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  margin: 0 8px 6px 0; padding: 2px 9px; border-radius: 999px;
+  background: var(--cyan-dim); color: var(--cyan); font-weight: 600; font-size: .74rem;
+  font-family: system-ui, sans-serif;
+}
 
 /* ══ BULLE COMMENTAIRE — phase apprentissage (façon Duolingo) ══ */
 .study-bubble {
@@ -496,6 +524,8 @@ textarea {
 .sr-count { display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px; border-radius: 999px; font-size: .72rem; font-weight: 600; }
 .sr-count.sr-new { background: rgba(99, 102, 241, .15); color: var(--cyan); }
 .sr-count.sr-rev { background: rgba(245, 158, 11, .15); color: #b45309; }
+.sr-backlog { display: flex; align-items: center; gap: 6px; margin-top: 8px; padding: 6px 10px; border-radius: 8px;
+  background: rgba(245, 158, 11, .10); color: #b45309; font-size: .72rem; font-weight: 600; }
 
 /* Tableau de bord SR (P3) */
 .srdash { background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); padding: 14px 16px; margin: 14px 0; }

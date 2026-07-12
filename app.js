@@ -4,7 +4,7 @@
 // Vendors (chess.js, @supabase/supabase-js) restent chargés en CDN dans index.html.
 // Dans un module ES, un identifiant non déclaré (Chess, supabase) se résout sur
 // globalThis → `new Chess()` et `supabase.createClient` marchent sans import vendor.
-import { _normFen, sm2Schedule, normalizeSAN, extractAllLines } from './lib/core.js';
+import { _normFen, normalizeSAN, extractAllLines } from './lib/core.js';
 import {
   _sbModuleToRow, _sbRowToModule, _sbClassToRow, _sbRowToClass,
   _sbResultToRow, _sbRowToResult, _sbPracticeToRow, _sbRowToPractice,
@@ -236,6 +236,7 @@ function fig(san) {
 }
 
 function currentGame() {
+  if (S.preview && S.preview.game) return S.preview.game;   // aperçu lecture-seule (clic-navigation)
   if (S.drill?.varmode === 'tree') return S.lineGame;
   return S.drill?.mode === 'line' ? S.lineGame : S.game;
 }
@@ -315,8 +316,8 @@ function goPage(name) {
 }
 
 // ══════════════════════════════════════════════════════
-// PARSING PGN + SM-2 (cœur) + _normFen → déplacés dans lib/core.js
-// (normalizeSAN, extractAllLines, sm2Schedule, _normFen), chargé avant app.js
+// PARSING PGN + Leitner (cœur) + _normFen → déplacés dans lib/core.js
+// (normalizeSAN, extractAllLines, leitnerSchedule, _normFen), chargé avant app.js
 // et testés via Vitest (tests/core.test.js).
 // ══════════════════════════════════════════════════════
 

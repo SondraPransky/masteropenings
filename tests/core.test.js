@@ -1,4 +1,4 @@
-import { _normFen, sm2Schedule, normalizeSAN, extractAllLines } from '../lib/core.js';
+import { _normFen, leitnerSchedule, DEFAULT_LADDER_HOURS, normalizeSAN, extractAllLines } from '../lib/core.js';
 
 // ─────────────────────────────────────────────────────────────
 describe('_normFen — clé de transposition', () => {
@@ -15,61 +15,70 @@ describe('_normFen — clé de transposition', () => {
 });
 
 // ─────────────────────────────────────────────────────────────
-describe('sm2Schedule — répétition espacée SM-2', () => {
+describe('leitnerSchedule — répétition espacée à échelons', () => {
   const NOW = 1_000_000_000_000;
-  const DAY = 86400000;
+  const H = 3600000;
+  // Échelle par défaut (Chessable) en heures : 4h · 1j · 3j · 1sem · 2sem · 1mois · 3mois · 6mois
+  const L = DEFAULT_LADDER_HOURS;
 
-  it('1re bonne réponse : interval 1j, reps 1, ef +0.1, due à +1j', () => {
-    const m = sm2Schedule(null, true, NOW);
-    expect(m.interval).toBe(1);
+  it('échelle par défaut = les 8 paliers Chessable', () => {
+    expect(L).toEqual([4, 24, 72, 168, 336, 720, 2160, 4320]);
+  });
+
+  it('1re bonne réponse (depuis rien) : niveau 1, due à +4h, reps 1', () => {
+    const m = leitnerSchedule(null, true, NOW);
+    expect(m.level).toBe(1);
     expect(m.reps).toBe(1);
-    expect(m.ef).toBeCloseTo(2.6, 6);
-    expect(m.due).toBe(NOW + 1 * DAY);
+    expect(m.due).toBe(NOW + 4 * H);
   });
 
-  it('2e bonne réponse : interval passe à 6j', () => {
-    let m = sm2Schedule(null, true, NOW);   // reps1, i1
-    m = sm2Schedule(m, true, NOW);          // reps2, i6
-    expect(m.reps).toBe(2);
-    expect(m.interval).toBe(6);
-    expect(m.due).toBe(NOW + 6 * DAY);
+  it('bonnes réponses successives : le niveau grimpe d’un cran, due suit l’échelle', () => {
+    let m = leitnerSchedule(null, true, NOW);   // niv1 → 4h
+    m = leitnerSchedule(m, true, NOW);          // niv2 → 1j
+    expect(m.level).toBe(2);
+    expect(m.due).toBe(NOW + 24 * H);
+    m = leitnerSchedule(m, true, NOW);          // niv3 → 3j
+    expect(m.level).toBe(3);
+    expect(m.due).toBe(NOW + 72 * H);
   });
 
-  it('3e bonne réponse : interval = round(interval * ef)', () => {
-    let m = sm2Schedule(null, true, NOW);   // i1
-    m = sm2Schedule(m, true, NOW);          // i6, ef2.7
-    const efBefore = m.ef;
-    m = sm2Schedule(m, true, NOW);          // i = round(6 * efBefore)
-    expect(m.interval).toBe(Math.round(6 * efBefore));
-    expect(m.reps).toBe(3);
-  });
-
-  it('mauvaise réponse : reps→0, interval→1, ef baisse', () => {
-    let m = sm2Schedule(null, true, NOW);
-    m = sm2Schedule(m, true, NOW);
-    const efBefore = m.ef;
-    m = sm2Schedule(m, false, NOW);
-    expect(m.reps).toBe(0);
-    expect(m.interval).toBe(1);
-    expect(m.ef).toBeCloseTo(Math.max(1.3, efBefore - 0.54), 6);
-  });
-
-  it('ef ne descend jamais sous le plancher 1.3', () => {
+  it('mauvaise réponse : retour au niveau 1 (4h), quelle que soit la hauteur atteinte', () => {
     let m = null;
-    for (let k = 0; k < 20; k++) m = sm2Schedule(m, false, NOW);
-    expect(m.ef).toBeGreaterThanOrEqual(1.3);
-    expect(m.ef).toBeCloseTo(1.3, 6);
+    for (let k = 0; k < 5; k++) m = leitnerSchedule(m, true, NOW);   // niveau 5
+    expect(m.level).toBe(5);
+    m = leitnerSchedule(m, false, NOW);
+    expect(m.level).toBe(1);
+    expect(m.due).toBe(NOW + 4 * H);
   });
 
-  it('now est injectable, y compris 0 (déterminisme, pas de fallback Date.now)', () => {
-    expect(sm2Schedule(null, true, 0).due).toBe(1 * DAY);
+  it('le niveau est plafonné au dernier palier de l’échelle', () => {
+    let m = null;
+    for (let k = 0; k < 20; k++) m = leitnerSchedule(m, true, NOW);
+    expect(m.level).toBe(L.length);          // 8
+    expect(m.due).toBe(NOW + L[L.length - 1] * H);
+  });
+
+  it('échelle personnalisée (coach) respectée', () => {
+    const custom = [1, 48];                  // 1h puis 48h
+    let m = leitnerSchedule(null, true, NOW, custom);
+    expect(m.due).toBe(NOW + 1 * H);
+    m = leitnerSchedule(m, true, NOW, custom);
+    expect(m.level).toBe(2);
+    expect(m.due).toBe(NOW + 48 * H);
+    m = leitnerSchedule(m, true, NOW, custom);   // plafonné à 2 paliers
+    expect(m.level).toBe(2);
+  });
+
+  it('now est injectable, y compris 0 (déterminisme)', () => {
+    expect(leitnerSchedule(null, true, 0).due).toBe(4 * H);
   });
 
   it('est pure : ne mute pas l’objet précédent', () => {
-    const prev = { ef: 2.5, interval: 1, reps: 0, due: 0 };
-    const next = sm2Schedule(prev, true, NOW);
-    expect(prev).toEqual({ ef: 2.5, interval: 1, reps: 0, due: 0 });
+    const prev = { level: 2, due: 123, reps: 2 };
+    const next = leitnerSchedule(prev, true, NOW);
+    expect(prev).toEqual({ level: 2, due: 123, reps: 2 });
     expect(next).not.toBe(prev);
+    expect(next.level).toBe(3);
   });
 });
 

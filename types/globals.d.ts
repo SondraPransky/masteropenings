@@ -149,6 +149,12 @@ interface Window {
   _srBilan?: (...a: any[]) => any;
   _srSessionSize?: (...a: any[]) => any;
   renderSrDashboard?: (...a: any[]) => any;
+  _srGetLadder?: (...a: any[]) => any;
+  _srSetLadder?: (...a: any[]) => any;
+  _srApplyPreset?: (...a: any[]) => any;
+  _srLadderAddRung?: (...a: any[]) => any;
+  _srLadderRemoveRung?: (...a: any[]) => any;
+  srFlashDone?: (...a: any[]) => any;
 
   // — Drill (lib/drill.js) —
   startLineDrill?: (...a: any[]) => any;
