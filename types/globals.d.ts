@@ -7,7 +7,7 @@
 // chess.js 0.10.3 — https://cdnjs.cloudflare.com/.../chess.min.js
 declare class Chess {
   constructor(fen?: string);
-  move(move: string | { from: string; to: string; promotion?: string }): any;
+  move(move: string | { from: string; to: string; promotion?: string }, opts?: any): any;
   moves(opts?: any): any;
   fen(): string;
   load(fen: string): boolean;
@@ -99,6 +99,8 @@ interface Window {
   loadStudentModules?: (...a: any[]) => any;
   syncModuleToFirestore?: (...a: any[]) => any;
   _sbSaveStudentModule?: (...a: any[]) => any;
+  openPositionSetupForExercise?: (...a: any[]) => any;   // lib/setup.js (exercices)
+  _exOnPositionReady?: (...a: any[]) => any;             // lib/exercises.js (retour position)
   renderEditorBoard?: (...a: any[]) => any;
 
   // — Board / feedback / score (app.js) —

@@ -30,7 +30,7 @@ describe('mapping module ↔ ligne SQL', () => {
     expect(row.hide_comments).toBe(false);
     expect(row.updated_at).toBe(1700000001234);
     expect(row.owner_student_id).toBe(null);
-    expect(row.extra).toEqual({ created: '27/06/2026', fromLibrary: true, demo: false });
+    expect(row.extra).toEqual({ created: '27/06/2026', fromLibrary: true, demo: false, isExercise: false });
   });
 
   it('round-trip : restitue tous les champs persistés', () => {

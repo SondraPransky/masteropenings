@@ -665,10 +665,111 @@
         <span class="create-choice-ico">⚙️</span>
         <span class="create-choice-txt"><b>Depuis une position</b><small>FEN ou échiquier vide — place les pièces, choisis le trait</small></span>
       </button>
+      <button class="create-choice" onclick="closeModal('modal-create-choice');openExercisePacket()">
+        <span class="create-choice-ico">🧩</span>
+        <span class="create-choice-txt"><b>Paquet d'exercices</b><small>Positions « trouve le bon coup » à assigner aux élèves</small></span>
+      </button>
       <button class="create-choice" onclick="closeModal('modal-create-choice');openLibrary()">
         <span class="create-choice-ico">📚</span>
         <span class="create-choice-txt"><b>Bibliothèque d'ouvertures</b><small>Pars d'une ouverture prête à l'emploi</small></span>
       </button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="modal-exercise-packet">
+  <div class="modal" style="max-width:640px;width:96vw;max-height:94vh;overflow-y:auto;padding:24px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="modal-title" id="ex-pk-title" style="margin:0">🧩 Nouveau paquet d'exercices</div>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-exercise-packet')">✕</button>
+    </div>
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-bottom:16px">
+      <div class="frow" style="margin:0"><label>Nom du paquet</label>
+        <input type="text" id="ex-pk-name" placeholder="Ex : Mats en 1, Fourchettes de cavalier…">
+      </div>
+      <div class="frow" style="margin:0"><label>Niveau</label>
+        <select id="ex-pk-level">
+          <option>Débutant</option><option selected>Intermédiaire</option>
+          <option>Avancé</option><option>Expert</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+      <div style="font-size:.78rem;color:var(--dim)" id="ex-count">Aucun exercice pour l'instant</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" style="margin:0" onclick="exAddFromFen()" title="Ajouter depuis un FEN">⚡ FEN</button>
+        <button class="btn btn-ghost btn-sm" style="margin:0" onclick="exImportPgn()" title="Importer un ou plusieurs PGN">📋 PGN</button>
+        <button class="btn btn-blue btn-sm" style="margin:0" onclick="exAddExercise()">＋ Sur l'échiquier</button>
+      </div>
+    </div>
+    <div id="ex-list" style="margin-bottom:18px"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-exercise-packet')">Annuler</button>
+      <button class="btn btn-gold btn-sm" onclick="saveExercisePacket()">✓ Enregistrer le paquet</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="modal-exercise-solution">
+  <div class="modal" style="max-width:560px;width:96vw;max-height:94vh;overflow-y:auto;padding:24px;z-index:210">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div class="modal-title" style="margin:0">Coup solution</div>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-exercise-solution')">✕</button>
+    </div>
+    <div style="font-size:.82rem;color:var(--dim);margin-bottom:12px" id="ex-sol-turn">Joue le bon coup sur l'échiquier.</div>
+    <div id="ex-sol-board" style="display:grid;grid-template-columns:repeat(8,1fr);width:min(360px,80vw);aspect-ratio:1;margin:0 auto 14px;border-radius:8px;overflow:hidden;border:1px solid var(--border)"></div>
+    <div style="display:grid;grid-template-columns:1fr auto;gap:10px;margin-bottom:10px">
+      <div class="frow" style="margin:0"><label>Coup solution (SAN, ou joue-le)</label>
+        <input type="text" id="ex-sol-san" placeholder="Ex : Cf7+ ou g1f3">
+      </div>
+      <div class="frow" style="margin:0;align-self:end">
+        <button class="btn btn-ghost btn-sm" style="margin:0" onclick="exSolReset()">↺ Effacer</button>
+      </div>
+    </div>
+    <div class="frow"><label>Coups aussi acceptés (optionnel, séparés par des virgules)</label>
+      <input type="text" id="ex-sol-alt" placeholder="Ex : Dxh7+, Txh7">
+    </div>
+    <div class="frow"><label>Commentaire (optionnel)</label>
+      <input type="text" id="ex-sol-comment" placeholder="Ex : la fourchette gagne la dame">
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-exercise-solution')">Annuler</button>
+      <button class="btn btn-gold btn-sm" onclick="exSolAdd()">✓ Ajouter au paquet</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="modal-exercise-fen">
+  <div class="modal" style="max-width:520px;width:96vw;padding:24px;z-index:210">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div class="modal-title" style="margin:0">⚡ Exercice depuis un FEN</div>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-exercise-fen')">✕</button>
+    </div>
+    <div style="font-size:.82rem;color:var(--dim);margin-bottom:12px">Colle la position (FEN). Tu joueras ensuite le coup solution sur l'échiquier.</div>
+    <div class="frow"><label>FEN</label>
+      <input type="text" id="ex-fen-input" spellcheck="false" autocorrect="off" placeholder="r1bqkbnr/pppp1ppp/2n5/... w KQkq - 0 1">
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-exercise-fen')">Annuler</button>
+      <button class="btn btn-gold btn-sm" onclick="exFenContinue()">Continuer →</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="modal-exercise-pgn">
+  <div class="modal" style="max-width:560px;width:96vw;max-height:94vh;overflow-y:auto;padding:24px;z-index:210">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div class="modal-title" style="margin:0">📋 Importer des exercices (PGN)</div>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-exercise-pgn')">✕</button>
+    </div>
+    <div style="font-size:.82rem;color:var(--dim);margin-bottom:12px">Une partie = un exercice : la position vient de l'en-tête <code>[FEN]</code> (ou du départ standard), la solution est le premier coup. Colle plusieurs parties d'affilée pour en créer plusieurs.</div>
+    <div class="frow"><label>PGN</label>
+      <textarea id="ex-pgn-input" spellcheck="false" autocorrect="off" autocomplete="off" style="height:180px"
+        placeholder='[FEN &quot;r1bqkbnr/pppp1ppp/2n5/4N3/... w - - 0 1&quot;]&#10;&#10;1. Nxf7 {la fourchette gagne la dame} *'></textarea>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-exercise-pgn')">Annuler</button>
+      <button class="btn btn-gold btn-sm" onclick="exPgnRun()">✓ Importer</button>
     </div>
   </div>
 </div>
