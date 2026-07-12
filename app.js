@@ -262,6 +262,14 @@ function fig(san) {
   if (!san) return san;
   return san.replace(/^([KQRBN])/, m => PIECE_SYMS[m] || m);
 }
+// Remplace les coups de pièce (SAN) INLINE dans un texte (commentaire) par la figurine :
+// « après Nb5 » → « après ♘b5 ». Ne touche pas aux mots (ancré sur un motif SAN strict :
+// lettre de pièce + éventuelle désambiguïsation + case d'arrivée). À appliquer APRÈS escapeHtml.
+function figurineText(text) {
+  if (!text) return text;
+  return String(text).replace(/\b([KQRBN])([a-h]?[1-8]?x?[a-h][1-8](?:=[QRBN])?[+#]?)/g,
+    (m, p, rest) => (PIECE_SYMS[p] || p) + rest);
+}
 
 function currentGame() {
   if (S.preview && S.preview.game) return S.preview.game;   // aperçu lecture-seule (clic-navigation)
@@ -616,7 +624,7 @@ function setBoardComment(comment) {
   if (!el) return;
   if (comment) {
     el.style.display = 'block';
-    el.innerHTML = `<span style="color:var(--cyan);margin-right:5px">💬</span>${escapeHtml(comment)}`;
+    el.innerHTML = `<span style="color:var(--cyan);margin-right:5px">💬</span>${figurineText(escapeHtml(comment))}`;
   } else {
     el.style.display = 'none';
     el.innerHTML = '';
@@ -694,7 +702,7 @@ function setFeedback(type,msg,comment){
   const el=document.getElementById('feedback');
   el.className='feedback '+type;
   el.innerHTML=`<div>${escapeHtml(msg)}</div>`;
-  if(comment) el.innerHTML+=`<div class="pgn-comment">💬 ${escapeHtml(comment)}</div>`;
+  if(comment) el.innerHTML+=`<div class="pgn-comment">💬 ${figurineText(escapeHtml(comment))}</div>`;
   // Reflet sous l'échiquier
   setBoardComment(comment||'');
   if(type==='ok')       setBoardPrompt('ok','✓ '+msg);
@@ -1306,7 +1314,7 @@ Object.assign(window, {
   _sbRecordPractice, _sbRecordResult, _sbSaveClass, _sbSaveGame, _sbUpdateGame, _sbDeleteGame,
   _sbSaveMastery, _sbSaveBases, _sbSaveStudentModule, _shapesToPGN, _treePlayerPositions,
   addLog, clearFeedback, clearLog, closeModal, confirmName, countPlayerMoves, currentGame,
-  currentSession, deleteModule, editorTreeToPGN, escapeHtml, fig, goPage, goBackFromDrill, initDrillPage,
+  currentSession, deleteModule, editorTreeToPGN, escapeHtml, fig, figurineText, goPage, goBackFromDrill, initDrillPage,
   isLineMode, isPlayerMove, loadStudentModules, loginUser, logoutUser, nagGlyphs, nextDrill,
   nextSession, pgnToEditorTree, registerUser, requestPasswordReset, save, saveClasses,
   selectDrill, setBoardComment, setBoardPrompt, setFeedback, showHint, signInGoogle,

@@ -127,6 +127,7 @@ interface Window {
   renderHeatmap?: (...a: any[]) => any;
   pgnToEditorTree?: (...a: any[]) => any;
   openWeakspotPosition?: (...a: any[]) => any;
+  figurineText?: (s: string) => string;
   renderClassesTab?: (...a: any[]) => any;
   renderPartiesTab?: (...a: any[]) => any;
   _deadlinePill?: (...a: any[]) => any;
