@@ -133,6 +133,12 @@ Tranches à livrer **dans l’ordre** (chacune démontrable) :
 - **Élève** : `_sbLoadStudentModules` applique l’échéance d’assignation **la plus proche** (prime sur la `deadline` du module) ; `_shModuleCard` affiche un badge (⚠ retard / ⏰ Nj / 📅 date).
 - **Suivi par module × élève** : `renderClassesTab` (coach.js) décompose chaque classe par module (pastille échéance + `✅ faits/roster`) × élève (fait `%·récence` / en retard / pas commencé).
 
+### Fait — refonte création & dashboard coach (juillet 2026)
+- **Fusion onglets Élèves + Classes** : la sidenav coach n’a plus d’onglet « Classes » ; la gestion des classes (formulaire + liste + suivi) vit dans l’onglet **Élèves** (sous la progression). `switchCoachSection('eleves')` rend aussi les classes ; `switchCoachSection('classes')` supprimé (repointé sur `'eleves'`).
+- **Bouton « Créer » unifié** : les 3 boutons (Bibliothèque/Échiquier/Nouveau module) remplacés par un seul **+ Créer** → `modal-create-choice` (Sur l’échiquier · Coller un PGN · **Depuis une position** · Bibliothèque). `openCreateChoice` (`lib/modules.js`).
+- **Éditeur de position** (`lib/setup.js`, `modal-position-setup`) : échiquier de placement (palette pièces + gomme, un seul roi/camp), **trait**, champ **FEN bidirectionnel**. `openPositionSetup` (module) / `openPositionSetupForGame` (partie). Roques/en-passant : défaut (aucun droit), pas d’UI dédiée.
+  - **Round-trip position custom** : `editorTreeToPGN(root, startFen)` préfixe `[SetUp]`/`[FEN]` si non-standard ; `extractAllLines` (core.js) honore l’en-tête `[FEN]` ; `openReviewEditor` ré-extrait le FEN d’un PGN de partie ; `openPgnEditorNew`/`openGameEditor` acceptent un `startFen` ; `saveEditorDrill` écrit `sessions[0].startFen`. Vérifié : module custom (setup→éditeur→save→réouverture→**drill démarre depuis la position**) et partie custom (bouton « Depuis une position » du modal Nouvelle partie → round-trip FEN).
+
 ## 7. Règles de Développement
 
 - **Supabase est la source de vérité.** Clé « publishable » PUBLIQUE OK ; jamais de clé « secret ».
