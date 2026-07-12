@@ -27,6 +27,10 @@
   /* ── Vert — correct / maîtrise ── */
   --green:     #16a34a;
   --green-dim: rgba(22,163,74,.10);
+  /* "ink" = variante lisible AA quand gold/green sert de TEXTE sur son -dim (clair).
+     En dark, les tokens de base sont deja clairs et passent → ink = base. */
+  --gold-ink:  #92400e;
+  --green-ink: #15803d;
 
   /* ── Rouge — erreur ── */
   --red:     #dc2626;
@@ -323,9 +327,9 @@ textarea {
   font-weight: 500;
   border: 1px solid transparent;
 }
-.badge-gold   { background: var(--gold-dim);   color: var(--gold); }
+.badge-gold   { background: var(--gold-dim);   color: var(--gold-ink); }
 .badge-blue   { background: var(--blue-dim);   color: var(--blue); }
-.badge-green  { background: var(--green-dim);  color: var(--green); }
+.badge-green  { background: var(--green-dim);  color: var(--green-ink); }
 .badge-red    { background: var(--red-dim);    color: var(--red); }
 /* ══ ÉCHIQUIER ═══════════════════════════════ */
 .board-wrap  { display: flex; flex-direction: column; align-items: center; gap: 16px; min-width: 300px; }
@@ -424,7 +428,7 @@ textarea {
   flex-shrink: 0;
 }
 .pos-dot.current { border-color: var(--cyan); background: var(--cyan-dim); color: var(--cyan); font-weight: 700; }
-.pos-dot.done-ok { border-color: var(--green); background: rgba(5,150,105,.08); color: var(--green); }
+.pos-dot.done-ok { border-color: var(--green); background: rgba(5,150,105,.08); color: var(--green-ink); }
 .pos-dot.done-ko { border-color: var(--red);   background: rgba(225,29,72,.08); color: var(--red); }
 
 /* ══ NOTATION ════════════════════════════════ */
@@ -643,7 +647,7 @@ textarea {
 }
 .deadline-pill.ok   { background: rgba(5,150,105,.08);  color: #047857; border-color: rgba(5,150,105,.2); }
 .deadline-pill.late { background: rgba(225,29,72,.07);  color: #be123c; border-color: rgba(225,29,72,.2); }
-.deadline-pill.soon { background: rgba(217,119,6,.08);  color: #b45309; border-color: rgba(217,119,6,.2); }
+.deadline-pill.soon { background: rgba(217,119,6,.08);  color: var(--gold-ink); border-color: rgba(217,119,6,.2); }
 
 /* Parties */
 .game-row {
@@ -856,6 +860,8 @@ textarea {
   --blue-dim:  rgba(96,165,250,.14);
   --green:     #4ade80;
   --green-dim: rgba(74,222,128,.14);
+  --gold-ink:  var(--gold);
+  --green-ink: var(--green);
   --red:       #f87171;
   --red-dim:   rgba(248,113,113,.14);
   --violet:    #a78bfa;
@@ -939,7 +945,7 @@ textarea {
 }
 .role-chip.student {
   background: rgba(5,150,105,.09);
-  color: var(--green);
+  color: var(--green-ink);
   border: 1px solid rgba(5,150,105,.2);
 }
 
@@ -1080,11 +1086,11 @@ textarea {
   .sh-section-head > div:last-child { width:100%; justify-content:flex-start !important; }
 }
 .sh-section-head .sh-section-label { margin:0; }
-.sh-notif-banner { background:var(--gold-dim); border:1px solid rgba(217,119,6,.3); color:var(--gold); border-radius:var(--r); padding:11px 15px; font-size:.86rem; margin-bottom:4px; }
+.sh-notif-banner { background:var(--gold-dim); border:1px solid rgba(217,119,6,.3); color:var(--gold-ink); border-radius:var(--r); padding:11px 15px; font-size:.86rem; margin-bottom:4px; }
 .sh-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:16px; }
 .sh-hello { font-family:var(--font-display); font-size:1.55rem; font-weight:800; letter-spacing:-.5px; }
 .sh-hello-sub { font-size:.82rem; color:var(--dim); margin-top:2px; }
-.sh-streak { font-size:.82rem; font-weight:700; color:var(--gold); background:var(--gold-dim); border:1px solid rgba(217,119,6,.25); padding:5px 11px; border-radius:999px; white-space:nowrap; flex-shrink:0; }
+.sh-streak { font-size:.82rem; font-weight:700; color:var(--gold-ink); background:var(--gold-dim); border:1px solid rgba(217,119,6,.25); padding:5px 11px; border-radius:999px; white-space:nowrap; flex-shrink:0; }
 .sh-streak:empty { display:none; }
 /* Hero actionnable (positions dues) — le seul endroit où l'indigo est plein : c'est un signal, "tu as du travail". */
 .sh-hero { position:relative; overflow:hidden; background:linear-gradient(135deg,#6366f1,#4f46e5); color:#fff; border-radius:12px; padding:20px 22px; margin-bottom:16px; box-shadow:0 2px 10px rgba(79,70,229,.18); }
@@ -1200,8 +1206,8 @@ textarea {
   letter-spacing: 0.4px;
 }
 .sh-mod-state.new      { background: var(--cyan-dim);  color: var(--cyan); }
-.sh-mod-state.review   { background: var(--gold-dim);  color: var(--gold); }
-.sh-mod-state.mastered { background: var(--green-dim); color: var(--green); }
+.sh-mod-state.review   { background: var(--gold-dim);  color: var(--gold-ink); }
+.sh-mod-state.mastered { background: var(--green-dim); color: var(--green-ink); }
 
 /* Barre de progression (remplace la bague) */
 .sh-mod-progress {
@@ -1518,7 +1524,7 @@ textarea {
   font-family: 'JetBrains Mono', monospace; font-size: .72rem; font-weight: 700;
   background: var(--surf2); color: var(--text-2); box-shadow: inset 0 0 0 1px var(--border);
 }
-.lib-entry-result.win  { background: var(--green-dim); color: var(--green); box-shadow: inset 0 0 0 1px rgba(22,163,74,.25); }
+.lib-entry-result.win  { background: var(--green-dim); color: var(--green-ink); box-shadow: inset 0 0 0 1px rgba(22,163,74,.25); }
 .lib-entry-result.loss { background: var(--red-dim);   color: var(--red);   box-shadow: inset 0 0 0 1px rgba(220,38,38,.25); }
 .lib-entry-main { flex: 1; min-width: 0; }
 .lib-entry-title { font-size: .9rem; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
