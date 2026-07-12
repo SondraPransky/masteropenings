@@ -178,7 +178,6 @@ function showLoginTab(tab) {
 }
 
 // ── Données — modules + G.classes (enseignant) ──────────
-async function loadTeacherModules()          { return _sbLoadTeacherModules(); }
 async function saveModule(drill)   { return _sbSaveModule(drill); }
 async function deleteModule(drillId) { return _sbDeleteModule(drillId); }
 
