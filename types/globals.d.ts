@@ -125,6 +125,8 @@ interface Window {
   // — Vue coach / suivi élèves (lib/coach.js) —
   renderProfView?: (...a: any[]) => any;
   renderHeatmap?: (...a: any[]) => any;
+  pgnToEditorTree?: (...a: any[]) => any;
+  openWeakspotPosition?: (...a: any[]) => any;
   renderClassesTab?: (...a: any[]) => any;
   renderPartiesTab?: (...a: any[]) => any;
   _deadlinePill?: (...a: any[]) => any;
