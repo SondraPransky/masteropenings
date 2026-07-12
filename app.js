@@ -1257,22 +1257,20 @@ async function _sbLoadBases() {
 // PONT window — expose les fonctions du module aux handlers inline onclick=""
 // (genere : toutes les fonctions top-level du module ES)
 // ══════════════════════════════════════════════════════
+// Nettoyé (audit #6) : seuls les noms réellement résolus au runtime par un
+// onclick="" (index.html ou HTML généré) ou par un autre module via window.X
+// restent exposés. Les fonctions appelées uniquement en interne (app.js les a
+// déjà dans sa portée) ne sont plus sur le pont (32 exports morts retirés).
 Object.assign(window, {
   _buildDrillTree, _commentDelay, _commentWithShapes, _drillSessions, _findNodeByFen,
-  _getHintFrom, _initA11y, _materialHint, _nagGroup, _parseShapes, _pieceFr, _sbAuthError,
-  _sbDeleteClass, _sbDeleteModule, _sbDeleteStudentModule, _sbInitAuth, _sbLoadMastery,
-  _sbLoadStudentModules, _sbLoadTeacherGames, _sbLoadTeacherModules, _sbLoadTeacherPractice,
-  _sbLoadTeacherResults, _sbLogin, _sbLogout, _sbRecordPractice, _sbRecordResult, _sbRegister,
-  _sbResetPassword, _sbSaveClass, _sbSaveGame, _sbUpdateGame, _sbDeleteGame, _sbLoadStudentGames,
-  _sbSaveMastery, _sbSaveModule, _sbSaveBases, _sbLoadBases,
-  _sbSaveStudentModule, _sbUpdatePassword, _sbUser, _shapesToPGN, _syncHeatmapFilters,
-  _syncPartiesFilter, _treePlayerPositions, addLog, askName, clearFeedback, clearLog, closeModal,
-  confirmName, countPlayerMoves, currentGame, currentSession, deleteModule,
-  editorTreeToPGN, escapeHtml, fig, goPage, initDrillPage, isLineMode, isPlayerMove,
-  loadStudentModules, loadTeacherGames, loadTeacherModules, loadTeacherPractice,
-  loadTeacherResults, loginUser, logoutUser, nagGlyphs, nextDrill, nextSession, pgnToEditorTree,
-  registerUser, requestPasswordReset, save, saveClasses, selectDrill, setBoardComment,
-  setBoardPrompt, setFeedback, showHint, signInGoogle, togglePwd, showLoginError, showLoginTab, showRecoveryForm,
-  skipPosition, startDrill, submitNewPassword, switchCoachSection, saveModule, toast,
-  toggleTheme, totalSessions, updateNav, updateScores, updateSessionInfo, updateStudentBar,
+  _materialHint, _nagGroup, _parseShapes, _sbDeleteClass, _sbDeleteStudentModule,
+  _sbRecordPractice, _sbRecordResult, _sbSaveClass, _sbSaveGame, _sbUpdateGame, _sbDeleteGame,
+  _sbSaveMastery, _sbSaveBases, _sbSaveStudentModule, _shapesToPGN, _treePlayerPositions,
+  addLog, clearFeedback, clearLog, closeModal, confirmName, countPlayerMoves, currentGame,
+  currentSession, deleteModule, editorTreeToPGN, escapeHtml, fig, goPage, initDrillPage,
+  isLineMode, isPlayerMove, loadStudentModules, loginUser, logoutUser, nagGlyphs, nextDrill,
+  nextSession, pgnToEditorTree, registerUser, requestPasswordReset, save, saveClasses,
+  selectDrill, setBoardComment, setBoardPrompt, setFeedback, showHint, signInGoogle,
+  togglePwd, showLoginTab, skipPosition, startDrill, submitNewPassword, switchCoachSection,
+  saveModule, toast, toggleTheme, totalSessions, updateScores, updateSessionInfo,
 });
