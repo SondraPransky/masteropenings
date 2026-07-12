@@ -179,8 +179,8 @@ function showLoginTab(tab) {
 
 // ── Données — modules + G.classes (enseignant) ──────────
 async function loadTeacherModules()          { return _sbLoadTeacherModules(); }
-async function syncModuleToFirestore(drill)   { return _sbSaveModule(drill); }
-async function deleteModuleFromFirestore(drillId) { return _sbDeleteModule(drillId); }
+async function saveModule(drill)   { return _sbSaveModule(drill); }
+async function deleteModule(drillId) { return _sbDeleteModule(drillId); }
 
 // Accueil eleve (renderStudentHome, _moduleStats, _shModuleCard, _seen*,
 // startStudentDrill, importStudentDrill...) + _myIdentifiers -> lib/student.js
@@ -966,40 +966,46 @@ async function _sbLoadTeacherModules() {
   } catch (e) { console.error('_sbLoadTeacherModules', e); window.renderDrillList?.(); }
 }
 
+// Exécuteur commun de la couche CRUD Supabase : factorise la garde de
+// précondition + le try/catch/log uniformes répétés par chaque `_sb*`.
+// `guardOk` est évalué au call-site (short-circuit sur sb/currentUser/rôle),
+// donc l'accès à `G.currentUser.uid` dans `fn` est sûr quand fn s'exécute.
+async function _sbRun(label, guardOk, fn) {
+  if (!guardOk) return;
+  try { return await fn(); }
+  catch (e) { console.error(label, e); }
+}
+
 async function _sbSaveModule(drill) {
-  if (!sb || !G.currentUser || G.currentRole !== 'teacher') return;
-  try {
+  return _sbRun('_sbSaveModule', sb && G.currentUser && G.currentRole === 'teacher', async () => {
     const row = _sbModuleToRow(drill);
     row.teacher_id = G.currentUser.uid;   // garantir le propriétaire (RLS)
     const { error } = await sb.from('modules').upsert(row);
     if (error) throw error;
-  } catch (e) { console.error('_sbSaveModule', e); }
+  });
 }
 
 async function _sbDeleteModule(drillId) {
-  if (!sb || !G.currentUser || G.currentRole !== 'teacher') return;
-  try {
+  return _sbRun('_sbDeleteModule', sb && G.currentUser && G.currentRole === 'teacher', async () => {
     const { error } = await sb.from('modules').delete().eq('id', drillId);
     if (error) throw error;
-  } catch (e) { console.error('_sbDeleteModule', e); }
+  });
 }
 
 async function _sbSaveClass(cls) {
-  if (!sb || !G.currentUser || G.currentRole !== 'teacher') return;
-  try {
+  return _sbRun('_sbSaveClass', sb && G.currentUser && G.currentRole === 'teacher', async () => {
     const row = _sbClassToRow(cls);
     row.teacher_id = G.currentUser.uid;
     const { error } = await sb.from('classes').upsert(row);
     if (error) throw error;
-  } catch (e) { console.error('_sbSaveClass', e); }
+  });
 }
 
 async function _sbDeleteClass(id) {
-  if (!sb || !G.currentUser) return;
-  try {
+  return _sbRun('_sbDeleteClass', sb && G.currentUser, async () => {
     const { error } = await sb.from('classes').delete().eq('id', id);
     if (error) throw error;
-  } catch (e) { console.error('_sbDeleteClass', e); }
+  });
 }
 
 // ════════════════════════════════════════════════════════════
@@ -1065,96 +1071,89 @@ async function _sbLoadStudentModules() {
 }
 
 async function _sbSaveStudentModule(d) {
-  if (!sb || !G.currentUser) return;
-  try {
+  return _sbRun('_sbSaveStudentModule', sb && G.currentUser, async () => {
     const row = _sbModuleToRow(d);
     row.owner_student_id = G.currentUser.uid;   // RLS : module perso de l'élève
     const { error } = await sb.from('modules').upsert(row);
     if (error) throw error;
-  } catch (e) { console.error('_sbSaveStudentModule', e); }
+  });
 }
 
 async function _sbDeleteStudentModule(id) {
-  if (!sb || !G.currentUser) return;
-  try {
+  return _sbRun('_sbDeleteStudentModule', sb && G.currentUser, async () => {
     const { error } = await sb.from('modules').delete().eq('id', id);
     if (error) throw error;
-  } catch (e) { console.error('_sbDeleteStudentModule', e); }
+  });
 }
 
 async function _sbRecordResult(rec) {
-  if (!sb || !G.currentUser) return;
-  try { const { error } = await sb.from('results').insert(_sbResultToRow(rec)); if (error) throw error; }
-  catch (e) { console.error('_sbRecordResult', e); }
+  return _sbRun('_sbRecordResult', sb && G.currentUser, async () => {
+    const { error } = await sb.from('results').insert(_sbResultToRow(rec)); if (error) throw error;
+  });
 }
 
 async function _sbRecordPractice(rec) {
-  if (!sb || !G.currentUser) return;
-  try { const { error } = await sb.from('practice').insert(_sbPracticeToRow(rec)); if (error) throw error; }
-  catch (e) { console.error('_sbRecordPractice', e); }
+  return _sbRun('_sbRecordPractice', sb && G.currentUser, async () => {
+    const { error } = await sb.from('practice').insert(_sbPracticeToRow(rec)); if (error) throw error;
+  });
 }
 
 async function _sbSaveGame(rec) {
-  if (!sb || !G.currentUser) return;
-  try { const { error } = await sb.from('games').insert(_sbGameToRow(rec)); if (error) throw error; }
-  catch (e) { console.error('_sbSaveGame', e); }
+  return _sbRun('_sbSaveGame', sb && G.currentUser, async () => {
+    const { error } = await sb.from('games').insert(_sbGameToRow(rec)); if (error) throw error;
+  });
 }
 
 // Mise à jour d'une partie existante (partage P1.3, annotation coach P1.4).
 // UPDATE et non insert → pas de conflit de PK ; RLS games_update autorise
 // l'élève (les siennes) ou le prof (parties partagées de ses élèves).
 async function _sbUpdateGame(rec) {
-  if (!sb || !G.currentUser) return;
-  try {
+  return _sbRun('_sbUpdateGame', sb && G.currentUser, async () => {
     const row = _sbGameToRow(rec); delete row.id;   // ne pas réécrire la clé
     const { error } = await sb.from('games').update(row).eq('id', rec.id);
     if (error) throw error;
-  } catch (e) { console.error('_sbUpdateGame', e); }
+  });
 }
 
 async function _sbDeleteGame(id) {
-  if (!sb || !G.currentUser) return;
-  try { const { error } = await sb.from('games').delete().eq('id', id); if (error) throw error; }
-  catch (e) { console.error('_sbDeleteGame', e); }
+  return _sbRun('_sbDeleteGame', sb && G.currentUser, async () => {
+    const { error } = await sb.from('games').delete().eq('id', id); if (error) throw error;
+  });
 }
 
 // Parties de l'élève connecté (Maia + bibliothèque) → multi-appareils.
 async function _sbLoadStudentGames() {
-  if (!sb || !G.currentUser || G.currentRole !== 'student') return;
-  try {
+  return _sbRun('_sbLoadStudentGames', sb && G.currentUser && G.currentRole === 'student', async () => {
     const { data } = await sb.from('games').select('*').eq('student_id', G.currentUser.uid);
     G.savedGames = (data || []).map(_sbRowToGame);
     localStorage.setItem('mc_games', JSON.stringify(G.savedGames));
-  } catch (e) { console.error('_sbLoadStudentGames', e); }
+  });
 }
 
 // Vue Prof : résultats / pratique / parties portant sur les modules du prof.
 async function _sbLoadTeacherResults() {
-  if (!sb || !G.currentUser || G.currentRole !== 'teacher') return;
-  const ids = G.drills.map(d => String(d.id));
-  if (!ids.length) { G.results = []; localStorage.setItem('mc_results', '[]'); return; }
-  try {
+  return _sbRun('_sbLoadTeacherResults', sb && G.currentUser && G.currentRole === 'teacher', async () => {
+    const ids = G.drills.map(d => String(d.id));
+    if (!ids.length) { G.results = []; localStorage.setItem('mc_results', '[]'); return; }
     const { data } = await sb.from('results').select('*').in('drill_id', ids);
     G.results = (data || []).map(_sbRowToResult);
     localStorage.setItem('mc_results', JSON.stringify(G.results));
-  } catch (e) { console.error('_sbLoadTeacherResults', e); }
+  });
 }
 
 async function _sbLoadTeacherPractice() {
-  if (!sb || !G.currentUser || G.currentRole !== 'teacher') return;
-  const ids = G.drills.map(d => String(d.id));
-  if (!ids.length) { G.practiceLog = []; localStorage.setItem('mc_practice', '[]'); return; }
-  try {
+  return _sbRun('_sbLoadTeacherPractice', sb && G.currentUser && G.currentRole === 'teacher', async () => {
+    const ids = G.drills.map(d => String(d.id));
+    if (!ids.length) { G.practiceLog = []; localStorage.setItem('mc_practice', '[]'); return; }
     const { data } = await sb.from('practice').select('*').in('drill_id', ids);
     G.practiceLog = (data || []).map(_sbRowToPractice);
     localStorage.setItem('mc_practice', JSON.stringify(G.practiceLog));
-  } catch (e) { console.error('_sbLoadTeacherPractice', e); }
+  });
 }
 
 async function _sbLoadTeacherGames() {
-  if (!sb || !G.currentUser || G.currentRole !== 'teacher') return;
-  const ids = G.drills.map(d => String(d.id));
-  try {
+  return _sbRun('_sbLoadTeacherGames', sb && G.currentUser && G.currentRole === 'teacher', async () => {
+    const ids = G.drills.map(d => String(d.id));
     // 1) Parties Maia liées aux modules du prof (drill_id).
     let maia = [];
     if (ids.length) {
@@ -1169,41 +1168,40 @@ async function _sbLoadTeacherGames() {
     [...maia, ...lib].forEach(g => { byId[g.id] = g; });
     G.savedGames = Object.values(byId);
     localStorage.setItem('mc_games', JSON.stringify(G.savedGames));
-  } catch (e) { console.error('_sbLoadTeacherGames', e); }
+  });
 }
 
 // Progression SM-2 (mastery) — stockée dans profiles.mastery (jsonb).
 async function _sbSaveMastery() {
   const student = G.currentUser && (G.currentUser.displayName || G.currentUser.email);
-  if (!sb || !G.currentUser || !student) return;
-  const prefix = student + '_';
-  const mine = {};
-  for (const k in G.masteryData) if (k.startsWith(prefix)) mine[k] = G.masteryData[k];
-  try { const { error } = await sb.from('profiles').update({ mastery: mine }).eq('id', G.currentUser.uid); if (error) throw error; }
-  catch (e) { console.error('_sbSaveMastery', e); }
+  return _sbRun('_sbSaveMastery', sb && G.currentUser && student, async () => {
+    const prefix = student + '_';
+    const mine = {};
+    for (const k in G.masteryData) if (k.startsWith(prefix)) mine[k] = G.masteryData[k];
+    const { error } = await sb.from('profiles').update({ mastery: mine }).eq('id', G.currentUser.uid);
+    if (error) throw error;
+  });
 }
 
 async function _sbLoadMastery() {
-  if (!sb || !G.currentUser) return;
-  try {
+  return _sbRun('_sbLoadMastery', sb && G.currentUser, async () => {
     const { data } = await sb.from('profiles').select('mastery').eq('id', G.currentUser.uid).maybeSingle();
     const m = data && data.mastery;
     if (m) {
       for (const k in m) if (!G.masteryData[k] || (m[k].due || 0) > (G.masteryData[k].due || 0)) G.masteryData[k] = m[k];
       localStorage.setItem('mc_mastery', JSON.stringify(G.masteryData));
     }
-  } catch (e) { console.error('_sbLoadMastery', e); }
+  });
 }
 
 // ── Bases PGN personnelles (Pilier 1) — stockées dans profiles.extra.bases (jsonb) ──
 // Défensif : si la colonne `extra` n'existe pas encore, l'erreur est catchée sans
 // casser le reste (migration idempotente : alter table profiles add column if not exists extra jsonb default '{}';).
 async function _sbSaveBases() {
-  if (!sb || !G.currentUser || G.currentRole !== 'student') return;
-  try {
+  return _sbRun('_sbSaveBases', sb && G.currentUser && G.currentRole === 'student', async () => {
     const { error } = await sb.from('profiles').update({ extra: { bases: G.bases } }).eq('id', G.currentUser.uid);
     if (error) throw error;
-  } catch (e) { console.error('_sbSaveBases', e); }
+  });
 }
 
 async function _sbLoadBases() {
@@ -1230,12 +1228,12 @@ Object.assign(window, {
   _sbSaveMastery, _sbSaveModule, _sbSaveBases, _sbLoadBases,
   _sbSaveStudentModule, _sbUpdatePassword, _sbUser, _shapesToPGN, _syncHeatmapFilters,
   _syncPartiesFilter, _treePlayerPositions, addLog, askName, clearFeedback, clearLog, closeModal,
-  confirmName, countPlayerMoves, currentGame, currentSession, deleteModuleFromFirestore,
+  confirmName, countPlayerMoves, currentGame, currentSession, deleteModule,
   editorTreeToPGN, escapeHtml, fig, goPage, initDrillPage, isLineMode, isPlayerMove,
   loadStudentModules, loadTeacherGames, loadTeacherModules, loadTeacherPractice,
   loadTeacherResults, loginUser, logoutUser, nagGlyphs, nextDrill, nextSession, pgnToEditorTree,
   registerUser, requestPasswordReset, save, saveClasses, selectDrill, setBoardComment,
   setBoardPrompt, setFeedback, showHint, signInGoogle, togglePwd, showLoginError, showLoginTab, showRecoveryForm,
-  skipPosition, startDrill, submitNewPassword, switchCoachSection, syncModuleToFirestore, toast,
+  skipPosition, startDrill, submitNewPassword, switchCoachSection, saveModule, toast,
   toggleTheme, totalSessions, updateNav, updateScores, updateSessionInfo, updateStudentBar,
 });

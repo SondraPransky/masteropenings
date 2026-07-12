@@ -20,7 +20,7 @@ Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un pr
 
 ### Points forts
 - Backend **Supabase** (source de vérité) opérationnel : auth, modules, classes, résultats, pratique, parties, mastery.
-- **Modularisation aboutie** : ~15 modules `lib/*` (voir Carte des fichiers). `app.js` réduit de **4412 → 1057 lignes (−76 %)** — il ne reste que login/auth, la couche Supabase `_sb*`, l’init, les helpers UI et le pont `window`.
+- **Modularisation aboutie** : ~15 modules `lib/*` (voir Carte des fichiers). `app.js` réduit de **4412 → 1241 lignes (−72 %)** — il ne reste que login/auth, la couche Supabase `_sb*`, l’init, les helpers UI et le pont `window`. ⚠️ **Le gain s’érode** : `app.js` (1241) et `lib/drill.js` (1116) repassent au-dessus de 1000 lignes → candidats décomposition (cf. audit qualité juillet 2026).
 - **Vite + modules ES** ; tests Vitest (logique pure) + `typecheck` ; **déployé** sur GitHub Pages (Actions, redéploie à chaque push sur `main`) → `https://sondrapransky.github.io/masteropenings/`.
 
 ### Angle mort à lever avant le lancement (**gate de release**)
@@ -54,7 +54,7 @@ La dette « critique » (taille d’`app.js`) est **résolue** (extractions §5 
 
 | Fichier | Rôle | Taille |
 |---------|------|--------|
-| `app.js` | Cœur applicatif : login/auth Supabase, accès Supabase (`_sb*`), init, helpers (`escapeHtml`/`fig`/`toast`/`setFeedback`/`updateScores`…), `currentGame`/`isLineMode`, `save`/`saveClasses`/`goPage`, pont `window` | ~52 Ko · 1057 lignes |
+| `app.js` | Cœur applicatif : login/auth Supabase, accès Supabase (`_sb*`), init, helpers (`escapeHtml`/`fig`/`toast`/`setFeedback`/`updateScores`…), `currentGame`/`isLineMode`, `save`/`saveClasses`/`goPage`, pont `window` | ~52 Ko · 1241 lignes |
 | `index.html` | Structure statique des écrans (montés/pilotés par `app.js`) | ~46 Ko |
 | `style.css` | Styles : design system (variables `--cyan`, `--surf`, `--border`…) + tous les écrans | ~54 Ko |
 | `state.js` | État global réassignable → objet `G` (source unique) | ~1,5 Ko |
@@ -75,7 +75,7 @@ La dette « critique » (taille d’`app.js`) est **résolue** (extractions §5 
 | `lib/mastery.js` | Mastery & enregistrement — **Leitner** (`sm2Update`/`sm2Get` sur `G.masteryData` ; nom `sm2Update` conservé pour le pont window, mais moteur = `leitnerSchedule`), synchro mastery multi-appareils (debounce 2,5 s → `_sbSaveMastery`, gardée par `G.currentUser`), enregistrement des sessions : résultats (`recordResult`), pratique (`recordPracticeSession`), parties Maia (`saveGame`). Cœur pur = `leitnerSchedule` (core.js) ; échelle du coach lue via `window._srGetLadder`. Writers `_sb*` restés dans app.js via `window` | ~8 Ko |
 | `home.html` + `data.js` | Page marketing autonome (copiée telle quelle dans `dist/` au build) | — |
 
-> **Refactoring (§5) terminé.** `app.js` **4412 → 1057 lignes (−76 %)** par extraction progressive (Strangler Fig) : éditeur (`editor-core`/`editor`), drill engine (`drill-core`/`drill`/`sr`/`session`), vues (`coach`/`student`/`modules`), échiquier (`board`), Maia (`maia`), SM-2/mastery (`mastery`). Détail par fichier → **Carte des fichiers** ci-dessus ; pas-à-pas → `git log` (commits `REFACTO :`). Patron appliqué : cœur pur testé + UI, fonctions app-level résolues via `window`, état partagé par `G`/`S`. Restés dans `app.js` par choix : couche `_sb*`, `save`/`saveClasses`/`goPage`, `currentGame`/`isLineMode`, `setBoardComment`/`setBoardPrompt`, sélecteur de promo (partagé board/éditeur).
+> **Refactoring (§5) terminé.** `app.js` **4412 → 1241 lignes (−72 %)** par extraction progressive (Strangler Fig) : éditeur (`editor-core`/`editor`), drill engine (`drill-core`/`drill`/`sr`/`session`), vues (`coach`/`student`/`modules`), échiquier (`board`), Maia (`maia`), SM-2/mastery (`mastery`). Détail par fichier → **Carte des fichiers** ci-dessus ; pas-à-pas → `git log` (commits `REFACTO :`). Patron appliqué : cœur pur testé + UI, fonctions app-level résolues via `window`, état partagé par `G`/`S`. Restés dans `app.js` par choix : couche `_sb*`, `save`/`saveClasses`/`goPage`, `currentGame`/`isLineMode`, `setBoardComment`/`setBoardPrompt`, sélecteur de promo (partagé board/éditeur).
 
 ### Commandes
 - **Dev** : `npm run dev` (Vite, HMR) — ou `npx serve .` (ESM natif, sans build)

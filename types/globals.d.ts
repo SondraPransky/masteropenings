@@ -97,7 +97,7 @@ interface Window {
   renderDrillList?: (...a: any[]) => any;
   renderClassModuleSelect?: (...a: any[]) => any;
   loadStudentModules?: (...a: any[]) => any;
-  syncModuleToFirestore?: (...a: any[]) => any;
+  saveModule?: (...a: any[]) => any;
   _sbSaveStudentModule?: (...a: any[]) => any;
   openPositionSetupForExercise?: (...a: any[]) => any;   // lib/setup.js (exercices)
   _exOnPositionReady?: (...a: any[]) => any;             // lib/exercises.js (retour position)
@@ -189,7 +189,7 @@ interface Window {
   injectDemoDrill?: (...a: any[]) => any;
   renderClassList?: (...a: any[]) => any;
   saveClasses?: (...a: any[]) => any;
-  deleteModuleFromFirestore?: (...a: any[]) => any;
+  deleteModule?: (...a: any[]) => any;
   _sbSaveClass?: (...a: any[]) => any;
   _sbDeleteClass?: (...a: any[]) => any;
 
