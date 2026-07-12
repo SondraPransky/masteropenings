@@ -207,10 +207,6 @@
       <span class="csnav-lbl">Élèves</span>
       <span class="csnav-badge" id="csnav-count-eleves">0</span>
     </button>
-    <button class="csnav-btn" id="csnav-classes" onclick="switchCoachSection('classes')">
-      <span class="csnav-ico"><i class="ti ti-school" aria-hidden="true"></i></span>
-      <span class="csnav-lbl">Classes</span>
-    </button>
     <div class="csnav-divider"></div>
     <div class="csnav-group">Analyse</div>
     <button class="csnav-btn" id="csnav-heatmap" onclick="switchCoachSection('heatmap')">
@@ -257,11 +253,12 @@
     <div id="csec-eleves" style="display:none">
       <div class="cs-header">
         <div>
-          <div class="cs-title">Mes élèves</div>
-          <div class="cs-sub">Résultats et progression par élève</div>
+          <div class="cs-title">Élèves &amp; classes</div>
+          <div class="cs-sub">Vos élèves, vos classes et leur progression</div>
         </div>
         <div class="cs-actions">
-          <button class="btn btn-primary btn-sm" onclick="addStudent()" title="Enregistrer un nouvel élève"><i class="ti ti-user-plus" aria-hidden="true"></i> Ajouter un élève</button>
+          <button class="btn btn-primary btn-sm" onclick="addStudent()" title="Ajouter un élève seul"><i class="ti ti-user-plus" aria-hidden="true"></i> Ajouter un élève</button>
+          <button class="btn btn-blue btn-sm" onclick="openClassForm()" title="Créer une classe (groupe d'élèves)"><i class="ti ti-school" aria-hidden="true"></i> Créer une classe</button>
           <select id="prof-drill-filter" onchange="renderProfView()" style="font-size:.8rem;width:auto;max-width:230px">
             <option value="all">Tous les modules</option>
           </select>
@@ -293,54 +290,45 @@
             </div>
           </div>
         </div>
+
+        <!-- Classes : gestion (éditer / supprimer) + suivi par module -->
+        <div class="cls-block">
+          <div class="cs-subhead"><i class="ti ti-school" aria-hidden="true"></i> Mes classes</div>
+          <div id="cls-list"></div>
+          <div class="cs-subhead" style="margin-top:18px"><i class="ti ti-chart-bar" aria-hidden="true"></i> Suivi par module</div>
+          <div id="prof-classes-content"></div>
+        </div>
       </div>
 
     </div>
 
-    <!-- ── SECTION : Classes ── -->
-    <div id="csec-classes" style="display:none">
-      <div class="cs-header">
-        <div>
-          <div class="cs-title">Classes</div>
-          <div class="cs-sub">Organisez vos élèves en groupes et assignez-leur des modules</div>
+    <!-- Modal : formulaire élève / classe (onglet Élèves fusionné) -->
+    <div class="overlay" id="modal-class-form">
+      <div class="modal" style="max-width:520px;width:96vw;max-height:92vh;overflow-y:auto;padding:24px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div class="modal-title" id="cls-form-title" style="margin:0"><i class="ti ti-school" aria-hidden="true"></i> Nouvelle classe</div>
+          <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-class-form');cancelEditClass()">✕</button>
         </div>
-      </div>
-      <div class="cls-grid">
-        <!-- Colonne gauche: formulaires -->
-        <div style="display:flex;flex-direction:column;gap:14px">
-          <div class="cls-create-form">
-            <div id="cls-form-title" style="font-weight:700;font-size:.9rem;margin-bottom:14px"><i class="ti ti-school" aria-hidden="true"></i> Nouvelle classe</div>
-            <div style="font-size:.8rem;color:var(--dim);margin-bottom:12px;line-height:1.6">Créez un groupe d'élèves, ou cochez « cours particulier » pour un élève seul. Ils verront les modules assignés dans leur espace.</div>
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:400;font-size:.82rem;margin-bottom:14px">
-              <input type="checkbox" id="inp-cls-individual" onchange="toggleClassMode()" style="width:auto;margin:0;accent-color:var(--cyan);cursor:pointer">
-              <span><i class="ti ti-user" aria-hidden="true"></i> Cours particulier (un seul élève, sans classe)</span>
-            </label>
-            <div class="frow" id="cls-name-row">
-              <label>Nom de la classe</label>
-              <input type="text" id="inp-cls-name" placeholder="Ex : Groupe A · Débutants · CM1">
-            </div>
-            <div class="frow">
-              <label>Modules à assigner <span style="font-weight:400;color:var(--dim);font-size:.72rem">— cliquez pour sélectionner</span></label>
-              <div id="inp-cls-modules" class="module-checklist"></div>
-            </div>
-            <div class="frow">
-              <label id="cls-students-label">Élèves <span style="font-weight:400;color:var(--dim);font-size:.72rem">— pseudo ou email, un par ligne</span></label>
-              <textarea id="inp-cls-students" rows="3" spellcheck="false" placeholder="alex12&#10;marie&#10;bob@email.com"></textarea>
-            </div>
-            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-              <button id="cls-save-btn" class="btn btn-primary btn-sm" onclick="saveClass()"><i class="ti ti-school" aria-hidden="true"></i> Créer la classe</button>
-              <button id="cls-cancel-btn" class="btn btn-ghost btn-sm" onclick="cancelEditClass()" style="display:none">Annuler</button>
-            </div>
-            <div id="cls-list" style="margin-top:14px"></div>
-          </div>
-
+        <div style="font-size:.8rem;color:var(--dim);margin-bottom:14px;line-height:1.6">Créez un groupe d'élèves, ou cochez « cours particulier » pour un élève seul. Ils verront les modules assignés dans leur espace.</div>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:400;font-size:.82rem;margin-bottom:14px">
+          <input type="checkbox" id="inp-cls-individual" onchange="toggleClassMode()" style="width:auto;margin:0;accent-color:var(--cyan);cursor:pointer">
+          <span><i class="ti ti-user" aria-hidden="true"></i> Cours particulier (un seul élève, sans classe)</span>
+        </label>
+        <div class="frow" id="cls-name-row">
+          <label>Nom de la classe</label>
+          <input type="text" id="inp-cls-name" placeholder="Ex : Groupe A · Débutants · CM1">
         </div>
-
-        <!-- Colonne droite: liste des classes existantes -->
-        <div id="prof-classes-content" class="cls-list">
-          <div class="empty" style="padding:40px;border:1px dashed var(--border);border-radius:var(--r)">
-            <div class="empty-ico"><i class="ti ti-school" aria-hidden="true"></i></div>Aucune classe.<br>Créez-en une pour organiser vos élèves.
-          </div>
+        <div class="frow">
+          <label>Modules à assigner <span style="font-weight:400;color:var(--dim);font-size:.72rem">— cliquez pour sélectionner</span></label>
+          <div id="inp-cls-modules" class="module-checklist"></div>
+        </div>
+        <div class="frow">
+          <label id="cls-students-label">Élèves <span style="font-weight:400;color:var(--dim);font-size:.72rem">— pseudo ou email, un par ligne</span></label>
+          <textarea id="inp-cls-students" rows="3" spellcheck="false" placeholder="alex12&#10;marie&#10;bob@email.com"></textarea>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+          <button id="cls-cancel-btn" class="btn btn-ghost btn-sm" onclick="closeModal('modal-class-form');cancelEditClass()">Annuler</button>
+          <button id="cls-save-btn" class="btn btn-primary btn-sm" onclick="saveClass()"><i class="ti ti-school" aria-hidden="true"></i> Créer la classe</button>
         </div>
       </div>
     </div>

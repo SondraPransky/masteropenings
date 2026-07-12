@@ -11,7 +11,7 @@ test.describe('Espace prof (authentifié)', () => {
   test('tableau de bord coach + navigation latérale', async ({ page }) => {
     await expect(page.locator('#csnav-modules')).toBeVisible();
     await expect(page.locator('#csnav-eleves')).toBeVisible();
-    await expect(page.locator('#csnav-classes')).toBeVisible();
+    // Onglet « Classes » fusionné dans « Élèves » (juillet 2026) : plus de csnav-classes.
   });
 
   test('onglet Modules : « 📤 Partager » sur une carte (ou état vide)', async ({ page }) => {
@@ -25,7 +25,8 @@ test.describe('Espace prof (authentifié)', () => {
   test('onglet Élèves : « ➕ Ajouter un élève » ouvre le formulaire cours particulier', async ({ page }) => {
     await page.locator('#csnav-eleves').click();
     await page.getByRole('button', { name: /Ajouter un élève/ }).first().click();
-    // addStudent() bascule sur Classes en mode « cours particulier ».
+    // addStudent() ouvre la modale du formulaire en mode « cours particulier ».
+    await expect(page.locator('#modal-class-form')).toBeVisible();
     await expect(page.locator('#cls-form-title')).toContainText('Nouvel élève');
     await expect(page.locator('#inp-cls-individual')).toBeChecked();
     await expect(page.locator('#inp-cls-students')).toBeVisible();

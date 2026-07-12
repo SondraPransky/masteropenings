@@ -1447,6 +1447,9 @@ textarea {
 }
 .cs-title { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; letter-spacing: -.5px; margin-bottom: 2px; }
 .cs-sub { font-size: .78rem; color: var(--dim); }
+/* Sous-titre de bloc (onglet Élèves fusionné : « Mes classes », « Suivi par module ») */
+.cs-subhead { font-family: var(--font-display); font-size: .98rem; font-weight: 700; color: var(--text); margin: 0 0 10px; display: flex; align-items: center; gap: 7px; }
+.cls-block { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
 .cs-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; flex-wrap: wrap; max-width: 100%; }
 
 /* Module cards */

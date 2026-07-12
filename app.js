@@ -295,7 +295,7 @@ function totalSessions() {
 // NAVIGATION
 // ══════════════════════════════════════════════════════
 function switchCoachSection(sec) {
-  const sections = ['modules','eleves','classes','heatmap','parties','export'];
+  const sections = ['modules','eleves','heatmap','parties','export'];
   sections.forEach(s => {
     const el = document.getElementById('csec-'+s);
     if (el) el.style.display = s===sec ? '' : 'none';
@@ -303,13 +303,12 @@ function switchCoachSection(sec) {
     if (btn) btn.classList.toggle('on', s===sec);
   });
   if (sec==='eleves')  {
-    // Suivi & progression des élèves (les classes ont leur propre section, cf. refonte T4).
-    Promise.all([loadTeacherResults(), loadTeacherPractice(), loadTeacherGames()]).then(()=>window.renderProfView?.());
-  }
-  if (sec==='classes') {
-    // Gestion & assignation : formulaire + liste des classes + suivi par module.
-    window.renderClassList?.(); window.renderClassModuleSelect?.();
-    Promise.all([loadTeacherResults(), loadTeacherPractice()]).then(()=>window.renderClassesTab?.());
+    // Onglet unifié « Élèves » : roster + progression + gestion des classes + suivi par module.
+    window.renderClassList?.();
+    Promise.all([loadTeacherResults(), loadTeacherPractice(), loadTeacherGames()]).then(()=>{
+      window.renderProfView?.();
+      window.renderClassesTab?.();
+    });
   }
   if (sec==='heatmap') { _syncHeatmapFilters(); window.renderHeatmap?.(); }
   if (sec==='parties') { loadTeacherGames().then(()=>{ _syncPartiesFilter(); window.renderPartiesTab?.(); }); }
