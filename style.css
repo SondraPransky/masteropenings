@@ -265,12 +265,12 @@ textarea {
 /* ══ SYSTÈME DE BOUTONS — hiérarchie sémantique (refonte UX — indigo unique) ══
    UNE seule teinte d'accent (indigo), déclinée en 3 niveaux de poids visuel.
    Règle : UN seul bouton PLEIN (primaire) par zone d'écran.
-     .btn-gold / .btn-primary → PRIMAIRE   (indigo PLEIN)  : l'action principale, 1 par zone
-     .btn-blue                → SECONDAIRE (indigo TONAL)  : action importante non-principale
-     .btn-ghost               → TERTIAIRE  (outline neutre) : support, navigation locale
-     .btn-red                 → DANGER     (rouge plein)   : destructif uniquement
-   NB : .btn-gold est un alias historique de .btn-primary (même rendu) — préférer .btn-primary.
-        .btn-blue n'est plus un 2e plein saturé : c'est le secondaire tonal (même hue que le primaire).
+     .btn-primary → PRIMAIRE   (indigo PLEIN)   : l'action principale, 1 par zone
+     .btn-blue    → SECONDAIRE (indigo TONAL)   : action importante non-principale
+     .btn-ghost   → TERTIAIRE  (outline neutre)  : support, navigation locale
+     .btn-red     → DANGER     (rouge plein)    : destructif uniquement
+   NB : .btn-blue n'est pas un 2e plein saturé : c'est le secondaire tonal (même hue que le primaire).
+        L'ancien alias .btn-gold a été retiré (juillet 2026) → tout est passé sur .btn-primary.
    .btn-sm = variante compacte. L'emoji reste au contenu, pas aux libellés de boutons (cf. T5). */
 .btn {
   display: inline-flex;
@@ -289,15 +289,6 @@ textarea {
 }
 .btn:active { transform: scale(.98); }
 .btn:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--surf), 0 0 0 4px var(--cyan-glow); }
-
-/* Action primaire = indigo (accent unique du brief).
-   NB : historiquement amber ; repointé sur l'indigo pour unifier les CTA.
-   La chaleur amber (--gold) reste réservée aux achievements/pastilles. */
-.btn-gold {
-  background: var(--cyan);
-  color: #fff;
-}
-.btn-gold:hover { filter: brightness(.93); }
 
 /* Ghost / outline — action secondaire */
 .btn-ghost {

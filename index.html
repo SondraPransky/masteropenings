@@ -168,7 +168,7 @@
     <div id="sh-dashboard"></div>
 
     <div style="text-align:center;margin-top:20px">
-      <button class="btn btn-ghost btn-sm" onclick="loadStudentModules()" style="font-size:.75rem">↻ Actualiser</button>
+      <button class="btn btn-ghost btn-sm" onclick="loadStudentModules()" style="font-size:.75rem"><i class="ti ti-refresh" aria-hidden="true"></i> Actualiser</button>
     </div>
   </div>
 </div>
@@ -240,7 +240,7 @@
           <div class="cs-sub" id="cs-modules-sub">0 module créé</div>
         </div>
         <div class="cs-actions">
-          <button class="btn btn-gold" onclick="openCreateChoice()">+ Créer</button>
+          <button class="btn btn-primary" onclick="openCreateChoice()">+ Créer</button>
         </div>
       </div>
       <div id="module-cards-grid" class="mcard-grid">
@@ -248,7 +248,7 @@
           <div class="mcard-empty-ico"><i class="ti ti-stack-2" aria-hidden="true"></i></div>
           <div class="mcard-empty-title">Aucun module pour l'instant</div>
           <div class="mcard-empty-sub">Créez votre premier module en important un PGN<br>et vos élèves pourront réviser les ouvertures.</div>
-          <button class="btn btn-gold" onclick="openCreateChoice()">+ Créer mon premier module</button>
+          <button class="btn btn-primary" onclick="openCreateChoice()">+ Créer mon premier module</button>
         </div>
       </div>
     </div>
@@ -261,7 +261,7 @@
           <div class="cs-sub">Résultats et progression par élève</div>
         </div>
         <div class="cs-actions">
-          <button class="btn btn-blue btn-sm" onclick="addStudent()" title="Enregistrer un nouvel élève"><i class="ti ti-user-plus" aria-hidden="true"></i> Ajouter un élève</button>
+          <button class="btn btn-primary btn-sm" onclick="addStudent()" title="Enregistrer un nouvel élève"><i class="ti ti-user-plus" aria-hidden="true"></i> Ajouter un élève</button>
           <select id="prof-drill-filter" onchange="renderProfView()" style="font-size:.8rem;width:auto;max-width:230px">
             <option value="all">Tous les modules</option>
           </select>
@@ -272,7 +272,7 @@
         <div class="empty-ico"><i class="ti ti-users" aria-hidden="true"></i></div>
         Aucun élève pour l'instant.<br>
         <span style="font-size:.8rem">Ajoutez un élève pour suivre sa progression — les résultats s'afficheront dès qu'il aura joué.</span>
-        <div style="margin-top:16px"><button class="btn btn-blue btn-sm" onclick="addStudent()"><i class="ti ti-user-plus" aria-hidden="true"></i> Ajouter un élève</button></div>
+        <div style="margin-top:16px"><button class="btn btn-primary btn-sm" onclick="addStudent()"><i class="ti ti-user-plus" aria-hidden="true"></i> Ajouter un élève</button></div>
       </div>
 
       <div id="prof-ui">
@@ -328,7 +328,7 @@
               <textarea id="inp-cls-students" rows="3" spellcheck="false" placeholder="alex12&#10;marie&#10;bob@email.com"></textarea>
             </div>
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-              <button id="cls-save-btn" class="btn btn-gold btn-sm" onclick="saveClass()"><i class="ti ti-school" aria-hidden="true"></i> Créer la classe</button>
+              <button id="cls-save-btn" class="btn btn-primary btn-sm" onclick="saveClass()"><i class="ti ti-school" aria-hidden="true"></i> Créer la classe</button>
               <button id="cls-cancel-btn" class="btn btn-ghost btn-sm" onclick="cancelEditClass()" style="display:none">Annuler</button>
             </div>
             <div id="cls-list" style="margin-top:14px"></div>
@@ -369,8 +369,8 @@
     <div id="csec-parties" style="display:none">
       <div class="cs-header">
         <div>
-          <div class="cs-title">Parties Maia</div>
-          <div class="cs-sub">Parties jouées par vos élèves après révision</div>
+          <div class="cs-title">Parties</div>
+          <div class="cs-sub">Parties Maia et parties partagées par vos élèves</div>
         </div>
         <div class="cs-actions">
           <select id="parties-drill-filter" onchange="renderPartiesTab()" style="font-size:.8rem;width:auto;max-width:230px">
@@ -516,7 +516,7 @@
             <button class="btn btn-ghost btn-sm" id="learn-next-btn" onclick="learnNext()">Suiv. →</button>
           </div>
           <div class="keyboard-hint" style="text-align:center;font-size:.65rem;color:var(--dim);margin-bottom:10px;opacity:.65">← → pour naviguer au clavier</div>
-          <button class="btn btn-gold" style="width:100%;font-size:.85rem" onclick="enterTestPhase()"><i class="ti ti-target" aria-hidden="true"></i> Je connais la ligne — Tester</button>
+          <button class="btn btn-primary" style="width:100%;font-size:.85rem" onclick="enterTestPhase()"><i class="ti ti-target" aria-hidden="true"></i> Je connais la ligne — Tester</button>
         </div>
 
         <!-- Notation ligne complète -->
@@ -684,7 +684,7 @@
 
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
       <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-new-game')">Annuler</button>
-      <button class="btn btn-gold btn-sm" onclick="saveGameEntry()"><i class="ti ti-check" aria-hidden="true"></i> Enregistrer la partie</button>
+      <button class="btn btn-primary btn-sm" onclick="saveGameEntry()"><i class="ti ti-check" aria-hidden="true"></i> Enregistrer la partie</button>
     </div>
   </div>
 </div>
@@ -761,7 +761,7 @@
           </div>
           <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:8px">
             <button class="btn btn-ghost btn-sm" onclick="exFenCancel()">Annuler</button>
-            <button class="btn btn-gold btn-sm" onclick="exFenContinue()">Charger la position</button>
+            <button class="btn btn-primary btn-sm" onclick="exFenContinue()">Charger la position</button>
           </div>
         </div>
 
@@ -783,7 +783,7 @@
           </div>
           <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
             <button class="btn btn-ghost btn-sm" onclick="exSolReset()"><i class="ti ti-eraser" aria-hidden="true"></i> Effacer le coup</button>
-            <button class="btn btn-gold btn-sm" onclick="exSolAdd()"><i class="ti ti-check" aria-hidden="true"></i> Enregistrer l'exercice</button>
+            <button class="btn btn-primary btn-sm" onclick="exSolAdd()"><i class="ti ti-check" aria-hidden="true"></i> Enregistrer l'exercice</button>
           </div>
         </div>
       </div>
@@ -791,7 +791,7 @@
 
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
       <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-exercise-packet')">Annuler</button>
-      <button class="btn btn-gold btn-sm" onclick="saveExercisePacket()"><i class="ti ti-check" aria-hidden="true"></i> Enregistrer le paquet</button>
+      <button class="btn btn-primary btn-sm" onclick="saveExercisePacket()"><i class="ti ti-check" aria-hidden="true"></i> Enregistrer le paquet</button>
     </div>
   </div>
 </div>
@@ -809,7 +809,7 @@
     </div>
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px">
       <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-exercise-pgn')">Annuler</button>
-      <button class="btn btn-gold btn-sm" onclick="exPgnRun()"><i class="ti ti-check" aria-hidden="true"></i> Importer</button>
+      <button class="btn btn-primary btn-sm" onclick="exPgnRun()"><i class="ti ti-check" aria-hidden="true"></i> Importer</button>
     </div>
   </div>
 </div>
@@ -845,7 +845,7 @@
     </div>
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
       <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-position-setup')">Annuler</button>
-      <button class="btn btn-gold btn-sm" onclick="_psValidate()"><i class="ti ti-check" aria-hidden="true"></i> Valider la position</button>
+      <button class="btn btn-primary btn-sm" onclick="_psValidate()"><i class="ti ti-check" aria-hidden="true"></i> Valider la position</button>
     </div>
   </div>
 </div>
@@ -915,7 +915,7 @@
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
       <button class="btn btn-ghost" onclick="loadExample()">Exemple</button>
       <button class="btn btn-ghost btn-sm" onclick="previewDrill()"><i class="ti ti-eye" aria-hidden="true"></i> Aperçu</button>
-      <button class="btn btn-gold" onclick="importDrill()"><i class="ti ti-plus" aria-hidden="true"></i> Créer le module</button>
+      <button class="btn btn-primary" onclick="importDrill()"><i class="ti ti-plus" aria-hidden="true"></i> Créer le module</button>
     </div>
   </div>
 </div>
@@ -930,7 +930,7 @@
       <div id="student-name-field"></div>
     </div>
     <div class="modal-foot">
-      <button class="btn btn-gold" onclick="confirmName()">C'est parti →</button>
+      <button class="btn btn-primary" onclick="confirmName()">C'est parti →</button>
     </div>
   </div>
 </div>
@@ -957,7 +957,7 @@
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0">
         <button class="btn btn-ghost btn-sm" onclick="closeEditorModal()">✕ Fermer</button>
-        <button id="editor-save-btn" class="btn btn-gold btn-sm" onclick="saveEditorDrill()"><i class="ti ti-device-floppy" aria-hidden="true"></i> Enregistrer</button>
+        <button id="editor-save-btn" class="btn btn-primary btn-sm" onclick="saveEditorDrill()"><i class="ti ti-device-floppy" aria-hidden="true"></i> Enregistrer</button>
       </div>
     </div>
     <!-- Body -->
@@ -974,12 +974,12 @@
         <!-- Nav -->
         <div style="display:flex;gap:6px;align-items:center">
           <button class="btn btn-ghost btn-sm" onclick="editorPrev()">← Préc.</button>
-          <button class="btn btn-ghost btn-sm" onclick="flipEditorBoard()" title="Retourner">↔ Flip</button>
+          <button class="btn btn-ghost btn-sm" onclick="flipEditorBoard()" title="Retourner"><i class="ti ti-arrows-exchange" aria-hidden="true"></i> Retourner</button>
           <button class="btn btn-ghost btn-sm" onclick="editorNext()">Suiv. →</button>
         </div>
         <div style="display:flex;gap:6px">
           <button class="btn btn-ghost btn-sm" style="font-size:.72rem;color:var(--red)" onclick="editorDeleteNode()"><i class="ti ti-trash" aria-hidden="true"></i> Supprimer</button>
-          <button class="btn btn-ghost btn-sm" style="font-size:.72rem;color:var(--dim)" onclick="editorPromoteMain()" title="Faire de ce coup la ligne principale">↑ Ligne princ.</button>
+          <button class="btn btn-ghost btn-sm" style="font-size:.72rem;color:var(--dim)" onclick="editorPromoteMain()" title="Faire de ce coup la ligne principale"><i class="ti ti-arrow-up" aria-hidden="true"></i> Ligne princ.</button>
         </div>
         <!-- Annotation NAG -->
         <div style="width:100%">
@@ -1008,9 +1008,9 @@
     <div class="modal-title" id="end-title">🏁 Module terminé !</div>
     <div id="end-body"></div>
     <div class="modal-foot" id="modal-end-foot">
-      <button id="btn-replay" class="btn btn-ghost" onclick="closeModal('modal-end');startDrill(S.idx)">↺ Rejouer</button>
-      <button id="btn-replay-errors" class="btn btn-ghost" onclick="replayErrors()" style="display:none;color:var(--red)">↩ Erreurs seules</button>
-      <button id="btn-next-drill" class="btn btn-gold"  onclick="closeModal('modal-end');nextDrill()">Module suivant →</button>
+      <button id="btn-replay" class="btn btn-ghost" onclick="closeModal('modal-end');startDrill(S.idx)"><i class="ti ti-rotate" aria-hidden="true"></i> Rejouer</button>
+      <button id="btn-replay-errors" class="btn btn-ghost" onclick="replayErrors()" style="display:none;color:var(--red)"><i class="ti ti-arrow-back-up" aria-hidden="true"></i> Erreurs seules</button>
+      <button id="btn-next-drill" class="btn btn-primary"  onclick="closeModal('modal-end');nextDrill()">Module suivant →</button>
     </div>
   </div>
 </div>
@@ -1055,12 +1055,12 @@
       <div style="font-size:.72rem;color:var(--dim);margin-bottom:8px">Un bon coup fait monter la position d'un palier ; un raté la ramène au 1er. Délai avant la prochaine révision par palier.</div>
       <div id="sr-set-ladder" style="display:flex;flex-direction:column;gap:5px"></div>
       <div style="display:flex;gap:6px;margin-top:8px">
-        <button type="button" class="btn btn-ghost btn-sm" onclick="_srLadderAddRung()">＋ Palier</button>
-        <button type="button" class="btn btn-ghost btn-sm" onclick="_srLadderRemoveRung()">－ Palier</button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="_srLadderAddRung()"><i class="ti ti-plus" aria-hidden="true"></i> Palier</button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="_srLadderRemoveRung()"><i class="ti ti-minus" aria-hidden="true"></i> Palier</button>
       </div>
     </div>
 
-    <button class="btn btn-gold" style="width:100%;margin-top:18px" onclick="saveSrSettings()">Enregistrer</button>
+    <button class="btn btn-primary" style="width:100%;margin-top:18px" onclick="saveSrSettings()">Enregistrer</button>
   </div>
 </div>
 
