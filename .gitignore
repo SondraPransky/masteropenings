@@ -16,3 +16,7 @@ Thumbs.db
 /blob-report/
 /playwright/.cache/
 tests/e2e/.auth/
+
+# Outillage Claude Code local (skill impeccable) — pas du code de l'app
+.github/hooks/
+.github/skills/
