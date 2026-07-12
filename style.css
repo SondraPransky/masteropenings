@@ -1009,6 +1009,32 @@ textarea {
 }
 .login-tab:hover:not(.on) { color: var(--text-2); }
 
+/* Champ mot de passe + bouton œil */
+.pwd-wrap { position: relative; display: flex; }
+.pwd-wrap input { flex: 1; padding-right: 40px; }
+.pwd-eye {
+  position: absolute; top: 0; right: 0; height: 100%; width: 38px;
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: none; cursor: pointer; font-size: 1rem;
+  opacity: .65; padding: 0; line-height: 1; transition: opacity .12s ease;
+}
+.pwd-eye:hover { opacity: 1; }
+
+/* Séparateur « ou » */
+.login-sep { display: flex; align-items: center; gap: 12px; margin: 16px 0 12px; color: var(--dim); font-size: .78rem; }
+.login-sep::before, .login-sep::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
+/* Bouton Google */
+.btn-google {
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 10px; border: 1px solid var(--border); border-radius: var(--rs);
+  background: var(--surf); color: var(--text); font-weight: 600; font-size: .9rem;
+  font-family: inherit; cursor: pointer;
+  transition: background .12s ease, border-color .12s ease, box-shadow .12s ease;
+}
+.btn-google:hover { background: var(--surf2); border-color: var(--border-h); box-shadow: var(--shadow-xs); }
+.btn-google svg { flex: none; }
+
 /* ══ PAGE ÉLÈVE ══════════════════════════════════ */
 #page-student-home { background: var(--bg); }
 .sh-section-label { font-family:var(--font-display); font-size:1.02rem; font-weight:700; letter-spacing:-.2px; color:var(--text); margin:24px 0 10px; }

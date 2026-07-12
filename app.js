@@ -107,6 +107,31 @@ async function registerUser() { return _sbRegister(); }
 
 async function logoutUser() { return _sbLogout(); }
 
+// Connexion / inscription via Google (OAuth). `applyRole=true` mémorise le rôle
+// choisi dans le formulaire d'inscription (appliqué au retour dans onAuthStateChange).
+// Prérequis : provider Google activé dans Supabase + URL de redirection autorisée.
+async function signInGoogle(applyRole) {
+  if (!sb) return;
+  try {
+    if (applyRole) localStorage.setItem('mc_pending_role', document.getElementById('reg-role')?.value || 'student');
+    else localStorage.removeItem('mc_pending_role');
+  } catch (e) {}
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: location.origin + location.pathname }
+  });
+  if (error) showLoginError(_sbAuthError(error));
+}
+
+// Afficher / masquer un champ mot de passe (bouton œil).
+function togglePwd(id, btn) {
+  const inp = /** @type {HTMLInputElement} */ (document.getElementById(id));
+  if (!inp) return;
+  const show = inp.type === 'password';
+  inp.type = show ? 'text' : 'password';
+  if (btn) { btn.textContent = show ? '🙈' : '👁'; btn.setAttribute('aria-label', show ? 'Masquer le mot de passe' : 'Afficher le mot de passe'); }
+}
+
 // ── Réinitialisation du mot de passe ──────────────────
 function requestPasswordReset() {
   const email = (document.getElementById('login-email')?.value || '').trim();
@@ -811,13 +836,25 @@ function _sbAuthError(e) {
   return 'Erreur : ' + m;
 }
 
+// Désactive un bouton auth + libellé d'attente pendant la requête ; renvoie la fonction de restauration.
+function _authBusy(sel, busyLabel) {
+  const btn = document.querySelector(sel);
+  if (!btn) return () => {};
+  const prev = btn.textContent, wasDisabled = btn.disabled;
+  btn.disabled = true; btn.textContent = busyLabel;
+  return () => { btn.disabled = wasDisabled; btn.textContent = prev; };
+}
+
 async function _sbLogin() {
   const email = (document.getElementById('login-email')?.value || '').trim();
   const pwd   =  document.getElementById('login-pwd')?.value   || '';
   if (!email || !pwd) { showLoginError('Remplissez tous les champs.'); return; }
-  const { error } = await sb.auth.signInWithPassword({ email, password: pwd });
-  if (error) showLoginError(_sbAuthError(error));
-  // succès → _sbInitAuth (onAuthStateChange) prend le relais
+  const restore = _authBusy('#login-form button.btn-primary', 'Connexion…');
+  try {
+    const { error } = await sb.auth.signInWithPassword({ email, password: pwd });
+    if (error) showLoginError(_sbAuthError(error));
+    // succès → _sbInitAuth (onAuthStateChange) prend le relais
+  } finally { restore(); }
 }
 
 async function _sbRegister() {
@@ -830,19 +867,22 @@ async function _sbRegister() {
   if (pwd.length < 6) { showLoginError('Le mot de passe doit contenir au moins 6 caractères.'); return; }
   if (!pseudo) pseudo = email.split('@')[0].toLowerCase();
 
-  // user_metadata transporte name/role/pseudo (le trigger crée la ligne profiles id+email).
-  const { data, error } = await sb.auth.signUp({
-    email, password: pwd, options: { data: { name, role, pseudo } }
-  });
-  if (error) { showLoginError(_sbAuthError(error)); return; }
-  // Complète le profil (le trigger n'a posé que id+email).
-  if (data.user) {
-    await sb.from('profiles').update({ name, role, pseudo }).eq('id', data.user.id);
-  }
-  // Confirmation email activée ⇒ pas de session immédiate.
-  if (!data.session) {
-    showLoginError('Compte créé. Confirmez votre email puis connectez-vous.');
-  }
+  const restore = _authBusy('#register-form button.btn-primary', 'Création…');
+  try {
+    // user_metadata transporte name/role/pseudo (le trigger crée la ligne profiles id+email).
+    const { data, error } = await sb.auth.signUp({
+      email, password: pwd, options: { data: { name, role, pseudo } }
+    });
+    if (error) { showLoginError(_sbAuthError(error)); return; }
+    // Complète le profil (le trigger n'a posé que id+email).
+    if (data.user) {
+      await sb.from('profiles').update({ name, role, pseudo }).eq('id', data.user.id);
+    }
+    // Confirmation email activée ⇒ pas de session immédiate (succès avec session ⇒ routage auto).
+    if (!data.session) {
+      showLoginError('Compte créé. Confirmez votre email puis connectez-vous.');
+    }
+  } finally { restore(); }
 }
 
 async function _sbLogout() {
@@ -871,22 +911,34 @@ function _sbInitAuth() {
     const u = session && session.user;
     G.currentUser = _sbUser(u);
     if (!u) { updateNav(); goPage('login'); return; }
+    // Rôle choisi avant une connexion Google (OAuth ne passe pas par le formulaire) — usage unique.
+    let pendingRole = null;
+    try { pendingRole = localStorage.getItem('mc_pending_role'); if (pendingRole) localStorage.removeItem('mc_pending_role'); } catch (e) {}
     // rôle + pseudo depuis profiles
+    let prof = null;
     try {
-      const { data: prof } = await sb.from('profiles').select('role,pseudo').eq('id', u.id).maybeSingle();
+      ({ data: prof } = await sb.from('profiles').select('role,pseudo,name').eq('id', u.id).maybeSingle());
       G.currentRole   = (prof && prof.role)   || 'student';
       G.currentPseudo = (prof && prof.pseudo) || null;
     } catch (e) { G.currentRole = 'student'; G.currentPseudo = null; }
+    // Nouveau compte Google : pas de pseudo → dérive de l'email ; applique le rôle choisi avant redirection.
+    const patch = {};
+    if (pendingRole && pendingRole !== G.currentRole) { G.currentRole = pendingRole; patch.role = pendingRole; }
+    if (!G.currentPseudo) { G.currentPseudo = (u.email || '').split('@')[0].toLowerCase().replace(/\s+/g, ''); patch.pseudo = G.currentPseudo; }
+    if (!(prof && prof.name)) { const nm = (u.user_metadata && u.user_metadata.name) || null; if (nm) patch.name = nm; }
+    if (Object.keys(patch).length) { try { await sb.from('profiles').update(patch).eq('id', u.id); } catch (e) {} }
     G.pendingRole = null;
     updateNav();
+    // Router IMMÉDIATEMENT (avant tout réseau) → retour visuel instantané ; les données se chargent ensuite.
+    goPage(G.currentRole === 'teacher' ? 'coach' : 'student-home');
     await _sbLoadMastery();
     if (G.currentRole === 'teacher') {
-      await _sbLoadTeacherModules(); goPage('coach');
+      await _sbLoadTeacherModules();
       // Résultats / pratique / parties des élèves (incl. parties partagées) → dashboard coach.
       await _sbLoadTeacherResults(); await _sbLoadTeacherPractice(); await _sbLoadTeacherGames();
       window.renderProfView?.();
     }
-    else { await _sbLoadBases(); goPage('student-home'); await _sbLoadStudentModules(); await _sbLoadStudentGames(); }
+    else { await _sbLoadBases(); await _sbLoadStudentModules(); await _sbLoadStudentGames(); }
   });
 }
 
@@ -1181,7 +1233,7 @@ Object.assign(window, {
   loadStudentModules, loadTeacherGames, loadTeacherModules, loadTeacherPractice,
   loadTeacherResults, loginUser, logoutUser, nagGlyphs, nextDrill, nextSession, pgnToEditorTree,
   registerUser, requestPasswordReset, save, saveClasses, selectDrill, setBoardComment,
-  setBoardPrompt, setFeedback, showHint, showLoginError, showLoginTab, showRecoveryForm,
+  setBoardPrompt, setFeedback, showHint, signInGoogle, togglePwd, showLoginError, showLoginTab, showRecoveryForm,
   skipPosition, startDrill, submitNewPassword, switchCoachSection, syncModuleToFirestore, toast,
   toggleTheme, totalSessions, updateNav, updateScores, updateSessionInfo, updateStudentBar,
 });
