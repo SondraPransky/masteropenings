@@ -1457,6 +1457,11 @@ textarea {
 .wsx-actions .btn { flex: 1; }
 .wsx-strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 6px; }
 .wsx-cell { border-radius: 8px; padding: 8px 4px; text-align: center; border: 1px solid var(--border); }
+
+/* « À revoir avec cet élève » — liste prescriptive (lot E) */
+.ed-review-item { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); }
+.ed-review-item:last-child { border-bottom: none; }
+.ed-review-move { font-family: var(--font-mono); font-weight: 700; font-size: .95rem; flex-shrink: 0; min-width: 42px; }
 .cs-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; flex-wrap: wrap; max-width: 100%; }
 
 /* Module cards */
