@@ -267,7 +267,7 @@ function totalSessions() {
 // NAVIGATION
 // ══════════════════════════════════════════════════════
 function switchCoachSection(sec) {
-  const sections = ['modules','eleves','heatmap','parties','export'];
+  const sections = ['modules','eleves','classes','heatmap','parties','export'];
   sections.forEach(s => {
     const el = document.getElementById('csec-'+s);
     if (el) el.style.display = s===sec ? '' : 'none';
@@ -275,9 +275,13 @@ function switchCoachSection(sec) {
     if (btn) btn.classList.toggle('on', s===sec);
   });
   if (sec==='eleves')  {
-    // L'onglet Élèves inclut désormais la gestion des classes (fusion).
+    // Suivi & progression des élèves (les classes ont leur propre section, cf. refonte T4).
     Promise.all([loadTeacherResults(), loadTeacherPractice(), loadTeacherGames()]).then(()=>window.renderProfView?.());
-    window.renderClassesTab?.(); window.renderClassList?.(); window.renderClassModuleSelect?.();
+  }
+  if (sec==='classes') {
+    // Gestion & assignation : formulaire + liste des classes + suivi par module.
+    window.renderClassList?.(); window.renderClassModuleSelect?.();
+    Promise.all([loadTeacherResults(), loadTeacherPractice()]).then(()=>window.renderClassesTab?.());
   }
   if (sec==='heatmap') { _syncHeatmapFilters(); window.renderHeatmap?.(); }
   if (sec==='parties') { loadTeacherGames().then(()=>{ _syncPartiesFilter(); window.renderPartiesTab?.(); }); }
@@ -298,9 +302,6 @@ function _syncPartiesFilter() {
 // Modules : création, bibliothèque d ouvertures, cartes coach -> lib/modules.js
 
 function goPage(name) {
-  // 'prof' redirects to coach>eleves section
-  if (name === 'prof') { goPage('coach'); switchCoachSection('eleves'); return; }
-
   document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
   document.querySelectorAll('nav .tab').forEach(t => t.classList.remove('on'));
   const pageEl = document.getElementById('page-' + name);

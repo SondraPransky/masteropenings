@@ -255,6 +255,13 @@ textarea {
 }
 
 /* ══ BOUTONS ═════════════════════════════════ */
+/* ══ SYSTÈME DE BOUTONS — hiérarchie sémantique (refonte UX T1) ══
+   Règle : UNE seule action primaire visible par écran.
+     .btn-gold / .btn-primary → PRIMAIRE   (indigo plein) : l'action principale
+     .btn-blue                → SECONDAIRE (bleu plein)   : action importante non-principale
+     .btn-ghost               → TERTIAIRE  (outline)      : support, navigation locale
+     .btn-red                 → DANGER     (rouge plein)  : destructif uniquement
+   .btn-sm = variante compacte. L'emoji reste au contenu, pas aux libellés de boutons (cf. T5). */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -749,10 +756,17 @@ textarea {
 }
 .create-choice:hover { border-color: var(--cyan); box-shadow: 0 0 0 3px var(--cyan-dim); }
 .create-choice:active { transform: scale(.99); }
-.create-choice-ico { font-size: 1.5rem; flex-shrink: 0; }
+.create-choice-ico { font-size: 1.5rem; flex-shrink: 0; color: var(--cyan); line-height: 1; display: flex; align-items: center; }
 .create-choice-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .create-choice-txt b { font-family: var(--font-display); font-size: .95rem; font-weight: 700; color: var(--text); }
 .create-choice-txt small { font-size: .76rem; color: var(--dim); line-height: 1.4; }
+
+/* Paquet d'exercices — plan de travail 2 colonnes (refonte T6) */
+.ex-workbench { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+.ex-right { border: 1px solid var(--border); border-radius: 12px; padding: 14px; background: var(--surf2); }
+@media (max-width: 680px) {
+  .ex-workbench { grid-template-columns: 1fr; }
+}
 
 /* Editeur de position (modal-position-setup) */
 .ps-layout { display: flex; gap: 18px; align-items: flex-start; flex-wrap: wrap; }
@@ -1264,9 +1278,9 @@ textarea {
 .lib-side { font-size:.68rem; font-weight:600; color:var(--cyan); background:var(--cyan-dim); border-radius:999px; padding:1px 8px; margin-left:6px; }
 .lib-desc { font-size:.78rem; color:var(--dim); margin-top:2px; }
 
-/* Bouton retour élève (dans la nav drill) */
+/* Bouton retour élève (en tête de la page drill) */
 #btn-back-student {
-  display: none;
+  display: inline-flex;
   align-items: center;
   gap: 5px;
   font-size: .78rem;
@@ -1275,6 +1289,7 @@ textarea {
   border: 1px solid var(--border);
   border-radius: 20px;
   padding: 4px 10px;
+  margin-bottom: 16px;
   cursor: pointer;
   font-family: inherit;
   white-space: nowrap;
