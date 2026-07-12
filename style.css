@@ -449,11 +449,11 @@ textarea {
 .mv.clickable:hover { background: var(--surf2); color: var(--text); }
 .mv.played  { color: var(--text); }
 .mv.auto    { color: var(--dim); }
-.mv.ok      { color: var(--green); }
+.mv.ok      { color: #15803d; }                     /* vert lisible AA sur fond clair */
 .mv.ko      { color: var(--red); }
-.mv.coach   { color: #7c3aed; }                     /* nœud coach (revue) — cohérent violet */
-.mv.ask {                                            /* coup courant à trouver (test) */
-  background: var(--cyan); color: #111; font-weight: 700; padding: 1px 8px;
+.mv.coach   { color: var(--violet); }               /* nœud coach — token (adapte le dark) */
+.mv.ask {                                            /* coup courant à trouver (test) — chip plein */
+  background: var(--cyan); color: #fff; font-weight: 700; padding: 1px 8px;
 }
 .mv.future { color: var(--dim); opacity: .32; }      /* coup futur caché */
 .mv.cur    { border-color: var(--cyan); background: var(--cyan-dim); color: var(--cyan); font-weight: 600; }
@@ -523,7 +523,7 @@ textarea {
 .sr-counts { display: flex; gap: 8px; }
 .sr-count { display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px; border-radius: 999px; font-size: .72rem; font-weight: 600; }
 .sr-count.sr-new { background: rgba(99, 102, 241, .15); color: var(--cyan); }
-.sr-count.sr-rev { background: rgba(245, 158, 11, .15); color: #b45309; }
+.sr-count.sr-rev { background: rgba(245, 158, 11, .15); color: #92400e; }
 .sr-backlog { display: flex; align-items: center; gap: 6px; margin-top: 8px; padding: 6px 10px; border-radius: 8px;
   background: rgba(245, 158, 11, .10); color: #b45309; font-size: .72rem; font-weight: 600; }
 
@@ -877,6 +877,12 @@ textarea {
 [data-theme="dark"] .badge-red    { background: var(--red-dim);     color: var(--red);    border-color: rgba(251,113,133,.2); }[data-theme="dark"] .feedback.ok  { background: var(--green-dim); border-color: rgba(52,211,153,.28);  color: var(--green); }
 [data-theme="dark"] .feedback.ko  { background: var(--red-dim);   border-color: rgba(251,113,133,.28); color: var(--red); }
 [data-theme="dark"] .feedback.hint{ background: var(--blue-dim);  border-color: rgba(56,189,248,.28);  color: var(--blue); }
+/* Notation (drill) — overrides dark AA, comme .feedback. .mv.coach adapte via var(--violet). */
+[data-theme="dark"] .mv.ok        { color: var(--green); }
+[data-theme="dark"] .mv.ko        { color: #fca5a5; }
+[data-theme="dark"] .mv.ask       { color: #1e1b4b; }
+[data-theme="dark"] .mv.cur       { color: #e0e7ff; background: rgba(129,140,248,.28); }
+[data-theme="dark"] .sr-count.sr-rev { color: #fbbf24; background: rgba(245,158,11,.2); }
 [data-theme="dark"] .pgn-comment  { background: rgba(0,0,0,.2); }
 [data-theme="dark"] .hentry.ok    { background: var(--green-dim); color: var(--green); }
 [data-theme="dark"] .hentry.ko    { background: var(--red-dim);   color: var(--red); }
