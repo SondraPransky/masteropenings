@@ -32,9 +32,20 @@
     <button class="tab tab-student"    id="tab-library"  onclick="goPage('library')"      style="display:none"><i class="ti ti-books" aria-hidden="true"></i><span class="tab-label"> Ma bibliothèque</span></button>
   </div>
   <span id="nav-student"></span>
-  <span id="nav-role-chip" style="display:none"></span>
-  <span id="nav-user" style="display:none"></span>
-  <button id="btn-logout" onclick="logoutUser()" class="btn btn-ghost btn-sm" style="display:none" title="Déconnexion">Sortir</button>
+  <div class="acct" id="acct-menu" style="display:none">
+    <button class="acct-btn" id="acct-btn" onclick="toggleAcctMenu(event)" aria-haspopup="true" aria-expanded="false" title="Mon compte">
+      <span class="acct-avatar" id="acct-avatar" aria-hidden="true">?</span>
+      <span class="acct-name" id="acct-name"></span>
+      <i class="ti ti-chevron-down acct-caret" aria-hidden="true"></i>
+    </button>
+    <div class="acct-dropdown" id="acct-dropdown">
+      <div class="acct-dd-head">
+        <div class="acct-dd-name" id="acct-dd-name"></div>
+        <span id="nav-role-chip" style="display:none"></span>
+      </div>
+      <button class="acct-dd-item" onclick="logoutUser()"><i class="ti ti-logout" aria-hidden="true"></i> Se déconnecter</button>
+    </div>
+  </div>
   <button id="theme-toggle" onclick="toggleTheme()" title="Changer de thème" aria-label="Changer de thème"><i class="ti ti-moon" aria-hidden="true"></i></button>
 </nav>
 
@@ -252,7 +263,7 @@
           <div class="cs-sub">Résultats et progression par élève</div>
         </div>
         <div class="cs-actions">
-          <button class="btn btn-blue btn-sm" onclick="addStudent()" title="Enregistrer un nouvel élève">➕ Ajouter un élève</button>
+          <button class="btn btn-blue btn-sm" onclick="addStudent()" title="Enregistrer un nouvel élève"><i class="ti ti-user-plus" aria-hidden="true"></i> Ajouter un élève</button>
           <select id="prof-drill-filter" onchange="renderProfView()" style="font-size:.8rem;width:auto;max-width:230px">
             <option value="all">Tous les modules</option>
           </select>
@@ -263,7 +274,7 @@
         <div class="empty-ico">📋</div>
         Aucun élève pour l'instant.<br>
         <span style="font-size:.8rem">Ajoutez un élève pour suivre sa progression — les résultats s'afficheront dès qu'il aura joué.</span>
-        <div style="margin-top:16px"><button class="btn btn-blue btn-sm" onclick="addStudent()">➕ Ajouter un élève</button></div>
+        <div style="margin-top:16px"><button class="btn btn-blue btn-sm" onclick="addStudent()"><i class="ti ti-user-plus" aria-hidden="true"></i> Ajouter un élève</button></div>
       </div>
 
       <div id="prof-ui">
@@ -300,11 +311,11 @@
         <!-- Colonne gauche: formulaires -->
         <div style="display:flex;flex-direction:column;gap:14px">
           <div class="cls-create-form">
-            <div id="cls-form-title" style="font-weight:700;font-size:.9rem;margin-bottom:14px">🏫 Nouvelle classe</div>
+            <div id="cls-form-title" style="font-weight:700;font-size:.9rem;margin-bottom:14px"><i class="ti ti-school" aria-hidden="true"></i> Nouvelle classe</div>
             <div style="font-size:.8rem;color:var(--dim);margin-bottom:12px;line-height:1.6">Créez un groupe d'élèves, ou cochez « cours particulier » pour un élève seul. Ils verront les modules assignés dans leur espace.</div>
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:400;font-size:.82rem;margin-bottom:14px">
               <input type="checkbox" id="inp-cls-individual" onchange="toggleClassMode()" style="width:auto;margin:0;accent-color:var(--cyan);cursor:pointer">
-              <span>👤 Cours particulier (un seul élève, sans classe)</span>
+              <span><i class="ti ti-user" aria-hidden="true"></i> Cours particulier (un seul élève, sans classe)</span>
             </label>
             <div class="frow" id="cls-name-row">
               <label>Nom de la classe</label>
@@ -319,7 +330,7 @@
               <textarea id="inp-cls-students" rows="3" spellcheck="false" placeholder="alex12&#10;marie&#10;bob@email.com"></textarea>
             </div>
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-              <button id="cls-save-btn" class="btn btn-gold btn-sm" onclick="saveClass()">🏫 Créer la classe</button>
+              <button id="cls-save-btn" class="btn btn-gold btn-sm" onclick="saveClass()"><i class="ti ti-school" aria-hidden="true"></i> Créer la classe</button>
               <button id="cls-cancel-btn" class="btn btn-ghost btn-sm" onclick="cancelEditClass()" style="display:none">Annuler</button>
             </div>
             <div id="cls-list" style="margin-top:14px"></div>
@@ -389,25 +400,25 @@
           <div style="font-size:1.4rem;margin-bottom:10px">📊</div>
           <div style="font-weight:700;font-size:.92rem;margin-bottom:4px">Résultats CSV</div>
           <div style="font-size:.78rem;color:var(--dim);margin-bottom:14px;line-height:1.6">Tous les coups joués avec résultats — compatible tableur</div>
-          <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ results.csv</button>
+          <button class="btn btn-ghost btn-sm" onclick="exportCSV()"><i class="ti ti-download" aria-hidden="true"></i>results.csv</button>
         </div>
         <div class="card" style="padding:20px">
           <div style="font-size:1.4rem;margin-bottom:10px">📋</div>
           <div style="font-weight:700;font-size:.92rem;margin-bottom:4px">Sessions CSV</div>
           <div style="font-size:.78rem;color:var(--dim);margin-bottom:14px;line-height:1.6">Historique de toutes les sessions avec score global</div>
-          <button class="btn btn-ghost btn-sm" onclick="exportPracticeCSV()">⬇ sessions.csv</button>
+          <button class="btn btn-ghost btn-sm" onclick="exportPracticeCSV()"><i class="ti ti-download" aria-hidden="true"></i>sessions.csv</button>
         </div>
         <div class="card" style="padding:20px">
           <div style="font-size:1.4rem;margin-bottom:10px">♟</div>
           <div style="font-weight:700;font-size:.92rem;margin-bottom:4px">Parties PGN</div>
           <div style="font-size:.78rem;color:var(--dim);margin-bottom:14px;line-height:1.6">Toutes les parties jouées après révision</div>
-          <button class="btn btn-ghost btn-sm" onclick="exportPGN(null)">⬇ parties.pgn</button>
+          <button class="btn btn-ghost btn-sm" onclick="exportPGN(null)"><i class="ti ti-download" aria-hidden="true"></i>parties.pgn</button>
         </div>
         <div class="card" style="padding:20px">
           <div style="font-size:1.4rem;margin-bottom:10px">💾</div>
           <div style="font-weight:700;font-size:.92rem;margin-bottom:4px">Sauvegarde JSON</div>
           <div style="font-size:.78rem;color:var(--dim);margin-bottom:14px;line-height:1.6">Modules + résultats + sessions + parties + SM-2</div>
-          <button class="btn btn-ghost btn-sm" onclick="exportAll()">⬇ backup.json</button>
+          <button class="btn btn-ghost btn-sm" onclick="exportAll()"><i class="ti ti-download" aria-hidden="true"></i>backup.json</button>
         </div>
       </div>
     </div>

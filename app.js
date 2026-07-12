@@ -57,12 +57,13 @@ let DEV_GUEST_ROLE = 'teacher';   // rôle de départ de l'invité dev : 'teache
 
 // ── Mise à jour de la nav selon le rôle ───────────────
 function updateNav() {
-  const navUser      = document.getElementById('nav-user');
-  const btnLogout    = document.getElementById('btn-logout');
+  const acctMenu     = document.getElementById('acct-menu');
+  const acctName     = document.getElementById('acct-name');
+  const acctAvatar   = document.getElementById('acct-avatar');
+  const acctDdName   = document.getElementById('acct-dd-name');
   const navRoleChip  = document.getElementById('nav-role-chip');
   const navTabs      = document.getElementById('nav-tabs');
   const btnBack      = document.getElementById('btn-back-student');
-  const tabs         = document.querySelectorAll('nav .tab');
 
   // En mode Firebase, le chip nav-student (mode local) est inutile
   const navStudentChip = document.getElementById('nav-student');
@@ -74,18 +75,20 @@ function updateNav() {
   const isStudent = G.currentRole === 'student';
 
   if (G.currentUser) {
-    // Nom utilisateur
-    navUser.textContent   = G.currentUser.displayName || G.currentUser.email;
-    navUser.style.display = '';
-    // Bouton déconnexion
-    btnLogout.style.display = '';
-    // Badge rôle
+    // Menu compte : avatar (initiale) + prénom + nom complet dans le dropdown
+    const full  = G.currentUser.displayName || G.currentUser.email || '';
+    const first = full.split(' ')[0] || full;
+    if (acctName)   acctName.textContent   = first;
+    if (acctAvatar) acctAvatar.textContent = (first[0] || '?').toUpperCase();
+    if (acctDdName) acctDdName.textContent = full;
+    if (acctMenu)   acctMenu.style.display = '';
+    // Badge rôle (dans le dropdown)
     if (navRoleChip) {
       navRoleChip.className   = 'role-chip ' + (isTeacher ? 'teacher' : 'student');
       navRoleChip.innerHTML = isTeacher ? '<i class="ti ti-clipboard-text" aria-hidden="true"></i> Prof' : '<i class="ti ti-user" aria-hidden="true"></i> Élève';
       navRoleChip.style.display = '';
     }
-    // Onglets selon le rôle : le coach voit les siens, l'élève voit « Révision » | « Ma bibliothèque »
+    // Onglets selon le rôle : le coach voit les siens, l'élève voit « Réviser » | « Ma bibliothèque »
     if (navTabs) navTabs.style.display = '';
     document.querySelectorAll('.tab-teacher').forEach(t => t.style.display = isTeacher ? '' : 'none');
     document.querySelectorAll('.tab-student').forEach(t => t.style.display = isStudent ? '' : 'none');
@@ -93,13 +96,36 @@ function updateNav() {
     if (btnBack) btnBack.style.display = isStudent ? '' : 'none';
   } else {
     // Non connecté
-    navUser.style.display   = 'none';
-    btnLogout.style.display = 'none';
-    if (navRoleChip) navRoleChip.style.display = 'none';
-    if (navTabs)     navTabs.style.display     = 'none';
-    if (btnBack)     btnBack.style.display     = 'none';
+    if (acctMenu)    acctMenu.style.display     = 'none';
+    if (navRoleChip) navRoleChip.style.display  = 'none';
+    if (navTabs)     navTabs.style.display      = 'none';
+    if (btnBack)     btnBack.style.display      = 'none';
   }
 }
+
+// Menu compte (dropdown) : ouverture/fermeture + clic-extérieur.
+function toggleAcctMenu(ev) {
+  if (ev) ev.stopPropagation();
+  const dd  = document.getElementById('acct-dropdown');
+  const btn = document.getElementById('acct-btn');
+  if (!dd) return;
+  const open = dd.classList.toggle('on');
+  if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  // Position fixe (le <nav> a overflow:hidden qui rognerait un dropdown absolu) : on ancre sous le bouton.
+  if (open && btn) {
+    const r = btn.getBoundingClientRect();
+    dd.style.top   = Math.round(r.bottom + 8) + 'px';
+    dd.style.right = Math.round(window.innerWidth - r.right) + 'px';
+  }
+}
+document.addEventListener('click', function(e) {
+  const menu = document.getElementById('acct-menu');
+  const dd   = document.getElementById('acct-dropdown');
+  if (dd && dd.classList.contains('on') && menu && !menu.contains(/** @type {Node} */ (e.target))) {
+    dd.classList.remove('on');
+    document.getElementById('acct-btn')?.setAttribute('aria-expanded', 'false');
+  }
+});
 
 // ── Fonctions d'authentification ─────────────────────
 async function loginUser() { return _sbLogin(); }
@@ -1272,5 +1298,5 @@ Object.assign(window, {
   nextSession, pgnToEditorTree, registerUser, requestPasswordReset, save, saveClasses,
   selectDrill, setBoardComment, setBoardPrompt, setFeedback, showHint, signInGoogle,
   togglePwd, showLoginTab, skipPosition, startDrill, submitNewPassword, switchCoachSection,
-  saveModule, toast, toggleTheme, totalSessions, updateScores, updateSessionInfo,
+  saveModule, toast, toggleTheme, toggleAcctMenu, totalSessions, updateScores, updateSessionInfo,
 });
