@@ -43,7 +43,7 @@
   /* ── Texte (zinc) ── */
   --text:   #18181b;
   --text-2: #3f3f46;
-  --dim:    #71717a;
+  --dim:    #6b6b73;  /* AA sur --surf2 clair (4.8:1) ; #71717a echouait a 4.4 */
 
   /* ── Typographie ── */
   --font-ui:      'Hanken Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;  /* corps / UI */
