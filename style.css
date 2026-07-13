@@ -1192,6 +1192,21 @@ textarea {
 /* Focus clavier visible sur les cartes-boutons (WCAG AA) */
 .sh-card-act:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; border-radius: 999px; }
 
+/* Délice : vie discrète de l'icône puzzle au survol d'une carte d'exercices. */
+.sh-mod-icon .ti-puzzle { transition: transform .25s cubic-bezier(.25,1,.5,1); }
+.sh-mod:hover .sh-mod-icon .ti-puzzle { transform: rotate(-9deg) scale(1.12); }
+
+/* Délice : coche « sans faute » dessinée à la fin d'un paquet d'exercices résolu
+   sans erreur. Sobre (indigo, pas de confetti), moment rare donc spécial. */
+.ex-done-check circle { stroke-dasharray: 151; stroke-dashoffset: 151; animation: ex-check-ring .5s cubic-bezier(.25,1,.5,1) forwards; }
+.ex-done-check path   { stroke-dasharray: 46;  stroke-dashoffset: 46;  animation: ex-check-tick .34s .34s cubic-bezier(.65,0,.35,1) forwards; }
+@keyframes ex-check-ring { to { stroke-dashoffset: 0; } }
+@keyframes ex-check-tick { to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .sh-mod:hover .sh-mod-icon .ti-puzzle { transform: none; }
+  .ex-done-check circle, .ex-done-check path { animation: none; stroke-dashoffset: 0; }
+}
+
 .sh-mod {
   background: var(--surf);
   border: 1px solid var(--border);
