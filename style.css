@@ -1188,7 +1188,9 @@ textarea {
 @media (prefers-reduced-motion: reduce) { .sh-hero-btn { transition:none; } .sh-hero-btn:hover { transform:none; } }
 /* ══ CARTES MODULES ÉLÈVE (version finale améliorée) ═════════════════ */
 /* Grille : les cartes verticales se rangent en colonnes (1 en mobile). */
-#sh-module-list, #sh-perso-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+#sh-module-list, #sh-perso-list, #sh-exercise-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+/* Focus clavier visible sur les cartes-boutons (WCAG AA) */
+.sh-card-act:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; border-radius: 999px; }
 
 .sh-mod {
   background: var(--surf);
