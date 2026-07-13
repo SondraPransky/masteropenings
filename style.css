@@ -1339,18 +1339,9 @@ textarea {
 .onb-label { flex:1; }
 .onb-step .btn { margin-left:auto; flex-shrink:0; }
 .onb-sub { font-size:.82rem; color:var(--text-2); }
-.ws-card { background:var(--surf); border:1px solid var(--border); border-radius:var(--r); padding:14px 16px; margin-bottom:16px; }
-.ws-head { font-weight:700; font-size:.9rem; margin-bottom:2px; }
-.ws-sub { font-size:.76rem; color:var(--dim); margin-bottom:12px; }
-.ws-row { display:flex; align-items:center; gap:12px; padding:8px 0; }
-.ws-row + .ws-row { border-top:1px solid var(--border); }
-.ws-move { font-size:.92rem; font-weight:700; font-family:'JetBrains Mono',monospace; min-width:46px; flex-shrink:0; }
-.ws-info { flex:1; min-width:0; }
-.ws-name { font-size:.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.ws-comment { color:var(--dim); font-weight:400; }
-.ws-bar { height:5px; background:var(--surf3); border-radius:3px; margin-top:5px; overflow:hidden; }
-.ws-fill { height:100%; background:var(--red); border-radius:3px; }
-.ws-stat { font-size:.74rem; color:var(--red); font-weight:600; flex-shrink:0; white-space:nowrap; }
+/* Points faibles : composant UNIFIÉ (aperçu compact + vue détail partagent le
+   vocabulaire .wsx-*). Le panneau/rangée compacte vit avec la famille wsx-*
+   plus bas ; l'ancien vocabulaire ws-* a été fusionné dedans. */
 .lib-row { display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--border); }
 .lib-row:last-child { border-bottom:none; }
 .lib-info { flex:1; min-width:0; }
@@ -1485,6 +1476,21 @@ textarea {
 .wsx-strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 6px; }
 .wsx-cell { border-radius: 8px; padding: 8px 4px; text-align: center; border: 1px solid var(--border); }
 .wsx-cell:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+/* Aperçu compact (section Élèves) — même vocabulaire que les cartes détail. */
+.wsx-panel { background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); padding: 14px 16px; margin-bottom: 16px; }
+.wsx-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-weight: 700; font-size: .9rem; margin-bottom: 2px; }
+.wsx-panel-sub { font-size: .76rem; color: var(--dim); margin-bottom: 12px; }
+.wsx-link { background: none; border: none; color: var(--cyan); font-size: .74rem; font-weight: 600; cursor: pointer; padding: 0; white-space: nowrap; }
+.wsx-link:hover { text-decoration: underline; }
+.wsx-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
+.wsx-row + .wsx-row { border-top: 1px solid var(--border); }
+.wsx-row-info { flex: 1; min-width: 0; }
+.wsx-row-name { font-size: .8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wsx-row-name .wsx-comment-inline { color: var(--dim); font-weight: 400; font-style: italic; }
+/* Coup SAN en notation (cellules de table, listes) — évite le style mono inline répété. */
+.mono-move { font-family: var(--font-mono); font-weight: 700; }
+/* Sous-titre de section dans le détail élève (module, Progression, Positions difficiles). */
+.ed-subhead { font-weight: 700; font-size: .88rem; }
 
 /* Bloc repliable (progressive disclosure) — casse le mur de panneaux empilés. */
 .cs-collapse { margin-top: 18px; }
