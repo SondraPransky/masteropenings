@@ -786,17 +786,19 @@
         <div id="ex-sol-editor" style="display:none">
           <div style="font-size:.82rem;color:var(--dim);margin-bottom:10px" id="ex-sol-turn">Joue le bon coup sur l'échiquier.</div>
           <div id="ex-sol-board" style="display:grid;grid-template-columns:repeat(8,1fr);width:min(300px,72vw);aspect-ratio:1;margin:0 auto 14px;border-radius:8px;overflow:hidden;border:1px solid var(--border)"></div>
-          <div class="frow" style="margin:0 0 10px"><label>Coup solution (SAN, ou joue-le)</label>
-            <input type="text" id="ex-sol-san" placeholder="Ex : Cf7+ ou g1f3">
+          <div class="frow" style="margin:0 0 10px"><label>Solution : joue la séquence sur l'échiquier (ou tape les coups)</label>
+            <input type="text" id="ex-sol-san" placeholder="1 coup (Cf7+) ou tout le mat : Fc4 Cc6 Dh5 Cf6 Dxf7#">
+            <div style="font-size:.72rem;color:var(--dim);margin-top:4px">Un coup = tactique. Plusieurs coups (ta réponse, la parade adverse, ta réponse…) = mat en N. La séquence doit finir par ton coup.</div>
           </div>
-          <div class="frow"><label>Coups aussi acceptés (optionnel, séparés par des virgules)</label>
+          <div class="frow"><label>Coups aussi acceptés (1er coup, séparés par des virgules)</label>
             <input type="text" id="ex-sol-alt" placeholder="Ex : Dxh7+, Txh7">
           </div>
           <div class="frow"><label>Commentaire (optionnel)</label>
             <input type="text" id="ex-sol-comment" placeholder="Ex : la fourchette gagne la dame">
           </div>
-          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
-            <button class="btn btn-ghost btn-sm" onclick="exSolReset()"><i class="ti ti-eraser" aria-hidden="true"></i> Effacer le coup</button>
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick="exSolUndo()"><i class="ti ti-arrow-back-up" aria-hidden="true"></i> Annuler le dernier</button>
+            <button class="btn btn-ghost btn-sm" onclick="exSolReset()"><i class="ti ti-eraser" aria-hidden="true"></i> Tout effacer</button>
             <button class="btn btn-primary btn-sm" onclick="exSolAdd()"><i class="ti ti-check" aria-hidden="true"></i> Enregistrer l'exercice</button>
           </div>
         </div>
@@ -816,7 +818,7 @@
       <div class="modal-title" style="margin:0"><i class="ti ti-clipboard-text" aria-hidden="true"></i> Importer des exercices (PGN)</div>
       <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-exercise-pgn')">✕</button>
     </div>
-    <div style="font-size:.82rem;color:var(--dim);margin-bottom:12px">Une partie = un exercice : la position vient de l'en-tête <code>[FEN]</code> (ou du départ standard), la solution est le premier coup. Colle plusieurs parties d'affilée pour en créer plusieurs.</div>
+    <div style="font-size:.82rem;color:var(--dim);margin-bottom:12px">Une partie = un exercice : la position vient de l'en-tête <code>[FEN]</code> (ou du départ standard), la solution est la <b>ligne principale complète</b> (1 coup pour une tactique, plusieurs pour un mat en N). Colle plusieurs parties d'affilée pour en créer plusieurs.</div>
     <div class="frow"><label>PGN</label>
       <textarea id="ex-pgn-input" spellcheck="false" autocorrect="off" autocomplete="off" style="height:180px"
         placeholder='[FEN &quot;r1bqkbnr/pppp1ppp/2n5/4N3/... w - - 0 1&quot;]&#10;&#10;1. Nxf7 {la fourchette gagne la dame} *'></textarea>
