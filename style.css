@@ -1484,6 +1484,17 @@ textarea {
 .wsx-actions .btn { flex: 1; }
 .wsx-strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 6px; }
 .wsx-cell { border-radius: 8px; padding: 8px 4px; text-align: center; border: 1px solid var(--border); }
+.wsx-cell:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+
+/* Bloc repliable (progressive disclosure) — casse le mur de panneaux empilés. */
+.cs-collapse { margin-top: 18px; }
+.cs-collapse > summary { list-style: none; cursor: pointer; }
+.cs-collapse > summary::-webkit-details-marker { display: none; }
+.cs-collapse > summary .cs-subhead { margin-bottom: 0; }
+.cs-collapse > summary .cs-collapse-caret { margin-left: auto; color: var(--dim); transition: transform .18s ease; }
+.cs-collapse[open] > summary .cs-collapse-caret { transform: rotate(90deg); }
+.cs-collapse > summary:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; border-radius: 6px; }
+.cs-collapse[open] > #prof-classes-content { margin-top: 12px; }
 
 /* « À revoir avec cet élève » — liste prescriptive (lot E) */
 .ed-review-item { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); }
@@ -1711,11 +1722,9 @@ textarea {
 .eleve-panel-header {
   padding: 12px 16px;
   border-bottom: 1px solid var(--border);
-  font-size: .78rem;
+  font-size: .82rem;
   font-weight: 700;
-  color: var(--dim);
-  text-transform: uppercase;
-  letter-spacing: .8px;
+  color: var(--text-2);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1730,8 +1739,11 @@ textarea {
   margin-bottom: 6px;
 }
 .eleve-item:hover { background: var(--surf2); border-color: var(--border-h); transform: translateX(4px); }
+.eleve-item:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
 .eleve-item.on { background: var(--cyan-dim); border-color: var(--cyan); }
-.eleve-item.alert { border-left-color: var(--red); }
+/* « alerte » (positions dues) : tint plein + point rouge, pas une demi-barre latérale. */
+.eleve-item.alert { border-color: rgba(225,29,72,.25); background: var(--red-dim); }
+.eleve-item.alert.on { background: var(--cyan-dim); border-color: var(--cyan); }
 .eleve-name { font-weight: 600; font-size: .85rem; display: flex; align-items: center; gap: 6px; justify-content: space-between; }
 .eleve-meta { font-size: .7rem; color: var(--dim); margin-top: 3px; }
 .eleve-progbar { height: 3px; background: var(--surf3); border-radius: 2px; margin-top: 7px; overflow: hidden; }
@@ -1745,7 +1757,7 @@ textarea {
 .ed-kpi-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); border-bottom: 1px solid var(--border); flex-shrink: 0; }
 .ed-kpi { background: var(--surf); padding: 10px; text-align: center; }
 .ed-kpi-v { font-size: 1.15rem; font-weight: 800; line-height: 1; }
-.ed-kpi-l { font-size: .6rem; color: var(--dim); text-transform: uppercase; letter-spacing: .5px; margin-top: 3px; }
+.ed-kpi-l { font-size: .68rem; color: var(--dim); margin-top: 3px; }
 .ed-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
 .ed-tab { padding: 9px 16px; font-size: .76rem; color: var(--dim); cursor: pointer; border: none; background: none; font-family: inherit; border-bottom: 2px solid transparent; transition: .12s; }
 .ed-tab.on { color: var(--cyan); border-bottom-color: var(--cyan); font-weight: 600; }
@@ -1756,10 +1768,10 @@ textarea {
 .ed-mini-bars { display: flex; align-items: flex-end; gap: 2px; height: 24px; width: 60px; flex-shrink: 0; }
 .ed-mini-bar { flex: 1; border-radius: 2px 2px 0 0; min-width: 3px; }
 
-/* KPI strip */
+/* KPI strip — 3 tuiles prescriptives + note discrète (vanité démotée) */
 .cs-kpi-strip {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 14px;
   margin-bottom: 28px;
 }
@@ -1770,8 +1782,17 @@ textarea {
   padding: 20px 18px;
   text-align: center;
 }
+/* Tuile « À suivre » quand elle appelle une action : accent rouge sobre. */
+.cs-kpi-accent { background: var(--red-dim); border-color: rgba(225,29,72,.25); }
 .cs-kpi-val { font-family: var(--font-mono); font-size: 1.85rem; font-weight: 700; line-height: 1; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
-.cs-kpi-lbl { font-size: .63rem; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; font-weight: 600; }
+.cs-kpi-lbl { font-size: .74rem; color: var(--dim); margin-top: 5px; font-weight: 600; }
+.cs-kpi-note {
+  grid-column: 1 / -1;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px;
+  font-size: .76rem; color: var(--dim); padding: 2px 2px 0;
+}
+.cs-kpi-note-sep { margin-left: auto; }
+@media (max-width: 560px) { .cs-kpi-note-sep { margin-left: 0; } }
 
 /* Classes section */
 .cls-grid { display: grid; grid-template-columns: 380px 1fr; gap: 16px; align-items: start; }

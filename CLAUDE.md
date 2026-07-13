@@ -198,6 +198,17 @@ Review `/frontend-design` (design + fonctionnalités) sur l’app peuplée (test
 - **E — Dashboard élève prescriptif** : KPI « Sessions » (souvent 0) → **« À revoir »** (positions SR dues de l’élève) ; table « Positions difficiles » → liste **« À revoir avec cet élève »** (coup + module + nb d’échecs + **commentaire du prof** = le pourquoi). Styles `.ed-review-*`.
 Tout vérifié navigateur sur données peuplées (2 modules, 7 élèves) ; typecheck + tests + build verts.
 
+### Fait — passe UX dashboard coach (/impeccable critique, 13 juillet 2026)
+Critique `/impeccable` de la vue coach (`lib/coach.js` + sections `index.html`) : **26→29/40** (P1 : 2→0). Correctifs P1+P2 puis P2 supplémentaires, tous vérifiés navigateur (données injectées via `import('/state.js')`, 0 erreur console) ; typecheck + 85 tests + build verts. Snapshots dans `.impeccable/critique/`.
+- **[P1] KPI strip prescriptif** (`renderProfView`) : 4 cartes identiques (Élèves/Sessions/Réussite/Parties Maia = anti-référence PRODUCT.md « gros KPI + cartes identiques ») → **3 tuiles** (Élèves · Réussite moyenne · **À suivre** = élèves avec positions dues OU inactifs >7j, tuile `.cs-kpi-accent` rouge quand >0) ; sessions/parties Maia démotées en `.cs-kpi-note`. `.cs-kpi-strip` : `repeat(4,1fr)`→`repeat(3,1fr)`.
+- **[P1] Cohérence couleur** : helpers de palier UNIQUES `_tierPct`/`_tierBg`/`_tierFail` (tokens) → **0 hex ambre en dur** (était 8 : `#facc15`,`#ca8a04`,`#ea580c`,`#d97706`) ; carte KPI heatmap unifiée sur `.cs-kpi` (fin de la 3ᵉ variante `.kpi`).
+- **[P2] Hiérarchie** : « Suivi par module » (`#prof-classes-content`) replié dans `<details class="cs-collapse">` (progressive disclosure, fermé par défaut).
+- **[P2] A11y** : `.eleve-item` (était `div onclick` muet) → `role=button`+`tabindex=0`+`onkeydown` Enter/Espace + `:focus-visible` ; cellules heatmap `.wsx-cell` focusables + `aria-label` (fin du « qui échoue » hover-only) ; side-stripe `.eleve-item.alert` → tint plein.
+- **[P2] Clarté** : colonne « SM-2 »→« Révision » (le moteur est Leitner), pastille « due »→« À revoir »/« dans Nj », « rétention »→« réussite », emoji `📥`→`ti-inbox`.
+- **[P2] typeset** : `text-transform:uppercase` retiré des labels de tuile/panneau (`.cs-kpi-lbl`,`.ed-kpi-l`,`.eleve-panel-header` + label inline « À revoir avec cet élève ») ; **`.csnav-group` conservé** comme seul usage délibéré de capitales (séparateurs de nav).
+- **[P2] harden** : `assignTargetedReview(i,{whole})` = 2 portées (élèves qui échouent / **toute la classe** ayant le module) + capture d'undo ; nouveau `undoTargetedReview(i)` (bouton « Annuler » révélé après assignation) → l'action n'est plus irréversible. Migration-free (`class.targetedReviews`).
+- *Restant post-passe (P2/P3, aucun P0/P1)* : accélérateurs power-coach (raccourcis), 2 markups points-faibles `ws-*`/`wsx-*` (tokens alignés, structures distinctes), styles inline (dette), skeleton/état d'erreur de chargement.
+
 ### Fait — fusion onglets « Élèves » + « Classes » (juillet 2026)
 Demande utilisateur : ne plus séparer élèves et classes → **un seul onglet « Élèves »** où l'on voit la liste des élèves ET des classes, avec ajout d'élève seul/en classe, création de classe, édition/suppression. Revient sur le split T4 (`csec-eleves`/`csec-classes`).
 - **Sidebar** : bouton `csnav-classes` **supprimé** ; section `csec-classes` **supprimée**. `switchCoachSection` : `'classes'` retiré du tableau ; `'eleves'` rend désormais `renderClassList` + `renderProfView` + `renderClassesTab`.

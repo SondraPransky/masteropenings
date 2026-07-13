@@ -306,12 +306,14 @@
           </div>
         </div>
 
-        <!-- Classes : gestion (éditer / supprimer) + suivi par module -->
+        <!-- Classes : gestion (éditer / supprimer) + suivi par module (replié) -->
         <div class="cls-block">
           <div class="cs-subhead"><i class="ti ti-school" aria-hidden="true"></i> Mes classes</div>
           <div id="cls-list"></div>
-          <div class="cs-subhead" style="margin-top:18px"><i class="ti ti-chart-bar" aria-hidden="true"></i> Suivi par module</div>
-          <div id="prof-classes-content"></div>
+          <details class="cs-collapse">
+            <summary><div class="cs-subhead"><i class="ti ti-chart-bar" aria-hidden="true"></i> Suivi par module<i class="ti ti-chevron-right cs-collapse-caret" aria-hidden="true"></i></div></summary>
+            <div id="prof-classes-content"></div>
+          </details>
         </div>
       </div>
 
