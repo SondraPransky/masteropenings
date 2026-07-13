@@ -668,6 +668,12 @@
           <button class="btn btn-blue btn-sm" style="font-size:.8rem;margin:0" onclick="openBoardEntry()"><i class="ti ti-chess-knight" aria-hidden="true"></i> Saisir sur l'échiquier</button>
         </div>
       </div>
+      <div style="display:flex;gap:6px;margin-bottom:8px">
+        <input type="text" id="ng-lichess-url" spellcheck="false" autocorrect="off" autocomplete="off"
+          placeholder="Importer depuis Lichess — colle une URL (lichess.org/…)" style="flex:1"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();importLichessGame();}">
+        <button id="ng-lichess-btn" class="btn btn-blue btn-sm" style="margin:0;white-space:nowrap" onclick="importLichessGame()"><i class="ti ti-download" aria-hidden="true"></i> Importer</button>
+      </div>
       <textarea id="ng-pgn" spellcheck="false" autocorrect="off" autocomplete="off" style="height:130px"
         oninput="_ngPrefillFromPgn()"
         placeholder="1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 ..."></textarea>
