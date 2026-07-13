@@ -51,7 +51,9 @@ npm run gate
 | 8 | élève | revoit l'annotation coach (`%author coach` + `reviewedAt`) |
 | 9 | élève | insert + read d'un `result` |
 | 10 | élève | insert + read d'une session `practice` |
+| 11 | coach | **paquet d'exercices multi-coups** : `modules.sessions[].kps[].line` (jsonb) round-trip + flag `isExercise` |
+| 12 | élève | **partie Lichess** : PGN annoté (en-têtes + `%clk`) round-trip à l'identique dans `games.pgn` |
 
 Le script **crée puis supprime** ses données (classe, partie, result,
-practice) et **restaure** `profiles.extra` / `mastery` de l'élève.
+practice, module) et **restaure** `profiles.extra` / `mastery` de l'élève.
 Sortie : `✅ GATE VERTE` (exit 0) ou `❌ GATE ROUGE` (exit 1).

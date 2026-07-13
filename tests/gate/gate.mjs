@@ -35,6 +35,7 @@ import {
   _sbGameToRow, _sbRowToGame,
   _sbResultToRow, _sbRowToResult,
   _sbPracticeToRow, _sbRowToPractice,
+  _sbModuleToRow, _sbRowToModule,
 } from '../../lib/dbmap.js';
 
 // ── Config Supabase (cle PUBLIQUE, identique a app.js) ──────
@@ -97,7 +98,7 @@ function check(name, cond, detail = '') {
 const uid53 = () => Date.now() * 1000 + Math.floor(Math.random() * 1000);
 
 // ── Main ────────────────────────────────────────────────────
-const created = { games: [], classId: null, resultTs: null, practiceTs: null };
+const created = { games: [], classId: null, resultTs: null, practiceTs: null, moduleId: null };
 let coach, student, studentProfile, origExtra, origMastery;
 
 async function run() {
@@ -256,6 +257,68 @@ async function run() {
     const rd = await rest(student.token, 'GET', `practice?student_id=eq.${student.uid}&ts=eq.${rec.ts}&select=*`);
     check('eleve : read practice (round-trip)', (rd.data?.length || 0) >= 1);
   }
+
+  // ── 11. MODULE : paquet d'exercices MULTI-COUPS — _sbSaveModule ─
+  //  Le vrai trou de couverture depuis le 12/07 : les paquets tactiques/mats
+  //  vivent dans modules.sessions (jsonb) avec kp.line = sequence SAN complete.
+  //  On prouve que sessions[].kps[].line survit write→read en ligne (coach).
+  {
+    created.moduleId = uid53();
+    const LINE = ['Qh5', 'Nf6', 'Qxf7#'];   // mat en 2 (3 demi-coups, finit sur le coup de l'eleve)
+    const kp = {
+      fen: 'rnbqkb1r/pppp1ppp/5n2/4p3/2B1P3/8/PPPP1PPP/RNBQK1NR w KQkq - 0 1',
+      san: 'Qh5', altSans: [], comment: 'Menace mat du berger',
+      isCapture: false, isCastle: false, isCheck: false, line: LINE,
+    };
+    const mod = {
+      id: created.moduleId, teacherId: coach.uid, name: 'GATE paquet exos',
+      level: 'Intermédiaire', side: 'w', mode: 'flash', varmode: null, tree: {},
+      sessions: [{ label: 'Exercices', startFen: 'start', moves: [], kps: [kp] }],
+      hideComments: false, personal: false, deadline: null,
+      isExercise: true, created: new Date().toLocaleDateString('fr-FR'),
+    };
+    const row = _sbModuleToRow(mod);
+    row.teacher_id = coach.uid;   // proprietaire (RLS), comme _sbSaveModule
+    const ins = await rest(coach.token, 'POST', 'modules',
+      { body: row, prefer: 'return=representation' });
+    check('coach : insert paquet exercices (modules)', ins.ok, `${ins.status} ${JSON.stringify(ins.data)}`);
+
+    const rd = await rest(coach.token, 'GET', `modules?id=eq.${created.moduleId}&select=*`);
+    const m = rd.data?.[0] ? _sbRowToModule(rd.data[0]) : null;
+    const gotLine = m?.sessions?.[0]?.kps?.[0]?.line;
+    check('coach : read paquet (round-trip module)', !!m && m.isExercise === true, JSON.stringify(m?.isExercise));
+    check('coach : kp.line multi-coups intacte (jsonb)',
+      Array.isArray(gotLine) && gotLine.join(' ') === LINE.join(' '),
+      JSON.stringify(gotLine));
+  }
+
+  // ── 12. PARTIE Lichess : PGN reel (en-tetes + %clk) round-trip ─
+  //  L'import Lichess pousse un PGN complet dans games.pgn (colonne text).
+  //  On prouve qu'un PGN annote (commentaires horloge, en-tetes) revient
+  //  a l'octet pres — c'est le contenu que _sbSaveGame/_sbLoadStudentGames manipulent.
+  {
+    const gameId = uid53();
+    created.games.push(gameId);
+    const LICHESS_PGN =
+      '[Event "Rated Blitz game"]\n[Site "https://lichess.org/q7ZvsdUF"]\n' +
+      '[White "alice"]\n[Black "bob"]\n[Result "1-0"]\n[WhiteElo "1523"]\n[BlackElo "1498"]\n' +
+      '[TimeControl "300+3"]\n[Opening "Italian Game"]\n\n' +
+      '1. e4 { [%clk 0:05:00] } e5 { [%clk 0:05:00] } ' +
+      '2. Nf3 { [%clk 0:04:58] } Nc6 { [%clk 0:04:57] } ' +
+      '3. Bc4 { [%clk 0:04:55] } Bc5 { [%clk 0:04:54] } 1-0';
+    const rec = {
+      id: gameId, drillId: null, studentId: student.uid, studentEmail: GATE_STUDENT_EMAIL,
+      side: 'white', level: null, pgn: LICHESS_PGN, result: '1-0', ts: Date.now(),
+      baseId: testBase.id, nature: 'partie', shared: false, reviewedAt: null, student: 'Eleve',
+    };
+    const ins = await rest(student.token, 'POST', 'games',
+      { body: _sbGameToRow(rec), prefer: 'return=representation' });
+    check('eleve : insert partie Lichess (PGN annote)', ins.ok, `${ins.status}`);
+    const rd = await rest(student.token, 'GET', `games?id=eq.${gameId}&select=*`);
+    const g = rd.data?.[0] ? _sbRowToGame(rd.data[0]) : null;
+    check('eleve : PGN Lichess round-trip a l\'identique', g?.pgn === LICHESS_PGN,
+      g ? `len ${g.pgn?.length} vs ${LICHESS_PGN.length}` : 'null');
+  }
 }
 
 // ── Nettoyage : supprime tout ce que la gate a cree ─────────
@@ -268,6 +331,7 @@ async function cleanup() {
     if (created.resultTs) await rest(student.token, 'DELETE', `results?student_id=eq.${student.uid}&ts=eq.${created.resultTs}`);
     if (created.practiceTs) await rest(student.token, 'DELETE', `practice?student_id=eq.${student.uid}&ts=eq.${created.practiceTs}`);
     if (created.classId) await rest(coach.token, 'DELETE', `classes?id=eq.${created.classId}`);
+    if (created.moduleId) await rest(coach.token, 'DELETE', `modules?id=eq.${created.moduleId}`);
     // Restaure profiles.extra / mastery de l'eleve.
     if (student) {
       await rest(student.token, 'PATCH', `profiles?id=eq.${student.uid}`,
