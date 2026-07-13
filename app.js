@@ -23,6 +23,7 @@ import { G } from './state.js';
 import { S } from './lib/session.js';
 import './lib/editor.js';
 import './lib/drill.js';
+import './lib/study.js';
 import './lib/sr.js';
 import './lib/coach.js';
 import './lib/student.js';

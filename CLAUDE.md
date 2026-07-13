@@ -20,7 +20,7 @@ Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un pr
 
 ### Points forts
 - Backend **Supabase** (source de vérité) opérationnel : auth, modules, classes, résultats, pratique, parties, mastery.
-- **Modularisation aboutie** : ~15 modules `lib/*` (voir Carte des fichiers). `app.js` réduit de **4412 → 1275 lignes (−71 %)** — il ne reste que login/auth, la couche Supabase `_sb*`, l’init, les helpers UI et le pont `window`. ⚠️ **Le gain s’érode** : `app.js` (1275) et `lib/drill.js` (1116) repassent au-dessus de 1000 lignes → candidats décomposition (cf. audit qualité juillet 2026).
+- **Modularisation aboutie** : ~16 modules `lib/*` (voir Carte des fichiers). `app.js` réduit de **4412 → 1275 lignes (−71 %)** — il ne reste que login/auth, la couche Supabase `_sb*`, l’init, les helpers UI et le pont `window`. **Décomposition dette (13 juillet 2026)** : `lib/drill.js` était repassé > 1000 → phase « Apprentissage » (étude arbre + parcours ligne guidé) extraite dans **`lib/study.js`** (460 l.) → `drill.js` **1123 → 693 l.** Couplage nul hors pont `window` (seul `_setStudyLayout` re-bridgé côté drill). `app.js` (1324) reste candidat (extraction auth-UI = prochaine tranche prévue).
 - **Vite + modules ES** ; tests Vitest (logique pure) + `typecheck` ; **déployé** sur GitHub Pages (Actions, redéploie à chaque push sur `main`) → `https://sondrapransky.github.io/masteropenings/`.
 
 ### Angle mort à lever avant le lancement (**gate de release**)
@@ -65,7 +65,8 @@ La dette « critique » (taille d’`app.js`) est **résolue** (extractions §5 
 | `lib/editor-core.js` | Éditeur — cœur pur : sérialisation PGN ↔ arbre, formes, NAG, `_SHAPE_COL` (testé, round-trip) | ~7 Ko |
 | `lib/editor.js` | Éditeur de variantes — UI : plateau, drag, annotations (NAG/formes), sauvegarde (DOM) | ~27 Ko |
 | `lib/drill-core.js` | Drill — cœur pur : sessions, choix du coup adverse (LRU/forced path), `oppSeenKey`, délais commentaires (testé) | ~4 Ko |
-| `lib/drill.js` | Drill — **toute l'UI** : modes ligne / positions clés-flash / arbre-étude, phases apprentissage & test, fin de drill (`showEndModal`, `replayErrors`). `S` partagé ; app-level/SR via pont `window` | ~48 Ko |
+| `lib/drill.js` | Drill — **UI des modes de révision** : mode ligne / positions clés-flash / arbre-étude (moteur), phase test, fin de drill (`showEndModal`, `replayErrors`). `S` partagé ; app-level/SR via pont `window`. **Phase « Apprentissage » extraite → `lib/study.js`** | 693 lignes |
+| `lib/study.js` | Drill — **phase « Apprentissage »** (extraite de `drill.js`, juillet 2026) : phase étude arbre (`startStudyPhase`/`renderStudyTree` + sous-variantes, carte pédagogique `renderStudyBubble`, « devine le coup » `toggleStudyGuess`/`tryStudyGuess`) + parcours ligne guidé (`startLearnPhase`/`renderLearn*`/`learnGoto`). `S` partagé ; ponts `window` (dont `startTreeDrill` → drill.js). Importé après `drill.js` dans `app.js` | 460 lignes |
 | `lib/sr.js` | Répétition espacée : file de session (nouveaux/dus + quota), réponse/étape, bilan + prévision, suspension, réglages, tableau de bord élève | ~20 Ko |
 | `lib/coach.js` | Vue coach — suivi élèves : onglets présence/progression/classes/parties, heatmap, exports CSV/PGN/JSON. État local (`selectedStudent`, `_profTab`) ; ne lit que `G` | ~36 Ko |
 | `lib/student.js` | Accueil élève — cartes de modules (assignés + perso), stats, série, anneaux, import/suppression de révisions perso | ~16 Ko |
