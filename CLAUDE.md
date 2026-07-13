@@ -209,7 +209,8 @@ Critique `/impeccable` de la vue coach (`lib/coach.js` + sections `index.html`) 
 - **[P2] harden** : `assignTargetedReview(i,{whole})` = 2 portées (élèves qui échouent / **toute la classe** ayant le module) + capture d'undo ; nouveau `undoTargetedReview(i)` (bouton « Annuler » révélé après assignation) → l'action n'est plus irréversible. Migration-free (`class.targetedReviews`).
 - **[P3] Unification points-faibles** (suite) : le vocabulaire `ws-*` (aperçu section Élèves) est **fusionné dans `wsx-*`** — `renderClassWeakSpots` utilise `.wsx-panel`/`.wsx-row`/`.wsx-move`/`.wsx-rate` (pastille de taux `_tierBg`/`_tierFail`, cohérente avec la vue détail) ; classes `.ws-*` supprimées du CSS.
 - **[P3] Dette styles inline** (entamée) : utilitaires `.mono-move` (cellules SAN, ×2) et `.ed-subhead` (sous-titres détail élève, ×3) extraits des styles inline répétés. *(Reste : de nombreux styles inline one-off dans `showStudentDetail`/`renderClassesTab` — dé-inlining complet reporté, non prioritaire.)*
-- *Restant post-passe (P2/P3, aucun P0/P1)* : accélérateurs power-coach (raccourcis clavier), reste de la dette inline one-off, skeleton/état d'erreur de chargement Supabase.
+- **[P3] Accélérateur clavier** : `_eleveListKey` sur `#student-list` (`role=group`, `aria-label`) — ↑/↓/Début/Fin naviguent la liste des élèves et sélectionnent au vol (power-coach au clavier).
+- *Restant post-passe (aucun P0/P1)* : reste de la dette inline one-off, **skeleton/état d'erreur de chargement Supabase** (nécessite un flag de chargement dans `app.js` — zone sensible, à décider).
 
 ### Fait — fusion onglets « Élèves » + « Classes » (juillet 2026)
 Demande utilisateur : ne plus séparer élèves et classes → **un seul onglet « Élèves »** où l'on voit la liste des élèves ET des classes, avec ajout d'élève seul/en classe, création de classe, édition/suppression. Revient sur le split T4 (`csec-eleves`/`csec-classes`).
