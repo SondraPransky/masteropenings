@@ -652,7 +652,7 @@
     </div>
 
     <!-- Essentiels : qui joue, résultat, coups -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+    <div class="ng-grid ng-grid-3">
       <div class="frow" style="margin:0"><label>Blancs</label><input type="text" id="ng-white" placeholder="Nom des Blancs"></div>
       <div class="frow" style="margin:0"><label>Noirs</label><input type="text" id="ng-black" placeholder="Nom des Noirs"></div>
       <div class="frow" style="margin:0"><label>Résultat</label>
@@ -681,7 +681,7 @@
 
     <details class="ng-details">
       <summary>Détails (optionnel) — base, tournoi, Elo</summary>
-      <div style="display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-top:12px">
+      <div class="ng-grid ng-grid-2-1" style="margin-top:12px">
         <div class="frow" style="margin:0"><label>Base de destination</label>
           <select id="ng-base"></select>
         </div>
@@ -689,7 +689,7 @@
           <select id="ng-nature"><option value="partie">Partie</option><option value="analyse">Analyse</option></select>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-top:10px">
+      <div class="ng-grid ng-grid-2-1-1" style="margin-top:10px">
         <div class="frow" style="margin:0"><label>Tournoi</label><input type="text" id="ng-event" placeholder="Ex : Open de Cannes"></div>
         <div class="frow" style="margin:0"><label>Elo B.</label><input type="text" id="ng-welo" inputmode="numeric" placeholder="—"></div>
         <div class="frow" style="margin:0"><label>Elo N.</label><input type="text" id="ng-belo" inputmode="numeric" placeholder="—"></div>

@@ -130,6 +130,8 @@ Tranches à livrer **dans l’ordre** (chacune démontrable) :
 - **Bibliothèque d’exercices partagée entre coachs** (+ durcissement RLS multi-coachs, cf. §3).
 - Une éventuelle **v2 en React / Tailwind / shadcn** (re-platform assumé) et une passe de **polish visuel global** — décidés explicitement, jamais mid-sprint.
 
+### Fait — consolidation mobile/responsive (13 juillet 2026)
+Audit mobile systématique à **375px** (priorité : saisie de partie au téléphone). Constat : l'app était **déjà largement responsive** (viewport meta, `theme-color`, `touch-action` sur l'échiquier, ~20 media queries, `@media (hover:none)`). Mesures : **0 overflow horizontal** sur toutes les pages (dashboard, accueil élève, bibliothèque, drill) ; **les 15 modals tiennent à 375px** sans débordement interne ; échiquier du drill = 320px, grille en 1 colonne. **Seul vrai défaut trouvé + corrigé** : le modal « Nouvelle partie » avait ses grilles en styles inline (`grid-template-columns:1fr 1fr 1fr` etc.) → non-overridables par media query → champs Blancs/Noirs à **90px** (illisibles pour taper un nom). Passés en classes `.ng-grid`/`.ng-grid-3`/`.ng-grid-2-1`/`.ng-grid-2-1-1` (style.css) avec repli **2 colonnes ≤480px** → noms à **140px**. Vérifié navigateur (mesures DOM). Typecheck + 78 tests + build verts.
 ### Fait — §6 #4 Assignation : échéance par module dans la classe
 - **Modèle** : une classe porte `moduleDeadlines = { moduleId: 'YYYY-MM-DD' }`, persisté dans `classes.extra.deadlines` (jsonb) → aucune migration (`lib/dbmap.js`).
 - **Coach** : formulaire de classe (`lib/modules.js`) — date-picker par module (`_toggleModDeadline`) ; `saveClass` collecte, `openEditClass` repeuple ; `renderClassList` affiche l’échéance.

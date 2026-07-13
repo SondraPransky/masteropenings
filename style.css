@@ -769,6 +769,16 @@ textarea {
 .ng-details > summary::before { content: "\25B8"; color: var(--dim); font-size: .8rem; }
 .ng-details[open] > summary::before { content: "\25BE"; }
 .ng-details > summary:hover { color: var(--text); }
+/* Grilles du modal Nouvelle partie — colonnes en classes (les styles inline
+   bloqueraient les media queries) → repli 2 colonnes sur mobile pour des
+   champs de saisie utilisables (noms de joueurs au telephone). */
+.ng-grid { display: grid; gap: 10px; }
+.ng-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+.ng-grid-2-1 { grid-template-columns: 2fr 1fr; }
+.ng-grid-2-1-1 { grid-template-columns: 2fr 1fr 1fr; }
+@media (max-width: 480px) {
+  .ng-grid-3, .ng-grid-2-1, .ng-grid-2-1-1 { grid-template-columns: 1fr 1fr; }
+}
 
 /* Paquet d'exercices — plan de travail 2 colonnes (refonte T6) */
 .ex-workbench { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
