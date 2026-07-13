@@ -30,7 +30,7 @@ describe('mapping module ↔ ligne SQL', () => {
     expect(row.hide_comments).toBe(false);
     expect(row.updated_at).toBe(1700000001234);
     expect(row.owner_student_id).toBe(null);
-    expect(row.extra).toEqual({ created: '27/06/2026', fromLibrary: true, demo: false, isExercise: false });
+    expect(row.extra).toEqual({ created: '27/06/2026', fromLibrary: true, demo: false, isExercise: false, exType: null });
   });
 
   it('round-trip : restitue tous les champs persistés', () => {
@@ -47,6 +47,15 @@ describe('mapping module ↔ ligne SQL', () => {
     const back = _sbRowToModule(_sbModuleToRow(perso));
     expect(back.ownerStudentId).toBe('stu-uuid');
     expect(back.personal).toBe(true);
+  });
+
+  it('paquet d\'exercices : isExercise + exType (type de tactique) préservés', () => {
+    const pk = { id: 7, name: 'Fourchettes', isExercise: true, exType: 'fourchette', tree: {}, sessions: [] };
+    const back = _sbRowToModule(_sbModuleToRow(pk));
+    expect(back.isExercise).toBe(true);
+    expect(back.exType).toBe('fourchette');
+    // Absence de type → null (rétrocompat modules existants).
+    expect(_sbRowToModule(_sbModuleToRow({ id: 8, name: 'x', tree: {}, sessions: [] })).exType).toBe(null);
   });
 });
 

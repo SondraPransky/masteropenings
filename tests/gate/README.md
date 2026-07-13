@@ -51,8 +51,10 @@ npm run gate
 | 8 | élève | revoit l'annotation coach (`%author coach` + `reviewedAt`) |
 | 9 | élève | insert + read d'un `result` |
 | 10 | élève | insert + read d'une session `practice` |
-| 11 | coach | **paquet d'exercices multi-coups** : `modules.sessions[].kps[].line` (jsonb) round-trip + flag `isExercise` |
+| 11 | coach | **paquet d'exercices multi-coups** : `modules.sessions[].kps[].line` (jsonb) round-trip + flags `isExercise` / `extra.exType` (type de tactique) |
 | 12 | élève | **partie Lichess** : PGN annoté (en-têtes + `%clk`) round-trip à l'identique dans `games.pgn` |
+| 13 | coach + élève | **outillage coach** : `classes.extra.targetedReviews` (révisions ciblées) + `classes.extra.deadlines` (échéances) round-trip ; l'élève lit sa révision ciblée (RLS `classes_read`) |
+| 14 | coach | **suivi élève** : lit le `result` + la `practice` de son élève rattachés à son module (RLS `results_read`/`practice_read` via `drill_id`) |
 
 Le script **crée puis supprime** ses données (classe, partie, result,
 practice, module) et **restaure** `profiles.extra` / `mastery` de l'élève.

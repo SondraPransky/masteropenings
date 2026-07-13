@@ -36,6 +36,7 @@ import {
   _sbResultToRow, _sbRowToResult,
   _sbPracticeToRow, _sbRowToPractice,
   _sbModuleToRow, _sbRowToModule,
+  _sbClassToRow, _sbRowToClass,
 } from '../../lib/dbmap.js';
 
 // ── Config Supabase (cle PUBLIQUE, identique a app.js) ──────
@@ -98,7 +99,7 @@ function check(name, cond, detail = '') {
 const uid53 = () => Date.now() * 1000 + Math.floor(Math.random() * 1000);
 
 // ── Main ────────────────────────────────────────────────────
-const created = { games: [], classId: null, resultTs: null, practiceTs: null, moduleId: null };
+const created = { games: [], classId: null, resultTs: null, practiceTs: null, moduleId: null, coachResultTs: null, coachPracticeTs: null };
 let coach, student, studentProfile, origExtra, origMastery;
 
 async function run() {
@@ -275,7 +276,7 @@ async function run() {
       level: 'Intermédiaire', side: 'w', mode: 'flash', varmode: null, tree: {},
       sessions: [{ label: 'Exercices', startFen: 'start', moves: [], kps: [kp] }],
       hideComments: false, personal: false, deadline: null,
-      isExercise: true, created: new Date().toLocaleDateString('fr-FR'),
+      isExercise: true, exType: 'fourchette', created: new Date().toLocaleDateString('fr-FR'),
     };
     const row = _sbModuleToRow(mod);
     row.teacher_id = coach.uid;   // proprietaire (RLS), comme _sbSaveModule
@@ -290,6 +291,7 @@ async function run() {
     check('coach : kp.line multi-coups intacte (jsonb)',
       Array.isArray(gotLine) && gotLine.join(' ') === LINE.join(' '),
       JSON.stringify(gotLine));
+    check('coach : type de tactique (extra.exType) round-trip', m?.exType === 'fourchette', JSON.stringify(m?.exType));
   }
 
   // ── 12. PARTIE Lichess : PGN reel (en-tetes + %clk) round-trip ─
@@ -319,6 +321,68 @@ async function run() {
     check('eleve : PGN Lichess round-trip a l\'identique', g?.pgn === LICHESS_PGN,
       g ? `len ${g.pgn?.length} vs ${LICHESS_PGN.length}` : 'null');
   }
+
+  // ── 13. OUTILLAGE COACH : classes.extra (revisions ciblees + echeances) ─
+  //  Le gros chantier coach (dashboard/points faibles/revisions ciblees) ecrit
+  //  dans classes.extra (jsonb) : targetedReviews (assignation ciblee coach->eleve)
+  //  + deadlines (echeance par module). On prouve le round-trip connecte + la
+  //  lecture RLS par l'eleve (classes_read : membre de la classe).
+  {
+    const clsObj = {
+      id: created.classId, teacherId: coach.uid, name: 'GATE-temp',
+      moduleIds: [String(created.moduleId)], students: [memberKey], individual: false,
+      moduleDeadlines: { [String(created.moduleId)]: '2026-09-01' },
+      targetedReviews: [{
+        drillId: String(created.moduleId), drillName: 'GATE paquet exos',
+        san: 'Qh5', fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w', // fen indicatif
+        comment: 'Revois cette fourchette', students: [memberKey],
+      }],
+    };
+    const up = await rest(coach.token, 'PATCH', `classes?id=eq.${created.classId}`,
+      { body: _sbClassToRow(clsObj), prefer: 'return=representation' });
+    check('coach : write revisions ciblees + echeances (classes.extra)', up.ok && up.data?.length === 1, `${up.status} ${JSON.stringify(up.data)}`);
+
+    const rdC = await rest(coach.token, 'GET', `classes?id=eq.${created.classId}&select=*`);
+    const cC = rdC.data?.[0] ? _sbRowToClass(rdC.data[0]) : null;
+    check('coach : echeance par module round-trip', cC?.moduleDeadlines?.[String(created.moduleId)] === '2026-09-01', JSON.stringify(cC?.moduleDeadlines));
+    check('coach : revision ciblee round-trip', cC?.targetedReviews?.[0]?.san === 'Qh5', JSON.stringify(cC?.targetedReviews?.[0]?.san));
+
+    // L'eleve (membre) LIT la classe et voit sa revision ciblee (RLS classes_read).
+    const rdS = await rest(student.token, 'GET', `classes?id=eq.${created.classId}&select=*`);
+    const cS = rdS.data?.[0] ? _sbRowToClass(rdS.data[0]) : null;
+    check('eleve : LIT sa classe (RLS classes_read)', !!cS, `status=${rdS.status} vues=${(rdS.data||[]).length}`);
+    check('eleve : voit la revision ciblee de son coach', cS?.targetedReviews?.some(r => r.san === 'Qh5'), JSON.stringify(cS?.targetedReviews?.length));
+  }
+
+  // ── 14. COACH lit result/practice de son eleve (RLS via drill_id du module) ─
+  //  _sbLoadTeacherResults/Practice filtrent par drill_id IN (modules du coach).
+  //  Policy results_read/practice_read : le coach lit si drill_id est un de ses
+  //  modules. On rattache un result + une practice au module du coach (test 11).
+  {
+    const rRec = {
+      drillId: String(created.moduleId), drillName: 'GATE paquet exos', studentId: student.uid,
+      studentEmail: GATE_STUDENT_EMAIL, studentPseudo: studentProfile?.pseudo || null, student: 'Eleve',
+      san: 'Qh5', comment: null, correct: true, posIdx: 0, ts: Date.now(),
+    };
+    created.coachResultTs = rRec.ts;
+    const insR = await rest(student.token, 'POST', 'results', { body: _sbResultToRow(rRec), prefer: 'return=representation' });
+    check('eleve : insert result rattache au module coach', insR.ok, `${insR.status}`);
+    const rdR = await rest(coach.token, 'GET', `results?drill_id=eq.${created.moduleId}&select=*`);
+    const seenR = (rdR.data || []).some(r => String(r.ts) === String(rRec.ts));
+    check('coach : LIT le result de son eleve (RLS drill_id)', rdR.ok && seenR, `status=${rdR.status} vues=${(rdR.data||[]).length}`);
+
+    const pRec = {
+      drillId: String(created.moduleId), drillName: 'GATE paquet exos', studentId: student.uid,
+      studentEmail: GATE_STUDENT_EMAIL, studentPseudo: studentProfile?.pseudo || null, student: 'Eleve',
+      pct: 90, sessionIdx: 0, ts: Date.now() + 1,
+    };
+    created.coachPracticeTs = pRec.ts;
+    const insP = await rest(student.token, 'POST', 'practice', { body: _sbPracticeToRow(pRec), prefer: 'return=representation' });
+    check('eleve : insert practice rattachee au module coach', insP.ok, `${insP.status}`);
+    const rdP = await rest(coach.token, 'GET', `practice?drill_id=eq.${created.moduleId}&select=*`);
+    const seenP = (rdP.data || []).some(r => String(r.ts) === String(pRec.ts));
+    check('coach : LIT la practice de son eleve (RLS drill_id)', rdP.ok && seenP, `status=${rdP.status} vues=${(rdP.data||[]).length}`);
+  }
 }
 
 // ── Nettoyage : supprime tout ce que la gate a cree ─────────
@@ -329,7 +393,9 @@ async function cleanup() {
       await rest(student.token, 'DELETE', `games?id=eq.${id}`);
     }
     if (created.resultTs) await rest(student.token, 'DELETE', `results?student_id=eq.${student.uid}&ts=eq.${created.resultTs}`);
+    if (created.coachResultTs) await rest(student.token, 'DELETE', `results?student_id=eq.${student.uid}&ts=eq.${created.coachResultTs}`);
     if (created.practiceTs) await rest(student.token, 'DELETE', `practice?student_id=eq.${student.uid}&ts=eq.${created.practiceTs}`);
+    if (created.coachPracticeTs) await rest(student.token, 'DELETE', `practice?student_id=eq.${student.uid}&ts=eq.${created.coachPracticeTs}`);
     if (created.classId) await rest(coach.token, 'DELETE', `classes?id=eq.${created.classId}`);
     if (created.moduleId) await rest(coach.token, 'DELETE', `modules?id=eq.${created.moduleId}`);
     // Restaure profiles.extra / mastery de l'eleve.

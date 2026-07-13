@@ -751,9 +751,19 @@
       <div class="modal-title" id="ex-pk-title" style="margin:0"><i class="ti ti-puzzle" aria-hidden="true"></i> Nouveau paquet d'exercices</div>
       <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-exercise-packet')">✕</button>
     </div>
-    <div style="display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-bottom:16px">
+    <div style="display:grid;grid-template-columns:2fr 1.2fr 1fr;gap:10px;margin-bottom:16px">
       <div class="frow" style="margin:0"><label>Nom du paquet</label>
         <input type="text" id="ex-pk-name" placeholder="Ex : Mats en 1, Fourchettes de cavalier…">
+      </div>
+      <div class="frow" style="margin:0"><label>Type de tactique <span style="color:var(--dim);font-weight:400">(optionnel)</span></label>
+        <input type="text" id="ex-pk-type" list="ex-type-list" placeholder="Ex : fourchette, clouage…">
+        <datalist id="ex-type-list">
+          <option value="fourchette"></option><option value="clouage"></option>
+          <option value="enfilade"></option><option value="double attaque"></option>
+          <option value="attaque à la découverte"></option><option value="déviation"></option>
+          <option value="attraction"></option><option value="interférence"></option>
+          <option value="sacrifice"></option><option value="mat"></option>
+        </datalist>
       </div>
       <div class="frow" style="margin:0"><label>Niveau</label>
         <select id="ex-pk-level">
