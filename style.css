@@ -1492,6 +1492,15 @@ textarea {
 /* Sous-titre de section dans le détail élève (module, Progression, Positions difficiles). */
 .ed-subhead { font-weight: 700; font-size: .88rem; }
 
+/* États de chargement du dashboard coach : skeleton shimmer + carte d'erreur. */
+.skeleton { background: linear-gradient(90deg, var(--surf2) 25%, var(--surf3) 37%, var(--surf2) 63%); background-size: 400% 100%; border-radius: 6px; animation: skel-shimmer 1.4s ease infinite; }
+@keyframes skel-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+@media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
+.skel-num { height: 26px; width: 54px; margin: 0 auto; }
+.skel-lbl { height: 10px; width: 68px; margin: 9px auto 0; }
+.skel-line { height: 12px; }
+.coach-error { grid-column: 1 / -1; text-align: center; padding: 40px 20px; border: 1px dashed var(--border); border-radius: var(--r); }
+
 /* Bloc repliable (progressive disclosure) — casse le mur de panneaux empilés. */
 .cs-collapse { margin-top: 18px; }
 .cs-collapse > summary { list-style: none; cursor: pointer; }

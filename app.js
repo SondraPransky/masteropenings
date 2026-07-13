@@ -990,15 +990,25 @@ function _sbInitAuth() {
     // Router IMMÉDIATEMENT (avant tout réseau) → retour visuel instantané ; les données se chargent ensuite.
     goPage(G.currentRole === 'teacher' ? 'coach' : 'student-home');
     await _sbLoadMastery();
-    if (G.currentRole === 'teacher') {
-      await _sbLoadTeacherModules();
-      // Résultats / pratique / parties des élèves (incl. parties partagées) → dashboard coach.
-      await _sbLoadTeacherResults(); await _sbLoadTeacherPractice(); await _sbLoadTeacherGames();
-      window.renderProfView?.();
-    }
+    if (G.currentRole === 'teacher') { await _coachLoad(); }
     else { await _sbLoadBases(); await _sbLoadStudentModules(); await _sbLoadStudentGames(); }
   });
 }
+
+// Chargement des données coach (dashboard) avec état de chargement/erreur :
+// skeleton pendant les fetch, carte d'erreur si l'un d'eux échoue (via l'horodatage
+// _sbErrorAt posé par _sbRun). Réutilisé par le retry (window.retryCoachLoad).
+async function _coachLoad() {
+  const t0 = Date.now();
+  G._coachLoading = 'loading';
+  window.renderProfView?.();
+  await _sbLoadTeacherModules();
+  // Résultats / pratique / parties des élèves (incl. parties partagées) → dashboard coach.
+  await _sbLoadTeacherResults(); await _sbLoadTeacherPractice(); await _sbLoadTeacherGames();
+  G._coachLoading = (G._sbErrorAt && G._sbErrorAt >= t0) ? 'error' : null;
+  window.renderProfView?.();
+}
+window.retryCoachLoad = _coachLoad;
 
 // ════════════════════════════════════════════════════════════
 //  DONNÉES — modules & G.classes (côté enseignant)
@@ -1029,7 +1039,7 @@ async function _sbLoadTeacherModules() {
 async function _sbRun(label, guardOk, fn) {
   if (!guardOk) return;
   try { return await fn(); }
-  catch (e) { console.error(label, e); }
+  catch (e) { console.error(label, e); G._sbErrorAt = Date.now(); }   // horodatage additif → état d'erreur de chargement (coach)
 }
 
 async function _sbSaveModule(drill) {

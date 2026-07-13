@@ -123,6 +123,8 @@ interface Window {
   sm2Get?: (...a: any[]) => any;
 
   // — Vue coach / suivi élèves (lib/coach.js) —
+  retryCoachLoad?: (...a: any[]) => any;
+  _eleveListKey?: (...a: any[]) => any;
   renderProfView?: (...a: any[]) => any;
   renderHeatmap?: (...a: any[]) => any;
   pgnToEditorTree?: (...a: any[]) => any;
