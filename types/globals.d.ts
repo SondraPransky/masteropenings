@@ -209,6 +209,7 @@ interface Window {
   // — Gestion modules & classes (lib/modules.js) —
   injectDemoDrill?: (...a: any[]) => any;
   renderClassList?: (...a: any[]) => any;
+  _studentDisplayName?: (email: string) => string;
   saveClasses?: (...a: any[]) => any;
   deleteModule?: (...a: any[]) => any;
   _sbSaveClass?: (...a: any[]) => any;

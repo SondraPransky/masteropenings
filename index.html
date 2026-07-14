@@ -151,14 +151,14 @@
 
     <!-- Modules assignés par le prof -->
     <div class="sh-section-head">
-      <div class="sh-section-label" style="margin:0">Mes modules</div>
+      <h2 class="sh-section-label" style="margin:0">Mes modules</h2>
     </div>
     <div id="sh-module-list"></div>
 
     <!-- Exercices (tactiques / mats) — paquets assignés, par thème -->
     <div id="sh-exercise-section" style="display:none">
       <div class="sh-section-head" style="margin-top:22px">
-        <div class="sh-section-label" style="margin:0"><i class="ti ti-puzzle" aria-hidden="true"></i> Exercices</div>
+        <h2 class="sh-section-label" style="margin:0"><i class="ti ti-puzzle" aria-hidden="true"></i> Exercices</h2>
         <div style="font-size:.74rem;color:var(--dim)">Tactiques et mats à résoudre, par thème.</div>
       </div>
       <div id="sh-exercise-list"></div>
@@ -166,16 +166,18 @@
 
     <!-- Révisions perso (import élève) -->
     <div class="sh-section-head" style="margin-top:22px">
-      <div class="sh-section-label" style="margin:0">Mes révisions perso</div>
+      <h2 class="sh-section-label" style="margin:0">Mes révisions perso</h2>
       <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
         <button class="btn btn-primary btn-sm" onclick="openStudentCreateChoice()" style="font-size:.74rem"><i class="ti ti-plus" aria-hidden="true"></i> Créer</button>
       </div>
     </div>
     <div id="sh-perso-list"></div>
 
-    <!-- Tableau de bord répétition espacée — secondaire, sous les modules -->
-    <div class="sh-section-head" style="margin-top:22px">
-      <div class="sh-section-label" style="margin:0">Mes statistiques</div>
+    <!-- Tableau de bord répétition espacée — secondaire, sous les modules.
+         L'en-tête est masqué par renderSrDashboard quand il n'y a encore rien à montrer
+         (compte neuf) : pas de heading orphelin au premier lancement. -->
+    <div class="sh-section-head" id="sh-stats-head" style="margin-top:22px">
+      <h2 class="sh-section-label" style="margin:0">Mes statistiques</h2>
     </div>
     <div id="sh-dashboard"></div>
 

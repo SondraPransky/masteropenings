@@ -34,6 +34,7 @@
 
   /* ── Rouge — erreur ── */
   --red:     #dc2626;
+  --red-ink: #be123c;   /* rouge « encre » AA pour texte petit sur fond clair/teinté */
   --red-dim: rgba(220,38,38,.10);
 
   /* ── Violet — SM-2 / révision spaced ── */
@@ -326,6 +327,10 @@ textarea {
 .btn-primary:hover { filter: brightness(.93); }
 
 .btn-sm  { padding: 5px 12px; font-size: .775rem; }
+/* Bouton icône-seule dans une table/carte : zone cliquable étendue verticalement
+   (~24px visuel → 40px de cible) sans gonfler la rangée. */
+.btn-ico { position: relative; }
+.btn-ico::after { content: ""; position: absolute; inset: -8px -2px; }
 .btn-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 
 /* ══ BADGES ══════════════════════════════════ */
@@ -542,11 +547,11 @@ textarea {
 .srdash-v { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; line-height: 1.1; }
 .srdash-l { font-size: .72rem; color: var(--text-2); margin-top: 4px; line-height: 1.3; }
 .srdash-sub { font-size: .74rem; color: var(--dim); margin: -4px 0 12px; line-height: 1.4; }
-.srdash-fc-lbl { font-size: .68rem; color: var(--dim); margin-bottom: 6px; }
+.srdash-fc-lbl { font-size: .72rem; color: var(--dim); margin-bottom: 6px; }
 .srdash-fc { display: flex; align-items: flex-end; gap: 3px; height: 54px; }
 .srdash-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; height: 100%; justify-content: flex-end; }
 .srdash-bar { width: 100%; border-radius: 2px 2px 0 0; }
-.srdash-bar-lbl { font-size: .54rem; color: var(--dim); white-space: nowrap; }
+.srdash-bar-lbl { font-size: .7rem; color: var(--dim); white-space: nowrap; }   /* ≥11px — public enfant, lisibilité mobile */
 /* Réglages SR (P4) */
 .sr-set-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border); font-size: .86rem; color: var(--text); }
 .sr-set-input { background: var(--surf2); border: 1px solid var(--border); border-radius: 7px; padding: 6px 10px; color: var(--text); font-family: inherit; font-size: .85rem; }
@@ -693,6 +698,8 @@ textarea {
 /* Hint clavier invisible sur écrans tactiles */
 @media (hover: none) {
   .keyboard-hint { display: none !important; }
+  /* Cible tactile : les .btn-sm (24-28px au doigt) remontent à ~40px sans changer le desktop */
+  .btn-sm { min-height: 38px; padding-top: 8px; padding-bottom: 8px; }
 }
 @media (max-width: 480px) {
   /* Nav : cacher les chips texte pour laisser de la place au theme-toggle */
@@ -896,6 +903,7 @@ textarea {
   --gold-ink:  var(--gold);
   --green-ink: var(--green);
   --red:       #f87171;
+  --red-ink:   var(--red);
   --red-dim:   rgba(248,113,113,.14);
   --violet:    #a78bfa;
   --violet-dim:rgba(167,139,250,.14);
@@ -1186,7 +1194,7 @@ textarea {
 .sh-hero--calm::after { display:none; }
 .sh-hero--calm .sh-hero-label { color:var(--text); }
 .sh-hero--calm .sh-hero-sub { color:var(--dim); opacity:1; }
-.sh-hero-label { position:relative; font-family:var(--font-display); font-size:1.1rem; font-weight:800; letter-spacing:-.3px; margin-bottom:3px; }
+.sh-hero-label { position:relative; font-family:var(--font-display); font-size:1.1rem; font-weight:800; letter-spacing:-.3px; margin:0 0 3px; }  /* margin:0 = reset UA du h2 */
 .sh-hero-sub { position:relative; font-size:.82rem; opacity:.92; margin-bottom:14px; line-height:1.45; }
 .sh-hero--calm .sh-hero-sub { margin-bottom:0; }
 .sh-hero-btn { position:relative; background:#fff; color:#4f46e5; border:none; border-radius:var(--rs); padding:11px 16px; font-family:inherit; font-weight:700; font-size:.9rem; cursor:pointer; width:100%; transition:transform .15s cubic-bezier(.22,1,.36,1), filter .15s; }
@@ -1703,6 +1711,7 @@ textarea {
   cursor: pointer;
 }
 .mcard-due-banner:hover { background: rgba(225,29,72,.14); }
+.mcard-due-banner:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
 
 /* Empty state for modules — on-brand (trame echiquier discrete) */
 .mcard-empty {
@@ -1893,8 +1902,8 @@ textarea {
 .eleve-meta { font-size: .7rem; color: var(--dim); margin-top: 3px; }
 /* Pastille « à suivre » dans la carte élève (retard réel / inactivité) */
 .eleve-flag { display: inline-block; margin-left: 7px; padding: 1px 7px; border-radius: 999px; font-size: .64rem; font-weight: 700; vertical-align: middle; }
-.eleve-flag.due { background: var(--red-dim); color: var(--red); }
-.eleve-flag.stale { background: var(--gold-dim); color: var(--gold); }
+.eleve-flag.due { background: var(--red-dim); color: var(--red-ink); }
+.eleve-flag.stale { background: var(--gold-dim); color: var(--gold-ink); }
 /* Élèves d'une carte de classe : pastilles de prénoms (jamais d'emails bruts) */
 .cls-stu-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
 .cls-stu-chip { font-size: .66rem; padding: 1px 8px; border-radius: 999px; background: var(--surf3); color: var(--text-2); border: 1px solid var(--border); }

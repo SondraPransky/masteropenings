@@ -1043,7 +1043,16 @@ async function _sbLoadTeacherModules() {
 async function _sbRun(label, guardOk, fn) {
   if (!guardOk) return;
   try { return await fn(); }
-  catch (e) { console.error(label, e); G._sbErrorAt = Date.now(); }   // horodatage additif → état d'erreur de chargement (coach)
+  catch (e) {
+    console.error(label, e); G._sbErrorAt = Date.now();   // horodatage additif → état d'erreur de chargement (coach)
+    // Échec d'ÉCRITURE : prévenir l'utilisateur (sinon perte silencieuse côté cloud alors que
+    // le localStorage a réussi). Rate-limité à 1 toast / 30 s — la synchro mastery ré-écrit
+    // toutes les 2,5 s et provoquerait une tempête de toasts hors-ligne.
+    if (/Save|Update|Delete/.test(label) && Date.now() - (G._sbWarnAt || 0) > 30000) {
+      G._sbWarnAt = Date.now();
+      window.toast?.('⚠ Sauvegarde en ligne échouée — tes données restent sur cet appareil', 'warn');
+    }
+  }
 }
 
 async function _sbSaveModule(drill) {
