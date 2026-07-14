@@ -1164,6 +1164,10 @@ textarea {
 }
 .sh-section-head .sh-section-label { margin:0; }
 .sh-notif-banner { background:var(--gold-dim); border:1px solid rgba(217,119,6,.3); color:var(--gold-ink); border-radius:var(--r); padding:11px 15px; font-size:.86rem; margin-bottom:4px; }
+/* Variante « annotations du coach » : violet coach (#7c3aed, couleur des nœuds annotés), cliquable. */
+.sh-notif-banner.coach { background:rgba(124,58,237,.09); border-color:rgba(124,58,237,.3); color:#7c3aed; cursor:pointer; }
+.sh-notif-banner.coach:hover { background:rgba(124,58,237,.14); }
+.sh-notif-banner.coach:focus-visible { outline:2px solid #7c3aed; outline-offset:2px; }
 .sh-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:16px; }
 .sh-hello { font-family:var(--font-display); font-size:1.55rem; font-weight:800; letter-spacing:-.5px; }
 .sh-hello-sub { font-size:.82rem; color:var(--dim); margin-top:2px; }
@@ -1525,6 +1529,24 @@ textarea {
 .wsx-cmt { font-size: .74rem; color: var(--text-2); font-style: italic; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .wsx-act { white-space: nowrap; text-align: right; }
 .wsx-none { color: var(--dim); }
+
+/* ── Page Parties : dashboard des parties partagées (groupé par élève) ── */
+.pg-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.pg-count { font-size: .82rem; }
+.pg-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.pg-search { flex: 1 1 200px; min-width: 170px; }
+.pg-stu-sec { margin-bottom: 18px; }
+.pg-stu-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+.pg-stu-name { font-family: var(--font-display); font-size: .95rem; font-weight: 700; }
+.pg-stu-stats { font-size: .74rem; color: var(--dim); }
+.pg-annotated { color: #7c3aed; font-weight: 700; font-size: .7rem; white-space: nowrap; }
+.pg-new { display: inline-block; padding: 1px 8px; border-radius: 999px; background: var(--cyan-dim); color: var(--cyan); font-size: .64rem; font-weight: 700; vertical-align: middle; }
+.pg-maia { margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--border); }
+.pg-maia > summary { cursor: pointer; font-weight: 700; font-size: .9rem; list-style: none; margin-bottom: 8px; }
+.pg-maia > summary::-webkit-details-marker { display: none; }
+.pg-maia > summary::after { content: '▸'; color: var(--dim); margin-left: 8px; }
+.pg-maia[open] > summary::after { content: '▾'; }
+.pg-maia > summary:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; border-radius: 6px; }
 
 /* Tooltip échiquier flottant (hover/focus d'une erreur — points faibles + détail élève). */
 .wsx-tip { position: fixed; z-index: 60; background: var(--surf); border: 1px solid var(--border);
