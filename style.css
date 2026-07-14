@@ -1455,31 +1455,82 @@ textarea {
 }
 .cs-title { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; letter-spacing: -.5px; margin-bottom: 2px; }
 .cs-sub { font-size: .78rem; color: var(--dim); }
-/* Sous-titre de bloc (onglet Élèves fusionné : « Mes classes », « Suivi par module ») */
+/* Sous-titre de bloc (pages coach) */
 .cs-subhead { font-family: var(--font-display); font-size: .98rem; font-weight: 700; color: var(--text); margin: 0 0 10px; display: flex; align-items: center; gap: 7px; }
-.cls-block { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
 
-/* Points faibles — cartes actionnables (lot B) + bande d'aperçu */
-.wsx-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; margin-bottom: 18px; }
-.wsx-card { background: var(--surf); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
-.wsx-card.hot { border-color: rgba(220,38,38,.35); }
-.wsx-card-main { display: flex; gap: 12px; }
-.wsx-head { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; flex-wrap: wrap; }
+/* ── Vue d'ensemble (atterrissage coach) : blocs de synthèse cliquables ── */
+.ov-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; margin-top: 16px; align-items: start; }
+.ov-grid .wsx-panel { margin-bottom: 0; }
+/* Rangée cliquable (élève à suivre, partie à annoter) — vrai bouton, pleine largeur. */
+.ov-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%;
+  padding: 8px 6px; margin: 0; background: none; border: none; border-radius: 8px;
+  font-family: inherit; font-size: .8rem; color: var(--text); text-align: left; cursor: pointer; }
+.ov-row + .ov-row { border-top: 1px solid var(--border); border-radius: 0 0 8px 8px; }
+.ov-row:hover { background: var(--surf2); }
+.ov-row:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
+.ov-row-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.ov-row-meta { flex-shrink: 0; font-family: var(--font-mono); font-size: .72rem; color: var(--dim); }
+/* État « rien à faire » d'un bloc de synthèse. */
+.ov-ok { display: flex; align-items: center; gap: 7px; padding: 12px 4px; font-size: .78rem; color: var(--green); }
+
+/* ── Page Classes : cartes cliquables → détail d'une classe ── */
+.cls-card { padding: 10px 12px; background: var(--surf2); border: 1px solid var(--border); border-radius: var(--r);
+  margin-bottom: 8px; cursor: pointer; transition: border-color .15s ease, background .15s ease; }
+.cls-card:hover { border-color: var(--cyan-glow); background: var(--surf); }
+.cls-card:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .cls-card { transition: none; } }
+.cls-detail-head { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
+.cls-detail-title { flex: 1; min-width: 0; }
+/* Rangée élève du suivi de classe (hérite .ov-row) — statut aligné à droite. */
+.cls-stu-row { padding: 5px 6px; }
+
+/* Points faibles — vocabulaire partagé (modale « Voir la position », chips, panneaux). */
 .wsx-move { font-family: var(--font-mono); font-size: 1rem; font-weight: 700; }
 .wsx-rate { font-size: .7rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
-.wsx-sub { font-size: .75rem; color: var(--dim); }
-.wsx-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.wsx-chips { display: flex; flex-wrap: wrap; gap: 4px; }
 .wsx-chip { font-size: .7rem; padding: 2px 7px; border-radius: 999px; background: var(--red-dim); color: var(--red); }
 .wsx-comment { font-size: .75rem; color: var(--text-2); font-style: italic; line-height: 1.45; margin-top: 8px; }
 .wsx-actions { display: flex; gap: 8px; margin-top: 10px; }
 .wsx-actions .btn { flex: 1; }
-.wsx-strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 6px; }
-.wsx-cell { border-radius: 8px; padding: 8px 4px; text-align: center; border: 1px solid var(--border); }
-.wsx-cell:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
-/* Aperçu compact (section Élèves) — même vocabulaire que les cartes détail. */
+/* Panneau de synthèse (Vue d'ensemble). */
 .wsx-panel { background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); padding: 14px 16px; margin-bottom: 16px; }
 .wsx-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-weight: 700; font-size: .9rem; margin-bottom: 2px; }
-.wsx-panel-sub { font-size: .76rem; color: var(--dim); margin-bottom: 12px; }
+
+/* ── Page Points faibles : sélecteur de modules (master-detail) + tableau ── */
+.hm-mods { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; margin-top: 16px; }
+.hm-mod-card { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; text-align: left;
+  background: var(--surf); border: 1px solid var(--border); border-radius: var(--rs);
+  font-family: inherit; color: var(--text); cursor: pointer; transition: border-color .15s ease, background .15s ease; }
+.hm-mod-card:hover { border-color: var(--cyan-glow); }
+.hm-mod-card:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.hm-mod-card.on { background: var(--cyan-dim); border-color: var(--cyan); }
+@media (prefers-reduced-motion: reduce) { .hm-mod-card { transition: none; } }
+.hm-mod-card-name { font-size: .78rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hm-mod-card-stats { display: flex; align-items: center; gap: 8px; font-size: .72rem; }
+.hm-mod-card-hot { color: var(--red); font-weight: 700; }
+.hm-mod-card-n { color: var(--dim); margin-left: auto; }
+.wsx-hint { font-size: .75rem; color: var(--dim); margin: 14px 0 4px; }
+.wsx-mod-sec { margin-top: 16px; }
+.wsx-mod-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.wsx-mod-name { font-family: var(--font-display); font-size: .98rem; font-weight: 700; }
+.wsx-mod-stats { font-size: .74rem; color: var(--dim); }
+.wsx-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--r); background: var(--surf); }
+.wsx-table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+.wsx-table th { text-align: left; font-size: .66rem; font-weight: 600; color: var(--dim); padding: 8px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.wsx-table td { padding: 7px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.wsx-table tbody tr:last-child td { border-bottom: none; }
+.wsx-tr:hover { background: var(--surf2); }
+.wsx-tr:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
+.wsx-tr.hot { background: color-mix(in oklab, var(--red-dim) 40%, transparent); }
+.wsx-cmt { font-size: .74rem; color: var(--text-2); font-style: italic; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wsx-act { white-space: nowrap; text-align: right; }
+.wsx-none { color: var(--dim); }
+
+/* Tooltip échiquier flottant (hover/focus d'une erreur — points faibles + détail élève). */
+.wsx-tip { position: fixed; z-index: 60; background: var(--surf); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 8px; box-shadow: var(--shadow-lg); pointer-events: none; }
+.wsx-tip-cap { font-size: .7rem; color: var(--dim); margin-top: 6px; text-align: center; }
+.ed-review-hint { font-weight: 400; font-size: .7rem; color: var(--dim); }
 .wsx-link { background: none; border: none; color: var(--cyan); font-size: .74rem; font-weight: 600; cursor: pointer; padding: 0; white-space: nowrap; }
 .wsx-link:hover { text-decoration: underline; }
 .wsx-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
@@ -1500,16 +1551,6 @@ textarea {
 .skel-lbl { height: 10px; width: 68px; margin: 9px auto 0; }
 .skel-line { height: 12px; }
 .coach-error { grid-column: 1 / -1; text-align: center; padding: 40px 20px; border: 1px dashed var(--border); border-radius: var(--r); }
-
-/* Bloc repliable (progressive disclosure) — casse le mur de panneaux empilés. */
-.cs-collapse { margin-top: 18px; }
-.cs-collapse > summary { list-style: none; cursor: pointer; }
-.cs-collapse > summary::-webkit-details-marker { display: none; }
-.cs-collapse > summary .cs-subhead { margin-bottom: 0; }
-.cs-collapse > summary .cs-collapse-caret { margin-left: auto; color: var(--dim); transition: transform .18s ease; }
-.cs-collapse[open] > summary .cs-collapse-caret { transform: rotate(90deg); }
-.cs-collapse > summary:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; border-radius: 6px; }
-.cs-collapse[open] > #prof-classes-content { margin-top: 12px; }
 
 /* « À revoir avec cet élève » — liste prescriptive (lot E) */
 .ed-review-item { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); }
@@ -1546,34 +1587,67 @@ textarea {
 /* Module cards */
 .mcard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
 }
+/* Carte compacte (échelle 100-200 modules) : padding resserré, actions secondaires
+   dans le menu ⋯. PAS d'overflow:hidden (le dropdown du menu doit pouvoir sortir) —
+   la barre ::before porte son propre arrondi. */
 .mcard {
   background: var(--surf);
   border: 1px solid var(--border);
-  border-radius: 18px;
-  padding: 24px;
+  border-radius: 14px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
   box-shadow: var(--shadow-sm);
   position: relative;
-  overflow: hidden;
 }
 .mcard::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 5px;
+  height: 4px;
+  border-radius: 14px 14px 0 0;
   background: linear-gradient(90deg, var(--cyan), #6366f1);
   opacity: 0;
   transition: opacity 0.3s;
 }
-.mcard:hover { border-color: var(--cyan); box-shadow: 0 20px 25px -5px rgba(30,27,75,.14), 0 8px 10px -6px rgba(30,27,75,.10); transform: translateY(-6px); }
+.mcard:hover { border-color: var(--cyan); box-shadow: 0 20px 25px -5px rgba(30,27,75,.14), 0 8px 10px -6px rgba(30,27,75,.10); transform: translateY(-3px); }
 .mcard:hover::before { opacity: 1; }
-.mcard-name { font-size: 1.1rem; font-weight: 700; line-height: 1.3; margin-bottom: 10px; }
-.mcard-meta { display: flex; gap: 16px; font-size: .8rem; color: var(--dim); margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; }
+@media (prefers-reduced-motion: reduce) { .mcard { transition: none; } .mcard:hover { transform: none; } }
+.mcard-name { font-size: .95rem; font-weight: 700; line-height: 1.3; margin-bottom: 6px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.mcard-meta { display: flex; gap: 10px; flex-wrap: wrap; font-size: .74rem; color: var(--dim); margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; }
+
+/* Toolbar de la page Modules : recherche + type + tri + chips de dossiers. */
+.mod-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.mod-search { flex: 1 1 220px; min-width: 180px; border: 1px solid var(--border); border-radius: var(--rs); background: var(--surf); border-bottom: 1px solid var(--border); }
+.mod-toolbar select { flex: 0 0 auto; }
+.mod-folder-chips { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; flex-basis: 100%; }
+.mod-folder-chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 999px;
+  background: var(--surf); border: 1px solid var(--border); font-family: inherit; font-size: .76rem;
+  color: var(--text); cursor: pointer; transition: border-color .15s ease, background .15s ease; }
+.mod-folder-chip:hover { border-color: var(--cyan-glow); }
+.mod-folder-chip:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.mod-folder-chip.on { background: var(--cyan-dim); border-color: var(--cyan); font-weight: 600; }
+@media (prefers-reduced-motion: reduce) { .mod-folder-chip { transition: none; } }
+.mod-chip-n { color: var(--dim); font-size: .7rem; }
+.mod-chip-edit { color: var(--cyan); margin-left: 2px; }
+.mod-chip-edit:hover { text-decoration: underline; }
+
+/* Menu ⋯ d'une carte module (details natif, dropdown au-dessus du flux). */
+.mcard-menu { position: relative; flex: 0 0 auto; }
+.mcard-menu > summary { list-style: none; display: inline-flex; }
+.mcard-menu > summary::-webkit-details-marker { display: none; }
+.mcard-menu-list { position: absolute; right: 0; top: calc(100% + 4px); z-index: 60; min-width: 210px;
+  background: var(--surf); border: 1px solid var(--border); border-radius: var(--rs); box-shadow: var(--shadow-lg); padding: 4px; }
+.mcard-menu-item { display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 10px; border: none;
+  background: none; border-radius: 7px; font-family: inherit; font-size: .8rem; color: var(--text); text-align: left; cursor: pointer; }
+.mcard-menu-item:hover { background: var(--surf2); }
+.mcard-menu-item:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
+.mcard-menu-item.danger { color: var(--red); }
+.mcard-menu-item.danger:hover { background: var(--red-dim); }
 .mcard-badges { display: flex; gap: 5px; flex-wrap: wrap; margin: 10px 0 14px; }
 .mcard-footer {
   display: flex;
@@ -1585,8 +1659,8 @@ textarea {
 }
 /* Deux rangées nettes : actions primaires (Jouer/Partager) en haut à 50/50,
    boutons-icônes groupés en dessous — plus d'orphelin qui déborde. */
-.mcard-footer > .btn-gold,
-.mcard-footer > .btn-blue { flex: 1 1 calc(50% - 3px); }
+.mcard-footer > .btn-primary { flex: 1 1 auto; }
+.mcard-footer > .btn-blue { flex: 1 1 auto; }
 .mcard-footer > .btn-ghost { flex: 0 0 auto; }
 .mcard-due-banner {
   background: var(--red-dim);

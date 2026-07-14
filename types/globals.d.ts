@@ -129,8 +129,21 @@ interface Window {
   renderHeatmap?: (...a: any[]) => any;
   pgnToEditorTree?: (...a: any[]) => any;
   openWeakspotPosition?: (...a: any[]) => any;
+  wsTip?: (...a: any[]) => any;
+  wsTipHide?: (...a: any[]) => any;
+  hmSelectMod?: (...a: any[]) => any;
+  modSearch?: (...a: any[]) => any;
+  modFilterType?: (...a: any[]) => any;
+  modSortBy?: (...a: any[]) => any;
+  modSelectFolder?: (...a: any[]) => any;
+  renameModFolder?: (...a: any[]) => any;
+  moveDrillToFolder?: (...a: any[]) => any;
   figurineText?: (s: string) => string;
-  renderClassesTab?: (...a: any[]) => any;
+  renderOverview?: (...a: any[]) => any;
+  ovOpenStudent?: (...a: any[]) => any;
+  renderClassesPage?: (...a: any[]) => any;
+  openClassDetail?: (...a: any[]) => any;
+  closeClassDetail?: (...a: any[]) => any;
   renderPartiesTab?: (...a: any[]) => any;
   _deadlinePill?: (...a: any[]) => any;
 

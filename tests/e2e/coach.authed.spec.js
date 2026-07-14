@@ -9,9 +9,13 @@ test.describe('Espace prof (authentifié)', () => {
   });
 
   test('tableau de bord coach + navigation latérale', async ({ page }) => {
-    await expect(page.locator('#csnav-modules')).toBeVisible();
+    // Réorganisation « pilotage » (juillet 2026) : Vue d'ensemble (atterrissage) + Classes + Élèves.
+    await expect(page.locator('#csnav-overview')).toBeVisible();
+    await expect(page.locator('#csnav-classes')).toBeVisible();
     await expect(page.locator('#csnav-eleves')).toBeVisible();
-    // Onglet « Classes » fusionné dans « Élèves » (juillet 2026) : plus de csnav-classes.
+    await expect(page.locator('#csnav-modules')).toBeVisible();
+    // Atterrissage = Vue d'ensemble (KPIs de synthèse).
+    await expect(page.locator('#csec-overview')).toBeVisible();
   });
 
   test('onglet Modules : « 📤 Partager » sur une carte (ou état vide)', async ({ page }) => {

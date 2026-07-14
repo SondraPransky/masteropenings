@@ -208,16 +208,27 @@
 
   <!-- ══ SIDEBAR ══ -->
   <aside class="coach-sidenav">
-    <div class="csnav-group">Contenu</div>
-    <button class="csnav-btn on" id="csnav-modules" onclick="switchCoachSection('modules')">
-      <span class="csnav-ico"><i class="ti ti-stack-2" aria-hidden="true"></i></span>
-      <span class="csnav-lbl">Modules</span>
-      <span class="csnav-badge new" id="csnav-count-modules">0</span>
+    <div class="csnav-group">Pilotage</div>
+    <button class="csnav-btn on" id="csnav-overview" onclick="switchCoachSection('overview')">
+      <span class="csnav-ico"><i class="ti ti-home" aria-hidden="true"></i></span>
+      <span class="csnav-lbl">Vue d'ensemble</span>
+    </button>
+    <button class="csnav-btn" id="csnav-classes" onclick="switchCoachSection('classes')">
+      <span class="csnav-ico"><i class="ti ti-school" aria-hidden="true"></i></span>
+      <span class="csnav-lbl">Classes</span>
+      <span class="csnav-badge" id="csnav-count-classes">0</span>
     </button>
     <button class="csnav-btn" id="csnav-eleves" onclick="switchCoachSection('eleves')">
       <span class="csnav-ico"><i class="ti ti-users" aria-hidden="true"></i></span>
       <span class="csnav-lbl">Élèves</span>
       <span class="csnav-badge" id="csnav-count-eleves">0</span>
+    </button>
+    <div class="csnav-divider"></div>
+    <div class="csnav-group">Contenu</div>
+    <button class="csnav-btn" id="csnav-modules" onclick="switchCoachSection('modules')">
+      <span class="csnav-ico"><i class="ti ti-stack-2" aria-hidden="true"></i></span>
+      <span class="csnav-lbl">Modules</span>
+      <span class="csnav-badge new" id="csnav-count-modules">0</span>
     </button>
     <div class="csnav-divider"></div>
     <div class="csnav-group">Analyse</div>
@@ -239,8 +250,40 @@
   <!-- ══ MAIN CONTENT ══ -->
   <main class="coach-main-area">
 
+    <!-- ── SECTION : Vue d'ensemble (atterrissage coach — synthèse prescriptive) ── -->
+    <div id="csec-overview">
+      <div class="cs-header">
+        <div>
+          <div class="cs-title">Vue d'ensemble</div>
+          <div class="cs-sub">L'essentiel du jour : qui suivre, quoi revoir, quoi annoter</div>
+        </div>
+      </div>
+      <div class="cs-kpi-strip" id="ov-kpis"></div>
+      <div class="ov-grid">
+        <div id="ov-attention"></div>
+        <div id="ov-weakspots"></div>
+        <div id="ov-inbox"></div>
+      </div>
+      <div id="ov-empty" style="display:none"></div>
+    </div>
+
+    <!-- ── SECTION : Classes (cartes → détail d'une classe) ── -->
+    <div id="csec-classes" style="display:none">
+      <div class="cs-header">
+        <div>
+          <div class="cs-title">Classes</div>
+          <div class="cs-sub">Vos groupes d'élèves, leurs modules et leurs échéances</div>
+        </div>
+        <div class="cs-actions">
+          <button class="btn btn-primary btn-sm" onclick="openClassForm()" title="Créer une classe (groupe d'élèves)"><i class="ti ti-school" aria-hidden="true"></i> Créer une classe</button>
+        </div>
+      </div>
+      <div id="cls-list"></div>
+      <div id="cls-detail" style="display:none"></div>
+    </div>
+
     <!-- ── SECTION : Modules ── -->
-    <div id="csec-modules">
+    <div id="csec-modules" style="display:none">
       <div id="coach-onboarding"></div>
       <div class="cs-header">
         <div>
@@ -250,6 +293,25 @@
         <div class="cs-actions">
           <button class="btn btn-primary" onclick="openCreateChoice()">+ Créer</button>
         </div>
+      </div>
+      <div id="mod-toolbar" class="mod-toolbar" style="display:none">
+        <div class="eleve-search mod-search">
+          <i class="ti ti-search" aria-hidden="true"></i>
+          <input id="mod-search" type="search" placeholder="Rechercher un module…" autocomplete="off"
+                 aria-label="Rechercher un module par nom" oninput="modSearch(this.value)">
+        </div>
+        <select onchange="modFilterType(this.value)" aria-label="Filtrer par type" style="font-size:.8rem;width:auto">
+          <option value="all">Tous les types</option>
+          <option value="openings">Ouvertures</option>
+          <option value="exercises">Exercices</option>
+        </select>
+        <select onchange="modSortBy(this.value)" aria-label="Trier les modules" style="font-size:.8rem;width:auto">
+          <option value="recent">Plus récents</option>
+          <option value="name">Nom A→Z</option>
+          <option value="due">À réviser d'abord</option>
+          <option value="level">Par niveau</option>
+        </select>
+        <div id="mod-folders" class="mod-folder-chips"></div>
       </div>
       <div id="module-cards-grid" class="mcard-grid">
         <div class="mcard-empty">
@@ -265,12 +327,11 @@
     <div id="csec-eleves" style="display:none">
       <div class="cs-header">
         <div>
-          <div class="cs-title">Élèves &amp; classes</div>
-          <div class="cs-sub">Vos élèves, vos classes et leur progression</div>
+          <div class="cs-title">Élèves</div>
+          <div class="cs-sub">Recherchez un élève et suivez sa progression</div>
         </div>
         <div class="cs-actions">
           <button class="btn btn-primary btn-sm" onclick="addStudent()" title="Ajouter un élève seul"><i class="ti ti-user-plus" aria-hidden="true"></i> Ajouter un élève</button>
-          <button class="btn btn-blue btn-sm" onclick="openClassForm()" title="Créer une classe (groupe d'élèves)"><i class="ti ti-school" aria-hidden="true"></i> Créer une classe</button>
           <select id="prof-class-filter" onchange="renderProfView()" style="font-size:.8rem;width:auto;max-width:200px">
             <option value="all">Toutes les classes</option>
           </select>
@@ -288,8 +349,6 @@
       </div>
 
       <div id="prof-ui">
-        <div class="cs-kpi-strip" id="prof-kpis"></div>
-        <div id="prof-weakspots"></div>
         <div class="eleve-layout">
           <div class="eleve-panel">
             <div class="eleve-panel-header">
@@ -311,15 +370,6 @@
           </div>
         </div>
 
-        <!-- Classes : gestion (éditer / supprimer) + suivi par module (replié) -->
-        <div class="cls-block">
-          <div class="cs-subhead"><i class="ti ti-school" aria-hidden="true"></i> Mes classes</div>
-          <div id="cls-list"></div>
-          <details class="cs-collapse">
-            <summary><div class="cs-subhead"><i class="ti ti-chart-bar" aria-hidden="true"></i> Suivi par module<i class="ti ti-chevron-right cs-collapse-caret" aria-hidden="true"></i></div></summary>
-            <div id="prof-classes-content"></div>
-          </details>
-        </div>
       </div>
 
     </div>
@@ -371,14 +421,11 @@
       <div class="cs-header">
         <div>
           <div class="cs-title">Points faibles</div>
-          <div class="cs-sub">Positions les plus ratées par vos élèves, triées par taux d'erreur</div>
+          <div class="cs-sub">Choisissez un module pour voir les positions les plus ratées par vos élèves</div>
         </div>
         <div class="cs-actions">
           <select id="hm-class-filter" onchange="renderHeatmap()" style="font-size:.8rem;width:auto;max-width:200px">
             <option value="all">Toutes les classes</option>
-          </select>
-          <select id="hm-drill-filter" onchange="renderHeatmap()" style="font-size:.8rem;width:auto;max-width:230px">
-            <option value="all">Tous les modules</option>
           </select>
         </div>
       </div>
@@ -447,6 +494,9 @@
 
   </main>
 </div>
+
+<!-- Tooltip échiquier flottant (points faibles + détail élève) : rempli par wsTip(). -->
+<div id="ws-board-tip" class="wsx-tip" style="display:none" aria-hidden="true"></div>
 </div>
 
 <!-- ════════════════════════════════════════

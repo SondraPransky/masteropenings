@@ -304,29 +304,33 @@ function totalSessions() {
 // NAVIGATION
 // ══════════════════════════════════════════════════════
 function switchCoachSection(sec) {
-  const sections = ['modules','eleves','heatmap','parties','export'];
+  const sections = ['overview','classes','modules','eleves','heatmap','parties','export'];
   sections.forEach(s => {
     const el = document.getElementById('csec-'+s);
     if (el) el.style.display = s===sec ? '' : 'none';
     const btn = document.getElementById('csnav-'+s);
     if (btn) btn.classList.toggle('on', s===sec);
   });
-  if (sec==='eleves')  {
-    // Onglet unifié « Élèves » : roster + progression + gestion des classes + suivi par module.
-    window.renderClassList?.();
+  if (sec==='overview') {
+    // Vue d'ensemble : synthèse prescriptive (KPIs, à suivre, points faibles, parties à annoter).
     Promise.all([loadTeacherResults(), loadTeacherPractice(), loadTeacherGames()]).then(()=>{
-      window.renderProfView?.();
-      window.renderClassesTab?.();
+      window.renderOverview?.();
     });
   }
-  if (sec==='heatmap') { _syncHeatmapFilters(); window.renderHeatmap?.(); }
+  if (sec==='classes') {
+    // Classes : cartes de classes → détail d'une classe (suivi par module × élève).
+    Promise.all([loadTeacherResults(), loadTeacherPractice()]).then(()=>{
+      window.renderClassesPage?.();
+    });
+  }
+  if (sec==='eleves')  {
+    // Élèves : recherche + roster + détail élève (rien d'autre — le reste a sa page).
+    Promise.all([loadTeacherResults(), loadTeacherPractice()]).then(()=>{
+      window.renderProfView?.();
+    });
+  }
+  if (sec==='heatmap') { window.renderHeatmap?.(); }
   if (sec==='parties') { loadTeacherGames().then(()=>{ _syncPartiesFilter(); window.renderPartiesTab?.(); }); }
-}
-
-function _syncHeatmapFilters() {
-  const src = document.getElementById('prof-drill-filter');
-  const hm  = document.getElementById('hm-drill-filter');
-  if (src && hm) { hm.innerHTML = src.innerHTML; hm.value = src.value; }
 }
 
 function _syncPartiesFilter() {
@@ -846,7 +850,7 @@ function _devGuestEnter(role) {
   updateNav();
   if (DEV_GUEST_ROLE === 'teacher') {
     window.renderDrillList?.(); window.renderClassList?.(); window.renderClassModuleSelect?.();
-    window.renderProfView?.();
+    window.renderOverview?.(); window.renderProfView?.();
     goPage('coach');
   } else {
     goPage('student-home');
@@ -1001,12 +1005,12 @@ function _sbInitAuth() {
 async function _coachLoad() {
   const t0 = Date.now();
   G._coachLoading = 'loading';
-  window.renderProfView?.();
+  window.renderOverview?.(); window.renderProfView?.();
   await _sbLoadTeacherModules();
   // Résultats / pratique / parties des élèves (incl. parties partagées) → dashboard coach.
   await _sbLoadTeacherResults(); await _sbLoadTeacherPractice(); await _sbLoadTeacherGames();
   G._coachLoading = (G._sbErrorAt && G._sbErrorAt >= t0) ? 'error' : null;
-  window.renderProfView?.();
+  window.renderOverview?.(); window.renderProfView?.();
 }
 window.retryCoachLoad = _coachLoad;
 
