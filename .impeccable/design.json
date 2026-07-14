@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-14T18:55:00Z",
+  "title": "Design System: EECoach",
+  "extensions": {
+    "colorMeta": {
+      "indigo-primary": { "role": "primary", "displayName": "Encre indigo", "canonical": "#4f46e5", "tonalRamp": ["#1e1b4b", "#312e81", "#3730a3", "#4338ca", "#4f46e5", "#6366f1", "#818cf8", "#c7d2fe"] },
+      "zinc-page": { "role": "neutral", "displayName": "Papier zinc", "canonical": "#fafafa", "tonalRamp": ["#18181b", "#3f3f46", "#6b6b73", "#a1a1aa", "#d4d4d8", "#e4e4e7", "#f4f4f5", "#fafafa"] },
+      "green-ok": { "role": "semantic", "displayName": "Vert maîtrise", "canonical": "#16a34a", "tonalRamp": ["#14532d", "#15803d", "#16a34a", "#22c55e", "#4ade80", "#86efac", "#bbf7d0", "#f0fdf4"] },
+      "gold-warn": { "role": "semantic", "displayName": "Ambre attention", "canonical": "#d97706", "tonalRamp": ["#78350f", "#92400e", "#b45309", "#d97706", "#f59e0b", "#fbbf24", "#fde68a", "#fffbeb"] },
+      "red-error": { "role": "semantic", "displayName": "Rouge erreur", "canonical": "#dc2626", "tonalRamp": ["#7f1d1d", "#be123c", "#dc2626", "#ef4444", "#f87171", "#fca5a5", "#fecaca", "#fef2f2"] },
+      "violet-review": { "role": "semantic", "displayName": "Violet révision", "canonical": "#7c3aed", "tonalRamp": ["#2e1065", "#4c1d95", "#6d28d9", "#7c3aed", "#8b5cf6", "#a78bfa", "#c4b5fd", "#f5f3ff"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display (Bricolage Grotesque)", "purpose": "Logo, hero, titres de modals. text-wrap: balance." },
+      "body": { "displayName": "Corps (Hanken Grotesk)", "purpose": "Texte courant, boutons, labels. text-wrap: pretty." },
+      "mono": { "displayName": "Notation (JetBrains Mono)", "purpose": "Notation d'échecs, données chiffrées, PGN/FEN. tabular-nums sur tout compteur vivant." }
+    },
+    "shadows": [
+      { "name": "shadow-xs", "value": "0 1px 2px rgba(24,24,27,.05)", "purpose": "Tabs actifs, relief minimal." },
+      { "name": "shadow-sm", "value": "0 1px 2px rgba(24,24,27,.06)", "purpose": "Cartes calmes au repos (rare)." },
+      { "name": "shadow", "value": "0 1px 3px rgba(24,24,27,.08), 0 1px 2px rgba(24,24,27,.05)", "purpose": "Toasts, dropdowns." },
+      { "name": "shadow-lg", "value": "0 10px 30px rgba(30,27,75,.12), 0 4px 8px rgba(24,24,27,.06)", "purpose": "Modals — pointe indigo délibérée, jamais de noir pur." }
+    ],
+    "motion": [
+      { "name": "state-fast", "value": "120ms", "purpose": "Hover/focus des contrôles (background-color, border-color, color — propriétés explicites)." },
+      { "name": "state", "value": "150–180ms", "purpose": "Cartes, inputs, éléments plus larges." },
+      { "name": "ease-out-quint", "value": "cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Barres de progression, hero button — décélération sans rebond." },
+      { "name": "ease-standard", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Toasts, panneaux." },
+      { "name": "press", "value": "scale(.96) / .98 grandes cartes", "purpose": "Feedback tactile au clic, transform .06s." }
+    ],
+    "breakpoints": [
+      { "name": "mobile", "value": "480px" },
+      { "name": "drill", "value": "600px" },
+      { "name": "tablet", "value": "700px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Bouton primaire",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "L'action principale — un seul par zone d'écran.",
+      "html": "<button class=\"ds-btn ds-btn-primary\">Commencer la révision</button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 15px; border-radius: 6px; border: 1px solid transparent; font-family: 'Hanken Grotesk', sans-serif; font-weight: 500; font-size: .835rem; cursor: pointer; transition: background-color .12s, border-color .12s, filter .12s, transform .06s; } .ds-btn:active { transform: scale(.96); } .ds-btn:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(79,70,229,.30); } .ds-btn-primary { background: #4f46e5; color: #fff; } .ds-btn-primary:hover { filter: brightness(.93); }"
+    },
+    {
+      "name": "Bouton tonal",
+      "kind": "button",
+      "refersTo": "button-tonal",
+      "description": "L'important non-principal — même hue que le primaire, poids réduit.",
+      "html": "<button class=\"ds-btn ds-btn-tonal\">Partager</button>",
+      "css": ".ds-btn-tonal { background: rgba(79,70,229,.08); color: #4f46e5; border: 1px solid rgba(79,70,229,.30); } .ds-btn-tonal:hover { background: rgba(79,70,229,.30); color: #fff; }"
+    },
+    {
+      "name": "Bouton ghost",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Support, navigation locale.",
+      "html": "<button class=\"ds-btn ds-btn-ghost\">Annuler</button>",
+      "css": ".ds-btn-ghost { background: #fff; color: #3f3f46; border: 1px solid #e4e4e7; } .ds-btn-ghost:hover { background: #f4f4f5; border-color: #d4d4d8; color: #18181b; }"
+    },
+    {
+      "name": "Carte de module",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Carte actionnable : bordure au repos, ombre teintée + lift au survol.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-title\">Gambit du centre</div><div class=\"ds-card-meta\"><span class=\"ds-chip ds-chip-review\">À revoir · 4</span><span class=\"ds-card-side\">Blancs</span></div></div>",
+      "css": ".ds-card { background: #fff; border: 1px solid #e4e4e7; border-radius: 12px; padding: 16px; transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; cursor: pointer; max-width: 260px; } .ds-card:hover { transform: translateY(-2px); border-color: rgba(79,70,229,.30); box-shadow: 0 10px 30px rgba(30,27,75,.12), 0 4px 8px rgba(24,24,27,.06); } .ds-card-title { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: .95rem; color: #18181b; margin-bottom: 10px; } .ds-card-meta { display: flex; gap: 8px; align-items: center; } .ds-card-side { font-size: .78rem; color: #6b6b73; }"
+    },
+    {
+      "name": "Pastille d'état",
+      "kind": "chip",
+      "refersTo": "card",
+      "description": "État sémantique : fond -dim + texte -ink + icône, jamais la couleur seule.",
+      "html": "<span class=\"ds-chip ds-chip-review\">⏱ À revoir · 4</span> <span class=\"ds-chip ds-chip-ok\">✓ Maîtrisé</span> <span class=\"ds-chip ds-chip-late\">⚠ En retard</span>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; gap: 4px; font-size: .74rem; font-weight: 700; padding: 5px 13px; border-radius: 9999px; white-space: nowrap; font-family: 'Hanken Grotesk', sans-serif; } .ds-chip-review { background: rgba(217,119,6,.10); color: #92400e; } .ds-chip-ok { background: rgba(22,163,74,.10); color: #15803d; } .ds-chip-late { background: rgba(220,38,38,.10); color: #be123c; }"
+    },
+    {
+      "name": "Champ de saisie",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Bordure 1px, focus indigo doux.",
+      "html": "<input class=\"ds-input\" placeholder=\"Nom du module\" />",
+      "css": ".ds-input { background: #fff; color: #18181b; border: 1px solid #e4e4e7; border-radius: 6px; padding: 8px 12px; font-family: 'Hanken Grotesk', sans-serif; font-size: .85rem; transition: border-color .15s, box-shadow .15s; width: 220px; } .ds-input:focus { outline: none; border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,.08); } .ds-input::placeholder { color: #6b6b73; }"
+    },
+    {
+      "name": "Bouton de sidebar (nav coach)",
+      "kind": "nav",
+      "refersTo": "button-ghost",
+      "description": "Nav verticale coach : ghost au repos, indigo-dim quand actif, badge compteur tabular-nums.",
+      "html": "<div style=\"display:flex;flex-direction:column;gap:2px;width:190px\"><button class=\"ds-nav\">Vue d'ensemble</button><button class=\"ds-nav ds-nav-on\">Élèves <span class=\"ds-nav-badge\">30</span></button><button class=\"ds-nav\">Parties <span class=\"ds-nav-badge ds-nav-badge-new\">6</span></button></div>",
+      "css": ".ds-nav { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 6px; border: none; background: none; cursor: pointer; width: 100%; font-size: .875rem; font-weight: 500; color: #3f3f46; font-family: 'Hanken Grotesk', sans-serif; text-align: left; transition: background-color .12s, color .12s; } .ds-nav:hover { background: #f4f4f5; color: #18181b; } .ds-nav-on { background: rgba(79,70,229,.08); color: #4f46e5; font-weight: 600; } .ds-nav-badge { margin-left: auto; font-size: .65rem; font-weight: 700; background: #e4e4e7; color: #6b6b73; border-radius: 10px; padding: 1px 7px; font-variant-numeric: tabular-nums; } .ds-nav-badge-new { background: rgba(220,38,38,.10); color: #be123c; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Le Cahier d'échecs",
+    "overview": "EECoach est le cahier d'exercices soigné d'une académie d'échecs : du papier clair (zinc, jamais crème), une notation monospacée qui appartient visiblement au jeu, et une seule encre indigo réservée à ce qui compte — l'action principale, la sélection, la progression. Le système écrit peu et souligne encore moins : la hiérarchie vient de la structure (sections, bordures 1px, poids typographiques), pas de la décoration. L'outil s'efface devant la tâche.",
+    "keyCharacteristics": [
+      "Fond zinc neutre, surfaces blanches, bordures 1px — jamais de crème/beige",
+      "Un seul hue d'accent (indigo) en trois poids : plein > tonal > ghost",
+      "Couleurs sémantiques d'état avec variantes -ink (texte AA) et -dim (fonds)",
+      "Signature échecs : monospace, figurines, échiquier au centre",
+      "Gamification en signaux discrets",
+      "Dark theme complet par bascule de tokens"
+    ],
+    "rules": [
+      { "name": "La règle de l'encre (-ink)", "body": "Toute couleur sémantique qui colore du texte petit (<14px bold) sur fond clair ou teinté utilise sa variante -ink, jamais le token de base. Les états sont toujours doublés d'une icône ou d'un libellé.", "section": "colors" },
+      { "name": "La règle du hue unique", "body": "Un seul bouton plein indigo par zone d'écran. Deuxième niveau tonal, troisième ghost. Pas de deuxième accent plein.", "section": "colors" },
+      { "name": "La règle de la figurine", "body": "Un coup d'échecs ne s'écrit jamais en lettre seule quand la figurine existe : fig() convertit partout.", "section": "typography" },
+      { "name": "La règle des capitales", "body": "text-transform: uppercase réservé aux séparateurs de navigation. Aucun eyebrow, aucun titre en capitales.", "section": "typography" },
+      { "name": "La règle de l'ombre teintée", "body": "Aucune ombre rgba(0,0,0,…) : toute ombre porte le hue zinc ou indigo profond. Si une ombre paraît sale, c'est qu'elle est noire.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do réserver l'indigo plein à UNE action principale par zone",
+      "Do utiliser les variantes -ink pour tout texte sémantique petit + doubler d'une icône",
+      "Do passer notation et données en JetBrains Mono tabular-nums",
+      "Do montrer l'échiquier chaque fois qu'on parle d'une position",
+      "Do respecter prefers-reduced-motion sur chaque animation",
+      "Do donner ≥40px de cible tactile (enfants sur téléphone)"
+    ],
+    "donts": [
+      "Don't reproduire le dashboard SaaS générique : cartes identiques, gros KPI + gradient, fond crème, eyebrows",
+      "Don't viser la densité de chess.com/lichess — le calme est un choix",
+      "Don't sur-gamifier : pas de confetti, pas de mascotte, pas de couleur criarde",
+      "Don't retomber dans le corporate froid et gris",
+      "Don't utiliser l'ambre comme deuxième accent : c'est un état, pas une décoration",
+      "Don't écrire transition: all, une ombre noire pure, un border-left coloré >1px, un gradient text"
+    ]
+  }
+}
