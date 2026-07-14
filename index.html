@@ -296,6 +296,11 @@
               <span>Élèves</span>
               <span id="csnav-count-eleves2" style="font-size:.7rem;font-weight:400;color:var(--dim)"></span>
             </div>
+            <div class="eleve-search">
+              <i class="ti ti-search" aria-hidden="true"></i>
+              <input id="prof-roster-search" type="search" placeholder="Rechercher un élève…" autocomplete="off"
+                     aria-label="Rechercher un élève par nom" oninput="rosterSearch(this.value)">
+            </div>
             <div class="eleve-list" id="student-list" role="group" aria-label="Liste des élèves — flèches haut/bas pour naviguer" onkeydown="_eleveListKey(event)"></div>
           </div>
           <div class="eleve-detail" id="prof-detail">

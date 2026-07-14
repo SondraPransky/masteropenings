@@ -1515,6 +1515,26 @@ textarea {
 .ed-review-item { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); }
 .ed-review-item:last-child { border-bottom: none; }
 .ed-review-move { font-family: var(--font-mono); font-weight: 700; font-size: .95rem; flex-shrink: 0; min-width: 42px; }
+.ed-review-body { flex: 1; min-width: 0; }
+.ed-review-meta { font-size: .74rem; color: var(--dim); }
+.ed-review-cmt { font-size: .75rem; color: var(--text-2); font-style: italic; line-height: 1.4; }
+.ed-review-rate { font-weight: 700; font-size: .82rem; flex-shrink: 0; }   /* couleur de palier posée inline (dynamique) */
+.ed-review-sec { border-top: 1px solid var(--border); margin-top: 12px; padding-top: 12px; }
+.ed-review-title { font-size: .8rem; font-weight: 700; color: var(--text-2); margin-bottom: 8px; }
+
+/* Détail élève — en-tête, état vide, tendance, groupe de positions */
+.ed-hdr-name { font-size: 1.05rem; font-weight: 700; }
+.ed-hdr-sub { font-size: .73rem; color: var(--dim); margin-top: 3px; }
+.ed-empty { padding: 20px; color: var(--dim); font-size: .83rem; }
+.ed-trend { font-size: .67rem; flex-shrink: 0; }
+.ed-trend.up { color: var(--green); }
+.ed-trend.down { color: var(--red); }
+.ed-trend.flat { color: var(--dim); }
+.ed-pos-group { margin-bottom: 22px; }
+.ed-pos-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
+.ed-pos-head-badges { display: flex; gap: 6px; align-items: center; }
+.ed-pos-num { color: var(--dim); }
+.ed-pos-dash { color: var(--dim); }
 
 /* Révisions ciblées assignées par le coach (accueil élève) */
 .sh-targeted-card { background: var(--cyan-dim); border: 1px solid var(--cyan-glow); border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; }
@@ -1744,6 +1764,12 @@ textarea {
   align-items: center;
   justify-content: space-between;
 }
+/* Recherche du roster — indispensable au-delà de ~15 élèves */
+.eleve-search { display: flex; align-items: center; gap: 7px; padding: 8px 12px; border-bottom: 1px solid var(--border); color: var(--dim); }
+.eleve-search input { flex: 1; min-width: 0; border: none; background: none; color: var(--text); font-family: inherit; font-size: .82rem; padding: 2px 0; }
+.eleve-search input:focus { outline: none; }
+.eleve-search:focus-within { color: var(--cyan); }
+.eleve-roster-empty { padding: 20px 16px; text-align: center; color: var(--dim); font-size: .8rem; }
 .eleve-list { display: flex; flex-direction: column; max-height: 65vh; overflow-y: auto; }
 .eleve-item {
   padding: 18px 20px;
@@ -1758,9 +1784,18 @@ textarea {
 .eleve-item.on { background: var(--cyan-dim); border-color: var(--cyan); }
 /* « alerte » (positions dues) : tint plein + point rouge, pas une demi-barre latérale. */
 .eleve-item.alert { border-color: rgba(225,29,72,.25); background: var(--red-dim); }
-.eleve-item.alert.on { background: var(--cyan-dim); border-color: var(--cyan); }
+.eleve-item.warn { border-color: var(--gold-glow, rgba(202,138,4,.25)); background: var(--gold-dim); }
+.eleve-item.alert.on, .eleve-item.warn.on { background: var(--cyan-dim); border-color: var(--cyan); }
 .eleve-name { font-weight: 600; font-size: .85rem; display: flex; align-items: center; gap: 6px; justify-content: space-between; }
 .eleve-meta { font-size: .7rem; color: var(--dim); margin-top: 3px; }
+/* Pastille « à suivre » dans la carte élève (retard réel / inactivité) */
+.eleve-flag { display: inline-block; margin-left: 7px; padding: 1px 7px; border-radius: 999px; font-size: .64rem; font-weight: 700; vertical-align: middle; }
+.eleve-flag.due { background: var(--red-dim); color: var(--red); }
+.eleve-flag.stale { background: var(--gold-dim); color: var(--gold); }
+/* Élèves d'une carte de classe : pastilles de prénoms (jamais d'emails bruts) */
+.cls-stu-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+.cls-stu-chip { font-size: .66rem; padding: 1px 8px; border-radius: 999px; background: var(--surf3); color: var(--text-2); border: 1px solid var(--border); }
+.cls-stu-chip.cls-stu-more { color: var(--dim); }
 .eleve-progbar { height: 3px; background: var(--surf3); border-radius: 2px; margin-top: 7px; overflow: hidden; }
 .eleve-progfill { height: 100%; border-radius: 2px; transition: width .3s; }
 
@@ -1781,7 +1816,7 @@ textarea {
 .ed-mod-row:last-child { border-bottom: none; }
 .ed-mod-name { flex: 1; font-size: .8rem; font-weight: 500; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ed-mini-bars { display: flex; align-items: flex-end; gap: 2px; height: 24px; width: 60px; flex-shrink: 0; }
-.ed-mini-bar { flex: 1; border-radius: 2px 2px 0 0; min-width: 3px; }
+.ed-mini-bar { flex: 1; border-radius: 2px 2px 0 0; min-width: 3px; opacity: .85; }
 
 /* KPI strip — 3 tuiles prescriptives + note discrète (vanité démotée) */
 .cs-kpi-strip {
