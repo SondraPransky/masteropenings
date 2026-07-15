@@ -1167,6 +1167,11 @@ async function _sbLoadStudentModules() {
   let assigned = [], personal = [];
   try {
     const myCls = await _sbFetchStudentClasses();
+    // L'élève lit G.classes dans renderStudentHome pour afficher les révisions
+    // ciblées du coach (cls.targetedReviews). Sans ça, la section « À revoir —
+    // demandé par ton coach » reste vide en connecté (myCls restait local).
+    G.classes = myCls;
+    saveClasses();
     assigned = await _sbFetchAssignedModules(myCls);
     personal = await _sbFetchPersonalModules();
     await _sbFetchStudentActivity();
