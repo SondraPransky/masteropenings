@@ -1084,6 +1084,8 @@
         <!-- Comment -->
         <div style="width:100%">
           <label style="font-size:.68rem;color:var(--dim);display:block;margin-bottom:3px"><i class="ti ti-message" aria-hidden="true"></i> Commentaire sur ce coup</label>
+          <!-- Revue : commentaire de l'AUTRE (élève ↔ coach) en lecture seule — jamais écrasé -->
+          <div id="editor-comment-context" style="display:none;font-size:.72rem;font-style:italic;margin-bottom:4px;line-height:1.45"></div>
           <textarea id="editor-comment" rows="3" oninput="editorSaveComment()" placeholder="Ex : Idée clé de la variante…"
             style="width:100%;font-size:.78rem;resize:none;padding:6px 8px;background:var(--surf);border:1px solid var(--border);border-radius:var(--rs);color:var(--text)"></textarea>
           <div style="display:flex;justify-content:flex-end;margin-top:5px">

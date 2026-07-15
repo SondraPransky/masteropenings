@@ -11,6 +11,7 @@ function flatten(node) {
   return node.children.map(c => ({
     san: c.san,
     comment: c.comment || '',
+    coach: c.coachComment || '',
     nags: c.nags || [],
     shapes: (c.shapes || []).map(s => s.type === 'arrow'
       ? `${s.color}:${s.from}${s.to}` : `${s.color}:o${s.square}`),
@@ -133,6 +134,28 @@ describe('pgnToEditorTree ↔ editorTreeToPGN — round-trip', () => {
     const pgn2 = editorTreeToPGN(tree1);
     const tree2 = pgnToEditorTree(pgn2, START);
     expect(flatten(tree2)).toEqual(flatten(tree1));
+  });
+});
+
+describe('commentaire coach additif ([%coach]) — P1.4', () => {
+  test('les commentaires élève et coach coexistent sur le même coup (round-trip)', () => {
+    const t1 = pgnToEditorTree('1. e4 {Mon idee : controler le centre [%coach] Bien vu, pense aussi a d4} e5 *', START);
+    const e4 = t1.children[0];
+    expect(e4.comment).toBe('Mon idee : controler le centre');
+    expect(e4.coachComment).toBe('Bien vu, pense aussi a d4');
+    const t2 = pgnToEditorTree(editorTreeToPGN(t1), START);
+    expect(flatten(t2)).toEqual(flatten(t1));
+  });
+
+  test('commentaire coach seul (l\'élève n\'a rien écrit)', () => {
+    const t = pgnToEditorTree('1. e4 {[%coach] Controle le centre} e5 *', START);
+    expect(t.children[0].comment).toBe('');
+    expect(t.children[0].coachComment).toBe('Controle le centre');
+  });
+
+  test('sérialisation : _commentWithShapes émet le marqueur', () => {
+    const out = _commentWithShapes({ comment: 'texte eleve', coachComment: 'texte coach' });
+    expect(out).toBe('texte eleve [%coach] texte coach');
   });
 });
 
