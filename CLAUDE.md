@@ -18,7 +18,20 @@ L’application doit permettre :
 **Phase : le refactoring est terminé → on entre dans la construction produit.**
 Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un prof — toi — + ses élèves) ; le **multi-coachs viendra après**. Pas encore d’utilisateurs réels.
 
-### 🔖 POINT DE REPRISE (14 juillet 2026, 3e session — passes /impeccable transverses)
+### 🔖 POINT DE REPRISE (15 juillet 2026 — ✅ SMOKE TEST E2E CONNECTÉ PASSÉ)
+**Poussé sur `main` (commits `3aaf91e` → `b20b00b`, déployés sur Pages).** Le parcours UI complet du Pilier 1 a été **marché en connecté réel** sur les 2 comptes de test (site déployé, PAS localhost — `DEV_SKIP_AUTH` y met `sb=null`) : module créé → assigné à une classe avec échéance → élève le voit (bannière + badge) → résout → coach voit progression + points faibles → révision ciblée → élève la voit → élève partage une partie → coach annote (couche additive violette) → élève voit la notif ✨ + relit. **Validé par l'utilisatrice.**
+
+**11 correctifs livrés pendant le test** (chacun vérifié navigateur, typecheck + tests verts, commité/poussé/déployé au fil de l'eau) — dont 3 vrais bugs du chemin connecté invisibles en local :
+- **FIX `G.classes` jamais rempli côté élève** (`3aaf91e`, app.js `_sbLoadStudentModules`) : les révisions ciblées du coach étaient invisibles en connecté (`myCls` restait local).
+- **FIX noms de partie perdus** (`ea8a7df`, dbmap.js) : `white`/`black`/`event` jamais persistés dans `games` → « ? – ? » au rechargement. Rangés dans `extra` + fallback relu des en-têtes PGN.
+- **FIX commentaire élève ÉCRASÉ par le coach** (`b20b00b`, editor-core/editor) : une seule couche `comment` violait le principe additif. Nouvelle couche **`coachComment`**, round-trip PGN via marqueur **`[%coach]`** dans le même bloc (+3 tests Vitest, 88/88) ; le coach édite SA couche avec le commentaire élève en contexte lecture seule ; l'élève voit celui du coach **en violet** (champ + notation). ⚠ Les parties annotées AVANT ce fix ont perdu le commentaire élève (irrécupérable).
+- **UX** (`4eaffd1`, `002fec8`, `b369dc3`, `b1d3d77`, `073f824`) : modal fin de drill (primaire = « Réviser les erreurs (N) » quand il y a des erreurs ; « Continuer la partie » en tonal — fini le texte noir sur indigo) ; détail élève coach auto-sélectionne le 1er du roster (fini le faux skeleton) ; date d'échéance du formulaire de classe sur sa propre ligne (elle écrasait le nom du module) ; **bouton 🎯 « Assigner » ajouté au détail élève** (`assignReviewForStudent`, matching email/nom) ; bouton « Revoir » → **« Annoter »** + champ commentaire désactivé hors d'un coup (indice) + **aperçu live dans la notation au fil de la frappe** + **bouton « Valider le commentaire »**.
+
+**Reste (2 vérifs bonus non faites, ~2 min chacune, à caser au début d'une session)** : (a) premier lancement élève réel (compte vierge → hero Bienvenue + CTA ouvertures prêtes) ; (b) toast d'échec d'écriture `_sbRun` (DevTools → Network Offline après login → action de sauvegarde → toast ⚠).
+
+**Priorités mises à jour** : le smoke test étant passé, la priorité #1 devient **`/impeccable polish` FINAL + `/impeccable audit` FINAL** (cf. bloc 3e session ci-dessous), puis charger le contenu réel (`Desktop/Academie/`).
+
+### 🔖 Session précédente (14 juillet 2026, 3e session — passes /impeccable transverses)
 **Committé sur `main`** (2 commits POLISH + DOC). Session = série de passes `/impeccable` sur toute l'app, chacune vérifiée navigateur sur données à l'échelle (30 élèves), typecheck + 85 tests + 0 erreur console à chaque tranche :
 - **Polish détails UI** (`make-interfaces-feel-better`, poussé en `24e70f9`) : 16 `transition` raccourcies (= `all`) → propriétés explicites ; scale press `.96` ; cibles 40px (`#theme-toggle`, `.sh-card-act`, `.onb-x` via pseudo-éléments) ; `tabular-nums` sur compteurs vivants (`.csnav-badge`, `.ed-kpi-v`).
 - **Polish pilotage coach** : `_deadlinePill` en date FR courte ; noms d'élèves via `_studentDisplayName` (exporté au pont window) + email en tooltip dans le détail de classe ; dédoublonnage « Élève · Blancs – Noirs » (Vue d'ensemble) ; `aria-label` sur ~80 boutons icône-seule + utilitaire `.btn-ico` (cible 40px) ; `mcard-due-banner` focusable (role/tabindex/keydown) ; derniers emojis chrome (exercises.js ✏️🗑) → Tabler.
