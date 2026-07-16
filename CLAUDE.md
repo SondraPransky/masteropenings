@@ -18,20 +18,21 @@ L’application doit permettre :
 **Phase : le refactoring est terminé → on entre dans la construction produit.**
 Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un prof — toi — + ses élèves) ; le **multi-coachs viendra après**. Pas encore d’utilisateurs réels.
 
-### 🔖 POINT DE REPRISE (16 juillet 2026, fin de journée) — ⚠️ TRAVAIL NON POUSSÉ
+### 🔖 POINT DE REPRISE (16 juillet 2026, fin de journée)
 
-**État : `main` local est en avance sur l'origine — rien de la journée du 16/07 n'est déployé.** (`git log --oneline origin/main..main` pour le compte exact.) Les 2 chantiers de fond :
+**État : les 2 chantiers de fond du 16/07 sont poussés et déployés** (`origin/main` = `main` à `cc3d677`). ⚠️ Ce bloc a un temps annoncé le contraire (« travail non poussé », push en priorité #1) — **c'était périmé**, corrigé le 16/07 en fin de journée. Vérifier avec `git rev-list --left-right --count origin/main...main` plutôt que se fier à cette ligne.
 
 | Commit | Contenu |
 |---|---|
 | `190f52f` | REFACTO : `lib/coach.js` 1236 l. → **8 modules** (socle `coach-core` + état partagé `CS`) |
 | `872ea79` | POLISH : règle de l'encre appliquée partout — **17 échecs WCAG AA → 0** (clair + sombre) |
+| `486df62` | POLISH : tableau de bord élève élargi 680 → **1080px** + hero en 2 zones (non poussé) |
 
-`npm run typecheck` + **88 tests** + `npm run build` verts sur l'arbre committé ; 0 erreur console. Détail de chaque chantier → les 3 blocs « Session du 16 juillet » ci-dessous.
+`npm run typecheck` + **88 tests** + `npm run build` verts sur l'arbre committé ; 0 erreur console. Détail de chaque chantier → les blocs « Session du 16 juillet » ci-dessous.
 
 #### ▶ PLAN DE LA PROCHAINE SESSION (par ordre)
 
-1. **Pousser** (`git push origin main`) → l'Action GitHub redéploie Pages automatiquement. **À faire en premier** : 2 commits de refonte non déployés, autant valider tôt que le site déployé tient. Puis re-marcher rapidement 2-3 pages coach sur le site déployé (le découpage a touché TOUTE la vue coach).
+1. **Pousser** (`git push origin main`) → l'Action GitHub redéploie Pages automatiquement. Reste `486df62` (largeur élève) à pousser. Puis re-marcher rapidement 2-3 pages coach + l'accueil élève sur le site déployé.
 2. **`/impeccable audit` FINAL** — la dernière porte avant lancement (devrait confirmer ≥19/20). Le polish lui a laissé **3 entrées concrètes, déjà instruites** :
    - **(a) Le 3e rouge.** `rgba(225,29,72,…)` (rose-600) sur ~14 sites, à côté de `--red`/`--red-ink`. Même nature que l'émeraude balayée le 16/07 — mais il **passe le contraste**, donc c'est un sweep de cohérence, pas un bug. Recette éprouvée : migrer le CLAIR vers les tokens (le dark est déjà tokenisé), puis re-mesurer.
    - **(b) Le radius.** 36 findings. **Verdict du polish : c'est le DESIGN.md qui est incomplet**, pas le code — il ne documente que 6/8/12/999 alors que les petites pastilles/barres ont légitimement besoin de 2-5px. Décision à prendre : compléter l'échelle documentée plutôt que churner 36 sites.
@@ -57,6 +58,20 @@ Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un pr
 **Reste (2 vérifs bonus non faites, ~2 min chacune, à caser au début d'une session)** : (a) premier lancement élève réel (compte vierge → hero Bienvenue + CTA ouvertures prêtes) ; (b) toast d'échec d'écriture `_sbRun` (DevTools → Network Offline après login → action de sauvegarde → toast ⚠).
 
 **Priorités (état 15/07 — ✅ DÉPASSÉES le 16/07 : le polish FINAL est fait, voir le POINT DE REPRISE en tête de §2 pour le plan à jour).** ~~le smoke test étant passé, la priorité #1 devient `/impeccable polish` FINAL + `/impeccable audit` FINAL~~, puis charger le contenu réel (`Desktop/Academie/`).
+
+### 🔖 Session du 16 juillet 2026 (4e) — largeur du tableau de bord élève (680 → 1080px)
+Question utilisatrice : « pourquoi le tableau de bord élève est aussi peu large par rapport au tableau de bord coach ? ». **Ce n'était pas un bug CSS mais un choix figé en style inline** : `index.html` enfermait toute la page élève dans un `max-width:680px`, alors que `.coach-layout` n'a aucun plafond (~1330px sur un écran 1600px). Deux conséquences réelles : (1) **incohérence dans le rôle élève lui-même** — « Ma bibliothèque » vit déjà à 1080px (`.lib-wrap`), donc changer d'onglet faisait sauter la largeur ; (2) les grilles `repeat(auto-fill, minmax(230px,1fr))` **plafonnaient à 2 colonnes** quel que soit l'écran (l'`auto-fill` ne servait à rien).
+
+**Décision (posée à l'utilisatrice) : largeur unique 1080px**, alignée sur `.lib-wrap` — plutôt qu'une colonne de lecture étroite + des grilles larges, qui rendrait la page irrégulière. Livré en 2 temps, chaque temps mesuré au navigateur (typecheck + 88 tests + build verts, 0 erreur console) :
+- **Wrapper** : `style` inline → **`.sh-wrap`** (`max-width:1080px`), padding repris **verbatim** pour que le seul delta soit la largeur. Une entrée de moins dans [[style-debt-inline]]. → grilles à **4 colonnes** à 1440px.
+- **Le piège du CTA** : `.sh-hero-btn` était en `width:100%` → à 1080px, un bouton primaire de **~1036px**. Passé en `width:auto` + `min-width:220px`, pleine largeur restaurée `≤560px` (cible tactile).
+- **Le hero élargi sonnait creux** (constat mesuré, pas supposé) : à 1048×142, le contenu réel ne faisait que 323px → **67% de dégradé nu**. Refait en **2 zones ≥760px** (grille `1fr auto` : texte à gauche, CTA à droite centré verticalement).
+- **2 effets de bord que seules les mesures ont révélés** : (a) sorti de la pile verticale, le CTA ne portait plus la hauteur → le hero **retombait à 88px** (ratio 11.9:1, un filet) ; d'où `min-height:112px` — l'indigo plein est LE signal « tu as du travail », il garde sa présence. (b) le cavalier ♞ (`right:-4px`) **atterrissait sous le CTA** ; déplacé dans le vide central (`right:34%`), mais **effacé sous 900px** où le jeu texte/CTA tombe à ~105px, trop juste pour un glyphe de 88px.
+- **États calmes laissés empilés** (`:not(.sh-hero--calm)`) : « Tout est à jour » n'a pas de CTA à équilibrer, et « Bienvenue » porte un `.btn-primary` (pas un `.sh-hero-btn`) que la grille aurait mal placé.
+
+**Mesuré** à 1440/900/768/700/375 : grilles 4/3/2/2/1 col, 0 overflow, 0 collision cavalier/CTA (seuil 900px vérifié aux deux bords : 38px de dégagement), les 3 états du hero rendus. Effet de bord bienvenu en 560-760px : le bouton pleine largeur passait auparavant **sur** le cavalier, il en est dégagé.
+
+**⚠️ Piège d'outillage** : `npx serve` (le lanceur `eecoach`) **n'a pas de HMR** → une modif CSS n'apparaît qu'après un `location.reload(true)`. J'ai failli conclure qu'un `min-height` ne s'appliquait pas. Par ailleurs, **les screenshots timent out de façon reproductible** dans le navigateur de preview → juger la mise en page par **mesures DOM** (`getBoundingClientRect`, `Range.selectNodeContents` pour la largeur RÉELLE du texte vs celle du conteneur).
 
 ### 🔖 Session du 16 juillet 2026 (3e) — `/impeccable polish` FINAL : la règle de l'encre appliquée partout
 Passe polish avant lancement. Méthode : un **auditeur de contraste** exécuté au navigateur sur les 7 pages coach + accueil élève + bibliothèque, **dans les 2 thèmes**, sur les couleurs COMPOSITÉES (alpha résolu contre la vraie chaîne de fonds). Il a trouvé ce que le détecteur ne voyait pas. **17 échecs AA → 0**, dans les deux thèmes. typecheck + 88 tests + build verts, 0 erreur console.
