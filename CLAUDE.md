@@ -20,7 +20,7 @@ Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un pr
 
 ### 🔖 POINT DE REPRISE (16 juillet 2026, fin de journée)
 
-**État : le 16/07 est poussé jusqu'à `859188b` ; `4691178` (couche élève + page profil) est committé, PAS poussé.** ⚠️ Ne pas se fier à cette ligne — la vérifier : `git rev-list --left-right --count origin/main...main`.
+**État : poussé jusqu'à `859188b`. ⚠️ 5 commits committés NON POUSSÉS** (`4691178` → `a75e687`), et **la couche d'édition élève n'a jamais tourné en connecté**. ⚠️ Ne pas se fier à cette ligne — la vérifier : `git rev-list --left-right --count origin/main...main`.
 
 | Commit | Contenu |
 |---|---|
@@ -31,6 +31,7 @@ Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un pr
 | `41272c8` | FIX : échiquier du drill — plafond 560 → **720**, budget hauteur dérivé du DOM, grille centrée |
 | `4691178` | FEAT : **couche d'édition élève** (additive, migration-free) + **page profil élève** — non poussé |
 | `576353d` | POLISH : page profil — hiérarchiser au lieu d'énumérer (**3,9 → 2,2 écrans** au volume réel) — non poussé |
+| `d896b06` · `5aa4d5d` · `a75e687` | DOC ×2 + CHORE (gitignore de l'état runtime `impeccable live`) — non poussés |
 
 `npm run typecheck` + **113 tests** + `npm run build` verts ; 0 erreur console. Détail → les blocs « Session du 16 juillet » ci-dessous.
 
@@ -38,14 +39,18 @@ Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un pr
 
 #### ▶ PLAN DE LA PROCHAINE SESSION (par ordre)
 
-0. **⚠️ Deux contrôles à l'œil, avant tout le reste.** (a) La page drill est passée de **pleine largeur à une colonne centrée de 1160px** (`41272c8`) — validée par mesures DOM uniquement (les screenshots timent out dans le navigateur de preview). (b) La **page profil élève** : la surcharge a été mesurée puis corrigée (`576353d`, 3,9 → 2,2 écrans au volume réel), mais **le jugement final t'appartient** — c'est toi qui avais signalé le 14/07 que le détail élève avait trop d'infos.
-0bis. **⚠️ Tester la couche d'édition élève EN CONNECTÉ** (`4691178`) : RLS, filtres anti-pollution (`extra.overlayOf` doit être exclu de « Mes modules » coach ET de « Mes révisions perso » élève) et isolation entre élèves ne sont prouvés **qu'en simulé** — `sb=null` en local. Site déployé + les 2 comptes de test obligatoires. **Aucune migration à lancer** : le modèle s'appuie sur les `OR` déjà en place dans `modules_read/insert/update`.
-1. **Charger le contenu réel** (`Desktop/Academie/` : 40 mats + 42 tactiques + 7 ouvertures) dans le vrai compte coach → **c'est désormais LA priorité** : le contenu de lancement, et le dernier gros inconnu produit. Tout le reste est du raffinement.
-2. **2 vérifs bonus** (~2 min chacune, à caser au début d'une session) : toast d'échec d'écriture `_sbRun` (DevTools → Network Offline après login → action de sauvegarde → toast ⚠) ; premier lancement élève réel (compte vierge → hero Bienvenue + CTA ouvertures prêtes).
-3. **Reliquat de l'audit** (aucun bloquant, à faire à froid) : les **ombres noires** (`rgba(0,0,0,…)` ×11 — tokens d'ombre du dark + 2 modals inline — violent la « règle de l'ombre teintée ») ; le **radius résiduel** (7px ×4, 10px ×4, dérive à 1-2px des tokens) ; l'**échelle de z-index** (999/9998/9999/9999/10000 dans les modals inline d'`index.html`, avec une égalité arbitrée par l'ordre DOM). Il reste aussi un **indigo-500 parallèle** (`rgba(99,102,241,…)` ~13 sites) à côté de `--cyan` (#4f46e5, indigo-600) — même nature que les 4 familles balayées le 16/07, non traité faute de scope.
-4. **Le chrome vertical de la page drill** (gisement identifié le 16/07, non traité) : **~177px au-dessus du plateau** (nav 58 + titre du drill + contrôles + padding) plafonnent tous les écrans courts. Les réduire profiterait à chaque config < 900px de hauteur — dont un **17" FHD à 150 % de mise à l'échelle Windows** (= 1280×600 en pixels CSS → plateau 392, boutons sous la ligne). C'est le seul vrai levier restant sur la taille de l'échiquier.
-5. **Dette de style inline** ([[style-debt-inline]]) : les 2 zones les plus chargées sont désormais `_classBreakdownHTML`/`_classDetailHTML` (`lib/coach-classes.js`) et `_pgGroupsHTML` (`lib/coach-games.js`) — **laissées intactes exprès** au découpage (déplacements verbatim). Puis `lib/student.js`, `lib/library.js`.
-6. **Post-lancement** (ne pas ouvrir avant) : import Chess.com, import puzzles Lichess CSV (off-by-one du 1er coup), bibliothèque d'exercices partagée + RLS multi-coachs, révision ciblée → sauter à la position exacte dans l'arbre, finir d'unifier les identifiants élève (`student.js`/`sr.js` — les helpers canoniques vivent dans `lib/coach-core.js`).
+1. **Pousser** les 5 commits (`git push origin main` → l'Action redéploie Pages), puis vérifier le run.
+2. **⚠️ Tester la couche d'édition élève EN CONNECTÉ — le seul vrai risque ouvert.** RLS, filtres anti-pollution (`extra.overlayOf` doit être exclu de « Mes modules » coach ET de « Mes révisions perso » élève) et isolation entre élèves ne sont prouvés **qu'en simulé** : `sb=null` en local, donc **rien de tout ça n'a jamais tourné pour de vrai**. Site déployé + les 2 comptes de test obligatoires. **Aucune migration à lancer** (le modèle s'appuie sur les `OR` déjà en place dans `modules_read/insert/update`).
+3. **Deux contrôles à l'œil** (30 s, jamais vus à l'écran — les screenshots timent out dans le navigateur de preview, tout a été validé par mesures DOM) : (a) la page drill, passée de **pleine largeur à une colonne centrée de 1160px** (`41272c8`) ; (b) la **page profil élève** — sa surcharge a été mesurée puis corrigée (`576353d`), mais **le jugement final t'appartient** : c'est toi qui avais signalé le 14/07 que le détail élève avait trop d'infos.
+4. **Charger le contenu réel** (`Desktop/Academie/` : 40 mats + 42 tactiques + 7 ouvertures) dans le vrai compte coach → **LA priorité produit** : le contenu de lancement, et le dernier gros inconnu. Tout le reste est du raffinement.
+5. **2 vérifs bonus** (~2 min chacune) : toast d'échec d'écriture `_sbRun` (DevTools → Network Offline après login → action de sauvegarde → toast ⚠) ; premier lancement élève réel (compte vierge → hero Bienvenue + CTA ouvertures prêtes).
+6. **Reliquat de l'audit** (aucun bloquant, à froid) : les **ombres noires** (`rgba(0,0,0,…)` ×11 — violent la « règle de l'ombre teintée ») ; le **radius résiduel** (7px ×4, 10px ×4) ; l'**échelle de z-index** (999/9998/9999/9999/10000 dans les modals inline d'`index.html`, égalité arbitrée par l'ordre DOM) ; un **indigo-500 parallèle** (`rgba(99,102,241,…)` ~13 sites) à côté de `--cyan` — même maladie que les 4 familles balayées le 16/07.
+7. **Le chrome vertical de la page drill** : **~177px au-dessus du plateau** (nav 58 + titre + contrôles + padding) plafonnent tous les écrans courts — dont un **17" FHD à 150 % de mise à l'échelle Windows** (= 1280×600 CSS → plateau 392, boutons sous la ligne). Seul levier restant sur la taille de l'échiquier.
+8. **Dette de style inline** ([[style-debt-inline]]) : `_classBreakdownHTML`/`_classDetailHTML` (`lib/coach-classes.js`) et `_pgGroupsHTML` (`lib/coach-games.js`) — **laissées intactes exprès** au découpage. Puis `lib/student.js`, `lib/library.js`.
+9. **Post-lancement** (ne pas ouvrir avant) : import Chess.com, import puzzles Lichess CSV (off-by-one du 1er coup), bibliothèque d'exercices partagée + **durcissement RLS multi-coachs** (⚠️ **avant** l'ouverture multi-coachs : `modules_insert_owner` laisse un élève insérer une ligne avec **n'importe quel `teacher_id`** — faiblesse préexistante sur laquelle la couche d'édition élève s'appuie), révision ciblée → sauter à la position exacte dans l'arbre, finir d'unifier les identifiants élève (`student.js`/`sr.js`).
+
+#### 🐛 Bug latent connu, non corrigé (hors scope quand il a été vu)
+**`extractAllLines` rend `[]` pour tout PGN à UN SEUL coup** (`1. e4`, `1. e4 *`, `1. e4 1-0`) alors que 2 coups passent → un module d'ouverture réduit à un coup produirait un **arbre vide**. C'est dans `lib/core.js`, un cœur partagé dont dépendent **tous** les imports PGN → à traiter avec soin, jamais à la volée.
 
 **⚠️ Pièges d'outillage à ne pas re-découvrir** : (1) le smoke test connecté ne peut PAS se faire sur localhost (`DEV_SKIP_AUTH` y met `sb=null`) → site déployé obligatoire ; (2) auditer un thème en basculant `data-theme` en cours de page donne des **styles calculés périmés** → poser `localStorage.mc_theme` PUIS recharger (cf. [[ink-rule-contrast]]).
 
