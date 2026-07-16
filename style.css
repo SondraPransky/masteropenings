@@ -22,6 +22,7 @@
 
   /* ── Bleu — indices / informations ── */
   --blue:     #2563eb;
+  --blue-ink: #1e40af;   /* bleu « encre » AA (7.3:1 sur --blue-dim ; --blue y tombe a 4.32) */
   --blue-dim: rgba(37,99,235,.10);
 
   /* ── Vert — correct / maîtrise ── */
@@ -30,7 +31,10 @@
   /* "ink" = variante lisible AA quand gold/green sert de TEXTE sur son -dim (clair).
      En dark, les tokens de base sont deja clairs et passent → ink = base. */
   --gold-ink:  #92400e;
-  --green-ink: #15803d;
+  --green-ink: #166534;  /* vert « encre » AA. green-800, PAS green-700 : l'encre est
+                            presque toujours posee sur son propre -dim (pastilles _tierPct,
+                            .badge-green, .sh-mod-state.mastered...), ou le 700 tombait a
+                            4.11-4.49:1. Le 800 rend 5.8-6.4:1, la meme bande que gold/red-ink. */
 
   /* ── Rouge — erreur ── */
   --red:     #dc2626;
@@ -44,7 +48,9 @@
   /* ── Texte (zinc) ── */
   --text:   #18181b;
   --text-2: #3f3f46;
-  --dim:    #6b6b73;  /* AA sur --surf2 clair (4.8:1) ; #71717a echouait a 4.4 */
+  --dim:    #65656d;  /* AA sur TOUTES les surfaces claires, y compris --surf3 (4.55:1) —
+                         c'est la contrainte reelle : #6b6b73 tenait sur --surf2 (4.8) mais
+                         tombait a 4.16 sur --surf3 (.csnav-badge). #71717a echouait a 4.4. */
 
   /* ── Typographie ── */
   --font-ui:      'Hanken Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;  /* corps / UI */
@@ -413,9 +419,12 @@ textarea {
   line-height: 1.5;
   border: 1px solid transparent;
 }
-.feedback.ok   { background: rgba(16,185,129,.12); border-color: rgba(16,185,129,.3); color: #166534; display: flex; }
-.feedback.ko   { background: rgba(239,68,68,.12);  border-color: rgba(239,68,68,.3);   color: #b91c1c; display: flex; }
-.feedback.hint { background: rgba(2,132,199,.07);  border-color: rgba(2,132,199,.2);   color: #075985; display: flex; }
+/* Retour du drill : le composant le plus vu de l'app cote eleve. Il vit sur les TOKENS
+   (le dark, lui, etait deja tokenise — c'est le clair qui derivait sur 3 hues hors palette :
+   emeraude/rouge/sky). Contrastes verifies : ok 6.13:1, ko 5.17:1, hint 7.29:1. */
+.feedback.ok   { background: var(--green-dim); border-color: rgba(22,163,74,.3);  color: var(--green-ink); display: flex; }
+.feedback.ko   { background: var(--red-dim);   border-color: rgba(220,38,38,.3);  color: var(--red-ink);   display: flex; }
+.feedback.hint { background: var(--blue-dim);  border-color: rgba(37,99,235,.2);  color: var(--blue-ink);  display: flex; }
 .pgn-comment {
   margin-top: 6px;
   padding: 8px 12px;
@@ -445,7 +454,7 @@ textarea {
   flex-shrink: 0;
 }
 .pos-dot.current { border-color: var(--cyan); background: var(--cyan-dim); color: var(--cyan); font-weight: 700; }
-.pos-dot.done-ok { border-color: var(--green); background: rgba(5,150,105,.08); color: var(--green-ink); }
+.pos-dot.done-ok { border-color: var(--green); background: var(--green-dim); color: var(--green-ink); }
 .pos-dot.done-ko { border-color: var(--red);   background: rgba(225,29,72,.08); color: var(--red); }
 
 /* ══ NOTATION ════════════════════════════════ */
@@ -588,7 +597,7 @@ textarea {
   font-size: .77rem;
   font-family: 'JetBrains Mono', monospace;
 }
-.hentry.ok { background: rgba(5,150,105,.08); color: #065f46; }
+.hentry.ok { background: var(--green-dim); color: var(--green-ink); }
 .hentry.ko { background: rgba(225,29,72,.07); color: #9f1239; }
 .hentry .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 .hentry.ok .dot { background: var(--green); }
@@ -627,12 +636,12 @@ textarea {
 .ok-pill {
   display: inline-flex; align-items: center; gap: 4px;
   padding: 2px 8px;
-  background: rgba(5,150,105,.08);
-  border: 1px solid rgba(5,150,105,.2);
+  background: var(--green-dim);
+  border: 1px solid rgba(22,163,74,.2);
   border-radius: 4px;
   font-size: .72rem;
   font-family: 'JetBrains Mono', monospace;
-  color: #047857;
+  color: var(--green-ink);
 }
 
 /* Barre de progression */
@@ -645,7 +654,7 @@ textarea {
   font-size: .68rem; padding: 2px 8px; border-radius: 20px;
   font-weight: 600; border: 1px solid transparent;
 }
-.mastery-pill.ok  { background: rgba(5,150,105,.08);  color: #047857; border-color: rgba(5,150,105,.2); }
+.mastery-pill.ok  { background: var(--green-dim);  color: var(--green-ink); border-color: rgba(22,163,74,.2); }
 .mastery-pill.mid { background: var(--cyan-dim);       color: var(--cyan); border-color: rgba(99,102,241,.2); }
 .mastery-pill.low { background: rgba(225,29,72,.07);   color: #be123c;  border-color: rgba(225,29,72,.2); }
 
@@ -653,7 +662,7 @@ textarea {
   font-size: .7rem; padding: 2px 8px; border-radius: 20px;
   font-weight: 600; border: 1px solid transparent;
 }
-.deadline-pill.ok   { background: rgba(5,150,105,.08);  color: #047857; border-color: rgba(5,150,105,.2); }
+.deadline-pill.ok   { background: var(--green-dim);  color: var(--green-ink); border-color: rgba(22,163,74,.2); }
 .deadline-pill.late { background: rgba(225,29,72,.07);  color: #be123c; border-color: rgba(225,29,72,.2); }
 .deadline-pill.soon { background: rgba(217,119,6,.08);  color: var(--gold-ink); border-color: rgba(217,119,6,.2); }
 
@@ -670,8 +679,9 @@ textarea {
 }
 .game-row:hover { border-color: rgba(99,102,241,.22); border-left-color: var(--cyan); box-shadow: var(--shadow-xs); }
 .game-result { font-size: .72rem; font-family: 'JetBrains Mono', monospace; font-weight: 700; }
-.game-result.win  { color: var(--green); }
-.game-result.loss { color: var(--red); }
+/* Regle de l'encre : 11.5px bold = petit texte -> variantes -ink (le token de base plafonne a 3.3:1). */
+.game-result.win  { color: var(--green-ink); }
+.game-result.loss { color: var(--red-ink); }
 .game-result.draw { color: var(--dim); }
 
 @media (max-width: 700px) {
@@ -849,7 +859,7 @@ textarea {
   max-width: 320px;
 }
 .toast.show { transform: translateY(0); opacity: 1; }
-.toast.ok   { border-color: rgba(5,150,105,.35);  color: #047857; }
+.toast.ok   { border-color: rgba(22,163,74,.35);  color: var(--green-ink); }
 .toast.ko   { border-color: rgba(225,29,72,.3);   color: #be123c; }
 .toast.warn { border-color: rgba(234,179,8,.4);   color: #a16207; }
 
@@ -897,13 +907,17 @@ textarea {
   --gold:      #f59e0b;
   --gold-dim:  rgba(245,158,11,.14);
   --blue:      #60a5fa;
+  --blue-ink:  var(--blue);   /* tient deja sur son -dim en dark (5.56:1) */
   --blue-dim:  rgba(96,165,250,.14);
   --green:     #4ade80;
   --green-dim: rgba(74,222,128,.14);
+  /* Les -ink du dark s'aliassent sur le token de base QUAND celui-ci tient deja sur son
+     propre -dim (mesure : gold 5.34:1, green 6.32:1). Le rouge, lui, n'y rend que 4.34 —
+     il garde donc sa propre encre, plus claire. Meme logique qu'en clair, en miroir. */
   --gold-ink:  var(--gold);
   --green-ink: var(--green);
   --red:       #f87171;
-  --red-ink:   var(--red);
+  --red-ink:   #fca5a5;   /* red-300 : 6.32:1 sur --red-dim (var(--red) tombait a 4.34) */
   --red-dim:   rgba(248,113,113,.14);
   --violet:    #a78bfa;
   --violet-dim:rgba(167,139,250,.14);
@@ -918,12 +932,23 @@ textarea {
 [data-theme="dark"] nav { background: rgba(9,9,11,.85); }
 [data-theme="dark"] .tab:hover:not(.on) { background: rgba(255,255,255,.04); }
 [data-theme="dark"] .btn-blue:hover { color: #fff; }
+/* Boutons PLEINS en dark : l'accent y est clair (--cyan #818cf8, --red #f87171), donc le
+   texte passe en encre foncee. Le blanc n'y rendait que 2.98:1 (primaire) / 2.77:1 (rouge).
+   Meme logique que .btn-blue ci-dessus, qui ne remet du blanc qu'au :hover. */
+[data-theme="dark"] .btn-primary { color: #18181b; }
+[data-theme="dark"] .btn-red     { color: #18181b; }
+/* Meme raison : l'initiale du menu compte est posee sur --cyan plein. */
+[data-theme="dark"] .acct-avatar { color: #18181b; }
 [data-theme="dark"] .badge-gold   { background: var(--gold-dim);    color: var(--gold);   border-color: rgba(245,158,11,.2); }
 [data-theme="dark"] .badge-blue   { background: var(--blue-dim);    color: var(--blue);   border-color: rgba(56,189,248,.2); }
 [data-theme="dark"] .badge-green  { background: var(--green-dim);   color: var(--green);  border-color: rgba(52,211,153,.2); }
-[data-theme="dark"] .badge-red    { background: var(--red-dim);     color: var(--red);    border-color: rgba(251,113,133,.2); }[data-theme="dark"] .feedback.ok  { background: var(--green-dim); border-color: rgba(52,211,153,.28);  color: var(--green); }
-[data-theme="dark"] .feedback.ko  { background: var(--red-dim);   border-color: rgba(251,113,133,.28); color: var(--red); }
-[data-theme="dark"] .feedback.hint{ background: var(--blue-dim);  border-color: rgba(56,189,248,.28);  color: var(--blue); }
+[data-theme="dark"] .badge-red    { background: var(--red-dim);     color: var(--red);    border-color: rgba(251,113,133,.2); }
+/* .feedback : depuis que le clair est tokenise, fond et couleur se derivent tout seuls des
+   tokens (qui flippent). Seule la BORDURE reste specifique au dark. Retirer le
+   `color: var(--red)` d'ici corrige au passage le ko sombre (4.34 -> 6.32 via --red-ink). */
+[data-theme="dark"] .feedback.ok  { border-color: rgba(52,211,153,.28); }
+[data-theme="dark"] .feedback.ko  { border-color: rgba(251,113,133,.28); }
+[data-theme="dark"] .feedback.hint{ border-color: rgba(56,189,248,.28); }
 /* Notation (drill) — overrides dark AA, comme .feedback. .mv.coach adapte via var(--violet). */
 [data-theme="dark"] .mv.ok        { color: var(--green); }
 [data-theme="dark"] .mv.ko        { color: #fca5a5; }
@@ -935,8 +960,10 @@ textarea {
 [data-theme="dark"] .hentry.ko    { background: var(--red-dim);   color: var(--red); }
 [data-theme="dark"] .error-pill   { background: var(--red-dim);   color: var(--red);   border-color: rgba(251,113,133,.25); }
 [data-theme="dark"] .ok-pill      { background: var(--green-dim); color: var(--green); border-color: rgba(52,211,153,.25); }
-[data-theme="dark"] .mastery-pill.ok  { background: var(--green-dim); color: var(--green); border-color: rgba(52,211,153,.2); }
-[data-theme="dark"] .mastery-pill.low { background: var(--red-dim);   color: var(--red);   border-color: rgba(251,113,133,.2); }
+[data-theme="dark"] .mastery-pill.ok  { background: var(--green-dim); color: var(--green);    border-color: rgba(52,211,153,.2); }
+[data-theme="dark"] .mastery-pill.low { background: var(--red-dim);   color: var(--red-ink);  border-color: rgba(251,113,133,.2); }
+/* .mid : l'indigo du dark (#818cf8) ne rend que 4.03:1 sur son propre --cyan-dim -> indigo-300. */
+[data-theme="dark"] .mastery-pill.mid { color: #a5b4fc; }
 [data-theme="dark"] .deadline-pill.ok   { background: var(--green-dim);    color: var(--green); border-color: rgba(52,211,153,.2); }
 [data-theme="dark"] .deadline-pill.late { background: var(--red-dim);      color: var(--red);   border-color: rgba(251,113,133,.2); }
 [data-theme="dark"] .deadline-pill.soon { background: rgba(250,204,21,.1); color: #facc15;      border-color: rgba(250,204,21,.2); }
@@ -988,9 +1015,9 @@ textarea {
   border: 1px solid rgba(99,102,241,.22);
 }
 .role-chip.student {
-  background: rgba(5,150,105,.09);
+  background: var(--green-dim);
   color: var(--green-ink);
-  border: 1px solid rgba(5,150,105,.2);
+  border: 1px solid rgba(22,163,74,.2);
 }
 
 /* ══ MENU COMPTE (dropdown nav) ══════════════════ */
@@ -1176,7 +1203,7 @@ textarea {
 .sh-section-head .sh-section-label { margin:0; }
 .sh-notif-banner { background:var(--gold-dim); border:1px solid rgba(217,119,6,.3); color:var(--gold-ink); border-radius:var(--r); padding:11px 15px; font-size:.86rem; margin-bottom:4px; }
 /* Variante « annotations du coach » : violet coach (#7c3aed, couleur des nœuds annotés), cliquable. */
-.sh-notif-banner.coach { background:rgba(124,58,237,.09); border-color:rgba(124,58,237,.3); color:#7c3aed; cursor:pointer; }
+.sh-notif-banner.coach { background:var(--violet-dim); border-color:rgba(124,58,237,.3); color:var(--violet); cursor:pointer; }
 .sh-notif-banner.coach:hover { background:rgba(124,58,237,.14); }
 .sh-notif-banner.coach:focus-visible { outline:2px solid #7c3aed; outline-offset:2px; }
 .sh-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:16px; }
@@ -1453,7 +1480,9 @@ textarea {
 .csnav-lbl { flex: 1; }
 .csnav-badge {
   font-size: .65rem; font-weight: 700;
-  background: var(--surf3); color: var(--dim);
+  /* --text-2 et pas --dim : le badge est un COMPTE (une donnee), pas du texte estompe —
+     et --dim sur --surf3 (la surface la plus foncee) ne rend que 4.16:1 en clair / 4.07 en dark. */
+  background: var(--surf3); color: var(--text-2);
   border-radius: 10px; padding: 1px 7px;
   font-variant-numeric: tabular-nums; /* le compte « à annoter » décrémente en direct */
   flex-shrink: 0;
@@ -1507,7 +1536,7 @@ textarea {
 .wsx-move { font-family: var(--font-mono); font-size: 1rem; font-weight: 700; }
 .wsx-rate { font-size: .7rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
 .wsx-chips { display: flex; flex-wrap: wrap; gap: 4px; }
-.wsx-chip { font-size: .7rem; padding: 2px 7px; border-radius: 999px; background: var(--red-dim); color: var(--red); }
+.wsx-chip { font-size: .7rem; padding: 2px 7px; border-radius: 999px; background: var(--red-dim); color: var(--red-ink); }
 .wsx-comment { font-size: .75rem; color: var(--text-2); font-style: italic; line-height: 1.45; margin-top: 8px; }
 .wsx-actions { display: flex; gap: 8px; margin-top: 10px; }
 .wsx-actions .btn { flex: 1; }
@@ -1526,7 +1555,7 @@ textarea {
 @media (prefers-reduced-motion: reduce) { .hm-mod-card { transition: none; } }
 .hm-mod-card-name { font-size: .78rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hm-mod-card-stats { display: flex; align-items: center; gap: 8px; font-size: .72rem; }
-.hm-mod-card-hot { color: var(--red); font-weight: 700; }
+.hm-mod-card-hot { color: var(--red-ink); font-weight: 700; }
 .hm-mod-card-n { color: var(--dim); margin-left: auto; }
 .wsx-hint { font-size: .75rem; color: var(--dim); margin: 14px 0 4px; }
 .wsx-mod-sec { margin-top: 16px; }
@@ -1554,7 +1583,7 @@ textarea {
 .pg-stu-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
 .pg-stu-name { font-family: var(--font-display); font-size: .95rem; font-weight: 700; }
 .pg-stu-stats { font-size: .74rem; color: var(--dim); }
-.pg-annotated { color: #7c3aed; font-weight: 700; font-size: .7rem; white-space: nowrap; }
+.pg-annotated { color: var(--violet); font-weight: 700; font-size: .7rem; white-space: nowrap; }
 .pg-new { display: inline-block; padding: 1px 8px; border-radius: 999px; background: var(--cyan-dim); color: var(--cyan); font-size: .64rem; font-weight: 700; vertical-align: middle; }
 .pg-maia { margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--border); }
 .pg-maia > summary { cursor: pointer; font-weight: 700; font-size: .9rem; list-style: none; margin-bottom: 8px; }
@@ -1605,8 +1634,8 @@ textarea {
 .ed-hdr-sub { font-size: .73rem; color: var(--dim); margin-top: 3px; }
 .ed-empty { padding: 20px; color: var(--dim); font-size: .83rem; }
 .ed-trend { font-size: .67rem; flex-shrink: 0; }
-.ed-trend.up { color: var(--green); }
-.ed-trend.down { color: var(--red); }
+.ed-trend.up { color: var(--green-ink); }
+.ed-trend.down { color: var(--red-ink); }
 .ed-trend.flat { color: var(--dim); }
 .ed-pos-group { margin-bottom: 22px; }
 .ed-pos-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
@@ -1706,7 +1735,7 @@ textarea {
   padding: 5px 10px;
   font-size: .72rem;
   font-weight: 700;
-  color: var(--red);
+  color: var(--red-ink);
   margin-bottom: 10px;
   cursor: pointer;
 }
@@ -1907,7 +1936,9 @@ textarea {
 /* Élèves d'une carte de classe : pastilles de prénoms (jamais d'emails bruts) */
 .cls-stu-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
 .cls-stu-chip { font-size: .66rem; padding: 1px 8px; border-radius: 999px; background: var(--surf3); color: var(--text-2); border: 1px solid var(--border); }
-.cls-stu-chip.cls-stu-more { color: var(--dim); }
+/* Le « +N » reste discret par le POIDS, pas par --dim : ces pastilles sont sur --surf3,
+   ou --dim ne rend que 4.16:1 (clair) / 4.07 (dark). */
+.cls-stu-chip.cls-stu-more { color: var(--text-2); font-weight: 600; }
 .eleve-progbar { height: 3px; background: var(--surf3); border-radius: 2px; margin-top: 7px; overflow: hidden; }
 .eleve-progfill { height: 100%; border-radius: 2px; transition: width .3s; }
 

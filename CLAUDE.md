@@ -31,6 +31,27 @@ Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un pr
 
 **Priorités mises à jour** : le smoke test étant passé, la priorité #1 devient **`/impeccable polish` FINAL + `/impeccable audit` FINAL** (cf. bloc 3e session ci-dessous), puis charger le contenu réel (`Desktop/Academie/`).
 
+### 🔖 Session du 16 juillet 2026 (3e) — `/impeccable polish` FINAL : la règle de l'encre appliquée partout
+Passe polish avant lancement. Méthode : un **auditeur de contraste** exécuté au navigateur sur les 7 pages coach + accueil élève + bibliothèque, **dans les 2 thèmes**, sur les couleurs COMPOSITÉES (alpha résolu contre la vraie chaîne de fonds). Il a trouvé ce que le détecteur ne voyait pas. **17 échecs AA → 0**, dans les deux thèmes. typecheck + 88 tests + build verts, 0 erreur console.
+
+**Le fond du problème : les tokens `-ink` étaient calibrés contre `--surf`/`--surf2`, jamais contre leur propre `-dim`** — or c'est l'appariement standard des pastilles (`_tierBg` + `_tierPct`, `.badge-green`, `.sh-mod-state.mastered`…). D'où :
+- **`--green-ink` #15803d → #166534** (green-800). Les 6 pastilles vertes de l'app rendaient **4.49:1** (mesuré sur 4 modules) ; désormais 6.38. `#166534` est exactement la valeur que `.feedback.ok` utilisait déjà en dur — le composant avait résolu le problème empiriquement, le token n'avait pas suivi.
+- **`--dim` #6b6b73 → #65656d**. Le token TENAIT son contrat documenté (4.81 sur `--surf2`) mais tombait à **4.16 sur `--surf3`** (`.csnav-badge`). La contrainte réelle est « toutes les surfaces », pas surf2.
+- **`--blue-ink: #1e40af` CRÉÉ** (token manquant) : le système avait une encre vert/ambre/rouge, pas bleu — `.feedback.hint` ne pouvait donc pas être tokenisé (`--blue` y tombe à 4.32).
+- **Dark, en miroir** : les `-ink` y aliassent sur le token de base, qui ne tient pas non plus sur son `-dim` → **`--red-ink: #fca5a5`** (le base rendait 4.34). Vert (6.32) et ambre (5.34) tenaient : ils gardent l'alias.
+- **Boutons pleins en dark** : blanc sur `--cyan` #818cf8 = **2.98:1**, sur `--red` #f87171 = 2.77 → texte en encre foncée `#18181b` (5.94 / 6.4). Suit le précédent `.btn-blue` déjà présent. Idem `.acct-avatar`.
+- **Sites d'appel de la règle** : `--green`/`--red` bruts sur petit texte → `-ink` (`.game-result`, `.ed-trend`, `.wsx-chip`, `.mcard-due-banner`, `.hm-mod-card-hot`, `.srdash-v` ambre). Les 3 ternaires KPI de `coach-students.js` réimplémentaient le seuil 70 à la main → passent par **`_tierPct`**, le helper partagé.
+- **`.pg-annotated` / `.sh-notif-banner.coach`** codaient `#7c3aed` en dur alors que `--violet` flippe (3.11 en dark → 6.51).
+- **Un second vert éliminé** : le thème CLAIR portait une palette émeraude parallèle (`rgba(5,150,105)` / `#047857` / `#065f46`) sur 10 sites (`.feedback.ok`, `.ok-pill`, `.mastery-pill.ok`, `.deadline-pill.ok`, `.hentry.ok`, `.toast.ok`, `.role-chip.student`, `.pos-dot.done-ok`) — **le dark était déjà tokenisé, seul le clair dérivait**. Migré sur les tokens ; les overrides dark de `.feedback` réduits à la bordure (ce qui corrige au passage le `ko` sombre, 4.34 → 8.91).
+
+**⚠️ Piège d'outillage rencontré** (à ne pas refaire) : basculer `data-theme` en cours de page donne des **styles calculés périmés** dans le navigateur de preview → j'ai failli rapporter « tous les boutons primaires échouent en clair » (faux). **Toujours** poser `localStorage.mc_theme` PUIS recharger avant d'auditer un thème. Idem, `backgroundColor` renvoie `transparent` sur un fond en dégradé (`.sh-hero`) → l'auditeur doit renoncer, pas mesurer.
+
+**Laissé volontairement (non corrigé, décision assumée)** :
+- **Un 3e rouge** `rgba(225,29,72,…)` (rose-600) sur ~14 sites, à côté de `--red`/`--red-ink` : même nature que l'émeraude, **passe le contraste** → sweep à part entière, à faire à froid.
+- **`design-system-radius` ×36** : le code utilise 2/3/4/5/7/10/16/20/22px là où DESIGN.md ne documente que 6/8/12/999. Verdict : c'est le **DESIGN.md qui est incomplet** (les petites pastilles/barres ont besoin du bas de l'échelle), pas le code qui dérive. À trancher à l'audit FINAL.
+- **Ombres noires** `rgba(0,0,0,…)` : tokens d'ombre du dark + 2 modals inline (`index.html`) — violent la « règle de l'ombre teintée ». Réel mais cosmétique.
+- **Faux positifs confirmés du détecteur** (inchangés, déjà documentés) : `layout-transition` ×5 (barres pilulaires, `scaleX` déformerait), `side-tab` ×1 (`.study-var` = rail d'indentation **neutre** 2px), `em-dash-overuse` (typographie FR), `design-system-font` ×3 (artefacts de parsing HTML : `font-family: Inherit">Mot De Passe Oublié ?</Button>`). **Le détecteur a par ailleurs MANQUÉ 3 vrais side-stripes colorés** (`#board-comment`, `.pgn-comment` en `2px solid var(--cyan)`, `.game-row` 3px au survol) — bannis par DESIGN.md, un motif système existe (`.study-bubble`) : à traiter à l'audit FINAL.
+
 ### 🔖 Session du 16 juillet 2026 (2e) — DÉCOUPAGE de `lib/coach.js` (1236 l. → 8 modules)
 Dette technique signalée par l'utilisatrice : `coach.js` était devenu le dernier gros fichier de `lib/*`. Ce n'était pas un fourre-tout mais **6 pages coach posées bout à bout sur un socle commun**. Le blocage historique (couplage `_wsCards`/`selectedStudent`, qui avait fait repousser `lib/targeted-reviews.js` le 16/07 au matin) est levé par le **patron `S` de `session.js`** : un objet **`CS` muté, jamais réassigné**, exporté du socle.
 
