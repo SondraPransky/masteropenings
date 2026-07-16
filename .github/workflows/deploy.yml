@@ -2,6 +2,9 @@ name: Déploiement GitHub Pages
 
 # Build Vite (dist/) puis publication sur GitHub Pages, à chaque push sur main.
 # Prérequis côté dépôt : Settings → Pages → Source = « GitHub Actions ».
+# Actions épinglées sur leur majeure qui tourne en Node 24 (16/07/2026) : les runners
+# ne forcent plus le fallback depuis Node 20, déprécié. À re-vérifier si une annotation
+# de dépréciation réapparaît dans le run.
 on:
   push:
     branches: [main]
@@ -21,13 +24,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
       - run: npm ci
       - run: npm run build
-      - uses: actions/upload-pages-artifact@v3
+      # v5 tire upload-artifact@v7 en interne (c'est ce qui levait l'annotation Node 20).
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
 
@@ -38,5 +42,5 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/deploy-pages@v4
+      - uses: actions/deploy-pages@v5
         id: deployment
