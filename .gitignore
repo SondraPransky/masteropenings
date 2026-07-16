@@ -20,3 +20,6 @@ tests/e2e/.auth/
 # Outillage Claude Code local (skill impeccable) — pas du code de l'app
 .github/hooks/
 .github/skills/
+# État runtime du serveur `impeccable live` (pid/port/token de la machine locale).
+# `.impeccable/live/config.json` et `design.json`, eux, sont du config → suivis.
+.impeccable/live/server.json
