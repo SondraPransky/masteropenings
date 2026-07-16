@@ -328,7 +328,10 @@
 
     <!-- ── SECTION : Élèves ── -->
     <div id="csec-eleves" style="display:none">
-      <div class="cs-header">
+      <!-- En-tête de la LISTE. Masqué quand la page profil d'un élève est ouverte :
+           la page porte son propre en-tête (retour + nom), et « Élèves » + les filtres
+           au-dessus du profil de Nicolas seraient trompeurs. -->
+      <div class="cs-header" id="prof-list-header">
         <div>
           <h1 class="cs-title">Élèves</h1>
           <div class="cs-sub">Recherchez un élève et suivez sa progression</div>
@@ -351,29 +354,25 @@
         <div style="margin-top:16px"><button class="btn btn-primary btn-sm" onclick="addStudent()"><i class="ti ti-user-plus" aria-hidden="true"></i> Ajouter un élève</button></div>
       </div>
 
+      <!-- LISTE des élèves (drill-down : un clic ouvre #prof-page). Le panneau de détail
+           d'antan a disparu — le profil a sa propre page, pleine largeur. -->
       <div id="prof-ui">
-        <div class="eleve-layout">
-          <div class="eleve-panel">
-            <div class="eleve-panel-header">
-              <span>Élèves</span>
-              <span id="csnav-count-eleves2" style="font-size:.7rem;font-weight:400;color:var(--dim)"></span>
-            </div>
-            <div class="eleve-search">
-              <i class="ti ti-search" aria-hidden="true"></i>
-              <input id="prof-roster-search" type="search" placeholder="Rechercher un élève…" autocomplete="off"
-                     aria-label="Rechercher un élève par nom" oninput="rosterSearch(this.value)">
-            </div>
-            <div class="eleve-list" id="student-list" role="group" aria-label="Liste des élèves — flèches haut/bas pour naviguer" onkeydown="_eleveListKey(event)"></div>
+        <div class="eleve-panel">
+          <div class="eleve-panel-header">
+            <span>Élèves</span>
+            <span id="csnav-count-eleves2" style="font-size:.7rem;font-weight:400;color:var(--dim)"></span>
           </div>
-          <div class="eleve-detail" id="prof-detail">
-            <div class="eleve-detail-empty">
-              <div class="eleve-detail-empty-ico"><i class="ti ti-arrow-left" aria-hidden="true"></i></div>
-              Sélectionnez un élève pour voir sa progression
-            </div>
+          <div class="eleve-search">
+            <i class="ti ti-search" aria-hidden="true"></i>
+            <input id="prof-roster-search" type="search" placeholder="Rechercher un élève…" autocomplete="off"
+                   aria-label="Rechercher un élève par nom" oninput="rosterSearch(this.value)">
           </div>
+          <div class="eleve-list" id="student-list" role="group" aria-label="Liste des élèves — flèches haut/bas pour naviguer" onkeydown="_eleveListKey(event)"></div>
         </div>
-
       </div>
+
+      <!-- PAGE PROFIL d'un élève (rendue par lib/coach-student-page.js) -->
+      <div id="prof-page" style="display:none"></div>
 
     </div>
 

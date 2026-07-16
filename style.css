@@ -1419,6 +1419,10 @@ textarea {
 /* Zone cliquable étendue à 40px (le gap de 8px entre boutons évite tout chevauchement) */
 .sh-card-act::before { content:""; position:absolute; inset:-3px; border-radius:50%; }
 .sh-card-act:hover { filter:brightness(1.06); border-color:var(--cyan); color:var(--cyan); }
+/* Couche d'édition élève : le bouton s'allume quand l'élève a déjà greffé des lignes.
+   Bleu = « écrit par l'élève » (le violet dit « écrit par le coach »). Couleur d'AUTEUR,
+   sémantique — doublée d'une icône et du badge « N à moi », jamais la couleur seule. */
+.sh-card-act-mine { background:var(--blue-dim); border-color:var(--blue-glow); color:var(--blue-ink); }
 .sh-card-play { background:var(--cyan); color:#fff; border-color:var(--cyan); margin-left:auto; }
 .sh-card-play:hover { color:#fff; }
 .sh-empty { font-size:.82rem; color:var(--dim); padding:26px 18px; text-align:center; line-height:1.6; border:1px solid var(--border); border-radius:12px; background:var(--surf); }
@@ -1682,13 +1686,6 @@ textarea {
 .ed-review-title { font-size: .8rem; font-weight: 700; color: var(--text-2); margin-bottom: 8px; }
 
 /* Détail élève — en-tête, état vide, tendance, groupe de positions */
-.ed-hdr-name { font-size: 1.05rem; font-weight: 700; }
-.ed-hdr-sub { font-size: .73rem; color: var(--dim); margin-top: 3px; }
-.ed-empty { padding: 20px; color: var(--dim); font-size: .83rem; }
-.ed-trend { font-size: .67rem; flex-shrink: 0; }
-.ed-trend.up { color: var(--green-ink); }
-.ed-trend.down { color: var(--red-ink); }
-.ed-trend.flat { color: var(--dim); }
 .ed-pos-group { margin-bottom: 22px; }
 .ed-pos-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
 .ed-pos-head-badges { display: flex; gap: 6px; align-items: center; }
@@ -1937,12 +1934,6 @@ textarea {
 }
 
 /* Élèves section */
-.eleve-layout {
-  display: grid;
-  grid-template-columns: 270px 1fr;
-  gap: 14px;
-  align-items: start;
-}
 .eleve-panel {
   background: var(--surf);
   border: 1px solid var(--border);
@@ -1965,7 +1956,10 @@ textarea {
 .eleve-search input:focus { outline: none; }
 .eleve-search:focus-within { color: var(--cyan); }
 .eleve-roster-empty { padding: 20px 16px; text-align: center; color: var(--dim); font-size: .8rem; }
-.eleve-list { display: flex; flex-direction: column; max-height: 65vh; overflow-y: auto; }
+.eleve-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 8px; padding: 0 10px 10px; }
+/* Le survol translatait la carte de 4px : bon dans une colonne étroite, faux dans une
+   grille (la carte cognerait sa voisine). En grille : élévation, pas déplacement. */
+.eleve-list .eleve-item:hover { transform: none; box-shadow: var(--shadow-xs); }
 .eleve-item {
   padding: 18px 20px;
   border-radius: 14px;
@@ -1996,24 +1990,51 @@ textarea {
 .eleve-progbar { height: 3px; background: var(--surf3); border-radius: 2px; margin-top: 7px; overflow: hidden; }
 .eleve-progfill { height: 100%; border-radius: 2px; transition: width .3s; }
 
-.eleve-detail { background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); display: flex; flex-direction: column; max-height: calc(100vh - 190px); overflow: hidden; }
-.eleve-detail-header { padding: 16px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-.eleve-detail-body { overflow: hidden; display: flex; flex-direction: column; flex: 1; }
-.eleve-detail-empty { padding: 60px 20px; text-align: center; color: var(--dim); }
-.eleve-detail-empty-ico { font-size: 2rem; margin-bottom: 10px; }
-.ed-kpi-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); border-bottom: 1px solid var(--border); flex-shrink: 0; }
-.ed-kpi { background: var(--surf); padding: 10px; text-align: center; }
-.ed-kpi-v { font-size: 1.15rem; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
-.ed-kpi-l { font-size: .68rem; color: var(--dim); margin-top: 3px; }
-.ed-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-.ed-tab { padding: 9px 16px; font-size: .76rem; color: var(--dim); cursor: pointer; border: none; background: none; font-family: inherit; border-bottom: 2px solid transparent; transition: color .12s, border-bottom-color .12s; }
-.ed-tab.on { color: var(--cyan); border-bottom-color: var(--cyan); font-weight: 600; }
-.ed-tab-body { padding: 16px 18px; overflow-y: auto; flex: 1; }
-.ed-mod-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
-.ed-mod-row:last-child { border-bottom: none; }
+/* ══ PAGE PROFIL D'UN ÉLÈVE (lib/coach-student-page.js) ═══════════════════
+   Vue exhaustive : elle consolide ce qui vivait sur 3 pages. Le risque assumé est
+   la surcharge (retour du 14/07) — d'où des sections NOMMÉES, la pleine largeur, et
+   « Ses positions » replié. Réutilise .cs-kpi / .ed-review-* / .badge : pas de
+   nouvelle variante de composant. */
+#prof-page { max-width: 1160px; }
+.sp-head { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.sp-head-id { min-width: 0; }
+.sp-name { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; letter-spacing: -.5px; margin: 0; }
+.sp-head-sub { font-size: .78rem; color: var(--dim); margin-top: 2px; }
+.sp-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 22px; }
+@media (max-width: 700px) { .sp-kpis { grid-template-columns: repeat(2, 1fr); } }
+
+.sp-sec { margin-bottom: 24px; }
+.sp-sec-title { font-family: var(--font-display); font-size: 1.02rem; font-weight: 700; letter-spacing: -.2px; color: var(--text); margin: 0 0 10px; }
+.sp-subhead { font-size: .74rem; font-weight: 700; color: var(--dim); margin: 12px 0 6px; }
+
+/* Rangée générique des sections (module, exercice, partie). Une seule forme pour les
+   trois : le contenu diffère, pas la structure. */
+.sp-row { display: flex; align-items: center; gap: 12px; padding: 11px 14px; background: var(--surf);
+          border: 1px solid var(--border); border-radius: var(--r); margin-bottom: 6px; }
+.sp-row-name { flex: 1; min-width: 0; font-size: .88rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sp-row-tail { display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+.sp-row-late { border-color: var(--red-glow); background: var(--red-dim); }
+.sp-when { font-size: .72rem; color: var(--dim); font-variant-numeric: tabular-nums; }
+/* « N à lui » : bleu = écrit par l'élève (règle des couleurs d'auteur, DESIGN.md). */
+.sp-mine { font-size: .72rem; font-weight: 700; color: var(--blue-ink); background: var(--blue-dim);
+           border: 1px solid var(--blue-glow); border-radius: 999px; padding: 2px 9px; white-space: nowrap; }
+
+.sp-act { display: flex; align-items: center; gap: 10px; padding: 9px 4px; border-top: 1px solid var(--border); font-size: .8rem; }
+.sp-act-ico { flex-shrink: 0; }
+.sp-act-txt { flex: 1; min-width: 0; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sp-act-tail { font-size: .74rem; color: var(--dim); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+
+.sp-empty { font-size: .8rem; color: var(--dim); padding: 12px 2px; }
+.sp-empty-big { text-align: center; padding: 54px 24px; border: 1px dashed var(--border); border-radius: 14px; color: var(--text-2); }
+.sp-empty-big i { font-size: 2rem; color: var(--dim); display: block; margin-bottom: 10px; }
+.sp-empty-sub { font-size: .78rem; color: var(--dim); margin-top: 6px; }
+
+@media (max-width: 560px) {
+  .sp-row { flex-wrap: wrap; }
+  .sp-row-tail { width: 100%; justify-content: flex-start; }
+}
+
 .ed-mod-name { flex: 1; font-size: .8rem; font-weight: 500; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ed-mini-bars { display: flex; align-items: flex-end; gap: 2px; height: 24px; width: 60px; flex-shrink: 0; }
-.ed-mini-bar { flex: 1; border-radius: 2px 2px 0 0; min-width: 3px; opacity: .85; }
 
 /* KPI strip — 3 tuiles prescriptives + note discrète (vanité démotée) */
 .cs-kpi-strip {

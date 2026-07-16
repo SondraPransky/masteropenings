@@ -169,3 +169,47 @@ describe('_findNodeByFen — recherche par FEN', () => {
     expect(_findNodeByFen(tree, 'position/inexistante w - - 0 1')).toBe(null);
   });
 });
+
+// ════════════════════════════════════════════════════════════
+//  Marque d'auteur [%author …] — couche additive
+//  Le sérialiseur était codé en dur sur 'coach' (P1.4) : author:'student'
+//  (couche d'édition élève) disparaissait au round-trip. Non couvert jusqu'ici.
+// ════════════════════════════════════════════════════════════
+describe('[%author …] — round-trip de la couche additive', () => {
+  test('_commentWithShapes sérialise l’auteur coach', () => {
+    expect(_commentWithShapes({ author: 'coach', comment: 'bien' })).toContain('[%author coach]');
+  });
+  test('_commentWithShapes sérialise l’auteur élève', () => {
+    expect(_commentWithShapes({ author: 'student', comment: 'ma ligne' })).toContain('[%author student]');
+  });
+  test('aucune marque quand le nœud n’a pas d’auteur', () => {
+    expect(_commentWithShapes({ comment: 'neutre' })).not.toContain('[%author');
+  });
+  test('un auteur inconnu n’est PAS injecté dans le PGN (liste blanche)', () => {
+    expect(_commentWithShapes({ author: 'pirate', comment: 'x' })).not.toContain('[%author');
+  });
+  test('_parseShapes relit les deux auteurs', () => {
+    expect(_parseShapes('[%author student] ma ligne').author).toBe('student');
+    expect(_parseShapes('[%author coach] bien').author).toBe('coach');
+  });
+  test('la marque d’auteur ne fuit pas dans le texte du commentaire', () => {
+    expect(_parseShapes('[%author student] ma ligne').text).toBe('ma ligne');
+  });
+
+  test('round-trip complet arbre → PGN → arbre, auteur élève préservé', () => {
+    const root = pgnToEditorTree('1. e4 e5 2. Nf3 *', new Chess().fen());
+    // On tague le 3e coup comme un ajout de l'élève.
+    let n = root; const chain = [];
+    while (n.children && n.children.length) { n = n.children[0]; chain.push(n); }
+    chain[chain.length - 1].author = 'student';
+    chain[chain.length - 1].comment = 'ma ligne';
+    const pgn = editorTreeToPGN(root, new Chess().fen());
+    expect(pgn).toContain('[%author student]');
+    const back = pgnToEditorTree(pgn, new Chess().fen());
+    let m = back; const chain2 = [];
+    while (m.children && m.children.length) { m = m.children[0]; chain2.push(m); }
+    const last = chain2[chain2.length - 1];
+    expect(last.author).toBe('student');
+    expect(last.comment).toBe('ma ligne');
+  });
+});

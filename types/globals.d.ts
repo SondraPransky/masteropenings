@@ -126,7 +126,9 @@ interface Window {
   retryCoachLoad?: (...a: any[]) => any;
   _eleveListKey?: (...a: any[]) => any;
   renderProfView?: (...a: any[]) => any;
-  showStudentDetail?: (...a: any[]) => any;
+  showStudentDetail?: (...a: any[]) => any;   // ouvre la PAGE profil (drill-down)
+  renderStudentPage?: (...a: any[]) => any;   // page profil exhaustive (lib/coach-student-page.js)
+  closeStudentPage?: (...a: any[]) => any;    // retour à la liste des élèves
   renderHeatmap?: (...a: any[]) => any;
   pgnToEditorTree?: (...a: any[]) => any;
   openWeakspotPosition?: (...a: any[]) => any;
@@ -236,6 +238,16 @@ interface Window {
   _boardEntryDone?: (...a: any[]) => any;  // callback retour éditeur → modal (lib/library.js)
   openReviewEditor?: (...a: any[]) => any; // éditeur en mode revue coach (P1.4, lib/editor.js)
   _reviewSaveDone?: (...a: any[]) => any;  // callback retour revue → bibliothèque (P1.4, lib/library.js)
+  // Couche d'édition élève : l'élève greffe ses lignes sur un module du coach (additif).
+  openStudentLayerEditor?: (...a: any[]) => any;  // éditeur en mode couche élève (lib/editor.js)
+  _studentLayerSaveDone?: (...a: any[]) => any;   // callback retour couche → élève (lib/student.js)
+  openMyLines?: (...a: any[]) => any;             // ouvre la couche depuis une carte de module
+  _sbSaveStudentOverlay?: (...a: any[]) => any;   // upsert de la ligne overlay (app.js)
+  _sbFetchStudentOverlays?: (...a: any[]) => any; // couches de l'élève, par id de module coach (app.js)
+  _sbLoadTeacherOverlays?: (...a: any[]) => any;  // couches greffées par les élèves sur les modules du coach (app.js)
+  openStudentOverlay?: (...a: any[]) => any;      // coach : consulte la copie d'un élève (lib/coach-students.js)
+  _coachOverlayReplyDone?: (...a: any[]) => any;  // retour éditeur → réponse du coach dans la copie élève
+  _sbSaveCoachOverlayReply?: (...a: any[]) => any; // upsert de la réponse coach (garde owner_student_id)
   toggleShareGame?: (...a: any[]) => any;  // partager une partie au coach (P1.3, lib/library.js)
   openGameReview?: (...a: any[]) => any;   // élève ouvre sa partie annotée (P1.5, lib/library.js)
   annotateSharedGame?: (...a: any[]) => any; // coach annote une partie partagée (P1.4, lib/coach.js)

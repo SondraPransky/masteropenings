@@ -30,7 +30,7 @@ describe('mapping module ↔ ligne SQL', () => {
     expect(row.hide_comments).toBe(false);
     expect(row.updated_at).toBe(1700000001234);
     expect(row.owner_student_id).toBe(null);
-    expect(row.extra).toEqual({ created: '27/06/2026', fromLibrary: true, demo: false, isExercise: false, exType: null, folder: null });
+    expect(row.extra).toEqual({ created: '27/06/2026', fromLibrary: true, demo: false, isExercise: false, exType: null, folder: null, overlayOf: null, overlayBy: null });
   });
 
   it('round-trip : restitue tous les champs persistés', () => {
@@ -56,6 +56,37 @@ describe('mapping module ↔ ligne SQL', () => {
     expect(back.exType).toBe('fourchette');
     // Absence de type → null (rétrocompat modules existants).
     expect(_sbRowToModule(_sbModuleToRow({ id: 8, name: 'x', tree: {}, sessions: [] })).exType).toBe(null);
+  });
+
+  // `extra` est RECONSTRUIT de zéro par _sbModuleToRow : toute clé absente du mapper
+  // est perdue au premier upsert. D'où ce round-trip sur overlayOf.
+  it('couche d\'édition élève : overlayOf + les 2 propriétaires survivent au round-trip', () => {
+    const overlay = { id: 9, name: 'Espagnole', overlayOf: 42,
+                      teacherId: 'uid-coach', ownerStudentId: 'uid-eleve', tree: {}, sessions: [] };
+    const row  = _sbModuleToRow(overlay);
+    // teacher_id ET owner_student_id : c'est ce qui rend la ligne lisible par le coach
+    // et éditable par l'élève (les policies RLS sont des OR sur ces 2 colonnes).
+    expect(row.teacher_id).toBe('uid-coach');
+    expect(row.owner_student_id).toBe('uid-eleve');
+    expect(row.extra.overlayOf).toBe(42);
+    expect(_sbRowToModule(row).overlayOf).toBe(42);
+  });
+
+  // Le coach ne peut PAS lire le profil de ses élèves (profiles_read ne va que de l'élève
+  // vers son coach) : sans cette identité dénormalisée dans la ligne, il serait incapable
+  // de dire à QUI appartient une couche. Même triplet que `results` → _resultKeys marche dessus.
+  it('couche élève : l\'identité dénormalisée survit et garde la forme de _resultKeys', () => {
+    const by = { student: 'Test Eleve', studentEmail: 'testeleve@test.com', studentPseudo: 'lea' };
+    const back = _sbRowToModule(_sbModuleToRow({ id: 9, name: 'x', overlayOf: 42, overlayBy: by, tree: {}, sessions: [] }));
+    expect(back.overlayBy).toEqual(by);
+    // La forme est celle qu'attend _resultKeys(r) = [studentEmail, studentPseudo, student]
+    expect(Object.keys(back.overlayBy).sort()).toEqual(['student', 'studentEmail', 'studentPseudo']);
+  });
+
+  it('un module normal n\'a pas d\'overlayOf (rétrocompat)', () => {
+    expect(_sbRowToModule(_sbModuleToRow({ id: 10, name: 'x', tree: {}, sessions: [] })).overlayOf).toBe(null);
+    // Ligne existante en base, sans la clé : ne doit pas devenir un overlay fantôme.
+    expect(_sbRowToModule({ id: 11, name: 'x', extra: {} }).overlayOf).toBe(null);
   });
 });
 

@@ -10,7 +10,8 @@ import {
   _sbResultToRow, _sbRowToResult, _sbPracticeToRow, _sbRowToPractice,
   _sbGameToRow, _sbRowToGame
 } from './lib/dbmap.js';
-import { isPlayerMove, _buildDrillTree, _treePlayerPositions, _materialHint } from './lib/tree.js';
+import { isPlayerMove, _buildDrillTree, _treePlayerPositions, _materialHint,
+         _mergeStudentLayer, _countLayerMoves } from './lib/tree.js';
 import {
   oppSeenKey, _commentDelay, _drillSessions, countPlayerMoves,
   computeForcedPath, pickOppMove, treeUnseenCount
@@ -1009,6 +1010,7 @@ async function _coachLoad() {
   await _sbLoadTeacherModules();
   // Résultats / pratique / parties des élèves (incl. parties partagées) → dashboard coach.
   await _sbLoadTeacherResults(); await _sbLoadTeacherPractice(); await _sbLoadTeacherGames();
+  await _sbLoadTeacherOverlays();   // lignes ajoutees par les eleves sur ses modules
   G._coachLoading = (G._sbErrorAt && G._sbErrorAt >= t0) ? 'error' : null;
   window.renderOverview?.(); window.renderProfView?.();
 }
@@ -1023,7 +1025,11 @@ async function _sbLoadTeacherModules() {
   try {
     const { data: mods, error: e1 } = await sb.from('modules').select('*').eq('teacher_id', G.currentUser.uid);
     if (e1) throw e1;
-    G.drills = (mods || []).map(_sbRowToModule).sort((a, b) => (b.id || 0) - (a.id || 0));
+    // Les couches d'edition eleve portent teacher_id (pour que le coach puisse les LIRE)
+    // mais ne sont PAS des modules : elles ne doivent pas polluer « Mes modules ».
+    // Elles sont chargees a part par _sbLoadTeacherOverlays (detail eleve).
+    G.drills = (mods || []).map(_sbRowToModule).filter(m => m.overlayOf == null)
+                           .sort((a, b) => (b.id || 0) - (a.id || 0));
     save();
     const { data: cls, error: e2 } = await sb.from('classes').select('*').eq('teacher_id', G.currentUser.uid);
     if (e2) throw e2;
@@ -1143,10 +1149,78 @@ async function _sbApplyCoachNames(assigned) {
   assigned.forEach(m => { m.coachName = names[m.teacherId] || null; m._showCoach = multiCoach; });
 }
 
-// Modules perso de l'élève.
+// Modules perso de l'élève. Les couches d'edition (overlayOf) partagent la colonne
+// owner_student_id mais ne sont PAS des modules perso : elles sont renvoyees a part.
 async function _sbFetchPersonalModules() {
   const { data: pers } = await sb.from('modules').select('*').eq('owner_student_id', G.currentUser.uid);
-  return (pers || []).map(_sbRowToModule);
+  return (pers || []).map(_sbRowToModule).filter(m => m.overlayOf == null);
+}
+
+// Couches d'edition de l'eleve, indexees par id du module coach qu'elles etendent.
+async function _sbFetchStudentOverlays() {
+  const { data: rows } = await sb.from('modules').select('*').eq('owner_student_id', G.currentUser.uid);
+  const byModule = {};
+  (rows || []).map(_sbRowToModule).filter(m => m.overlayOf != null)
+              .forEach(o => { byModule[String(o.overlayOf)] = o; });
+  return byModule;
+}
+
+// Greffe les ajouts de l'eleve sur l'arbre VIVANT de chaque module coach. En memoire
+// seulement : la ligne du coach n'est jamais reecrite, et le drill continue de tourner
+// sous l'id du module COACH -> la cle SR (${student}_${drillId}_${fen}_${san}) ne bouge
+// pas, l'historique survit a l'ajout de lignes.
+function _sbApplyStudentOverlays(assigned, overlays) {
+  assigned.forEach(m => {
+    const ov = overlays[String(m.id)];
+    if (!ov || !ov.tree) return;
+    // L'arbre VIERGE du coach est conserve : c'est la reference du diff a la sauvegarde
+    // (sans lui on diffe l'arbre fusionne contre lui-meme -> diff vide, ajouts perdus).
+    m._coachTree = m.tree;
+    m.tree = _mergeStudentLayer(m.tree, ov.tree);
+    m._layerTree = ov.tree;                     // le diff brut : greffe dans l'editeur
+    m._overlayId = ov.id;                       // pour re-sauver sans creer un doublon
+    m._overlayCount = _countLayerMoves(ov.tree);
+  });
+}
+
+// Cote COACH : les couches que ses eleves ont greffees sur SES modules. Elles portent
+// teacher_id = lui, donc la meme requete que ses modules les ramene ; on les separe ici
+// (elles sont filtrees de « Mes modules » par _sbLoadTeacherModules).
+// -> G.studentOverlays, consomme par le detail eleve.
+async function _sbLoadTeacherOverlays() {
+  if (!sb || !G.currentUser || G.currentRole !== 'teacher') return;
+  return _sbRun('_sbLoadTeacherOverlays', sb && G.currentUser, async () => {
+    const { data, error } = await sb.from('modules').select('*').eq('teacher_id', G.currentUser.uid);
+    if (error) throw error;
+    G.studentOverlays = (data || []).map(_sbRowToModule).filter(m => m.overlayOf != null);
+  });
+}
+
+// Cree/met a jour la couche d'edition de l'eleve sur un module coach.
+// teacher_id = le coach : c'est ce qui rend la ligne LISIBLE par lui (policy
+// modules_read : teacher_id = auth.uid() OR owner_student_id = auth.uid()).
+async function _sbSaveStudentOverlay(o) {
+  return _sbRun('_sbSaveStudentOverlay', sb && G.currentUser, async () => {
+    const row = _sbModuleToRow(o);
+    row.owner_student_id = G.currentUser.uid;
+    const { error } = await sb.from('modules').upsert(row);
+    if (error) throw error;
+  });
+}
+
+// Le COACH repond dans la copie d'un eleve. Chemin SEPARE de _sbSaveStudentOverlay :
+// celui-ci force owner_student_id = l'utilisateur courant, ce qui ferait VOLER la ligne
+// a l'eleve. Ici owner_student_id reste celui de l'eleve ; c'est teacher_id = le coach
+// qui l'autorise a ecrire (modules_update_owner est un OR sur les deux colonnes).
+async function _sbSaveCoachOverlayReply(o) {
+  return _sbRun('_sbSaveCoachOverlayReply', sb && G.currentUser, async () => {
+    const row = _sbModuleToRow(o);
+    row.teacher_id = G.currentUser.uid;      // son droit d'ecriture sur cette ligne
+    // row.owner_student_id vient de o.ownerStudentId : NE PAS l'ecraser.
+    if (!row.owner_student_id) throw new Error('overlay sans proprietaire eleve');
+    const { error } = await sb.from('modules').upsert(row);
+    if (error) throw error;
+  });
 }
 
 // Résultats + pratique de l'élève (dashboard multi-appareils) → G + cache.
@@ -1178,6 +1252,8 @@ async function _sbLoadStudentModules() {
     saveClasses();
     assigned = await _sbFetchAssignedModules(myCls);
     personal = await _sbFetchPersonalModules();
+    // Ses propres lignes, greffees sur l'arbre vivant du coach (jamais l'inverse).
+    _sbApplyStudentOverlays(assigned, await _sbFetchStudentOverlays());
     await _sbFetchStudentActivity();
   } catch (e) {
     console.error('_sbLoadStudentModules', e);
@@ -1349,6 +1425,7 @@ Object.assign(window, {
   addLog, clearFeedback, clearLog, closeModal, confirmName, countPlayerMoves, currentGame,
   currentSession, deleteModule, editorTreeToPGN, escapeHtml, fig, figurineText, goPage, goBackFromDrill, initDrillPage,
   isLineMode, isPlayerMove, loadStudentModules, loginUser, logoutUser, nagGlyphs, nextDrill,
+  _sbSaveStudentOverlay, _sbFetchStudentOverlays, _sbLoadTeacherOverlays, _sbSaveCoachOverlayReply,
   nextSession, pgnToEditorTree, registerUser, requestPasswordReset, save, saveClasses,
   selectDrill, setBoardComment, setBoardPrompt, setFeedback, showHint, signInGoogle,
   togglePwd, showLoginTab, skipPosition, startDrill, submitNewPassword, switchCoachSection,
