@@ -1194,6 +1194,9 @@ textarea {
 
 /* ══ PAGE ÉLÈVE ══════════════════════════════════ */
 #page-student-home { background: var(--bg); }
+/* Colonne de contenu élève — 1080px = la largeur de .lib-wrap (« Ma bibliothèque »),
+   l'autre onglet du même rôle : basculer entre les deux ne doit pas faire sauter la mise en page. */
+.sh-wrap { max-width: 1080px; margin: 0 auto; padding: 20px 16px; }
 .sh-section-label { font-family:var(--font-display); font-size:1.02rem; font-weight:700; letter-spacing:-.2px; color:var(--text); margin:24px 0 10px; }
 .sh-section-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:24px 0 10px; }
 @media (max-width:520px) {
@@ -1224,9 +1227,33 @@ textarea {
 .sh-hero-label { position:relative; font-family:var(--font-display); font-size:1.1rem; font-weight:800; letter-spacing:-.3px; margin:0 0 3px; }  /* margin:0 = reset UA du h2 */
 .sh-hero-sub { position:relative; font-size:.82rem; opacity:.92; margin-bottom:14px; line-height:1.45; }
 .sh-hero--calm .sh-hero-sub { margin-bottom:0; }
-.sh-hero-btn { position:relative; background:#fff; color:#4f46e5; border:none; border-radius:var(--rs); padding:11px 16px; font-family:inherit; font-weight:700; font-size:.9rem; cursor:pointer; width:100%; transition:transform .15s cubic-bezier(.22,1,.36,1), filter .15s; }
+.sh-hero-btn { position:relative; background:#fff; color:#4f46e5; border:none; border-radius:var(--rs); padding:11px 16px; font-family:inherit; font-weight:700; font-size:.9rem; cursor:pointer; width:auto; min-width:220px; transition:transform .15s cubic-bezier(.22,1,.36,1), filter .15s; }
 .sh-hero-btn:hover { filter:brightness(.96); transform:translateY(-1px); }
 .sh-hero-btn:active { transform:translateY(0) scale(.98); }
+/* Mobile : pleine largeur = cible tactile confortable (le hero y est étroit, aucun risque d'étirement). */
+@media (max-width:560px) { .sh-hero-btn { width:100%; } }
+/* Desktop : la bande large se scinde en 2 zones — texte à gauche, action à droite.
+   Empilé, le contenu (~320px) ne remplit que le tiers gauche des 1048px du hero.
+   Réservé au hero ACTIONNABLE : les états calmes n'ont pas de CTA à équilibrer
+   (et « Bienvenue » porte un .btn-primary, pas un .sh-hero-btn — il reste empilé). */
+@media (min-width:760px) {
+  /* min-height : sorti de la pile verticale, le CTA ne porte plus la hauteur du hero —
+     il retomberait à 88px (un filet). L'indigo plein est LE signal « tu as du travail » :
+     il garde une présence délibérée. */
+  .sh-hero:not(.sh-hero--calm) { display:grid; grid-template-columns:1fr auto; align-items:center; column-gap:24px; min-height:112px; }
+  .sh-hero:not(.sh-hero--calm) .sh-hero-label { grid-column:1; grid-row:1; }
+  .sh-hero:not(.sh-hero--calm) .sh-hero-sub { grid-column:1; grid-row:2; margin-bottom:0; }
+  .sh-hero:not(.sh-hero--calm) .sh-hero-btn { grid-column:2; grid-row:1 / span 2; }
+  /* Le cavalier quitte le coin droit — le CTA s'y installe et le masquerait à moitié.
+     Sous ~900px, le jeu entre la fin du texte et le CTA tombe à ~105px : trop juste
+     pour un glyphe de 88px. La signature s'efface plutôt que de chevaucher le bouton. */
+  .sh-hero:not(.sh-hero--calm)::after { display:none; }
+}
+/* Bande assez large pour héberger le cavalier dans le vide central : il occupe
+   l'espace au lieu de le subir (c'était 67% de dégradé nu à 1048px). */
+@media (min-width:900px) {
+  .sh-hero:not(.sh-hero--calm)::after { display:block; right:34%; bottom:-28px; }
+}
 @media (prefers-reduced-motion: reduce) { .sh-hero-btn { transition:none; } .sh-hero-btn:hover { transform:none; } }
 /* ══ CARTES MODULES ÉLÈVE (version finale améliorée) ═════════════════ */
 /* Grille : les cartes verticales se rangent en colonnes (1 en mobile). */
