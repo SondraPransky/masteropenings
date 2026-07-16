@@ -20,27 +20,26 @@ Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un pr
 
 ### 🔖 POINT DE REPRISE (16 juillet 2026, fin de journée)
 
-**État : les 2 chantiers de fond du 16/07 sont poussés et déployés** (`origin/main` = `main` à `cc3d677`). ⚠️ Ce bloc a un temps annoncé le contraire (« travail non poussé », push en priorité #1) — **c'était périmé**, corrigé le 16/07 en fin de journée. Vérifier avec `git rev-list --left-right --count origin/main...main` plutôt que se fier à cette ligne.
+**État : tout le 16/07 est poussé et déployé** (`origin/main` = `main`, run Pages vert). ⚠️ Ce bloc a un temps annoncé « travail non poussé » avec le push en priorité #1 — **c'était périmé**. Vérifier avec `git rev-list --left-right --count origin/main...main` plutôt que se fier à une ligne d'état écrite ici.
 
 | Commit | Contenu |
 |---|---|
 | `190f52f` | REFACTO : `lib/coach.js` 1236 l. → **8 modules** (socle `coach-core` + état partagé `CS`) |
-| `872ea79` | POLISH : règle de l'encre appliquée partout — **17 échecs WCAG AA → 0** (clair + sombre) |
-| `486df62` | POLISH : tableau de bord élève élargi 680 → **1080px** + hero en 2 zones (non poussé) |
+| `872ea79` | POLISH : règle de l'encre — 17 échecs WCAG AA → 0 (**il en restait 6, trouvés le 16/07 par l'audit**) |
+| `486df62` | POLISH : tableau de bord élève élargi 680 → **1080px** + hero en 2 zones |
+| `97faec4` | POLISH : audit FINAL — **4 familles de couleur parallèles** balayées, 6 échecs AA, `<h1>` |
 
-`npm run typecheck` + **88 tests** + `npm run build` verts sur l'arbre committé ; 0 erreur console. Détail de chaque chantier → les blocs « Session du 16 juillet » ci-dessous.
+`npm run typecheck` + **88 tests** + `npm run build` verts ; 0 erreur console. Détail → les blocs « Session du 16 juillet » ci-dessous.
+
+**✅ La porte qualité est franchie : `/impeccable audit` FINAL = 18/20, 0 P0, 0 P1, verdict anti-patterns PASS.** Reste **35 findings**, aucun bloquant (détail → bloc « Session du 16 juillet (5e) »).
 
 #### ▶ PLAN DE LA PROCHAINE SESSION (par ordre)
 
-1. **Pousser** (`git push origin main`) → l'Action GitHub redéploie Pages automatiquement. Reste `486df62` (largeur élève) à pousser. Puis re-marcher rapidement 2-3 pages coach + l'accueil élève sur le site déployé.
-2. **`/impeccable audit` FINAL** — la dernière porte avant lancement (devrait confirmer ≥19/20). Le polish lui a laissé **3 entrées concrètes, déjà instruites** :
-   - **(a) Le 3e rouge.** `rgba(225,29,72,…)` (rose-600) sur ~14 sites, à côté de `--red`/`--red-ink`. Même nature que l'émeraude balayée le 16/07 — mais il **passe le contraste**, donc c'est un sweep de cohérence, pas un bug. Recette éprouvée : migrer le CLAIR vers les tokens (le dark est déjà tokenisé), puis re-mesurer.
-   - **(b) Le radius.** 36 findings. **Verdict du polish : c'est le DESIGN.md qui est incomplet**, pas le code — il ne documente que 6/8/12/999 alors que les petites pastilles/barres ont légitimement besoin de 2-5px. Décision à prendre : compléter l'échelle documentée plutôt que churner 36 sites.
-   - **(c) 3 side-stripes colorés que le détecteur a MANQUÉS** : `#board-comment` et `.pgn-comment` (`border-left: 2px solid var(--cyan)`), `.game-row` (3px au survol). Bannis par le DESIGN.md, et **un motif système existe déjà** (`.study-bubble` : fond `--cyan-dim` + bordure `--cyan-glow`) → c'est un « one-off alors qu'un partagé existe », pas un choix. (Le rail `.study-var` 2px **neutre**, lui, reste un faux positif : ne pas y toucher.)
-3. **Charger le contenu réel** (`Desktop/Academie/` : 40 mats + 42 tactiques + 7 ouvertures) dans le vrai compte coach → c'est le contenu de lancement, et le dernier gros inconnu produit.
-4. **2 vérifs bonus** (~2 min chacune, à caser au début d'une session) : toast d'échec d'écriture `_sbRun` (DevTools → Network Offline après login → action de sauvegarde → toast ⚠) ; premier lancement élève réel (compte vierge → hero Bienvenue + CTA ouvertures prêtes).
-5. **Dette de style inline** ([[style-debt-inline]]) : les 2 zones les plus chargées sont désormais `_classBreakdownHTML`/`_classDetailHTML` (`lib/coach-classes.js`) et `_pgGroupsHTML` (`lib/coach-games.js`) — **laissées intactes exprès** au découpage (déplacements verbatim). Puis `lib/student.js`, `lib/library.js`.
-6. **Post-lancement** (ne pas ouvrir avant) : import Chess.com, import puzzles Lichess CSV (off-by-one du 1er coup), bibliothèque d'exercices partagée + RLS multi-coachs, révision ciblée → sauter à la position exacte dans l'arbre, finir d'unifier les identifiants élève (`student.js`/`sr.js` — les helpers canoniques vivent dans `lib/coach-core.js`).
+1. **Charger le contenu réel** (`Desktop/Academie/` : 40 mats + 42 tactiques + 7 ouvertures) dans le vrai compte coach → **c'est désormais LA priorité** : le contenu de lancement, et le dernier gros inconnu produit. Tout le reste est du raffinement.
+2. **2 vérifs bonus** (~2 min chacune, à caser au début d'une session) : toast d'échec d'écriture `_sbRun` (DevTools → Network Offline après login → action de sauvegarde → toast ⚠) ; premier lancement élève réel (compte vierge → hero Bienvenue + CTA ouvertures prêtes).
+3. **Reliquat de l'audit** (aucun bloquant, à faire à froid) : les **ombres noires** (`rgba(0,0,0,…)` ×11 — tokens d'ombre du dark + 2 modals inline — violent la « règle de l'ombre teintée ») ; le **radius résiduel** (7px ×4, 10px ×4, dérive à 1-2px des tokens) ; l'**échelle de z-index** (999/9998/9999/9999/10000 dans les modals inline d'`index.html`, avec une égalité arbitrée par l'ordre DOM). Il reste aussi un **indigo-500 parallèle** (`rgba(99,102,241,…)` ~13 sites) à côté de `--cyan` (#4f46e5, indigo-600) — même nature que les 4 familles balayées le 16/07, non traité faute de scope.
+4. **Dette de style inline** ([[style-debt-inline]]) : les 2 zones les plus chargées sont désormais `_classBreakdownHTML`/`_classDetailHTML` (`lib/coach-classes.js`) et `_pgGroupsHTML` (`lib/coach-games.js`) — **laissées intactes exprès** au découpage (déplacements verbatim). Puis `lib/student.js`, `lib/library.js`.
+5. **Post-lancement** (ne pas ouvrir avant) : import Chess.com, import puzzles Lichess CSV (off-by-one du 1er coup), bibliothèque d'exercices partagée + RLS multi-coachs, révision ciblée → sauter à la position exacte dans l'arbre, finir d'unifier les identifiants élève (`student.js`/`sr.js` — les helpers canoniques vivent dans `lib/coach-core.js`).
 
 **⚠️ Pièges d'outillage à ne pas re-découvrir** : (1) le smoke test connecté ne peut PAS se faire sur localhost (`DEV_SKIP_AUTH` y met `sb=null`) → site déployé obligatoire ; (2) auditer un thème en basculant `data-theme` en cours de page donne des **styles calculés périmés** → poser `localStorage.mc_theme` PUIS recharger (cf. [[ink-rule-contrast]]).
 
@@ -58,6 +57,21 @@ Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un pr
 **Reste (2 vérifs bonus non faites, ~2 min chacune, à caser au début d'une session)** : (a) premier lancement élève réel (compte vierge → hero Bienvenue + CTA ouvertures prêtes) ; (b) toast d'échec d'écriture `_sbRun` (DevTools → Network Offline après login → action de sauvegarde → toast ⚠).
 
 **Priorités (état 15/07 — ✅ DÉPASSÉES le 16/07 : le polish FINAL est fait, voir le POINT DE REPRISE en tête de §2 pour le plan à jour).** ~~le smoke test étant passé, la priorité #1 devient `/impeccable polish` FINAL + `/impeccable audit` FINAL~~, puis charger le contenu réel (`Desktop/Academie/`).
+
+### 🔖 Session du 16 juillet 2026 (5e) — `/impeccable audit` FINAL : **18/20**, puis les 3 actions livrées
+**Score : 18/20** (le pari « ≥19 » de ce fichier était un point trop optimiste : le 3e rouge et les side-stripes étaient réels et coûtaient chacun un point). **Aucun P0, aucun P1.** Verdict anti-patterns : **PASS** — pas de fond crème, pas d'eyebrow, pas de gradient text, pas de template hero-metric ; les anti-références du PRODUCT.md ont été activement chassées. Détecteur **96 → 35 findings (−64 %)** après correction. typecheck + 88 tests + build verts, 0 erreur console.
+
+**⚠️ Deux affirmations de ce fichier ont été démenties par la mesure — ne pas les recopier :**
+1. **« le 3e rouge : ~14 sites, le dark est déjà tokenisé »** → vrai des **fonds**, faux des **bordures**. Il y avait **4 familles parallèles**, dont 3 exclusivement en dark : rose-600 (clair, 14) · **rose-400** (dark, 6) · **emerald-400** (dark, 6) · **sky-400** (dark, 2) · yellow-400/500 (les 2 thèmes, 5). **Cause racine : le token `-glow` n'existait pas** (seul `--cyan-glow`), donc chaque bordure improvisait sa teinte. Le code portait même un `var(--gold-glow, rgba(202,138,4,.25))` — un fallback vers un token jamais créé. Ajout de `--red-glow`/`--green-glow`/`--gold-glow`/`--blue-glow` (+ `--red-dim-h`) dans les 2 thèmes → **la règle des trois variantes** (`-dim`/`-ink`/`-glow`) est désormais dans le DESIGN.md.
+2. **« radius ×36 : c'est le DESIGN.md qui est incomplet »** → seulement **à moitié**. Les 2-5px sont bien légitimes (barres de 3-6px de haut qu'un radius de 6px transformerait en pilules) → documentés. Mais les **20/22px n'étaient PAS un palier, c'était de la dérive** : `padding: 2px 8px; border-radius: 20px` est une **pilule écrite en nombre magique**, qui ne tient que tant que le padding ne bouge pas. 7 sites → `999px` (14 → 21 usages du token).
+
+**Le polish du 16/07 (« 17 échecs AA → 0 ») avait manqué 6 échecs**, tous la même asymétrie (le jumeau vert utilisait son encre, le rouge non) : `.lib-entry-result.loss` 4.14→6.38 · `.badge-red` 4.14→6.38 · `.badge-blue` 4.50→7.30 · `.pos-dot.done-ko` 4.14→6.38 · `.ov-ok` 3.30→6.38 · `.badge-red` dark 5.23→7.62. **Re-mesuré : 0 échec sur 29 composants × 2 thèmes.** (Le `4.34` de `--red` sur `--red-dim` documenté plus bas vaut pour une chaîne de fonds précise, PAS pour les pastilles : `.deadline-pill.late` en dark rend 5.23 et passe.)
+
+**Les 3 side-stripes** (`#board-comment`, `.pgn-comment`, `.game-row`) migrés sur le motif système `.study-bubble` → 2 overrides dark devenus inutiles (`.pgn-comment` sombre : `rgba(0,0,0,.2)` → 9.78:1).
+
+**`<h1>` : le document n'en avait AUCUN** (`grep -c "<h1" index.html` → 0), il démarrait en `<h2>`. 10 titres de page convertis (`.sh-hello` ×2, `.cs-title` ×7, `.drill-title`) — une seule page visible à la fois, donc un seul h1 rendu ; marges UA neutralisées.
+
+**Reste (35 findings, aucun bloquant)** : faux positifs documentés (`layout-transition` ×5, `side-tab` de `.study-var`, em-dashes FR, `design-system-font` ×3 = artefacts de parsing) + **14 couleurs** (surtout les ombres noires — « règle de l'ombre teintée », P3) + **11 radius** (7px ×4, 10px ×4 : dérive à 1-2px des tokens, non touchée faute de pouvoir la voir) + **pas d'échelle de z-index sémantique** : `style.css` tient 1→50→60→200→300 mais les modals inline d'`index.html` sautent à 999/9998/**9999**/**9999**/10000, avec une **égalité à 9999** entre `#promo-backdrop` et `#del-dialog` arbitrée par le seul ordre DOM (P3, les deux ne s'ouvrent jamais ensemble).
 
 ### 🔖 Session du 16 juillet 2026 (4e) — largeur du tableau de bord élève (680 → 1080px)
 Question utilisatrice : « pourquoi le tableau de bord élève est aussi peu large par rapport au tableau de bord coach ? ». **Ce n'était pas un bug CSS mais un choix figé en style inline** : `index.html` enfermait toute la page élève dans un `max-width:680px`, alors que `.coach-layout` n'a aucun plafond (~1330px sur un écran 1600px). Deux conséquences réelles : (1) **incohérence dans le rôle élève lui-même** — « Ma bibliothèque » vit déjà à 1080px (`.lib-wrap`), donc changer d'onglet faisait sauter la largeur ; (2) les grilles `repeat(auto-fill, minmax(230px,1fr))` **plafonnaient à 2 colonnes** quel que soit l'écran (l'`auto-fill` ne servait à rien).
