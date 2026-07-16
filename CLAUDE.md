@@ -20,7 +20,10 @@ Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un pr
 
 ### 🔖 POINT DE REPRISE (16 juillet 2026, fin de journée)
 
-**État : poussé jusqu'à `859188b`. ⚠️ 5 commits committés NON POUSSÉS** (`4691178` → `a75e687`), et **la couche d'édition élève n'a jamais tourné en connecté**. ⚠️ Ne pas se fier à cette ligne — la vérifier : `git rev-list --left-right --count origin/main...main`.
+**État : `main` == `origin/main`, tout est poussé.** Reste vrai en revanche : **la couche d'édition élève n'a jamais tourné en connecté**.
+
+> ⚠️ **Cette ligne s'est déjà périmée deux fois.** Elle annonçait « 5 commits NON POUSSÉS (`4691178` → `a75e687`) » alors qu'ils étaient **déjà sur `origin`** (vérifié le 16/07 après `git fetch`). **Ne jamais s'y fier — la vérifier**, et après un `git fetch` (sans quoi `origin/main` est une référence locale périmée) :
+> `git fetch origin && git rev-list --left-right --count origin/main...main`
 
 | Commit | Contenu |
 |---|---|
@@ -32,6 +35,7 @@ Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un pr
 | `4691178` | FEAT : **couche d'édition élève** (additive, migration-free) + **page profil élève** — non poussé |
 | `576353d` | POLISH : page profil — hiérarchiser au lieu d'énumérer (**3,9 → 2,2 écrans** au volume réel) — non poussé |
 | `d896b06` · `5aa4d5d` · `a75e687` | DOC ×2 + CHORE (gitignore de l'état runtime `impeccable live`) — non poussés |
+| *(non committé)* | **REVIEW responsive + 5 correctifs** : zoom iOS sur 55 champs · actions de Points faibles hors écran sur mobile · plateau coupé à 320px · badge « à annoter » masqué sur mobile · Points faibles 9,7 → 3,0 écrans. Détail → bloc « Session du 16 juillet (8e) » |
 
 `npm run typecheck` + **113 tests** + `npm run build` verts ; 0 erreur console. Détail → les blocs « Session du 16 juillet » ci-dessous.
 
@@ -39,15 +43,16 @@ Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un pr
 
 #### ▶ PLAN DE LA PROCHAINE SESSION (par ordre)
 
-1. **Pousser** les 5 commits (`git push origin main` → l'Action redéploie Pages), puis vérifier le run.
+1. ~~**Pousser** les 5 commits~~ → **FAIT** (ils étaient déjà sur `origin` ; la review responsive du 16/07 est poussée par-dessus). Vérifier le run de l'Action Pages après chaque push.
 2. **⚠️ Tester la couche d'édition élève EN CONNECTÉ — le seul vrai risque ouvert.** RLS, filtres anti-pollution (`extra.overlayOf` doit être exclu de « Mes modules » coach ET de « Mes révisions perso » élève) et isolation entre élèves ne sont prouvés **qu'en simulé** : `sb=null` en local, donc **rien de tout ça n'a jamais tourné pour de vrai**. Site déployé + les 2 comptes de test obligatoires. **Aucune migration à lancer** (le modèle s'appuie sur les `OR` déjà en place dans `modules_read/insert/update`).
-3. **Deux contrôles à l'œil** (30 s, jamais vus à l'écran — les screenshots timent out dans le navigateur de preview, tout a été validé par mesures DOM) : (a) la page drill, passée de **pleine largeur à une colonne centrée de 1160px** (`41272c8`) ; (b) la **page profil élève** — sa surcharge a été mesurée puis corrigée (`576353d`), mais **le jugement final t'appartient** : c'est toi qui avais signalé le 14/07 que le détail élève avait trop d'infos.
+3. **Trois contrôles à l'œil** (~1 min) : (a) la page drill, passée de **pleine largeur à une colonne centrée de 1160px** (`41272c8`) ; (b) la **page profil élève** — sa surcharge a été mesurée puis corrigée (`576353d`), mais **le jugement final t'appartient** : c'est toi qui avais signalé le 14/07 que le détail élève avait trop d'infos ; (c) **la nav coach en icônes seules sur un VRAI téléphone** (décision du 16/07) — le coût assumé est que 7 icônes sans libellé se devinent ; si à l'usage tu hésites, le repli est l'option B (réordonner) documentée dans l'artifact d'arbitrage.
 4. **Charger le contenu réel** (`Desktop/Academie/` : 40 mats + 42 tactiques + 7 ouvertures) dans le vrai compte coach → **LA priorité produit** : le contenu de lancement, et le dernier gros inconnu. Tout le reste est du raffinement.
 5. **2 vérifs bonus** (~2 min chacune) : toast d'échec d'écriture `_sbRun` (DevTools → Network Offline après login → action de sauvegarde → toast ⚠) ; premier lancement élève réel (compte vierge → hero Bienvenue + CTA ouvertures prêtes).
 6. **Reliquat de l'audit** (aucun bloquant, à froid) : les **ombres noires** (`rgba(0,0,0,…)` ×11 — violent la « règle de l'ombre teintée ») ; le **radius résiduel** (7px ×4, 10px ×4) ; l'**échelle de z-index** (999/9998/9999/9999/10000 dans les modals inline d'`index.html`, égalité arbitrée par l'ordre DOM) ; un **indigo-500 parallèle** (`rgba(99,102,241,…)` ~13 sites) à côté de `--cyan` — même maladie que les 4 familles balayées le 16/07.
-7. **Le chrome vertical de la page drill** : **~177px au-dessus du plateau** (nav 58 + titre + contrôles + padding) plafonnent tous les écrans courts — dont un **17" FHD à 150 % de mise à l'échelle Windows** (= 1280×600 CSS → plateau 392, boutons sous la ligne). Seul levier restant sur la taille de l'échiquier.
-8. **Dette de style inline** ([[style-debt-inline]]) : `_classBreakdownHTML`/`_classDetailHTML` (`lib/coach-classes.js`) et `_pgGroupsHTML` (`lib/coach-games.js`) — **laissées intactes exprès** au découpage. Puis `lib/student.js`, `lib/library.js`.
-9. **Post-lancement** (ne pas ouvrir avant) : import Chess.com, import puzzles Lichess CSV (off-by-one du 1er coup), bibliothèque d'exercices partagée + **durcissement RLS multi-coachs** (⚠️ **avant** l'ouverture multi-coachs : `modules_insert_owner` laisse un élève insérer une ligne avec **n'importe quel `teacher_id`** — faiblesse préexistante sur laquelle la couche d'édition élève s'appuie), révision ciblée → sauter à la position exacte dans l'arbre, finir d'unifier les identifiants élève (`student.js`/`sr.js`).
+7. **⚠️ L'ÉDITEUR n'a JAMAIS été mesuré sur mobile** — question soulevée par l'arbitrage de la nav (16/07) et **non tranchée**. Si l'usage réel au téléphone est « j'annote une partie dans le train », alors c'est LE sujet mobile, et la nav n'était qu'un détail. `lib/editor.js` = zone critique (27 Ko, drag & drop, plateau) : à mesurer AVANT de promettre quoi que ce soit. Dépend d'une réponse produit : **que fais-tu vraiment au téléphone ?**
+8. **Le chrome vertical de la page drill** : **~177px au-dessus du plateau** (nav 58 + titre + contrôles + padding) plafonnent tous les écrans courts — dont un **17" FHD à 150 % de mise à l'échelle Windows** (= 1280×600 CSS → plateau 392, boutons sous la ligne). Seul levier restant sur la taille de l'échiquier.
+9. **Dette de style inline** ([[style-debt-inline]]) : `_classBreakdownHTML`/`_classDetailHTML` (`lib/coach-classes.js`) et `_pgGroupsHTML` (`lib/coach-games.js`) — **laissées intactes exprès** au découpage. Puis `lib/student.js`, `lib/library.js`. S'y ajoute la dette révélée le 16/07 : ~10 `<select>` à `font-size` **inline**, que la règle anti-zoom doit battre à coups de `!important`.
+10. **Post-lancement** (ne pas ouvrir avant) : import Chess.com, import puzzles Lichess CSV (off-by-one du 1er coup), bibliothèque d'exercices partagée + **durcissement RLS multi-coachs** (⚠️ **avant** l'ouverture multi-coachs : `modules_insert_owner` laisse un élève insérer une ligne avec **n'importe quel `teacher_id`** — faiblesse préexistante sur laquelle la couche d'édition élève s'appuie), révision ciblée → sauter à la position exacte dans l'arbre, finir d'unifier les identifiants élève (`student.js`/`sr.js`).
 
 #### 🐛 Bug latent connu, non corrigé (hors scope quand il a été vu)
 **`extractAllLines` rend `[]` pour tout PGN à UN SEUL coup** (`1. e4`, `1. e4 *`, `1. e4 1-0`) alors que 2 coups passent → un module d'ouverture réduit à un coup produirait un **arbre vide**. C'est dans `lib/core.js`, un cœur partagé dont dépendent **tous** les imports PGN → à traiter avec soin, jamais à la volée.
@@ -68,6 +73,53 @@ Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un pr
 **Reste (2 vérifs bonus non faites, ~2 min chacune, à caser au début d'une session)** : (a) premier lancement élève réel (compte vierge → hero Bienvenue + CTA ouvertures prêtes) ; (b) toast d'échec d'écriture `_sbRun` (DevTools → Network Offline après login → action de sauvegarde → toast ⚠).
 
 **Priorités (état 15/07 — ✅ DÉPASSÉES le 16/07 : le polish FINAL est fait, voir le POINT DE REPRISE en tête de §2 pour le plan à jour).** ~~le smoke test étant passé, la priorité #1 devient `/impeccable polish` FINAL + `/impeccable audit` FINAL~~, puis charger le contenu réel (`Desktop/Academie/`).
+
+### 🔖 Session du 16 juillet 2026 (8e) — review `/frontend-design` RESPONSIVE + les 5 correctifs (non committé)
+Review responsive complète (7 pages coach + 2 pages élève + drill, de 320 à 1920px), au **volume réel** (les 7 ouvertures de `Academie/Ouvertures en vogue/` importées via le vrai pipeline — 82 à 203 positions chacune — + seed 30 élèves + 4 parties partagées). typecheck + **113 tests** + build verts, 0 erreur console.
+
+**Le socle responsive était sain** : 0 débordement horizontal sur toutes les pages à 375, les 16 modals tiennent, la bande 700-960 passe, reduced-motion respecté. **Les audits précédents cherchaient le débordement — les 2 vrais défauts étaient ailleurs.**
+
+| # | Défaut (mesuré) | Correctif |
+|---|---|---|
+| 1 | **55 champs sur 55 sous 16px** → Safari iOS **zoome la page au focus de CHAQUE champ**. Le login et **toute la saisie de partie** (= la priorité mobile déclarée en P1.1) zoomaient. Cause : une règle unique (`style.css` base `.875rem`), textarea PGN à `.74rem` (11.8px). | Règle 16px dans le bloc `@media (hover:none)`. **62/62 champs couverts**, échelle desktop inchangée. |
+| 2 | **Points faibles : la colonne d'ACTIONS entièrement hors écran sur tout téléphone.** Table de largeur intrinsèque **599px** dans un conteneur de **301px** → Voir/Assigner à 496-600px, soit **195px après le bord droit**, derrière un scroll horizontal niché dans une table de 40 rangées. L'action qui EST la raison d'être de la page était inatteignable. | Reflow en **cartes sous 640px**, **en CSS pur** (aucun changement de markup → index `CS.wsCards` et 3 boutons intacts). |
+| 3 | **Drill à 320px : plateau 22px hors écran**, colonne h coupée **pendant la révision**. | Voir le piège ci-dessous. |
+| 4 | Nav coach mobile : **badges masqués** sous 960px — dont « N à annoter », le seul signal actionnable, éteint là où l'onglet Parties est lui-même hors écran (162px de nav cachés à 375). | Le badge Parties revient **en pastille sur l'icône** ; les badges informatifs (classes/élèves/modules) restent masqués (contexte, pas action). |
+| 4 bis | **Nav coach mobile : 3 sections sur 7 hors écran** (162px derrière le scroll) — et surtout **0 des 2 sections d'ACTION** (Parties, Points faibles) atteignable sans défiler. | **Décision utilisatrice (arbitrage sur maquettes) : icônes seules sous 960px** → **7/7 sections, 0px caché** (312px requis pour 335). Voir la décision ci-dessous. |
+| 5 | Points faibles : **9,7 écrans à 375px** (40 rangées). | Plafond à **8 lignes** + porte « Voir les 32 autres positions » → **9,0 → 3,0 écrans**. |
+
+#### ⚠️ Les pièges rencontrés (à ne PAS re-découvrir)
+1. **`input[type=text]` ne matche pas un `<input>` SANS attribut `type`** (`#ps-fen`, `#editor-drill-name` → restaient à 11,5px). C'est déjà le trou de la règle de base. → **sélecteur par exclusion**, pas par liste blanche.
+2. **`!important` est nécessaire** : ~10 `<select>` portent un `font-size` **inline** (dette de style) qu'aucun sélecteur ne bat. Vérifié : `!important` gagne bien sur l'inline.
+3. **`#drill-sel` avait sa propre règle `#id + !important`** (`.9rem` sous 600px) qui battait la règle anti-zoom → c'est LÀ que se jouait le zoom de ce select.
+4. **`<details>` ne peut PAS envelopper des `<tr>`** (HTML invalide, le parseur l'éjecte hors de la table) → `_capList` n'est pas réutilisable ici ; on plafonne **par re-rendu** (patron `hmSelectMod`).
+5. **Le plateau à 320px : DEUX causes, pas une.** (a) `.board-wrap{min-width:300px}` forçait le wrap à 300 dans un conteneur de 280 → il débordait de son parent **et cessait d'être centré sur la fenêtre** (centre 170 au lieu de 160), donc l'échiquier partait vers la droite → `min(300px, 100%)`. (b) Dans `resizeBoard`, **`viewCap` doit borner le RÉSULTAT, pas seulement le plancher** : `avail` (dérivé de `wrap.clientWidth`, parfois pas encore reflowé) repassait au-dessus par le `max()` → 4px hors écran. `Math.min(viewCap, Math.max(floor, …))`.
+6. **Borner le plancher du plateau par `wrap.clientWidth` est FAUX** (essayé, mesuré : le plateau tombait de 320 à **264** dès 375px). Le wrap est plus étroit que la page (335 pour 375) et le plateau peut le déborder **sans rien clipper** : ce qui coupe, c'est la **fenêtre**. Le chrome latéral est **mesuré** (`outer.width - BSIZE`), jamais deviné — même raison que `below` pour la hauteur.
+
+**Plateau après correction** : 320px→**296** (était 320 *coupé*) · 375→320 · 768→688 · 1366×660→448 · 1920→**720**. Tous inchangés hors du cas 320.
+
+**Zone critique `lib/board.js`** : changement confiné à `resizeBoard`, ni les listeners ni le dispatch de `tryMove` touchés. Vérifié par l'**aller-retour pointeur sur les 64 cases** (leurs propres `_sqCenter`/`evXY`/`sqFromXY`), 2 orientations → **0 erreur, ratio 1**, PLUS **un vrai coup joué par les listeners** (clic e2→e4 accepté, réplique adverse auto).
+
+**Index `CS.wsCards`** : vérifiés alignés avec les boutons rendus dans les **3 états** (plié 8 / déplié 40 / replié 8) → 0 désalignement ; assignation réelle rejouée (écrite dans la bonne classe, `fen` persisté, undo révélé) ; le plafond se remet à zéro au changement de module.
+
+**⚠️ Piège d'outillage confirmé (2e fois)** : `npx serve` n'a **pas de HMR** ET sert les **modules ES en cache** — un `ctrl+shift+r` ne suffit pas toujours. J'ai failli conclure « la règle ne s'applique pas » (faux) et « le plafond ne marche pas » (faux). → busting explicite (`link.href` + `?cb=`, navigation avec query) et **vérifier que le pont expose bien la nouvelle fonction** avant de mesurer.
+
+#### ▶ DÉCISION PRODUIT — nav coach mobile = **icônes seules** (arbitrage sur maquettes, 16/07)
+Un artifact a présenté 4 options en navs **réelles à 375px**, chacune se mesurant elle-même. **L'utilisatrice a choisi C (icônes seules)** contre ma recommandation (B, réordonner). Livré et vérifié.
+
+**⚠️ Le bon indicateur n'est PAS « combien de px sont cachés »** — A et B en cachent exactement autant (162 : même contenu, même largeur ; réordonner ne cache pas moins, ça cache *autre chose*). L'indicateur qui tranche est **quelles sections sont atteignables sans défiler** :
+
+| | Sections d'action atteignables | Caché |
+|---|---|---|
+| A (avant) | **0/2** (ni Parties ni Points faibles) | 162px, 4/7 sections |
+| B (réordonner) | 2/2 | 162px, 4/7 |
+| **C (retenu)** | **2/2** | **0px, 7/7** (312px requis pour 335) |
+
+**⚠️ Le piège du correctif** : masquer `.csnav-lbl` en `display:none` **supprime le nom accessible** du bouton — le libellé est son SEUL texte (l'icône est `aria-hidden`), un lecteur d'écran n'annoncerait plus rien. → masquage **visuel** (motif `.sr-only`), pas suppression. Cibles portées à **44×44** sous `hover:none` (sans libellé le bouton retombait à 37px) ; `min-height` ne touche pas la largeur, donc les 7 tiennent toujours. À 320px : 6/7 (Export dépasse de 32px), 0 débordement.
+
+**Ce que C ne règle pas (assumé)** : 7 icônes sans libellé visible. Amorti par le `<h1>` de section, qui dit où l'on a atterri après le tap.
+
+**Reste (non fait, hors périmètre de cette passe)** : `.eleve-search input` et les selects gardent leur `font-size` **inline** (la règle 16px les couvre en tactile mais la dette reste, cf. [[style-debt-inline]]). Question ouverte soulevée par l'arbitrage : **si l'usage mobile réel est « annoter dans le train »**, le sujet n'est pas la nav mais **l'éditeur, jamais mesuré sur mobile**.
 
 ### 🔖 Session du 16 juillet 2026 (7e) — couche d'édition élève + page profil élève (`4691178`)
 Deux chantiers d'un même mouvement. **88 → 113 tests.** Non poussé, et **non testé en connecté**.
