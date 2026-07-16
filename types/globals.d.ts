@@ -126,6 +126,7 @@ interface Window {
   retryCoachLoad?: (...a: any[]) => any;
   _eleveListKey?: (...a: any[]) => any;
   renderProfView?: (...a: any[]) => any;
+  showStudentDetail?: (...a: any[]) => any;
   renderHeatmap?: (...a: any[]) => any;
   pgnToEditorTree?: (...a: any[]) => any;
   openWeakspotPosition?: (...a: any[]) => any;

@@ -31,6 +31,18 @@ Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un pr
 
 **Priorités mises à jour** : le smoke test étant passé, la priorité #1 devient **`/impeccable polish` FINAL + `/impeccable audit` FINAL** (cf. bloc 3e session ci-dessous), puis charger le contenu réel (`Desktop/Academie/`).
 
+### 🔖 Session du 16 juillet 2026 (2e) — DÉCOUPAGE de `lib/coach.js` (1236 l. → 8 modules)
+Dette technique signalée par l'utilisatrice : `coach.js` était devenu le dernier gros fichier de `lib/*`. Ce n'était pas un fourre-tout mais **6 pages coach posées bout à bout sur un socle commun**. Le blocage historique (couplage `_wsCards`/`selectedStudent`, qui avait fait repousser `lib/targeted-reviews.js` le 16/07 au matin) est levé par le **patron `S` de `session.js`** : un objet **`CS` muté, jamais réassigné**, exporté du socle.
+
+**Résultat : aucun module coach > 324 lignes ; `app.js` NON modifié** (`import './lib/coach.js'` intact — `coach.js` est devenu un **barrel** de 28 lignes). Détail des 8 fichiers + **la règle d'architecture** → Carte des fichiers (§4).
+
+Livré en **7 tranches**, chacune typecheck + 88 tests verts et **vérifiée au navigateur à l'échelle** (30 élèves fictifs / 6 ouvertures réelles importées via le vrai pipeline / 5 parties partagées, 0 erreur console à chaque tranche) :
+1. `coach-core.js` (socle + `CS` + `_resetFenCache` — `_fenMapCache` est réassigné, or un binding importé est en lecture seule) → 2. `coach-export.js` → 3. `coach-games.js` + `coach-classes.js` → 4. `coach-overview.js` → 5. `coach-students.js` (1re conso de `CS.selectedStudent`) → 6. `coach-weakspots.js` (1re conso de `CS.wsCards`) → 7. `coach-assign.js` + réduction du barrel.
+
+**Vérifications de non-régression** (au-delà du rendu des 7 pages) : les **33 symboles du pont** d'origine sont tous présents, et les **105 symboles des `onclick` du HTML statique résolvent** tous ; **les 2 chemins d'assignation ciblée + leurs 2 undo** (le code validé au smoke test du 15/07) rejoués — portée « qui échouent » (2 élèves) vs `{whole:true}` (17), `fen` persisté, panneau re-rendu par le pont après undo.
+
+**Notes** : `_profTab` (déclaré, jamais lu) supprimé au passage — il n'a pas été transplanté. `showStudentDetail` ajouté à `types/globals.d.ts` (il devient un appel de pont). **Volontairement hors scope** : la dette de style inline de `_classBreakdownHTML`/`_pgGroupsHTML` (déplacements verbatim, aucune réécriture opportuniste — elle garde sa propre tranche dans [[style-debt-inline]]).
+
 ### 🔖 Session du 16 juillet 2026 — consolidation qualité (audit thermo-nucléaire des 11 correctifs)
 Audit qualité strict du diff du smoke test (`3aaf91e`→`b20b00b`) puis correction de tous les findings. Typecheck + 88 tests verts, chaque flux rejoué au navigateur (assignation/undo des 2 chemins, 3 états du modal de fin, couches élève/coach de l'éditeur), 0 erreur console :
 - **Assignation ciblée consolidée** (`lib/coach.js`) : nouveau cœur commun **`_assignReviewCore(pos, pickTargets)`** (upsert `targetedReviews` + dédup + persistance + patches d'undo) ; `assignTargetedReview` (Points faibles) et `assignReviewForStudent` (détail élève) = deux points d'entrée minces. Le chemin détail élève **récupère l'undo** (le bouton 🎯 devient « Annuler », `_lastAssign.key = 'stu:drillId_san'`, `undoTargetedReview` re-rend le panneau) **et le `fen`** (via `_drillFenMap`, comme le chemin canonique).
@@ -39,7 +51,7 @@ Audit qualité strict du diff du smoke test (`3aaf91e`→`b20b00b`) puis correct
 - **Éditeur** (`lib/editor.js`) : `_editorRefresh()` (chaîne de 6 appels des 4 ouvreurs), `_cmtSpans(node)` (spans commentaire élève/coach de la notation), `editorValidateComment` → appelle `editorSaveComment()`.
 - **`pgnHeader(pgn, key)` canonique** (`lib/core.js`) : importé par `dbmap.js` (fallback white/black/event) et `autoFillFromPgn` (`lib/modules.js`, fini les 3 regex maison ; valeurs `"?"` toujours ignorées).
 - Bouton du détail élève : `onclick="…assignReviewForStudent(this)"` (la lecture des `data-*` vit dans la fonction).
-- **Laissé volontairement** : `G.classes = myCls` + `saveClasses()` côté élève (fix correct, clobber du cache bénin) ; `coach.js` reste ~1236 l. (extraction d'un `lib/targeted-reviews.js` = tranche future, couplage `_wsCards`/`selectedStudent`) ; findings `/impeccable` préexistants (`#111`, radius 3px notation, ombre rouge récap) → à trancher à l'audit FINAL.
+- **Laissé volontairement** : `G.classes = myCls` + `saveClasses()` côté élève (fix correct, clobber du cache bénin) ; findings `/impeccable` préexistants (`#111`, radius 3px notation, ombre rouge récap) → à trancher à l'audit FINAL. ~~`coach.js` reste ~1236 l. (extraction d'un `lib/targeted-reviews.js` = tranche future, couplage `_wsCards`/`selectedStudent`)~~ → **fait le 16/07 (2e session)** : découpage complet en 8 modules, le couplage est résolu par l'objet partagé `CS` (voir le bloc ci-dessus).
 
 ### 🔖 Session précédente (14 juillet 2026, 3e session — passes /impeccable transverses)
 **Committé sur `main`** (2 commits POLISH + DOC). Session = série de passes `/impeccable` sur toute l'app, chacune vérifiée navigateur sur données à l'échelle (30 élèves), typecheck + 85 tests + 0 erreur console à chaque tranche :
@@ -119,6 +131,12 @@ La dette « critique » (taille d’`app.js`) est **résolue** (extractions §5 
 
 ### Carte des fichiers
 
+> **Règle d'architecture des modules `coach-*`** (découpage de juillet 2026) — à respecter pour toute évolution de la vue coach :
+> - helpers purs et **état partagé (`CS`)** → `import` ES depuis **`lib/coach-core.js`, et lui seul** ;
+> - **appel d'un module coach vers un autre → pont `window`** (`window.showStudentDetail?.(…)`), jamais un import croisé.
+>
+> `coach-core.js` n'importe rien de ses frères → le graphe est **acyclique par construction**. Un état ne monte dans `CS` que s'il traverse réellement plusieurs modules (aujourd'hui : `selectedStudent` et `wsCards`) ; sinon il reste un `let` local à son module.
+
 | Fichier | Rôle | Taille |
 |---------|------|--------|
 | `app.js` | Cœur applicatif : login/auth Supabase, accès Supabase (`_sb*`), init, helpers (`escapeHtml`/`fig`/`toast`/`setFeedback`/`updateScores`…), `currentGame`/`isLineMode`, `save`/`saveClasses`/`goPage`, pont `window` | ~52 Ko · 1275 lignes |
@@ -135,7 +153,15 @@ La dette « critique » (taille d’`app.js`) est **résolue** (extractions §5 
 | `lib/drill.js` | Drill — **UI des modes de révision** : mode ligne / positions clés-flash / arbre-étude (moteur), phase test, fin de drill (`showEndModal`, `replayErrors`). `S` partagé ; app-level/SR via pont `window`. **Phase « Apprentissage » extraite → `lib/study.js`** | 693 lignes |
 | `lib/study.js` | Drill — **phase « Apprentissage »** (extraite de `drill.js`, juillet 2026) : phase étude arbre (`startStudyPhase`/`renderStudyTree` + sous-variantes, carte pédagogique `renderStudyBubble`, « devine le coup » `toggleStudyGuess`/`tryStudyGuess`) + parcours ligne guidé (`startLearnPhase`/`renderLearn*`/`learnGoto`). `S` partagé ; ponts `window` (dont `startTreeDrill` → drill.js). Importé après `drill.js` dans `app.js` | 460 lignes |
 | `lib/sr.js` | Répétition espacée : file de session (nouveaux/dus + quota), réponse/étape, bilan + prévision, suspension, réglages, tableau de bord élève | ~20 Ko |
-| `lib/coach.js` | Vue coach — suivi élèves : onglets présence/progression/classes/parties, heatmap, exports CSV/PGN/JSON. État local (`selectedStudent`, `_profTab`) ; ne lit que `G` | ~36 Ko |
+| `lib/coach.js` | Vue coach — **barrel** : en-tête de doc + les 8 `import` à effet de bord ci-dessous. `app.js` importe ce fichier (inchangé) | 28 lignes |
+| `lib/coach-core.js` | Vue coach — **socle** : état partagé **`CS`** (patron `S` : `selectedStudent`, `wsCards` — mutés, jamais réassignés), paliers de couleur `_tierPct`/`_tierBg`/`_tierFail`, identité élève (`_resultKeys`/`_matchStudentSet`/`_clsRoster`/`_studentIdSet`), `_drillFenMap`+`_resetFenCache`, `_buildProfRoster`/`_computeRoster` (seuil de retard adaptatif), `_masteryBadge`/`_deadlinePill`/`_classWeakSpots`, filtres de classe, skeleton/erreur de chargement, shims du pont (`fig`/`escapeHtml`/`toast`…). **N'importe rien de ses frères** | 249 lignes |
+| `lib/coach-overview.js` | Vue coach — **Vue d'ensemble** (atterrissage prescriptif) : KPI strip, « À suivre », top 3 points faibles, parties à annoter. Sans état propre | 125 lignes |
+| `lib/coach-students.js` | Vue coach — **Page Élèves** : `renderProfView` (roster, recherche `rosterSearch`, nav clavier `_eleveListKey`), `showStudentDetail` (2 onglets Résumé/Positions), `_edTab`. État local `selectedDrillFilter`/`_rosterQuery` ; l'élève sélectionné vit dans `CS` (coach-assign en a besoin) | 324 lignes |
+| `lib/coach-weakspots.js` | Vue coach — **Points faibles** : `renderHeatmap` (cartes-modules → UNE table, master-detail), tooltip échiquier `wsTip`, modale `openWeakspotPosition`. Publie les lignes rendues dans `CS.wsCards`. État local `_hmSelectedMod` | 198 lignes |
+| `lib/coach-assign.js` | Vue coach — **assignation ciblée** (migration-free, `class.targetedReviews` ↔ `classes.extra`) : cœur commun `_assignReviewCore` + 2 points d'entrée (`assignTargetedReview` ← Points faibles/`CS.wsCards`, 2 portées · `assignReviewForStudent` ← détail élève/`CS.selectedStudent`) + `undoTargetedReview`. État local `_lastAssign` | 116 lignes |
+| `lib/coach-classes.js` | Vue coach — **Page Classes** : liste (`renderClassList`, modules.js) → détail d'UNE classe (roster × modules, échéances, CRUD). État local `_selectedClassId` | 109 lignes |
+| `lib/coach-games.js` | Vue coach — **Parties partagées** : dashboard groupé par élève (chips de statut, recherche, marqueur « nouveau », badge sidebar) + parties Maia repliées + `annotateSharedGame`. État local `_pgQuery`/`_pgStatus`/`_pgSeenTs` | 163 lignes |
+| `lib/coach-export.js` | Vue coach — **exports** CSV/PGN/JSON. Aucune dépendance sortante | 49 lignes |
 | `lib/student.js` | Accueil élève — cartes de modules (assignés + perso), stats, série, anneaux, import/suppression de révisions perso | ~16 Ko |
 | `lib/modules.js` | Gestion modules & classes — création/import PGN (`previewDrill`, `importDrill`, `loadPgnFile`), bibliothèque d'ouvertures (`OPENINGS_LIBRARY`), cartes coach (`renderDrillList`), partage/assignation (`shareDrill`), drill de démo, onboarding prof, CRUD classes/cours particuliers. État local (`_pendingDelId`, `_editingClassId`) ; lit `G`/`S`, ponts `window` pour app-level/Supabase | ~32 Ko |
 | `lib/maia.js` | Moteur Maia (ONNX Runtime Web) — chargement lazy du runtime + modèle (`loadMaia`), inférence (`_getMaiaMove`, miroir FEN/UCI), partie libre vs Maia (`playVsMaia`, `startPostTheory`, `enginePlay`, `quitMaiaGame`, `tryMovePostTheory`). État moteur local (`_maiaState`/`_maiaSession`/`_maiaThinking`) ; lit `G`/`S`, `ort`/`Chess` globals, board/feedback/`saveGame` via `window`. Lit `window._lastMoveXY` (board) pour positionner le sélecteur de promo | ~16 Ko |
