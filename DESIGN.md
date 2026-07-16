@@ -16,12 +16,16 @@ colors:
   zinc-dim: "#65656d"
   green-ok: "#16a34a"
   green-ink: "#166534"
+  green-glow: "#16a34a40"
   gold-warn: "#d97706"
   gold-ink: "#92400e"
+  gold-glow: "#d9770640"
   red-error: "#dc2626"
   red-ink: "#be123c"
+  red-glow: "#dc262640"
   blue-info: "#2563eb"
   blue-ink: "#1e40af"
+  blue-glow: "#2563eb40"
   violet-review: "#7c3aed"
 typography:
   display:
@@ -39,9 +43,13 @@ typography:
     fontSize: "0.72rem–0.84rem"
     fontWeight: 500
 rounded:
+  bar: "2px"
+  chip: "4px"
   sm: "6px"
   md: "8px"
   card: "12px"
+  panel: "14px"
+  hero: "16px"
   pill: "999px"
 spacing:
   xs: "6px"
@@ -123,6 +131,8 @@ Stratégie **Restrained** : neutres zinc + un accent indigo ≤10% de toute surf
 **La règle de l'encre (-ink).** Toute couleur sémantique qui colore du TEXTE petit (<14px bold) sur fond clair ou teinté utilise sa variante `-ink`, jamais le token de base (qui plafonne à ~3.2:1). Les états sont toujours doublés d'une icône ou d'un libellé — jamais la couleur seule.
 > **Calibrage (corrigé le 16/07/2026 — 17 échecs AA trouvés) : une encre se mesure contre son propre `-dim`, PAS contre `--surf`.** C'est l'appariement réel des pastilles du produit (`_tierBg` + `_tierPct`, `.badge-green`, `.feedback`…), et il coûte ~1 point de ratio. Calibré sur surface plate, `--green-ink` (alors #15803d) rendait 5.0:1 sur `--surf` mais **4.49:1** sur `--green-dim` → toutes les pastilles vertes de l'app échouaient. Même piège pour `--dim`, calibré sur `--surf2` (4.81) mais utilisé sur `--surf3` (4.16). **Tout nouveau token `-ink` se vérifie sur `-dim` × {surf, surf2, surf3, page}, dans les 2 thèmes.**
 > **En dark**, les `-ink` s'aliassent sur le token de base **seulement s'il tient sur son `-dim`** (vérifié : vert 6.32, ambre 5.34). Le rouge n'y rendait que 4.34 → il a sa propre encre `#fca5a5`. Et les boutons PLEINS y prennent une **encre foncée** (`#18181b`) : l'accent dark est clair, le blanc n'y rend que 2.98:1.
+**La règle des trois variantes.** Chaque couleur sémantique a exactement **trois** déclinaisons, et aucun site n'écrit un rgba à la main : `-dim` (fond teinté) · `-ink` (texte petit, AA) · `-glow` (bordure/anneau). Le trio existe pour vert/ambre/rouge/bleu comme pour l'indigo (`--cyan-glow`).
+> **Le symptôme à surveiller : une famille parallèle.** Trois fois de suite, le même défaut a été trouvé — une palette voisine vivant à côté des tokens, presque toujours dans une **bordure** pendant que le fond et le texte étaient déjà tokenisés : rose-600 à côté de red-600 (clair, 14 sites), rose-400 + emerald-400 + sky-400 à côté de red/green/blue-400 (**dark**, 14 sites), yellow-400/500 à côté d'amber (les deux thèmes). Toutes balayées le 16/07/2026. La cause racine : `-glow` n'existait pas, donc chaque bordure improvisait sa propre teinte. Un `var(--gold-glow, rgba(202,138,4,.25))` traînait même dans le code — un fallback vers un token jamais créé. Si tu écris un rgba dans une bordure, c'est que le token manque : crée-le.
 **La règle du hue unique.** Un seul bouton PLEIN indigo par zone d'écran. Le deuxième niveau est TONAL (fond `indigo-dim`, texte indigo), le troisième est GHOST (bordure neutre). Il n'existe pas de deuxième accent plein.
 
 ## 3. Typography
@@ -143,6 +153,14 @@ Stratégie **Restrained** : neutres zinc + un accent indigo ≤10% de toute surf
 ### Named Rules
 **La règle de la figurine.** Un coup d'échecs ne s'écrit jamais en lettre seule quand la figurine existe : `fig()` convertit (Cf3 → ♞f3) partout où un coup est affiché.
 **La règle des capitales.** `text-transform: uppercase` est réservé aux séparateurs de navigation (`.csnav-group`). Aucun eyebrow, aucun titre en capitales.
+
+## 3 bis. Rounding
+
+L'échelle complète : **2px** (barres) · **4px** (petites pastilles carrées) · **6px** `--rs` (boutons, inputs) · **8px** `--r` (cartes standard) · **12px** (cartes de module, hero) · **14px** (panneaux, modals, états vides) · **16px** (grandes surfaces) · **999px** (pilules).
+
+### Named Rules
+**La règle du bas de l'échelle.** Une barre de progression fait 3 à 6px de haut : à 6px de radius elle devient une pilule, ce qui n'est pas la forme voulue. **2px** (et 3-4px pour les rails un peu plus épais) est donc un palier légitime, pas de la dérive — il vaut pour `.prog-bar`, `.eleve-progbar`, `.srdash-bar`, `.ed-mini-bar`, le pouce de scrollbar. Ne pas « corriger » ces valeurs vers 6px.
+**La règle de la pilule.** Une pastille se ferme avec **999px**, jamais avec un nombre magique qui *donne* un rond à la taille actuelle. `padding: 2px 8px; border-radius: 20px` a l'air d'une pilule tant que le padding ne bouge pas — c'est une coïncidence, pas un système. (7 sites corrigés le 16/07/2026 ; il en restait 14 déjà corrects.)
 
 ## 4. Elevation
 

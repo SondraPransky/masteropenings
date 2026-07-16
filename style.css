@@ -19,15 +19,18 @@
   /* ── Amber — actions importantes / achievements ── */
   --gold:     #d97706;
   --gold-dim: rgba(217,119,6,.10);
+  --gold-glow: rgba(217,119,6,.25);  /* bordures/anneaux — pendant de --cyan-glow */
 
   /* ── Bleu — indices / informations ── */
   --blue:     #2563eb;
   --blue-ink: #1e40af;   /* bleu « encre » AA (7.3:1 sur --blue-dim ; --blue y tombe a 4.32) */
   --blue-dim: rgba(37,99,235,.10);
+  --blue-glow: rgba(37,99,235,.25);  /* bordures/anneaux — pendant de --cyan-glow */
 
   /* ── Vert — correct / maîtrise ── */
   --green:     #16a34a;
   --green-dim: rgba(22,163,74,.10);
+  --green-glow: rgba(22,163,74,.25);  /* bordures/anneaux — pendant de --cyan-glow */
   /* "ink" = variante lisible AA quand gold/green sert de TEXTE sur son -dim (clair).
      En dark, les tokens de base sont deja clairs et passent → ink = base. */
   --gold-ink:  #92400e;
@@ -37,9 +40,14 @@
                             4.11-4.49:1. Le 800 rend 5.8-6.4:1, la meme bande que gold/red-ink. */
 
   /* ── Rouge — erreur ── */
-  --red:     #dc2626;
-  --red-ink: #be123c;   /* rouge « encre » AA pour texte petit sur fond clair/teinté */
-  --red-dim: rgba(220,38,38,.10);
+  /* Une SEULE famille de rouge. Une palette rose-600 parallele (rgba(225,29,72,…), #9f1239)
+     a longtemps vecu a cote de ces tokens sur 14 sites — parfois dans la meme regle
+     (bordure rose sur fond var(--red-dim)). Balayee le 16/07/2026 ; ne pas la reintroduire. */
+  --red:      #dc2626;
+  --red-ink:  #be123c;   /* rouge « encre » AA pour texte petit sur fond clair/teinté */
+  --red-dim:  rgba(220,38,38,.10);
+  --red-dim-h: rgba(220,38,38,.16);  /* tint au survol d'un element -dim cliquable */
+  --red-glow: rgba(220,38,38,.25);   /* bordures/anneaux — pendant de --cyan-glow */
 
   /* ── Violet — SM-2 / révision spaced ── */
   --violet:     #7c3aed;
@@ -170,7 +178,7 @@ nav {
   background: var(--cyan-dim);
   color: var(--cyan);
   border: 1px solid rgba(99,102,241,.25);
-  border-radius: 20px;
+  border-radius: 999px;
   padding: 5px 14px;
   cursor: pointer;
   transition: background-color .2s, border-color .2s;
@@ -184,7 +192,7 @@ nav {
   color: var(--text-2);
   background: var(--surf2);
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: 999px;
   padding: 4px 12px;
   font-weight: 500;
   white-space: nowrap;
@@ -351,9 +359,9 @@ textarea {
   border: 1px solid transparent;
 }
 .badge-gold   { background: var(--gold-dim);   color: var(--gold-ink); }
-.badge-blue   { background: var(--blue-dim);   color: var(--blue); }
+.badge-blue   { background: var(--blue-dim);   color: var(--blue-ink); }
 .badge-green  { background: var(--green-dim);  color: var(--green-ink); }
-.badge-red    { background: var(--red-dim);    color: var(--red); }
+.badge-red    { background: var(--red-dim);    color: var(--red-ink); }
 /* ══ ÉCHIQUIER ═══════════════════════════════ */
 .board-wrap  { display: flex; flex-direction: column; align-items: center; gap: 16px; min-width: 300px; }
 .board-outer { display: flex; align-items: flex-start; }
@@ -388,15 +396,18 @@ textarea {
   width: 100%;
   max-width: 520px;
 }
+/* Commentaire du coach sous l'echiquier — meme motif que .study-bubble (fond teinte +
+   bordure pleine) : le side-stripe colore est banni par le DESIGN.md, et le motif
+   partage existait deja. Les tokens basculent en dark -> plus d'override necessaire. */
 #board-comment {
   display: none;
   padding: 14px 20px;
-  background: rgba(99,102,241,.06);
+  background: var(--cyan-dim);
+  border: 1px solid var(--cyan-glow);
   border-radius: 12px;
   font-size: .8rem;
   color: var(--text-2);
   line-height: 1.65;
-  border-left: 2px solid var(--cyan);
   width: 100%;
   max-width: 520px;
   text-align: center;
@@ -404,7 +415,7 @@ textarea {
 
 /* ══ SIDEBAR ══════════════════════════════════ */
 .sidebar { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-.drill-title { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; line-height: 1.25; }
+.drill-title { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; line-height: 1.25; margin: 0; }  /* margin:0 = reset UA du h1 */
 
 /* ══ FEEDBACK ════════════════════════════════ */
 .feedback {
@@ -422,20 +433,21 @@ textarea {
 /* Retour du drill : le composant le plus vu de l'app cote eleve. Il vit sur les TOKENS
    (le dark, lui, etait deja tokenise — c'est le clair qui derivait sur 3 hues hors palette :
    emeraude/rouge/sky). Contrastes verifies : ok 6.13:1, ko 5.17:1, hint 7.29:1. */
-.feedback.ok   { background: var(--green-dim); border-color: rgba(22,163,74,.3);  color: var(--green-ink); display: flex; }
-.feedback.ko   { background: var(--red-dim);   border-color: rgba(220,38,38,.3);  color: var(--red-ink);   display: flex; }
-.feedback.hint { background: var(--blue-dim);  border-color: rgba(37,99,235,.2);  color: var(--blue-ink);  display: flex; }
+.feedback.ok   { background: var(--green-dim); border-color: var(--green-glow);  color: var(--green-ink); display: flex; }
+.feedback.ko   { background: var(--red-dim);   border-color: var(--red-glow);  color: var(--red-ink);   display: flex; }
+.feedback.hint { background: var(--blue-dim);  border-color: var(--blue-glow);  color: var(--blue-ink);  display: flex; }
+/* Commentaire dans la notation — meme motif partage que .study-bubble / #board-comment. */
 .pgn-comment {
   margin-top: 6px;
   padding: 8px 12px;
-  background: var(--surf2);
+  background: var(--cyan-dim);
+  border: 1px solid var(--cyan-glow);
   border-radius: var(--rs);
   color: var(--text-2);
   font-size: .8rem;
   font-style: italic;
   font-weight: 400;
   line-height: 1.6;
-  border-left: 2px solid var(--cyan);
 }
 
 /* ══ POSITIONS CLÉS ══════════════════════════ */
@@ -455,7 +467,7 @@ textarea {
 }
 .pos-dot.current { border-color: var(--cyan); background: var(--cyan-dim); color: var(--cyan); font-weight: 700; }
 .pos-dot.done-ok { border-color: var(--green); background: var(--green-dim); color: var(--green-ink); }
-.pos-dot.done-ko { border-color: var(--red);   background: rgba(225,29,72,.08); color: var(--red); }
+.pos-dot.done-ko { border-color: var(--red);   background: var(--red-dim); color: var(--red-ink); }
 
 /* ══ NOTATION ════════════════════════════════ */
 .notation-moves {
@@ -598,7 +610,7 @@ textarea {
   font-family: 'JetBrains Mono', monospace;
 }
 .hentry.ok { background: var(--green-dim); color: var(--green-ink); }
-.hentry.ko { background: rgba(225,29,72,.07); color: #9f1239; }
+.hentry.ko { background: var(--red-dim); color: var(--red-ink); }
 .hentry .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 .hentry.ok .dot { background: var(--green); }
 .hentry.ko .dot { background: var(--red); }
@@ -626,18 +638,18 @@ textarea {
 .error-pill {
   display: inline-flex; align-items: center; gap: 4px;
   padding: 2px 8px;
-  background: rgba(225,29,72,.07);
-  border: 1px solid rgba(225,29,72,.2);
+  background: var(--red-dim);
+  border: 1px solid var(--red-glow);
   border-radius: 4px;
   font-size: .72rem;
   font-family: 'JetBrains Mono', monospace;
-  color: #be123c;
+  color: var(--red-ink);
 }
 .ok-pill {
   display: inline-flex; align-items: center; gap: 4px;
   padding: 2px 8px;
   background: var(--green-dim);
-  border: 1px solid rgba(22,163,74,.2);
+  border: 1px solid var(--green-glow);
   border-radius: 4px;
   font-size: .72rem;
   font-family: 'JetBrains Mono', monospace;
@@ -651,20 +663,20 @@ textarea {
 /* Pills */
 .mastery-pill {
   display: inline-flex; align-items: center; gap: 4px;
-  font-size: .68rem; padding: 2px 8px; border-radius: 20px;
+  font-size: .68rem; padding: 2px 8px; border-radius: 999px;
   font-weight: 600; border: 1px solid transparent;
 }
-.mastery-pill.ok  { background: var(--green-dim);  color: var(--green-ink); border-color: rgba(22,163,74,.2); }
+.mastery-pill.ok  { background: var(--green-dim);  color: var(--green-ink); border-color: var(--green-glow); }
 .mastery-pill.mid { background: var(--cyan-dim);       color: var(--cyan); border-color: rgba(99,102,241,.2); }
-.mastery-pill.low { background: rgba(225,29,72,.07);   color: #be123c;  border-color: rgba(225,29,72,.2); }
+.mastery-pill.low { background: var(--red-dim);   color: var(--red-ink);  border-color: var(--red-glow); }
 
 .deadline-pill {
-  font-size: .7rem; padding: 2px 8px; border-radius: 20px;
+  font-size: .7rem; padding: 2px 8px; border-radius: 999px;
   font-weight: 600; border: 1px solid transparent;
 }
-.deadline-pill.ok   { background: var(--green-dim);  color: var(--green-ink); border-color: rgba(22,163,74,.2); }
-.deadline-pill.late { background: rgba(225,29,72,.07);  color: #be123c; border-color: rgba(225,29,72,.2); }
-.deadline-pill.soon { background: rgba(217,119,6,.08);  color: var(--gold-ink); border-color: rgba(217,119,6,.2); }
+.deadline-pill.ok   { background: var(--green-dim);  color: var(--green-ink); border-color: var(--green-glow); }
+.deadline-pill.late { background: var(--red-dim);  color: var(--red-ink); border-color: var(--red-glow); }
+.deadline-pill.soon { background: var(--gold-dim);  color: var(--gold-ink); border-color: var(--gold-glow); }
 
 /* Parties */
 .game-row {
@@ -675,9 +687,10 @@ textarea {
   cursor: pointer;
   transition: border-color .15s, box-shadow .15s;
   border: 1px solid var(--border);
-  border-left: 3px solid transparent;
 }
-.game-row:hover { border-color: rgba(99,102,241,.22); border-left-color: var(--cyan); box-shadow: var(--shadow-xs); }
+/* Survol : la bordure PLEINE passe a l'accent (le side-stripe 3px est banni par le
+   DESIGN.md). --cyan-glow au lieu de l'indigo-500 en dur, et il bascule en dark. */
+.game-row:hover { border-color: var(--cyan-glow); box-shadow: var(--shadow-xs); }
 .game-result { font-size: .72rem; font-family: 'JetBrains Mono', monospace; font-weight: 700; }
 /* Regle de l'encre : 11.5px bold = petit texte -> variantes -ink (le token de base plafonne a 3.3:1). */
 .game-result.win  { color: var(--green-ink); }
@@ -859,9 +872,9 @@ textarea {
   max-width: 320px;
 }
 .toast.show { transform: translateY(0); opacity: 1; }
-.toast.ok   { border-color: rgba(22,163,74,.35);  color: var(--green-ink); }
-.toast.ko   { border-color: rgba(225,29,72,.3);   color: #be123c; }
-.toast.warn { border-color: rgba(234,179,8,.4);   color: #a16207; }
+.toast.ok   { border-color: var(--green-glow);  color: var(--green-ink); }
+.toast.ko   { border-color: var(--red-glow);   color: var(--red-ink); }
+.toast.warn { border-color: var(--gold-glow);   color: var(--gold-ink); }
 
 /* ══ DIVERS ═══════════════════════════════════ */
 .empty     { text-align: center; padding: 48px 20px; color: var(--dim); }
@@ -906,11 +919,14 @@ textarea {
   --cyan-glow: rgba(129,140,248,.35);
   --gold:      #f59e0b;
   --gold-dim:  rgba(245,158,11,.14);
+  --gold-glow: rgba(245,158,11,.35);
   --blue:      #60a5fa;
   --blue-ink:  var(--blue);   /* tient deja sur son -dim en dark (5.56:1) */
   --blue-dim:  rgba(96,165,250,.14);
+  --blue-glow: rgba(96,165,250,.35);
   --green:     #4ade80;
   --green-dim: rgba(74,222,128,.14);
+  --green-glow: rgba(74,222,128,.35);
   /* Les -ink du dark s'aliassent sur le token de base QUAND celui-ci tient deja sur son
      propre -dim (mesure : gold 5.34:1, green 6.32:1). Le rouge, lui, n'y rend que 4.34 —
      il garde donc sa propre encre, plus claire. Meme logique qu'en clair, en miroir. */
@@ -919,6 +935,8 @@ textarea {
   --red:       #f87171;
   --red-ink:   #fca5a5;   /* red-300 : 6.32:1 sur --red-dim (var(--red) tombait a 4.34) */
   --red-dim:   rgba(248,113,113,.14);
+  --red-dim-h: rgba(248,113,113,.22);
+  --red-glow:  rgba(248,113,113,.35);
   --violet:    #a78bfa;
   --violet-dim:rgba(167,139,250,.14);
   --text:      #fafafa;
@@ -940,40 +958,39 @@ textarea {
 /* Meme raison : l'initiale du menu compte est posee sur --cyan plein. */
 [data-theme="dark"] .acct-avatar { color: #18181b; }
 [data-theme="dark"] .badge-gold   { background: var(--gold-dim);    color: var(--gold);   border-color: rgba(245,158,11,.2); }
-[data-theme="dark"] .badge-blue   { background: var(--blue-dim);    color: var(--blue);   border-color: rgba(56,189,248,.2); }
-[data-theme="dark"] .badge-green  { background: var(--green-dim);   color: var(--green);  border-color: rgba(52,211,153,.2); }
-[data-theme="dark"] .badge-red    { background: var(--red-dim);     color: var(--red);    border-color: rgba(251,113,133,.2); }
+[data-theme="dark"] .badge-blue   { background: var(--blue-dim);    color: var(--blue);   border-color: var(--blue-glow); }
+[data-theme="dark"] .badge-green  { background: var(--green-dim);   color: var(--green);  border-color: var(--green-glow); }
+[data-theme="dark"] .badge-red    { background: var(--red-dim);     color: var(--red-ink); border-color: var(--red-glow); }
 /* .feedback : depuis que le clair est tokenise, fond et couleur se derivent tout seuls des
    tokens (qui flippent). Seule la BORDURE reste specifique au dark. Retirer le
    `color: var(--red)` d'ici corrige au passage le ko sombre (4.34 -> 6.32 via --red-ink). */
-[data-theme="dark"] .feedback.ok  { border-color: rgba(52,211,153,.28); }
-[data-theme="dark"] .feedback.ko  { border-color: rgba(251,113,133,.28); }
-[data-theme="dark"] .feedback.hint{ border-color: rgba(56,189,248,.28); }
+[data-theme="dark"] .feedback.ok  { border-color: var(--green-glow); }
+[data-theme="dark"] .feedback.ko  { border-color: var(--red-glow); }
+[data-theme="dark"] .feedback.hint{ border-color: var(--blue-glow); }
 /* Notation (drill) — overrides dark AA, comme .feedback. .mv.coach adapte via var(--violet). */
 [data-theme="dark"] .mv.ok        { color: var(--green); }
 [data-theme="dark"] .mv.ko        { color: #fca5a5; }
 [data-theme="dark"] .mv.ask       { color: #1e1b4b; }
 [data-theme="dark"] .mv.cur       { color: #e0e7ff; background: rgba(129,140,248,.28); }
 [data-theme="dark"] .sr-count.sr-rev { color: #fbbf24; background: rgba(245,158,11,.2); }
-[data-theme="dark"] .pgn-comment  { background: rgba(0,0,0,.2); }
 [data-theme="dark"] .hentry.ok    { background: var(--green-dim); color: var(--green); }
 [data-theme="dark"] .hentry.ko    { background: var(--red-dim);   color: var(--red); }
-[data-theme="dark"] .error-pill   { background: var(--red-dim);   color: var(--red);   border-color: rgba(251,113,133,.25); }
-[data-theme="dark"] .ok-pill      { background: var(--green-dim); color: var(--green); border-color: rgba(52,211,153,.25); }
-[data-theme="dark"] .mastery-pill.ok  { background: var(--green-dim); color: var(--green);    border-color: rgba(52,211,153,.2); }
-[data-theme="dark"] .mastery-pill.low { background: var(--red-dim);   color: var(--red-ink);  border-color: rgba(251,113,133,.2); }
+[data-theme="dark"] .error-pill   { background: var(--red-dim);   color: var(--red);   border-color: var(--red-glow); }
+[data-theme="dark"] .ok-pill      { background: var(--green-dim); color: var(--green); border-color: var(--green-glow); }
+[data-theme="dark"] .mastery-pill.ok  { background: var(--green-dim); color: var(--green);    border-color: var(--green-glow); }
+[data-theme="dark"] .mastery-pill.low { background: var(--red-dim);   color: var(--red-ink);  border-color: var(--red-glow); }
 /* .mid : l'indigo du dark (#818cf8) ne rend que 4.03:1 sur son propre --cyan-dim -> indigo-300. */
 [data-theme="dark"] .mastery-pill.mid { color: #a5b4fc; }
-[data-theme="dark"] .deadline-pill.ok   { background: var(--green-dim);    color: var(--green); border-color: rgba(52,211,153,.2); }
-[data-theme="dark"] .deadline-pill.late { background: var(--red-dim);      color: var(--red);   border-color: rgba(251,113,133,.2); }
-[data-theme="dark"] .deadline-pill.soon { background: rgba(250,204,21,.1); color: #facc15;      border-color: rgba(250,204,21,.2); }
+[data-theme="dark"] .deadline-pill.ok   { background: var(--green-dim);    color: var(--green); border-color: var(--green-glow); }
+[data-theme="dark"] .deadline-pill.late { background: var(--red-dim);      color: var(--red);   border-color: var(--red-glow); }
+[data-theme="dark"] .deadline-pill.soon { background: var(--gold-dim); color: var(--gold-ink); border-color: var(--gold-glow); }
 [data-theme="dark"] .pos-table tr:hover td { background: rgba(255,255,255,.018); }
 [data-theme="dark"] .prog-bar { background: rgba(255,255,255,.06); }
-[data-theme="dark"] .toast.ok   { border-color: rgba(52,211,153,.4);  color: var(--green); }
-[data-theme="dark"] .toast.ko   { border-color: rgba(251,113,133,.4); color: var(--red); }
-[data-theme="dark"] .toast.warn { border-color: rgba(234,179,8,.35);  color: #fbbf24; }[data-theme="dark"] .overlay { background: rgba(0,0,0,.82); }
+[data-theme="dark"] .toast.ok   { border-color: var(--green-glow);  color: var(--green); }
+[data-theme="dark"] .toast.ko   { border-color: var(--red-glow); color: var(--red); }
+[data-theme="dark"] .toast.warn { border-color: var(--gold-glow);  color: var(--gold-ink); }[data-theme="dark"] .overlay { background: rgba(0,0,0,.82); }
 [data-theme="dark"] .modal-sub { color: var(--dim); }
-[data-theme="dark"] #board-comment { background: var(--surf2); }[data-theme="dark"] #board {
+[data-theme="dark"] #board {
   box-shadow: 0 0 0 5px #0d1421, 0 0 0 6px rgba(99,102,241,.12),
               0 20px 60px rgba(0,0,0,.9), 0 6px 20px rgba(0,0,0,.6);
 }
@@ -1002,7 +1019,7 @@ textarea {
 .role-chip {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 3px 10px;
-  border-radius: 20px;
+  border-radius: 999px;
   font-size: .73rem;
   font-weight: 700;
   letter-spacing: .2px;
@@ -1017,14 +1034,14 @@ textarea {
 .role-chip.student {
   background: var(--green-dim);
   color: var(--green-ink);
-  border: 1px solid rgba(22,163,74,.2);
+  border: 1px solid var(--green-glow);
 }
 
 /* ══ MENU COMPTE (dropdown nav) ══════════════════ */
 .acct { position: relative; flex-shrink: 0; }
 .acct-btn {
   display: inline-flex; align-items: center; gap: 8px;
-  padding: 4px 8px 4px 4px; border-radius: 22px;
+  padding: 4px 8px 4px 4px; border-radius: 999px;
   background: var(--surf2); border: 1px solid var(--border);
   cursor: pointer; font-family: inherit; color: var(--text-2);
   transition: background-color .12s, border-color .12s;
@@ -1210,7 +1227,7 @@ textarea {
 .sh-notif-banner.coach:hover { background:rgba(124,58,237,.14); }
 .sh-notif-banner.coach:focus-visible { outline:2px solid #7c3aed; outline-offset:2px; }
 .sh-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:16px; }
-.sh-hello { font-family:var(--font-display); font-size:1.55rem; font-weight:800; letter-spacing:-.5px; }
+.sh-hello { font-family:var(--font-display); font-size:1.55rem; font-weight:800; letter-spacing:-.5px; margin:0; }  /* margin:0 = reset UA du h1 */
 .sh-hello-sub { font-size:.82rem; color:var(--dim); margin-top:2px; }
 .sh-streak { font-size:.82rem; font-weight:700; color:var(--gold-ink); background:var(--gold-dim); border:1px solid rgba(217,119,6,.25); padding:5px 11px; border-radius:999px; white-space:nowrap; flex-shrink:0; }
 .sh-streak:empty { display:none; }
@@ -1430,7 +1447,7 @@ textarea {
   color: var(--dim);
   background: none;
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: 999px;
   padding: 4px 10px;
   margin-bottom: 16px;
   cursor: pointer;
@@ -1514,7 +1531,7 @@ textarea {
   font-variant-numeric: tabular-nums; /* le compte « à annoter » décrémente en direct */
   flex-shrink: 0;
 }
-.csnav-badge.alert { background: var(--red-dim); color: var(--red); }
+.csnav-badge.alert { background: var(--red-dim); color: var(--red-ink); }
 .csnav-badge.new   { background: var(--cyan-dim); color: var(--cyan); }
 .csnav-divider { border: none; border-top: 1px solid var(--border); margin: 6px 4px; }
 .csnav-group { font-size: .68rem; font-weight: 700; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; padding: 10px 12px 4px; }
@@ -1528,7 +1545,7 @@ textarea {
   gap: 12px;
   flex-wrap: wrap;
 }
-.cs-title { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; letter-spacing: -.5px; margin-bottom: 2px; }
+.cs-title { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; letter-spacing: -.5px; margin: 0 0 2px; }  /* margin 0 = reset UA du h1 */
 .cs-sub { font-size: .78rem; color: var(--dim); }
 /* Sous-titre de bloc (pages coach) */
 .cs-subhead { font-family: var(--font-display); font-size: .98rem; font-weight: 700; color: var(--text); margin: 0 0 10px; display: flex; align-items: center; gap: 7px; }
@@ -1546,7 +1563,7 @@ textarea {
 .ov-row-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .ov-row-meta { flex-shrink: 0; font-family: var(--font-mono); font-size: .72rem; color: var(--dim); }
 /* État « rien à faire » d'un bloc de synthèse. */
-.ov-ok { display: flex; align-items: center; gap: 7px; padding: 12px 4px; font-size: .78rem; color: var(--green); }
+.ov-ok { display: flex; align-items: center; gap: 7px; padding: 12px 4px; font-size: .78rem; color: var(--green-ink); }
 
 /* ── Page Classes : cartes cliquables → détail d'une classe ── */
 .cls-card { padding: 10px 12px; background: var(--surf2); border: 1px solid var(--border); border-radius: var(--r);
@@ -1757,7 +1774,7 @@ textarea {
 .mcard-footer > .btn-ghost { flex: 0 0 auto; }
 .mcard-due-banner {
   background: var(--red-dim);
-  border: 1px solid rgba(225,29,72,.2);
+  border: 1px solid var(--red-glow);
   border-radius: var(--rs);
   padding: 5px 10px;
   font-size: .72rem;
@@ -1766,7 +1783,7 @@ textarea {
   margin-bottom: 10px;
   cursor: pointer;
 }
-.mcard-due-banner:hover { background: rgba(225,29,72,.14); }
+.mcard-due-banner:hover { background: var(--red-dim-h); }
 .mcard-due-banner:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
 
 /* Empty state for modules — on-brand (trame echiquier discrete) */
@@ -1874,8 +1891,10 @@ textarea {
   font-family: 'JetBrains Mono', monospace; font-size: .72rem; font-weight: 700;
   background: var(--surf2); color: var(--text-2); box-shadow: inset 0 0 0 1px var(--border);
 }
-.lib-entry-result.win  { background: var(--green-dim); color: var(--green-ink); box-shadow: inset 0 0 0 1px rgba(22,163,74,.25); }
-.lib-entry-result.loss { background: var(--red-dim);   color: var(--red);   box-shadow: inset 0 0 0 1px rgba(220,38,38,.25); }
+/* Regle de l'encre : 11.5px bold = petit texte. `.loss` portait var(--red) brut -> 4.14:1
+   sur son --red-dim (mesure 16/07/2026, echec AA) la ou `.win` utilisait deja son encre. */
+.lib-entry-result.win  { background: var(--green-dim); color: var(--green-ink); box-shadow: inset 0 0 0 1px var(--green-glow); }
+.lib-entry-result.loss { background: var(--red-dim);   color: var(--red-ink);   box-shadow: inset 0 0 0 1px var(--red-glow); }
 .lib-entry-main { flex: 1; min-width: 0; }
 .lib-entry-title { font-size: .9rem; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lib-entry-title .nat { color: var(--dim); font-weight: 500; }
@@ -1951,8 +1970,8 @@ textarea {
 .eleve-item:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
 .eleve-item.on { background: var(--cyan-dim); border-color: var(--cyan); }
 /* « alerte » (positions dues) : tint plein + point rouge, pas une demi-barre latérale. */
-.eleve-item.alert { border-color: rgba(225,29,72,.25); background: var(--red-dim); }
-.eleve-item.warn { border-color: var(--gold-glow, rgba(202,138,4,.25)); background: var(--gold-dim); }
+.eleve-item.alert { border-color: var(--red-glow); background: var(--red-dim); }
+.eleve-item.warn { border-color: var(--gold-glow); background: var(--gold-dim); }
 .eleve-item.alert.on, .eleve-item.warn.on { background: var(--cyan-dim); border-color: var(--cyan); }
 .eleve-name { font-weight: 600; font-size: .85rem; display: flex; align-items: center; gap: 6px; justify-content: space-between; }
 .eleve-meta { font-size: .7rem; color: var(--dim); margin-top: 3px; }
@@ -2003,7 +2022,7 @@ textarea {
   text-align: center;
 }
 /* Tuile « À suivre » quand elle appelle une action : accent rouge sobre. */
-.cs-kpi-accent { background: var(--red-dim); border-color: rgba(225,29,72,.25); }
+.cs-kpi-accent { background: var(--red-dim); border-color: var(--red-glow); }
 .cs-kpi-val { font-family: var(--font-mono); font-size: 1.85rem; font-weight: 700; line-height: 1; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
 .cs-kpi-lbl { font-size: .74rem; color: var(--dim); margin-top: 5px; font-weight: 600; }
 .cs-kpi-note {
