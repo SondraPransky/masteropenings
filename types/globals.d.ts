@@ -135,6 +135,7 @@ interface Window {
   wsTip?: (...a: any[]) => any;
   wsTipHide?: (...a: any[]) => any;
   hmSelectMod?: (...a: any[]) => any;
+  hmToggleAll?: (...a: any[]) => any;
   pgSearch?: (...a: any[]) => any;
   pgFilterStatus?: (...a: any[]) => any;
   _updatePartiesBadge?: (...a: any[]) => any;

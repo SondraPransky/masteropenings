@@ -371,7 +371,12 @@ textarea {
 .badge-green  { background: var(--green-dim);  color: var(--green-ink); }
 .badge-red    { background: var(--red-dim);    color: var(--red-ink); }
 /* ══ ÉCHIQUIER ═══════════════════════════════ */
-.board-wrap  { display: flex; flex-direction: column; align-items: center; gap: 16px; min-width: 300px; }
+/* min-width en `min(300px, 100%)` et NON `300px` : à 320px de viewport, la page laisse
+   280px (padding 20) et un plancher dur de 300 faisait déborder le wrap de son propre
+   conteneur. Effet de bord vicieux : le wrap cessait alors d'être centré sur la fenêtre
+   (centre à 170 au lieu de 160), donc l'échiquier — centré sur le wrap — partait vers la
+   droite et se faisait couper. Le plancher reste 300 partout où il y a la place. */
+.board-wrap  { display: flex; flex-direction: column; align-items: center; gap: 16px; min-width: min(300px, 100%); }
 .board-outer { display: flex; align-items: flex-start; }
 .ranks-col   { display: flex; flex-direction: column; margin-right: 6px; }
 .rank-lbl, .file-lbl {
@@ -720,7 +725,10 @@ textarea {
     grid-column: 1 / -1;
     width: 100% !important;
     max-width: 100% !important;
-    font-size: .9rem !important;
+    /* 16px et pas .9rem (14.4) : cette règle #id + !important bat la règle anti-zoom du
+       bloc `hover:none`, donc c'est ICI que se joue le zoom iOS de ce select. Même
+       intention qu'avant (agrandir sur mobile), au seuil qui supprime le zoom. */
+    font-size: 16px !important;
     padding: 9px 8px !important;
   }
   /* Légère marge latérale pour l'échiquier */
@@ -731,6 +739,21 @@ textarea {
   .keyboard-hint { display: none !important; }
   /* Cible tactile : les .btn-sm (24-28px au doigt) remontent à ~40px sans changer le desktop */
   .btn-sm { min-height: 38px; padding-top: 8px; padding-bottom: 8px; }
+  /* Safari iOS zoome la page au focus de TOUT champ dont la police est < 16px. Le
+     <meta viewport> n'a volontairement pas de maximum-scale (ça désactiverait le zoom
+     manuel = régression a11y), donc la taille de police est le SEUL levier. Mesuré avant
+     correction : 55 champs sur 55 sous le seuil (base .875rem = 14px, textarea PGN .74rem
+     = 11.8px) → le login et toute la saisie de partie zoomaient sur iPhone.
+     16px sur tactile uniquement : l'échelle desktop ne bouge pas.
+     !important : ~10 <select> portent un font-size INLINE (cf. dette de style) qu'aucun
+     sélecteur ne peut battre. À retirer le jour où ces inline disparaîtront.
+     Sélecteur par EXCLUSION, pas par liste blanche : `input[type=text]` ne matche pas un
+     <input> SANS attribut type (#ps-fen, #editor-drill-name) — c'est déjà le trou de la
+     règle de base plus haut, qui les laisse à 11.5px. */
+  input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]):not([type=color]):not([type=hidden]),
+  select, textarea, .eleve-search input, .sr-set-input {
+    font-size: 16px !important;
+  }
 }
 @media (max-width: 480px) {
   /* Nav : cacher les chips texte pour laisser de la place au theme-toggle */
@@ -1629,6 +1652,53 @@ textarea {
 .wsx-cmt { font-size: .74rem; color: var(--text-2); font-style: italic; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .wsx-act { white-space: nowrap; text-align: right; }
 .wsx-none { color: var(--dim); }
+/* Porte du plafond : rien n'est perdu, tout est à un clic. L'en-tête de section porte déjà
+   l'ampleur ET l'action (« 40 positions · 62% · 12 points chauds ») → replier ne cache
+   aucun chiffre qui compte. */
+.wsx-more { margin-top: 8px; width: 100%; }
+
+/* ── Points faibles en CARTES sous 640px ────────────────────────────────────
+   La table a une largeur intrinsèque de 599px : sous ~640px de viewport elle
+   débordait de son `overflow-x:auto`, ce qui poussait la colonne d'ACTIONS
+   (Voir / Assigner) à 496-600px dans un conteneur de 301px — soit 195px hors
+   écran. L'action qui est la raison d'être de la page était donc inatteignable
+   sur tout téléphone, derrière un scroll horizontal niché dans une table de
+   40 rangées. On reflow la MÊME table en cartes : aucun changement de markup,
+   donc les index de `CS.wsCards` et les 3 boutons restent tels quels.
+   Le <thead> est masqué : en carte, le % porte son sens, les chips sont des
+   noms, et les boutons ont leur aria-label. */
+@media (max-width: 640px) {
+  .wsx-table-wrap { overflow-x: visible; border: none; background: none; border-radius: 0; }
+  .wsx-table { font-size: .82rem; }
+  .wsx-table thead { display: none; }
+  .wsx-table, .wsx-table tbody, .wsx-table td { display: block; }
+  .wsx-tr {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-areas: "move rate" "chips chips" "cmt cmt" "act act";
+    gap: 8px 10px;
+    align-items: center;
+    padding: 12px;
+    margin-bottom: 8px;
+    background: var(--surf);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+  }
+  /* Le point chaud garde un signal porté par la BORDURE : en carte, la teinte de
+     fond seule se lit mal une fois les rangées séparées par des gouttières. */
+  .wsx-tr.hot { border-color: var(--red-glow); }
+  .wsx-table td, .wsx-table tbody tr:last-child td { padding: 0; border-bottom: none; }
+  .wsx-table td:nth-child(1) { grid-area: move; }
+  .wsx-table td:nth-child(2) { grid-area: rate; justify-self: end; }
+  .wsx-table td:nth-child(3) { grid-area: chips; }
+  .wsx-cmt {
+    grid-area: cmt;
+    max-width: none; white-space: normal; overflow: visible;
+  }
+  .wsx-act { grid-area: act; display: flex; justify-content: flex-end; gap: 6px; }
+  /* Un commentaire vide ne doit pas ouvrir une rangée de grille fantôme. */
+  .wsx-table td:empty { display: none; }
+}
 
 /* ── Page Parties : dashboard des parties partagées (groupé par élève) ── */
 .pg-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
@@ -2097,9 +2167,44 @@ textarea {
   }
   .coach-sidenav::-webkit-scrollbar { display: none; }
   .csnav-group, .csnav-divider { display: none; }
-  .csnav-btn { flex-direction: column; gap: 3px; padding: 7px 10px; font-size: .7rem; min-width: fit-content; white-space: nowrap; border-radius: var(--rs); }
-  .csnav-ico { font-size: 1.1rem; }
+  /* ── Nav en ICÔNES SEULES sous 960px ───────────────────────────────────────────
+     Choix produit (16/07) : les 7 sections tiennent alors d'un coup (mesuré : 292px
+     pour 335 disponibles) au lieu d'en cacher 3 derriere 162px de defilement.
+     Le prix assume : les icones ne portent plus de libelle visible. C'est le titre
+     de la section (le <h1> `.cs-title`) qui dit ou l'on est une fois qu'on a tape. */
+  .csnav-btn { position: relative; flex-direction: column; gap: 3px; padding: 9px 11px; font-size: .7rem; min-width: fit-content; white-space: nowrap; border-radius: var(--rs); }
+  .csnav-ico { font-size: 1.15rem; }
+  /* /!\ PAS `display:none` : le libelle est le SEUL texte du bouton (l'icone est
+     aria-hidden), donc le masquer supprimerait le nom accessible et un lecteur
+     d'ecran n'annoncerait plus rien. On le masque VISUELLEMENT (motif `.sr-only`)
+     en le gardant dans l'arbre d'accessibilite. */
+  .csnav-lbl {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+  }
+  /* Sans libelle, le bouton retombe a la hauteur de l'icone (mesure : 37px). On le
+     remonte a 44 au doigt UNIQUEMENT : `min-height` ne touche pas la largeur, donc les
+     7 sections continuent de tenir. */
+  @media (hover: none) { .csnav-btn { min-height: 44px; justify-content: center; } }
+  /* Les badges INFORMATIFS (nb de classes / d'élèves / de modules) restent masqués : au
+     format pilule verticale ils encombrent une barre déjà scrollable, et ils disent un
+     contexte, pas une action. */
   .csnav-badge { display: none; }
+  /* Exception : « N parties à annoter » est le SEUL badge qui appelle un geste. Le masquer
+     éteignait la seule chose qui dit au coach où aller — et précisément là où l'onglet
+     Parties est lui-même hors écran (mesuré à 375px : 162px de nav cachés derrière le
+     scroll). Il revient en pastille sur l'icône.
+     `#id` pour battre le `.csnav-badge{display:none}` ci-dessus ; quand le compte est à 0,
+     _updatePartiesBadge pose `display:none` EN INLINE, qui gagne sur tout → pas de pastille
+     vide. */
+  #csnav-count-parties {
+    display: block;
+    position: absolute; top: 2px; right: 2px;
+    min-width: 16px; padding: 0 3px;
+    border-radius: 999px;
+    font-size: .58rem; line-height: 16px; text-align: center;
+    border: 1px solid var(--surf);
+  }
   .coach-main-area { padding: 16px; }
 }
 @media (max-width: 700px) {
