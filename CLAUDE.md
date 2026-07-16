@@ -20,7 +20,7 @@ Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un pr
 
 ### 🔖 POINT DE REPRISE (16 juillet 2026, fin de journée)
 
-**État : tout le 16/07 est poussé et déployé** (`origin/main` = `main`, run Pages vert). ⚠️ Ce bloc a un temps annoncé « travail non poussé » avec le push en priorité #1 — **c'était périmé**. Vérifier avec `git rev-list --left-right --count origin/main...main` plutôt que se fier à une ligne d'état écrite ici.
+**État : le 16/07 est poussé jusqu'à `859188b` ; `4691178` (couche élève + page profil) est committé, PAS poussé.** ⚠️ Ne pas se fier à cette ligne — la vérifier : `git rev-list --left-right --count origin/main...main`.
 
 | Commit | Contenu |
 |---|---|
@@ -29,14 +29,16 @@ Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un pr
 | `486df62` | POLISH : tableau de bord élève élargi 680 → **1080px** + hero en 2 zones |
 | `97faec4` | POLISH : audit FINAL — **4 familles de couleur parallèles** balayées, 6 échecs AA, `<h1>` |
 | `41272c8` | FIX : échiquier du drill — plafond 560 → **720**, budget hauteur dérivé du DOM, grille centrée |
+| `4691178` | FEAT : **couche d'édition élève** (additive, migration-free) + **page profil élève** — non poussé |
 
-`npm run typecheck` + **88 tests** + `npm run build` verts ; 0 erreur console. Détail → les blocs « Session du 16 juillet » ci-dessous.
+`npm run typecheck` + **113 tests** + `npm run build` verts ; 0 erreur console. Détail → les blocs « Session du 16 juillet » ci-dessous.
 
-**✅ La porte qualité est franchie : `/impeccable audit` FINAL = 18/20, 0 P0, 0 P1, verdict anti-patterns PASS.** Reste **35 findings**, aucun bloquant (détail → bloc « Session du 16 juillet (5e) »).
+**✅ La porte qualité est franchie : `/impeccable audit` FINAL = 18/20, 0 P0, 0 P1, verdict anti-patterns PASS.** Reste **35 findings**, aucun bloquant (détail → bloc « Session du 16 juillet (5e) »). ⚠️ L'audit est **antérieur** à `4691178` : la page profil et la couche élève n'y sont pas passées.
 
 #### ▶ PLAN DE LA PROCHAINE SESSION (par ordre)
 
-0. **⚠️ Un contrôle à l'œil, 30 s, avant tout le reste** : la page drill est passée de **pleine largeur à une colonne centrée de 1160px** (`41272c8`). C'est le seul changement du 16/07 **jamais vu à l'écran** — les screenshots timent out dans le navigateur de preview, tout a été validé par mesures DOM. Ouvrir un drill sur grand écran et confirmer que la composition tient.
+0. **⚠️ Deux contrôles à l'œil, avant tout le reste.** (a) La page drill est passée de **pleine largeur à une colonne centrée de 1160px** (`41272c8`) — validée par mesures DOM uniquement (les screenshots timent out dans le navigateur de preview). (b) La **page profil élève** (`4691178`) est exhaustive par conception : **c'est toi qui avais signalé le 14/07 que le détail élève avait trop d'infos**. Ouvrir le profil d'un élève actif et juger la saturation.
+0bis. **⚠️ Tester la couche d'édition élève EN CONNECTÉ** (`4691178`) : RLS, filtres anti-pollution (`extra.overlayOf` doit être exclu de « Mes modules » coach ET de « Mes révisions perso » élève) et isolation entre élèves ne sont prouvés **qu'en simulé** — `sb=null` en local. Site déployé + les 2 comptes de test obligatoires. **Aucune migration à lancer** : le modèle s'appuie sur les `OR` déjà en place dans `modules_read/insert/update`.
 1. **Charger le contenu réel** (`Desktop/Academie/` : 40 mats + 42 tactiques + 7 ouvertures) dans le vrai compte coach → **c'est désormais LA priorité** : le contenu de lancement, et le dernier gros inconnu produit. Tout le reste est du raffinement.
 2. **2 vérifs bonus** (~2 min chacune, à caser au début d'une session) : toast d'échec d'écriture `_sbRun` (DevTools → Network Offline après login → action de sauvegarde → toast ⚠) ; premier lancement élève réel (compte vierge → hero Bienvenue + CTA ouvertures prêtes).
 3. **Reliquat de l'audit** (aucun bloquant, à faire à froid) : les **ombres noires** (`rgba(0,0,0,…)` ×11 — tokens d'ombre du dark + 2 modals inline — violent la « règle de l'ombre teintée ») ; le **radius résiduel** (7px ×4, 10px ×4, dérive à 1-2px des tokens) ; l'**échelle de z-index** (999/9998/9999/9999/10000 dans les modals inline d'`index.html`, avec une égalité arbitrée par l'ordre DOM). Il reste aussi un **indigo-500 parallèle** (`rgba(99,102,241,…)` ~13 sites) à côté de `--cyan` (#4f46e5, indigo-600) — même nature que les 4 familles balayées le 16/07, non traité faute de scope.
@@ -60,6 +62,44 @@ Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un pr
 **Reste (2 vérifs bonus non faites, ~2 min chacune, à caser au début d'une session)** : (a) premier lancement élève réel (compte vierge → hero Bienvenue + CTA ouvertures prêtes) ; (b) toast d'échec d'écriture `_sbRun` (DevTools → Network Offline après login → action de sauvegarde → toast ⚠).
 
 **Priorités (état 15/07 — ✅ DÉPASSÉES le 16/07 : le polish FINAL est fait, voir le POINT DE REPRISE en tête de §2 pour le plan à jour).** ~~le smoke test étant passé, la priorité #1 devient `/impeccable polish` FINAL + `/impeccable audit` FINAL~~, puis charger le contenu réel (`Desktop/Academie/`).
+
+### 🔖 Session du 16 juillet 2026 (7e) — couche d'édition élève + page profil élève (`4691178`)
+Deux chantiers d'un même mouvement. **88 → 113 tests.** Non poussé, et **non testé en connecté**.
+
+#### A. La couche d'édition élève — le patron du Pilier 1, en miroir
+Le coach annote déjà les **parties** de l'élève par une couche additive (`author:'coach'`, `[%author]`, violet). On retourne le mécanisme : **l'élève greffe SES lignes sur le MODULE du coach**.
+
+**Modèle, migration-free** : une ligne « overlay » dans `modules` portant **`teacher_id`** (le coach → il LIT) **ET `owner_student_id`** (l'élève → il ÉCRIT) — `modules_read/insert/update` sont des **OR** sur ces 2 colonnes. `extra.overlayOf` pointe le module ; **`tree` ne contient QUE le diff**.
+
+**Trois propriétés découlent du diff** (c'est le cœur du design) :
+1. le module du coach est intact **par construction** — une de ses lignes ne peut pas entrer dans le diff, donc l'élève ne peut ni l'écraser ni se l'approprier ;
+2. la **propagation est gratuite** — on regreffe sur l'arbre **vivant** du coach à chaque chargement ;
+3. l'**historique SR survit** — le drill tourne toujours sous l'id du module **coach**, donc la clé `${student}_${drillId}_${fen}_${san}` ne bouge pas. *(C'est ce qui exclut la solution naïve du « fork » : un nouvel id orphelinerait tout l'historique.)*
+
+**⚠️ Les 5 pièges traités (à ne pas re-découvrir) :**
+1. **`extractAllLines` jette TOUT commentaire en `[%`** (`core.js:66`) → `[%author]` n'y survit pas. Plutôt que patcher ce cœur partagé (tous les imports PGN en dépendent), la sauvegarde convertit l'arbre de l'**éditeur** directement (`_editorTreeToDrillTree`) — plus court ET moins risqué que le détour PGN.
+2. **`_sbSaveStudentOverlay` force `owner_student_id` = utilisateur courant** → le coach aurait **volé la ligne** à l'élève. Chemin d'écriture séparé qui préserve le propriétaire (le coach écrit via son `teacher_id`, l'autre branche du OR).
+3. **`_sbModuleToRow` reconstruit `extra` de zéro** → `overlayOf`/`overlayBy` ajoutés aux **deux** mappers, sinon perdus au 1er upsert.
+4. **`profiles_read` ne va que de l'élève VERS son coach** → le coach ne peut pas résoudre `owner_student_id` en un nom. Identité **dénormalisée** dans la ligne (`extra.overlayBy`), **même triplet que `results`** → `_resultKeys`/`_matchStudentSet` marchent dessus tels quels.
+5. **`editor-core.js` codait l'auteur en dur sur `'coach'`** (le parseur, lui, lisait déjà n'importe quoi) → sérialiseur généralisé, liste blanche `coach|student`.
+
+#### B. La page profil élève (drill-down)
+La page Élèves devient la **liste** (cartes en grille) ; un clic ouvre la **page pleine largeur** — patron `openClassDetail`. Consolide ce qui vivait sur 3 pages : en-tête · 4 KPI · ses modules (+ ses ajouts + Annoter) · ses exercices · ses parties · à revoir avec lui · ses positions (replié) · son activité récente.
+
+Nouveau module **`lib/coach-student-page.js`** (`coach-students.js` était à 396 l., le plus gros). L'ancien panneau 2 onglets est absorbé ; `_edTab`, **15 classes CSS** et **8 imports** devenus morts ont été supprimés.
+
+**⚠️ Les 4 pièges traités :**
+1. **L'auto-sélection du 1er du roster** (fix du 15/07 contre un faux skeleton) ouvrait en drill-down la page d'un élève **au hasard** → retirée. En navigation, la sélection est une intention.
+2. **`_eleveListKey` ouvrait l'élève à CHAQUE flèche** : gratuit quand ça redessinait un panneau, ça **navigue** désormais → les flèches ne font plus que déplacer le focus, Entrée ouvre.
+3. **`renderProfView` doit respecter la route**, sinon un rechargement **async** (`ovOpenStudent` → `switchCoachSection`) rallume la liste **par-dessus** la page.
+4. **`name` sert de CLÉ à `G.masteryData`/`sm2Get` autant que de libellé** → séparé en `name` (clé) / `display` (affichage). Sans ça un élève sans résultat s'affiche par email, et embellir la clé casserait la maîtrise.
+
+#### Angles morts ASSUMÉS (RLS, non contournables côté client)
+Le coach ne voit **ni les modules perso** de l'élève (`modules_read` ne lui rend que `teacher_id = lui`) **ni ses parties non partagées** (P1.3 : l'élève décide). **Le RLS rend ces lignes invisibles à la requête — on ne peut même pas les compter.** Décision produit (utilisatrice) : la page n'en dit rien, l'élève garde un espace à lui. Les nommer un jour = migration.
+
+`DESIGN.md` gagne **la règle des couleurs d'auteur** (violet = coach, bleu = élève, rien = contenu d'origine). `COACH_COL` était un hex en dur (`#7c3aed`, 3.11:1 en dark) → tokens.
+
+**⚠️ Reste : (a) non poussé ; (b) NON testé en connecté** — `sb=null` en local, donc RLS, filtres anti-pollution et isolation entre élèves ne sont prouvés **qu'en simulé** ; (c) **risque de surcharge** de la page profil (cf. le retour du 14/07) à juger à l'œil.
 
 ### 🔖 Session du 16 juillet 2026 (6e) — échiquier du drill : plafond 560 → 720 + un bug de débordement
 Question utilisatrice : « pourquoi pas du plein écran côté prof ou élève ? ça ferait des échiquiers plus grands ». **La prémisse ne tenait pas** — `page-drill` et `.coach-layout` n'ont **déjà aucun `max-width`** (à 1920 la grille du drill mesure `1472px 380px`, soit toute la fenêtre). Seul l'accueil élève est capé (1080px), et il n'a pas d'échiquier. Il n'y avait rien à déplafonner.
@@ -255,17 +295,18 @@ La dette « critique » (taille d’`app.js`) est **résolue** (extractions §5 
 | `lib/session.js` | État session de drill → objet `S` partagé (jamais réassigné, muté) entre `app.js` et `lib/drill.js` | ~1,5 Ko |
 | `lib/core.js` | Logique pure : **Leitner à échelons** (`leitnerSchedule`/`DEFAULT_LADDER_HOURS`), normalisation/parsing PGN | ~5 Ko |
 | `lib/dbmap.js` | Mappers objet ↔ lignes SQL (Supabase) | ~6,5 Ko |
-| `lib/tree.js` | Arbres d’ouverture, positions du joueur, indices matériels | ~3,5 Ko |
+| `lib/tree.js` | Arbres d’ouverture (map **FEN → coups**), positions du joueur (clé de maîtrise = `normFen_san`, **pas** un index → ajouter des lignes ne décale rien), indices matériels. **Couche d'édition élève** (testée) : `_mergeStudentLayer` (greffe), `_diffAgainstCoach` (ne persiste que les ajouts → additif par construction), `_editorTreeToDrillTree` (arbre éditeur → arbre, **sans perdre l'auteur** contrairement au détour PGN), `_countLayerMoves` | ~7 Ko |
 | `lib/editor-core.js` | Éditeur — cœur pur : sérialisation PGN ↔ arbre, formes, NAG, `_SHAPE_COL` (testé, round-trip) | ~7 Ko |
 | `lib/editor.js` | Éditeur de variantes — UI : plateau, drag, annotations (NAG/formes), sauvegarde (DOM) | ~27 Ko |
 | `lib/drill-core.js` | Drill — cœur pur : sessions, choix du coup adverse (LRU/forced path), `oppSeenKey`, délais commentaires (testé) | ~4 Ko |
 | `lib/drill.js` | Drill — **UI des modes de révision** : mode ligne / positions clés-flash / arbre-étude (moteur), phase test, fin de drill (`showEndModal`, `replayErrors`). `S` partagé ; app-level/SR via pont `window`. **Phase « Apprentissage » extraite → `lib/study.js`** | 693 lignes |
 | `lib/study.js` | Drill — **phase « Apprentissage »** (extraite de `drill.js`, juillet 2026) : phase étude arbre (`startStudyPhase`/`renderStudyTree` + sous-variantes, carte pédagogique `renderStudyBubble`, « devine le coup » `toggleStudyGuess`/`tryStudyGuess`) + parcours ligne guidé (`startLearnPhase`/`renderLearn*`/`learnGoto`). `S` partagé ; ponts `window` (dont `startTreeDrill` → drill.js). Importé après `drill.js` dans `app.js` | 460 lignes |
 | `lib/sr.js` | Répétition espacée : file de session (nouveaux/dus + quota), réponse/étape, bilan + prévision, suspension, réglages, tableau de bord élève | ~20 Ko |
-| `lib/coach.js` | Vue coach — **barrel** : en-tête de doc + les 8 `import` à effet de bord ci-dessous. `app.js` importe ce fichier (inchangé) | 28 lignes |
+| `lib/coach.js` | Vue coach — **barrel** : en-tête de doc + les 9 `import` à effet de bord ci-dessous. `app.js` importe ce fichier (inchangé) | 30 lignes |
 | `lib/coach-core.js` | Vue coach — **socle** : état partagé **`CS`** (patron `S` : `selectedStudent`, `wsCards` — mutés, jamais réassignés), paliers de couleur `_tierPct`/`_tierBg`/`_tierFail`, identité élève (`_resultKeys`/`_matchStudentSet`/`_clsRoster`/`_studentIdSet`), `_drillFenMap`+`_resetFenCache`, `_buildProfRoster`/`_computeRoster` (seuil de retard adaptatif), `_masteryBadge`/`_deadlinePill`/`_classWeakSpots`, filtres de classe, skeleton/erreur de chargement, shims du pont (`fig`/`escapeHtml`/`toast`…). **N'importe rien de ses frères** | 249 lignes |
 | `lib/coach-overview.js` | Vue coach — **Vue d'ensemble** (atterrissage prescriptif) : KPI strip, « À suivre », top 3 points faibles, parties à annoter. Sans état propre | 125 lignes |
-| `lib/coach-students.js` | Vue coach — **Page Élèves** : `renderProfView` (roster, recherche `rosterSearch`, nav clavier `_eleveListKey`), `showStudentDetail` (2 onglets Résumé/Positions), `_edTab`. État local `selectedDrillFilter`/`_rosterQuery` ; l'élève sélectionné vit dans `CS` (coach-assign en a besoin) | 324 lignes |
+| `lib/coach-students.js` | Vue coach — **Page Élèves = la LISTE** : `renderProfView` (cartes en grille, recherche `rosterSearch`, nav clavier `_eleveListKey` — **les flèches ne font que déplacer le focus**, Entrée ouvre). Drill-down : `showStudentDetail` pose `CS.selectedStudent` puis `_syncStudentRoute` bascule liste ⇄ page. **PAS d'auto-sélection** (elle ouvrirait un élève au hasard). État local `selectedDrillFilter`/`_rosterQuery` | 196 lignes |
+| `lib/coach-student-page.js` | Vue coach — **Page profil d'UN élève** (vue exhaustive) : en-tête, 4 KPI, ses modules (+ ses ajouts + Annoter), ses exercices, ses parties, à revoir avec lui, ses positions (replié), son activité récente. `_gather(id)` collecte tout en une passe. ⚠ `name` = **clé** de `G.masteryData`/`sm2Get`, `display` = libellé — ne pas confondre. Aucun état propre (l'élève vit dans `CS`) | 310 lignes |
 | `lib/coach-weakspots.js` | Vue coach — **Points faibles** : `renderHeatmap` (cartes-modules → UNE table, master-detail), tooltip échiquier `wsTip`, modale `openWeakspotPosition`. Publie les lignes rendues dans `CS.wsCards`. État local `_hmSelectedMod` | 198 lignes |
 | `lib/coach-assign.js` | Vue coach — **assignation ciblée** (migration-free, `class.targetedReviews` ↔ `classes.extra`) : cœur commun `_assignReviewCore` + 2 points d'entrée (`assignTargetedReview` ← Points faibles/`CS.wsCards`, 2 portées · `assignReviewForStudent` ← détail élève/`CS.selectedStudent`) + `undoTargetedReview`. État local `_lastAssign` | 116 lignes |
 | `lib/coach-classes.js` | Vue coach — **Page Classes** : liste (`renderClassList`, modules.js) → détail d'UNE classe (roster × modules, échéances, CRUD). État local `_selectedClassId` | 109 lignes |
