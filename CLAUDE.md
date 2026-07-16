@@ -31,6 +31,16 @@ Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un pr
 
 **Priorités mises à jour** : le smoke test étant passé, la priorité #1 devient **`/impeccable polish` FINAL + `/impeccable audit` FINAL** (cf. bloc 3e session ci-dessous), puis charger le contenu réel (`Desktop/Academie/`).
 
+### 🔖 Session du 16 juillet 2026 — consolidation qualité (audit thermo-nucléaire des 11 correctifs)
+Audit qualité strict du diff du smoke test (`3aaf91e`→`b20b00b`) puis correction de tous les findings. Typecheck + 88 tests verts, chaque flux rejoué au navigateur (assignation/undo des 2 chemins, 3 états du modal de fin, couches élève/coach de l'éditeur), 0 erreur console :
+- **Assignation ciblée consolidée** (`lib/coach.js`) : nouveau cœur commun **`_assignReviewCore(pos, pickTargets)`** (upsert `targetedReviews` + dédup + persistance + patches d'undo) ; `assignTargetedReview` (Points faibles) et `assignReviewForStudent` (détail élève) = deux points d'entrée minces. Le chemin détail élève **récupère l'undo** (le bouton 🎯 devient « Annuler », `_lastAssign.key = 'stu:drillId_san'`, `undoTargetedReview` re-rend le panneau) **et le `fen`** (via `_drillFenMap`, comme le chemin canonique).
+- **Identité élève canonisée** (`lib/coach.js` en tête) : **`_resultKeys(r)`** (email/pseudo/nom d'un résultat), **`_studentIdSet(key)`**, **`_clsRoster(cls)`** — les 7 copies du triplet inline et ~9 accès roster remplacés. (La dette « unifier les identifiants » reste ouverte côté `student.js`/`sr.js`.)
+- **`showEndModal` déclaratif** (`lib/drill.js`) : les 3 passes ordre-dépendantes de patch DOM → calcul d'intention unique (un SEUL primaire ; démoté si erreurs) puis application par bouton.
+- **Éditeur** (`lib/editor.js`) : `_editorRefresh()` (chaîne de 6 appels des 4 ouvreurs), `_cmtSpans(node)` (spans commentaire élève/coach de la notation), `editorValidateComment` → appelle `editorSaveComment()`.
+- **`pgnHeader(pgn, key)` canonique** (`lib/core.js`) : importé par `dbmap.js` (fallback white/black/event) et `autoFillFromPgn` (`lib/modules.js`, fini les 3 regex maison ; valeurs `"?"` toujours ignorées).
+- Bouton du détail élève : `onclick="…assignReviewForStudent(this)"` (la lecture des `data-*` vit dans la fonction).
+- **Laissé volontairement** : `G.classes = myCls` + `saveClasses()` côté élève (fix correct, clobber du cache bénin) ; `coach.js` reste ~1236 l. (extraction d'un `lib/targeted-reviews.js` = tranche future, couplage `_wsCards`/`selectedStudent`) ; findings `/impeccable` préexistants (`#111`, radius 3px notation, ombre rouge récap) → à trancher à l'audit FINAL.
+
 ### 🔖 Session précédente (14 juillet 2026, 3e session — passes /impeccable transverses)
 **Committé sur `main`** (2 commits POLISH + DOC). Session = série de passes `/impeccable` sur toute l'app, chacune vérifiée navigateur sur données à l'échelle (30 élèves), typecheck + 85 tests + 0 erreur console à chaque tranche :
 - **Polish détails UI** (`make-interfaces-feel-better`, poussé en `24e70f9`) : 16 `transition` raccourcies (= `all`) → propriétés explicites ; scale press `.96` ; cibles 40px (`#theme-toggle`, `.sh-card-act`, `.onb-x` via pseudo-éléments) ; `tabular-nums` sur compteurs vivants (`.csnav-badge`, `.ed-kpi-v`).
