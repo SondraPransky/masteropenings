@@ -222,14 +222,22 @@ nav {
 }
 
 /* ══ GRILLES ══════════════════════════════════ */
-.drill-grid  { display: grid; grid-template-columns: 1fr 380px;  gap: 28px; align-items: start; }
+/* Le plateau et sa notation forment UNE unité de travail : sans plafond, un écran 1920
+   les jetait aux deux bords opposés (colonne de plateau à 1472px pour un plateau de 720).
+   1160 = 750 (plateau 720 + son anneau et ses coordonnées) + 28 (gap) + 380 (panneau).
+   ⚠ La colonne du plateau doit rester une taille DÉFINIE (1fr sous un max-width) :
+   resizeBoard lit wrap.clientWidth pour dimensionner le canvas, donc min-content/auto
+   créerait une dépendance circulaire et le plateau ne pourrait plus grandir. */
+.drill-grid  { display: grid; grid-template-columns: 1fr 380px;  gap: 28px; align-items: start; max-width: 1160px; margin: 0 auto; }
 @media (max-width: 960px) {
   .drill-grid { grid-template-columns: 1fr; }
 }
 @media (min-width: 961px) {
   #board-turn-prompt, #board-comment { display: none !important; }
-  /* Phase apprentissage : info-card masquée → on élargit le panneau des coups */
-  .drill-grid.study-mode { grid-template-columns: 1fr 560px; }
+  /* Phase apprentissage : info-card masquée → on élargit le panneau des coups.
+     1340 = 750 + 28 + 560 : laisse les mêmes 750px au plateau, donc la même taille
+     d'échiquier qu'en mode normal. */
+  .drill-grid.study-mode { grid-template-columns: 1fr 560px; max-width: 1340px; }
 }
 /* Sur tablette/mobile : masquer le feedback texte (board-turn-prompt + board-comment le remplacent)
    sauf quand il contient un bouton d'action (ex: session suivante) */
