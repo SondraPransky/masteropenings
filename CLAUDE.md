@@ -30,6 +30,7 @@ Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un pr
 | `97faec4` | POLISH : audit FINAL — **4 familles de couleur parallèles** balayées, 6 échecs AA, `<h1>` |
 | `41272c8` | FIX : échiquier du drill — plafond 560 → **720**, budget hauteur dérivé du DOM, grille centrée |
 | `4691178` | FEAT : **couche d'édition élève** (additive, migration-free) + **page profil élève** — non poussé |
+| `576353d` | POLISH : page profil — hiérarchiser au lieu d'énumérer (**3,9 → 2,2 écrans** au volume réel) — non poussé |
 
 `npm run typecheck` + **113 tests** + `npm run build` verts ; 0 erreur console. Détail → les blocs « Session du 16 juillet » ci-dessous.
 
@@ -37,7 +38,7 @@ Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un pr
 
 #### ▶ PLAN DE LA PROCHAINE SESSION (par ordre)
 
-0. **⚠️ Deux contrôles à l'œil, avant tout le reste.** (a) La page drill est passée de **pleine largeur à une colonne centrée de 1160px** (`41272c8`) — validée par mesures DOM uniquement (les screenshots timent out dans le navigateur de preview). (b) La **page profil élève** (`4691178`) est exhaustive par conception : **c'est toi qui avais signalé le 14/07 que le détail élève avait trop d'infos**. Ouvrir le profil d'un élève actif et juger la saturation.
+0. **⚠️ Deux contrôles à l'œil, avant tout le reste.** (a) La page drill est passée de **pleine largeur à une colonne centrée de 1160px** (`41272c8`) — validée par mesures DOM uniquement (les screenshots timent out dans le navigateur de preview). (b) La **page profil élève** : la surcharge a été mesurée puis corrigée (`576353d`, 3,9 → 2,2 écrans au volume réel), mais **le jugement final t'appartient** — c'est toi qui avais signalé le 14/07 que le détail élève avait trop d'infos.
 0bis. **⚠️ Tester la couche d'édition élève EN CONNECTÉ** (`4691178`) : RLS, filtres anti-pollution (`extra.overlayOf` doit être exclu de « Mes modules » coach ET de « Mes révisions perso » élève) et isolation entre élèves ne sont prouvés **qu'en simulé** — `sb=null` en local. Site déployé + les 2 comptes de test obligatoires. **Aucune migration à lancer** : le modèle s'appuie sur les `OR` déjà en place dans `modules_read/insert/update`.
 1. **Charger le contenu réel** (`Desktop/Academie/` : 40 mats + 42 tactiques + 7 ouvertures) dans le vrai compte coach → **c'est désormais LA priorité** : le contenu de lancement, et le dernier gros inconnu produit. Tout le reste est du raffinement.
 2. **2 vérifs bonus** (~2 min chacune, à caser au début d'une session) : toast d'échec d'écriture `_sbRun` (DevTools → Network Offline après login → action de sauvegarde → toast ⚠) ; premier lancement élève réel (compte vierge → hero Bienvenue + CTA ouvertures prêtes).
@@ -99,7 +100,27 @@ Le coach ne voit **ni les modules perso** de l'élève (`modules_read` ne lui re
 
 `DESIGN.md` gagne **la règle des couleurs d'auteur** (violet = coach, bleu = élève, rien = contenu d'origine). `COACH_COL` était un hex en dur (`#7c3aed`, 3.11:1 en dark) → tokens.
 
-**⚠️ Reste : (a) non poussé ; (b) NON testé en connecté** — `sb=null` en local, donc RLS, filtres anti-pollution et isolation entre élèves ne sont prouvés **qu'en simulé** ; (c) **risque de surcharge** de la page profil (cf. le retour du 14/07) à juger à l'œil.
+#### C. La surcharge : mesurée, puis corrigée (`576353d`)
+**Le risque était réel.** Sur le volume de lancement (24 modules seedés ; le contenu réel en compte **49**) la page montait à **3253px = 3,9 écrans, 55 rangées, 73 badges** ; « Ses exercices » seul faisait 926px.
+
+> **⚠️ Piège de méthode à ne pas refaire** : le jeu de test **léger** (3 modules) donnait 1,4 écran et **ne montrait rien du problème**. Une page de suivi ne se juge qu'au **volume réel** — c'est le même enseignement que le stress-test à 30 élèves du 14/07.
+
+**Le défaut n'était pas la longueur, c'est que TOUT criait pareil.** Correction en 2 temps, l'ordre compte :
+1. **Trier par urgence** (c'est le tri qui fait le travail) — modules/exercices : en retard d'abord, puis le moins avancé, puis jamais commencé ; **parties : à annoter d'abord**, pas la chronologie (une partie déjà annotée n'appelle rien).
+2. **Plafonner** puis ranger le reste derrière un `<details>` (`_capList`) : 5 modules · 5 paquets · 4 parties · 3 Maia · 6 événements. Rien n'est perdu, tout est à un clic.
+
+Chaque section porte un **compteur qui dit l'ampleur ET l'action** (« 17 · 1 à travailler », « 14 · 10 à annoter ») → replier ne cache aucun chiffre qui compte.
+
+| Au même volume réel | Avant | Après |
+|---|---|---|
+| Hauteur | 3253px (3,9 écrans) | **1852px (2,2 écrans)** |
+| Rangées criées | 55 | **19** (24 repliées) |
+| Badges visibles | 73 | **24** (49 repliés) |
+| Section la + haute | 926px | **357px** |
+
+Vérifié : le cas léger n'affiche **aucune porte inutile** ; le tri remonte bien les 3 modules en retard ; élève vierge intact ; 0 overflow à 375px ; cible tactile de la porte portée à 40px sous `hover:none`.
+
+**⚠️ Reste : (a) non poussé ; (b) NON testé en connecté** — `sb=null` en local, donc RLS, filtres anti-pollution et isolation entre élèves ne sont prouvés **qu'en simulé**.
 
 ### 🔖 Session du 16 juillet 2026 (6e) — échiquier du drill : plafond 560 → 720 + un bug de débordement
 Question utilisatrice : « pourquoi pas du plein écran côté prof ou élève ? ça ferait des échiquiers plus grands ». **La prémisse ne tenait pas** — `page-drill` et `.coach-layout` n'ont **déjà aucun `max-width`** (à 1920 la grille du drill mesure `1472px 380px`, soit toute la fenêtre). Seul l'accueil élève est capé (1080px), et il n'a pas d'échiquier. Il n'y avait rien à déplafonner.
