@@ -2006,6 +2006,20 @@ textarea {
 .sp-sec { margin-bottom: 24px; }
 .sp-sec-title { font-family: var(--font-display); font-size: 1.02rem; font-weight: 700; letter-spacing: -.2px; color: var(--text); margin: 0 0 10px; }
 .sp-subhead { font-size: .74rem; font-weight: 700; color: var(--dim); margin: 12px 0 6px; }
+/* Compteur de section : « 14 · 3 à travailler ». Dit l'ampleur ET ce qui appelle une
+   action, pour que replier le reste ne cache jamais un chiffre qui compte. */
+.sp-count { font-family: var(--font-body); font-size: .74rem; font-weight: 400; color: var(--dim); margin-left: 6px; }
+/* Divulgation du reste d'une liste. Discret : c'est une porte, pas une action. */
+.sp-more > summary { font-size: .76rem; color: var(--cyan); cursor: pointer; padding: 7px 4px; list-style: none;
+                     border-radius: var(--rs); transition: background-color .12s; }
+.sp-more > summary::-webkit-details-marker { display: none; }
+.sp-more > summary::before { content: '▸ '; color: var(--dim); }
+.sp-more[open] > summary::before { content: '▾ '; }
+.sp-more > summary:hover { background: var(--surf2); }
+.sp-more > summary:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+/* Cible tactile : 32px au doigt, c'est sous la barre de 40px du DESIGN.md (public
+   incluant des enfants). Même idiome que `.btn-sm` sous hover:none. */
+@media (hover: none) { .sp-more > summary { min-height: 40px; display: flex; align-items: center; } }
 
 /* Rangée générique des sections (module, exercice, partie). Une seule forme pour les
    trois : le contenu diffère, pas la structure. */
