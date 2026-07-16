@@ -1161,8 +1161,12 @@ async function _sbFetchStudentActivity() {
 async function _sbLoadStudentModules() {
   if (!sb || !G.currentUser || G.currentRole !== 'student') return;
   const listEl = document.getElementById('sh-module-list');
-  const nameEl = document.getElementById('sh-student-name');
-  if (nameEl) nameEl.textContent = G.currentUser.displayName || G.currentUser.email;
+  // Le titre #sh-student-name appartient a renderStudentHome (format « Salut <prenom> »).
+  // Il ecrivait ici le nom BRUT avant les 4 requetes -> le titre affichait « Test Eleve »
+  // pendant tout le chargement puis basculait sur « Salut Test », a chaque login / clic
+  // sur Actualiser / sauvegarde de module. Et si une requete echouait, le catch rendait
+  // la main sans appeler renderStudentHome : le titre restait bloque sur le nom brut.
+  // Le <h1> porte deja « Salut ! » en statique dans index.html.
 
   let assigned = [], personal = [];
   try {
