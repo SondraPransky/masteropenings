@@ -28,6 +28,7 @@ Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un pr
 | `872ea79` | POLISH : règle de l'encre — 17 échecs WCAG AA → 0 (**il en restait 6, trouvés le 16/07 par l'audit**) |
 | `486df62` | POLISH : tableau de bord élève élargi 680 → **1080px** + hero en 2 zones |
 | `97faec4` | POLISH : audit FINAL — **4 familles de couleur parallèles** balayées, 6 échecs AA, `<h1>` |
+| `41272c8` | FIX : échiquier du drill — plafond 560 → **720**, budget hauteur dérivé du DOM, grille centrée |
 
 `npm run typecheck` + **88 tests** + `npm run build` verts ; 0 erreur console. Détail → les blocs « Session du 16 juillet » ci-dessous.
 
@@ -35,11 +36,13 @@ Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un pr
 
 #### ▶ PLAN DE LA PROCHAINE SESSION (par ordre)
 
+0. **⚠️ Un contrôle à l'œil, 30 s, avant tout le reste** : la page drill est passée de **pleine largeur à une colonne centrée de 1160px** (`41272c8`). C'est le seul changement du 16/07 **jamais vu à l'écran** — les screenshots timent out dans le navigateur de preview, tout a été validé par mesures DOM. Ouvrir un drill sur grand écran et confirmer que la composition tient.
 1. **Charger le contenu réel** (`Desktop/Academie/` : 40 mats + 42 tactiques + 7 ouvertures) dans le vrai compte coach → **c'est désormais LA priorité** : le contenu de lancement, et le dernier gros inconnu produit. Tout le reste est du raffinement.
 2. **2 vérifs bonus** (~2 min chacune, à caser au début d'une session) : toast d'échec d'écriture `_sbRun` (DevTools → Network Offline après login → action de sauvegarde → toast ⚠) ; premier lancement élève réel (compte vierge → hero Bienvenue + CTA ouvertures prêtes).
 3. **Reliquat de l'audit** (aucun bloquant, à faire à froid) : les **ombres noires** (`rgba(0,0,0,…)` ×11 — tokens d'ombre du dark + 2 modals inline — violent la « règle de l'ombre teintée ») ; le **radius résiduel** (7px ×4, 10px ×4, dérive à 1-2px des tokens) ; l'**échelle de z-index** (999/9998/9999/9999/10000 dans les modals inline d'`index.html`, avec une égalité arbitrée par l'ordre DOM). Il reste aussi un **indigo-500 parallèle** (`rgba(99,102,241,…)` ~13 sites) à côté de `--cyan` (#4f46e5, indigo-600) — même nature que les 4 familles balayées le 16/07, non traité faute de scope.
-4. **Dette de style inline** ([[style-debt-inline]]) : les 2 zones les plus chargées sont désormais `_classBreakdownHTML`/`_classDetailHTML` (`lib/coach-classes.js`) et `_pgGroupsHTML` (`lib/coach-games.js`) — **laissées intactes exprès** au découpage (déplacements verbatim). Puis `lib/student.js`, `lib/library.js`.
-5. **Post-lancement** (ne pas ouvrir avant) : import Chess.com, import puzzles Lichess CSV (off-by-one du 1er coup), bibliothèque d'exercices partagée + RLS multi-coachs, révision ciblée → sauter à la position exacte dans l'arbre, finir d'unifier les identifiants élève (`student.js`/`sr.js` — les helpers canoniques vivent dans `lib/coach-core.js`).
+4. **Le chrome vertical de la page drill** (gisement identifié le 16/07, non traité) : **~177px au-dessus du plateau** (nav 58 + titre du drill + contrôles + padding) plafonnent tous les écrans courts. Les réduire profiterait à chaque config < 900px de hauteur — dont un **17" FHD à 150 % de mise à l'échelle Windows** (= 1280×600 en pixels CSS → plateau 392, boutons sous la ligne). C'est le seul vrai levier restant sur la taille de l'échiquier.
+5. **Dette de style inline** ([[style-debt-inline]]) : les 2 zones les plus chargées sont désormais `_classBreakdownHTML`/`_classDetailHTML` (`lib/coach-classes.js`) et `_pgGroupsHTML` (`lib/coach-games.js`) — **laissées intactes exprès** au découpage (déplacements verbatim). Puis `lib/student.js`, `lib/library.js`.
+6. **Post-lancement** (ne pas ouvrir avant) : import Chess.com, import puzzles Lichess CSV (off-by-one du 1er coup), bibliothèque d'exercices partagée + RLS multi-coachs, révision ciblée → sauter à la position exacte dans l'arbre, finir d'unifier les identifiants élève (`student.js`/`sr.js` — les helpers canoniques vivent dans `lib/coach-core.js`).
 
 **⚠️ Pièges d'outillage à ne pas re-découvrir** : (1) le smoke test connecté ne peut PAS se faire sur localhost (`DEV_SKIP_AUTH` y met `sb=null`) → site déployé obligatoire ; (2) auditer un thème en basculant `data-theme` en cours de page donne des **styles calculés périmés** → poser `localStorage.mc_theme` PUIS recharger (cf. [[ink-rule-contrast]]).
 
@@ -57,6 +60,35 @@ Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un pr
 **Reste (2 vérifs bonus non faites, ~2 min chacune, à caser au début d'une session)** : (a) premier lancement élève réel (compte vierge → hero Bienvenue + CTA ouvertures prêtes) ; (b) toast d'échec d'écriture `_sbRun` (DevTools → Network Offline après login → action de sauvegarde → toast ⚠).
 
 **Priorités (état 15/07 — ✅ DÉPASSÉES le 16/07 : le polish FINAL est fait, voir le POINT DE REPRISE en tête de §2 pour le plan à jour).** ~~le smoke test étant passé, la priorité #1 devient `/impeccable polish` FINAL + `/impeccable audit` FINAL~~, puis charger le contenu réel (`Desktop/Academie/`).
+
+### 🔖 Session du 16 juillet 2026 (6e) — échiquier du drill : plafond 560 → 720 + un bug de débordement
+Question utilisatrice : « pourquoi pas du plein écran côté prof ou élève ? ça ferait des échiquiers plus grands ». **La prémisse ne tenait pas** — `page-drill` et `.coach-layout` n'ont **déjà aucun `max-width`** (à 1920 la grille du drill mesure `1472px 380px`, soit toute la fenêtre). Seul l'accueil élève est capé (1080px), et il n'a pas d'échiquier. Il n'y avait rien à déplafonner.
+
+**Le vrai levier était en JS** (`lib/board.js`, `resizeBoard`). Le conteneur **ne mord jamais** sur desktop : à 1920×1080 il offrait 1442px et le plateau en prenait 560 → 882px inutilisés. Résultats après correction :
+
+| Écran | Avant | Après |
+|---|---|---|
+| 1920×1080 | 560 | **720** (90px/case) |
+| 1920×950 (17" FHD) | 560 | **656** |
+| 1440×900 | 560 | **608** |
+| 1280×894 (17" 5:4) | 560 | **600** |
+| 768×1024 | 560 | **688** |
+| 1366×660 (laptop) | 512, rangée 1 coupée | **440 entier** |
+| 375×812 | 320 | 320 |
+
+**⚠️ Le bug que les mesures ont trouvé (personne ne le cherchait) :** `window.innerHeight * 0.78` approximait **proportionnellement** un chrome qui est **fixe**. À 1366×660 il autorisait 515px de plateau pour ~370 de place réelle → la page scrollait de 144px, les boutons du plateau étaient 120px sous la ligne de flottaison, et surtout **le bas de l'échiquier lui-même dépassait de 29px : la rangée 1 était coupée en deux pendant la révision**.
+
+**Deux pièges de méthode rencontrés, à ne pas refaire :**
+1. **Une constante ne marche pas non plus.** J'ai d'abord écrit `CHROME_V = 220` en additionnant une liste de composants choisie à la main → **la vraie valeur est 292** (j'oubliais le titre du drill). Le budget est donc **dérivé du DOM** : `above = rect.top + scrollY`, `below = rect.height - BSIZE`. `below` est constant quel que soit `BSIZE` → **pas de dépendance circulaire**.
+2. **Sur écran court, ce n'est PAS le plateau qui pousse la hauteur de page, c'est le PANNEAU de notation** (534px contre 459 pour la colonne du plateau). Descendre le plateau sous ce que le panneau impose déjà ne supprime **aucun** scroll — ça ne fait que perdre du plateau. D'où le plancher `panneau - below`, plafonné par « le plateau reste visible » (le panneau grandit avec la notation, il ne doit pas tirer le plateau vers le haut indéfiniment).
+
+**Composition** : `.drill-grid` n'avait pas de `max-width` → à 1920 le plateau et sa notation étaient jetés aux deux bords opposés d'un écran de 1880px. `max-width: 1160px` + `margin: 0 auto` (= 750 + 28 + 380) ; **1340 en `study-mode`** (panneau 560). Les deux laissent exactement 752px au plateau → **720 dans les 2 modes**.
+
+> **⚠️ Ne PAS mettre `min-content`/`auto`/`fit-content` sur la colonne du plateau** : `resizeBoard` lit `wrap.clientWidth` pour dimensionner le canvas → dépendance circulaire, le plateau ne pourrait plus grandir. La colonne doit rester une taille **définie** (`1fr` sous un `max-width`).
+
+**Zone sensible** (`lib/board.js` = critique au §8) : changement confiné à `resizeBoard` (calcul de taille), ni les listeners ni le dispatch de `tryMove` ne sont touchés. Vérifié par un **aller-retour du mapping pointeur sur les 64 cases** (`_sqCenter` → pixel écran → `toXY` → `sqFromXY`), dans les 2 orientations, à BSIZE 720 → **0 erreur, ratio exactement 1**. Mesuré sur 7 tailles, 0 overflow horizontal, typecheck + 88 tests + build verts, 0 erreur console.
+
+**Reste comme gisement** : les **~177px de chrome au-dessus du plateau** (nav 58 + titre du drill + contrôles) — c'est ce qui plafonne les écrans courts. Les réduire profiterait à toutes les configs < 900px de hauteur (dont un 17" FHD à 150 % de mise à l'échelle Windows → 1280×600 CSS → plateau 392).
 
 ### 🔖 Session du 16 juillet 2026 (5e) — `/impeccable audit` FINAL : **18/20**, puis les 3 actions livrées
 **Score : 18/20** (le pari « ≥19 » de ce fichier était un point trop optimiste : le 3e rouge et les side-stripes étaient réels et coûtaient chacun un point). **Aucun P0, aucun P1.** Verdict anti-patterns : **PASS** — pas de fond crème, pas d'eyebrow, pas de gradient text, pas de template hero-metric ; les anti-références du PRODUCT.md ont été activement chassées. Détecteur **96 → 35 findings (−64 %)** après correction. typecheck + 88 tests + build verts, 0 erreur console.
