@@ -13,14 +13,15 @@ colors:
   zinc-border-hover: "#d4d4d8"
   zinc-ink: "#18181b"
   zinc-ink-2: "#3f3f46"
-  zinc-dim: "#6b6b73"
+  zinc-dim: "#65656d"
   green-ok: "#16a34a"
-  green-ink: "#15803d"
+  green-ink: "#166534"
   gold-warn: "#d97706"
   gold-ink: "#92400e"
   red-error: "#dc2626"
   red-ink: "#be123c"
   blue-info: "#2563eb"
+  blue-ink: "#1e40af"
   violet-review: "#7c3aed"
 typography:
   display:
@@ -109,17 +110,19 @@ Stratégie **Restrained** : neutres zinc + un accent indigo ≤10% de toute surf
 - **Papier zinc** (#fafafa) : fond de page. Blanc cassé à chroma zéro — jamais réchauffé vers le crème.
 - **Surface** (#ffffff) / **Surface 2** (#f4f4f5) / **Surface 3** (#e4e4e7) : cartes, panneaux, contrôles imbriqués.
 - **Bordure** (#e4e4e7), **bordure hover** (#d4d4d8) : la délimitation par défaut de toute surface.
-- **Encre** (#18181b), **encre secondaire** (#3f3f46), **estompé** (#6b6b73 — calibré 4.8:1 sur surface-2) : les trois niveaux de texte.
+- **Encre** (#18181b), **encre secondaire** (#3f3f46), **estompé** (#65656d — calibré 4.55:1 sur **surface-3**, la plus foncée : c'est la contrainte réelle, pas surface-2) : les trois niveaux de texte. Un compte ou une donnée n'est PAS de l'estompé → `--text-2` (cf. `.csnav-badge`).
 
 ### Tertiary (sémantique d'état — jamais décorative)
-- **Vert maîtrise** (#16a34a, ink #15803d) : correct, appris, gagné.
+- **Vert maîtrise** (#16a34a, ink #166534) : correct, appris, gagné.
 - **Ambre attention** (#d97706, ink #92400e) : échéance proche, à surveiller, achievements.
 - **Rouge erreur** (#dc2626, ink #be123c) : faute, retard, destructif.
-- **Bleu indice** (#2563eb) : hints, informations.
+- **Bleu indice** (#2563eb, ink #1e40af) : hints, informations.
 - **Violet révision** (#7c3aed) : répétition espacée, annotations du coach dans l'arbre.
 
 ### Named Rules
 **La règle de l'encre (-ink).** Toute couleur sémantique qui colore du TEXTE petit (<14px bold) sur fond clair ou teinté utilise sa variante `-ink`, jamais le token de base (qui plafonne à ~3.2:1). Les états sont toujours doublés d'une icône ou d'un libellé — jamais la couleur seule.
+> **Calibrage (corrigé le 16/07/2026 — 17 échecs AA trouvés) : une encre se mesure contre son propre `-dim`, PAS contre `--surf`.** C'est l'appariement réel des pastilles du produit (`_tierBg` + `_tierPct`, `.badge-green`, `.feedback`…), et il coûte ~1 point de ratio. Calibré sur surface plate, `--green-ink` (alors #15803d) rendait 5.0:1 sur `--surf` mais **4.49:1** sur `--green-dim` → toutes les pastilles vertes de l'app échouaient. Même piège pour `--dim`, calibré sur `--surf2` (4.81) mais utilisé sur `--surf3` (4.16). **Tout nouveau token `-ink` se vérifie sur `-dim` × {surf, surf2, surf3, page}, dans les 2 thèmes.**
+> **En dark**, les `-ink` s'aliassent sur le token de base **seulement s'il tient sur son `-dim`** (vérifié : vert 6.32, ambre 5.34). Le rouge n'y rendait que 4.34 → il a sa propre encre `#fca5a5`. Et les boutons PLEINS y prennent une **encre foncée** (`#18181b`) : l'accent dark est clair, le blanc n'y rend que 2.98:1.
 **La règle du hue unique.** Un seul bouton PLEIN indigo par zone d'écran. Le deuxième niveau est TONAL (fond `indigo-dim`, texte indigo), le troisième est GHOST (bordure neutre). Il n'existe pas de deuxième accent plein.
 
 ## 3. Typography

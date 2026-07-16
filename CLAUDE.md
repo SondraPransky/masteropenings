@@ -18,7 +18,34 @@ L’application doit permettre :
 **Phase : le refactoring est terminé → on entre dans la construction produit.**
 Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un prof — toi — + ses élèves) ; le **multi-coachs viendra après**. Pas encore d’utilisateurs réels.
 
-### 🔖 POINT DE REPRISE (15 juillet 2026 — ✅ SMOKE TEST E2E CONNECTÉ PASSÉ)
+### 🔖 POINT DE REPRISE (16 juillet 2026, fin de journée) — ⚠️ TRAVAIL NON POUSSÉ
+
+**État : `main` local est en avance sur l'origine — rien de la journée du 16/07 n'est déployé.** (`git log --oneline origin/main..main` pour le compte exact.) Les 2 chantiers de fond :
+
+| Commit | Contenu |
+|---|---|
+| `190f52f` | REFACTO : `lib/coach.js` 1236 l. → **8 modules** (socle `coach-core` + état partagé `CS`) |
+| `872ea79` | POLISH : règle de l'encre appliquée partout — **17 échecs WCAG AA → 0** (clair + sombre) |
+
+`npm run typecheck` + **88 tests** + `npm run build` verts sur l'arbre committé ; 0 erreur console. Détail de chaque chantier → les 3 blocs « Session du 16 juillet » ci-dessous.
+
+#### ▶ PLAN DE LA PROCHAINE SESSION (par ordre)
+
+1. **Pousser** (`git push origin main`) → l'Action GitHub redéploie Pages automatiquement. **À faire en premier** : 2 commits de refonte non déployés, autant valider tôt que le site déployé tient. Puis re-marcher rapidement 2-3 pages coach sur le site déployé (le découpage a touché TOUTE la vue coach).
+2. **`/impeccable audit` FINAL** — la dernière porte avant lancement (devrait confirmer ≥19/20). Le polish lui a laissé **3 entrées concrètes, déjà instruites** :
+   - **(a) Le 3e rouge.** `rgba(225,29,72,…)` (rose-600) sur ~14 sites, à côté de `--red`/`--red-ink`. Même nature que l'émeraude balayée le 16/07 — mais il **passe le contraste**, donc c'est un sweep de cohérence, pas un bug. Recette éprouvée : migrer le CLAIR vers les tokens (le dark est déjà tokenisé), puis re-mesurer.
+   - **(b) Le radius.** 36 findings. **Verdict du polish : c'est le DESIGN.md qui est incomplet**, pas le code — il ne documente que 6/8/12/999 alors que les petites pastilles/barres ont légitimement besoin de 2-5px. Décision à prendre : compléter l'échelle documentée plutôt que churner 36 sites.
+   - **(c) 3 side-stripes colorés que le détecteur a MANQUÉS** : `#board-comment` et `.pgn-comment` (`border-left: 2px solid var(--cyan)`), `.game-row` (3px au survol). Bannis par le DESIGN.md, et **un motif système existe déjà** (`.study-bubble` : fond `--cyan-dim` + bordure `--cyan-glow`) → c'est un « one-off alors qu'un partagé existe », pas un choix. (Le rail `.study-var` 2px **neutre**, lui, reste un faux positif : ne pas y toucher.)
+3. **Charger le contenu réel** (`Desktop/Academie/` : 40 mats + 42 tactiques + 7 ouvertures) dans le vrai compte coach → c'est le contenu de lancement, et le dernier gros inconnu produit.
+4. **2 vérifs bonus** (~2 min chacune, à caser au début d'une session) : toast d'échec d'écriture `_sbRun` (DevTools → Network Offline après login → action de sauvegarde → toast ⚠) ; premier lancement élève réel (compte vierge → hero Bienvenue + CTA ouvertures prêtes).
+5. **Dette de style inline** ([[style-debt-inline]]) : les 2 zones les plus chargées sont désormais `_classBreakdownHTML`/`_classDetailHTML` (`lib/coach-classes.js`) et `_pgGroupsHTML` (`lib/coach-games.js`) — **laissées intactes exprès** au découpage (déplacements verbatim). Puis `lib/student.js`, `lib/library.js`.
+6. **Post-lancement** (ne pas ouvrir avant) : import Chess.com, import puzzles Lichess CSV (off-by-one du 1er coup), bibliothèque d'exercices partagée + RLS multi-coachs, révision ciblée → sauter à la position exacte dans l'arbre, finir d'unifier les identifiants élève (`student.js`/`sr.js` — les helpers canoniques vivent dans `lib/coach-core.js`).
+
+**⚠️ Pièges d'outillage à ne pas re-découvrir** : (1) le smoke test connecté ne peut PAS se faire sur localhost (`DEV_SKIP_AUTH` y met `sb=null`) → site déployé obligatoire ; (2) auditer un thème en basculant `data-theme` en cours de page donne des **styles calculés périmés** → poser `localStorage.mc_theme` PUIS recharger (cf. [[ink-rule-contrast]]).
+
+---
+
+### 🔖 (15 juillet 2026 — ✅ SMOKE TEST E2E CONNECTÉ PASSÉ)
 **Poussé sur `main` (commits `3aaf91e` → `b20b00b`, déployés sur Pages).** Le parcours UI complet du Pilier 1 a été **marché en connecté réel** sur les 2 comptes de test (site déployé, PAS localhost — `DEV_SKIP_AUTH` y met `sb=null`) : module créé → assigné à une classe avec échéance → élève le voit (bannière + badge) → résout → coach voit progression + points faibles → révision ciblée → élève la voit → élève partage une partie → coach annote (couche additive violette) → élève voit la notif ✨ + relit. **Validé par l'utilisatrice.**
 
 **11 correctifs livrés pendant le test** (chacun vérifié navigateur, typecheck + tests verts, commité/poussé/déployé au fil de l'eau) — dont 3 vrais bugs du chemin connecté invisibles en local :
@@ -29,7 +56,7 @@ Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un pr
 
 **Reste (2 vérifs bonus non faites, ~2 min chacune, à caser au début d'une session)** : (a) premier lancement élève réel (compte vierge → hero Bienvenue + CTA ouvertures prêtes) ; (b) toast d'échec d'écriture `_sbRun` (DevTools → Network Offline après login → action de sauvegarde → toast ⚠).
 
-**Priorités mises à jour** : le smoke test étant passé, la priorité #1 devient **`/impeccable polish` FINAL + `/impeccable audit` FINAL** (cf. bloc 3e session ci-dessous), puis charger le contenu réel (`Desktop/Academie/`).
+**Priorités (état 15/07 — ✅ DÉPASSÉES le 16/07 : le polish FINAL est fait, voir le POINT DE REPRISE en tête de §2 pour le plan à jour).** ~~le smoke test étant passé, la priorité #1 devient `/impeccable polish` FINAL + `/impeccable audit` FINAL~~, puis charger le contenu réel (`Desktop/Academie/`).
 
 ### 🔖 Session du 16 juillet 2026 (3e) — `/impeccable polish` FINAL : la règle de l'encre appliquée partout
 Passe polish avant lancement. Méthode : un **auditeur de contraste** exécuté au navigateur sur les 7 pages coach + accueil élève + bibliothèque, **dans les 2 thèmes**, sur les couleurs COMPOSITÉES (alpha résolu contre la vraie chaîne de fonds). Il a trouvé ce que le détecteur ne voyait pas. **17 échecs AA → 0**, dans les deux thèmes. typecheck + 88 tests + build verts, 0 erreur console.
