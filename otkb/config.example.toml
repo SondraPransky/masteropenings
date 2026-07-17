@@ -1,0 +1,21 @@
+# Copier en `config.local.toml` (gitignoré) pour surcharger les défauts.
+# Toutes les clés sont optionnelles.
+
+# --- Chemins (données lourdes -> data/, gitignoré) ---
+# db_path  = "data/otkb.db"
+# csv_path = "data/lichess_db_puzzle.csv"
+
+# --- Filtre passe 1 (SPEC §4) : garde les puzzles OpeningTags != vide ET fullmove < seuil ---
+# 25 = borne naturelle Lichess (100% des taggés ont fullmove < 25) = tous les puzzles d'ouverture.
+opening_fullmove_max = 25       # comparaison EXCLUSIVE
+
+# --- Seuil de publication web (passe 2) ---
+publish_threshold_n = 5
+
+# --- Passe 2 : token API Lichess ---
+# Recommandé (pas obligatoire pour parties publiques) : relève les limites de débit.
+# Le mettre ICI (config.local.toml, gitignoré) OU dans la variable d'env LICHESS_TOKEN.
+# L'env l'emporte. NE JAMAIS committer un vrai token, ni le coller dans un chat.
+# lichess_token = "lip_xxxxxxxx"
+
+# log_level = "INFO"

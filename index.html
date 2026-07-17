@@ -232,6 +232,10 @@
       <span class="csnav-lbl">Modules</span>
       <span class="csnav-badge new" id="csnav-count-modules">0</span>
     </button>
+    <button class="csnav-btn" id="csnav-explorer" onclick="switchCoachSection('explorer')" style="display:none">
+      <span class="csnav-ico"><i class="ti ti-map-search" aria-hidden="true"></i></span>
+      <span class="csnav-lbl">Explorateur</span>
+    </button>
     <div class="csnav-divider"></div>
     <div class="csnav-group">Analyse</div>
     <button class="csnav-btn" id="csnav-heatmap" onclick="switchCoachSection('heatmap')">
@@ -415,6 +419,38 @@
           <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-weakspot')">✕</button>
         </div>
         <div id="ws-modal-body"></div>
+      </div>
+    </div>
+
+    <!-- ── SECTION : Explorateur de puzzles (pont OTKB local, coach only) ── -->
+    <div id="csec-explorer" style="display:none">
+      <div class="cs-header">
+        <div>
+          <h1 class="cs-title">Explorateur de puzzles</h1>
+          <div class="cs-sub">Les puzzles tactiques qui passent par une position — pour en faire un paquet d'exercices.</div>
+        </div>
+      </div>
+      <div class="exp-mobile-note">L'explorateur s'utilise sur écran large (il lit le corpus local complet).</div>
+      <div id="exp-body">
+        <div class="exp-pos">
+          <div class="exp-pos-fields">
+            <label class="exp-label" for="exp-input">Position <span class="exp-hint">— coups UCI (<code>e2e4 e7e5 g1f3</code>) ou FEN</span></label>
+            <div class="exp-pos-row">
+              <input id="exp-input" class="exp-in" type="text" placeholder="e2e4 e7e5 g1f3" autocomplete="off" spellcheck="false">
+              <button class="btn btn-primary" onclick="explorerLoad()"><i class="ti ti-search" aria-hidden="true"></i> Explorer</button>
+            </div>
+            <div id="exp-count" class="exp-count"></div>
+          </div>
+          <div id="exp-board" class="exp-board" aria-hidden="true"></div>
+        </div>
+        <div id="exp-results"></div>
+        <div id="exp-actionbar" class="exp-actionbar" style="display:none">
+          <span id="exp-selcount" class="exp-selcount">0 sélectionné</span>
+          <div class="exp-actionbtns">
+            <button class="btn btn-blue btn-sm" onclick="explorerExportPgn()"><i class="ti ti-download" aria-hidden="true"></i> Exporter PGN</button>
+            <button class="btn btn-primary btn-sm" onclick="explorerCreatePacket()"><i class="ti ti-puzzle" aria-hidden="true"></i> Créer un paquet</button>
+          </div>
+        </div>
       </div>
     </div>
 

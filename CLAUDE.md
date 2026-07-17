@@ -18,6 +18,32 @@ L’application doit permettre :
 **Phase : le refactoring est terminé → on entre dans la construction produit.**
 Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un prof — toi — + ses élèves) ; le **multi-coachs viendra après**. Pas encore d’utilisateurs réels.
 
+### 🔖 Session du 17 juillet 2026 (3e) — ▶ NOUVELLE PIÈCE : l'EXPLORATEUR DE PUZZLES OTKB (branche `feat/otkb-explorer`, non committé au moment d'écrire)
+
+**Décision produit (grill-me) : intégrer le projet `opening-tactics-kb` (OTKB) dans EECoach — l'explorateur de puzzles comme 8e section coach.** Ceci **annule** une décision verrouillée d'OTKB (`PLAN.md` : « app élève dédiée, distincte d'EECoach ») — assumé, pas dérivé : l'utilisatrice a tranché « c'est une nouvelle pièce de EECoach, intègre-la maintenant ». **Livré en tranche verticale mince, prouvée end-to-end** ; typecheck + **116 tests** + build verts, 0 erreur console. ⚠️ Le SEUL vrai risque ouvert (couche d'édition élève jamais testée en connecté) le reste — l'explorateur est passé devant, choix de l'utilisatrice.
+
+#### Ce qu'OTKB est, et pourquoi il ne peut PAS entrer par les rails habituels
+OTKB = usine Python **locale** qui indexe **1,2 M puzzles d'ouverture Lichess** et répond au cœur métier : « quels puzzles tactiques **PASSENT PAR** cette position ? » (*through-position*, pas « démarrent à »). Le corpus intégral = **18,4 Go** (`data/otkb.db`, index `positions` 34,6 M lignes). **Physiquement indéployable** : GitHub Pages plafonne à 100 Mo/fichier, le Supabase gratuit d'EECoach (500 Mo) héberge déjà les vraies données du club. Même l'artefact réduit p95 (160 Mo) dépasse. **Et l'artefact `otkb-web.sqlite` ne fait PAS le through-position** (il écarte `positions` — il n'indexe que « démarre à », = la dérive d'une semaine documentée dans le PLAN.md d'OTKB). Donc : **pas d'export réutilisable**.
+
+#### L'architecture retenue : MONOREPO + PONT LOCALHOST (contre-intuitif mais mesuré)
+- **Le code OTKB vit dans le repo EECoach** (`otkb/`, 676 Ko de Python pur copié — `git` unique). Mais **les données restent locales** (18,4 Go gitignorés, jamais copiés). Monorepo, **pas** mono-runtime.
+- **Au runtime : deux processus.** Le Python lit les 18 Go sur ta machine et les sert en HTTP `localhost` ; le front EECoach (déployé sur Pages) l'interroge. **⚠️ Fait MESURÉ (ne pas re-démontrer)** : depuis le **vrai site HTTPS déployé**, `fetch("http://localhost:8127")` = **200, ALLOWED** — `localhost` est « potentially trustworthy », donc pas de blocage mixed-content. Le pont est viable depuis Pages, ce n'est pas de la théorie.
+- **Le pont côté EECoach est un pilote interchangeable** (constante `ODP_BRIDGE_URL` en dur) : le « déploiement en ligne à terme » (voulu par l'utilisatrice) se fera en changeant cette URL, prévu dès maintenant.
+
+#### Livré (tranche mince, tout vérifié au navigateur sur la vraie base 18,4 Go)
+| Brique | Contenu |
+|---|---|
+| **A — monorepo** | `otkb/` copié (code seul, 0 donnée, 0 secret — ⚠️ `config.local.toml` d'OTKB porte un **token Lichess en clair**, exclu de la copie + couvert dans `.gitignore`). `otkb-pyproject.toml` trace les deps (`python-chess`, déjà installé). |
+| **B — pont** | `otkb/bridge.py` (stdlib `http.server` **mono-thread** — la connexion sqlite est liée à son thread, un serveur mono-thread garde tout dans le même ; parfait pour un coach unique) + CORS. Routes : `/health`, `/through` (→ `list_puzzles_through`+`count_puzzles_through`), `/puzzle` (→ `get_puzzle`), `/export` (→ `export_through_position` via tempfile). Commande CLI **`serve-api`** (`--port 8127`). **Zéro logique métier réécrite** : le pont expose l'existant, déjà mesuré perf-OK (tri popularité ~1 ms via cache). |
+| **C — UI** | 8e section coach `#csec-explorer` (groupe Contenu) + bouton `#csnav-explorer` **masqué par défaut**, révélé par ping `/health` dans `_coachLoad` (app.js, additif) — **pas de bouton mort**. `lib/coach-explorer.js` (importé par le barrel `coach.js`) : compo « Flux » dans les tokens EECoach (`.exp-*`, calqué sur `.wsx-table`). `switchCoachSection` (app.js) : `'explorer'` ajouté (additif). Sous 960px : section masquée + note desktop-only (l'outil lit 18 Go locaux → pas de sens sur mobile ; `!important` bat le `display:''` inline pour préserver l'arbitrage « 7 sections tiennent »). |
+| **D — builder** | Sélection de puzzles → **« Créer un paquet »** : mapping OTKB→kp EECoach (chess.js) — un puzzle Lichess `{fen, moves UCI}` : `moves[0]` (coup adverse qui ARME) appliqué à `fen` → **`kp.fen`** (élève au trait) ; `moves[1:]` en SAN → **`kp.line`** ; longueur impaire (invariant moteur, cf. `_exParseGameToKp`). Module `mode:'flash'`/`isExercise` comme `saveExercisePacket`. **+ « Exporter PGN »** (même dossier que l'outil coach OTKB, via `/export`). |
+
+**Preuve end-to-end (navigateur réel, base 18,4 Go)** : through count `214 382` sur `e2e4 e7e5 g1f3` **identique** au CLI `otkb explore` ; paquet de 3 puzzles créé, **tous les 1ers coups jouables + lignes impaires**, ligne exemple `["Qxh7#"]` (le mat réel du puzzle `zzI37`) ; export PGN 200 avec en-têtes valides ; détection **réversible** (pont coupé → section masquée, revenu → affichée) ; 0 débordement à 375px ; `otkb/` non embarqué dans `dist`.
+
+**Reste (hors tranche mince, SÛRS car le seam est prouvé)** : échiquier jouable (drag & drop au lieu du champ FEN/UCI), sélecteur d'ouverture (asset `openings_moves`), filtres FIDE multi-select, aperçus 320px par puzzle, solveur en ligne. Puis, séparément, le **déploiement en ligne du pont**.
+
+**⚠️ Pièges à ne pas re-découvrir** : (1) le pont doit tourner (`python -m otkb --db "…/opening-tactics-kb/data/otkb.db" serve-api`) sinon la section reste masquée — c'est voulu ; (2) `http.server` **mono-thread obligatoire** (sqlite `check_same_thread`) ; (3) le token Lichess d'OTKB ne doit JAMAIS entrer dans git ; (4) screenshots du navigateur de preview timent out (piège connu §8) → juger par mesures DOM.
+
 ### 🔖 Session du 17 juillet 2026 (2e) — ▶ DÉCISION PRODUIT : l'éditeur AU TÉLÉPHONE (`456836d`)
 
 **Réponse de l'utilisatrice à la question ouverte du 16/07 : « les profs utiliseront possiblement sur téléphone l'éditeur, oui ».** La question n'est donc plus théorique — mais le plan disait « mesurer AVANT de promettre ». Mesuré d'abord, corrigé ensuite (feu vert donné pour les 2 défauts).

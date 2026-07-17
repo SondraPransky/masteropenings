@@ -130,6 +130,12 @@ interface Window {
   renderStudentPage?: (...a: any[]) => any;   // page profil exhaustive (lib/coach-student-page.js)
   closeStudentPage?: (...a: any[]) => any;    // retour à la liste des élèves
   renderHeatmap?: (...a: any[]) => any;
+  renderExplorer?: (...a: any[]) => any;        // section Explorateur (lib/coach-explorer.js)
+  explorerLoad?: (...a: any[]) => any;
+  explorerCreatePacket?: (...a: any[]) => any;
+  explorerExportPgn?: (...a: any[]) => any;
+  _expToggleSel?: (...a: any[]) => any;
+  _expDetectBridge?: (...a: any[]) => any;      // détection du pont OTKB local
   pgnToEditorTree?: (...a: any[]) => any;
   openWeakspotPosition?: (...a: any[]) => any;
   wsTip?: (...a: any[]) => any;

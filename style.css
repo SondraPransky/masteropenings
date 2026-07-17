@@ -2272,3 +2272,44 @@ textarea {
     scroll-behavior: auto !important;
   }
 }
+
+/* ══ Explorateur de puzzles (section coach, pont OTKB local) ══════════════════
+   Compo « Flux » : position (input + apercu) → tableau dense des puzzles qui
+   passent par la position. Meme vocabulaire visuel que .wsx-* (tokens uniquement). */
+.exp-mobile-note { display: none; }
+.exp-pos { display: flex; gap: 18px; align-items: flex-start; flex-wrap: wrap; margin: 4px 0 18px; }
+.exp-pos-fields { flex: 1 1 320px; min-width: 280px; }
+.exp-label { display: block; font-size: .78rem; font-weight: 600; color: var(--text-2); margin-bottom: 7px; }
+.exp-hint { color: var(--dim); font-weight: 400; }
+.exp-hint code, .exp-label code { font-family: var(--font-mono); font-size: .9em; background: var(--surf2); padding: 1px 5px; border-radius: var(--rs); }
+.exp-pos-row { display: flex; gap: 8px; }
+.exp-in { flex: 1; background: var(--surf2); border: 1px solid var(--border); border-radius: var(--rs); padding: 9px 12px; color: var(--text); font-family: var(--font-mono); font-size: .9rem; }
+.exp-in:focus { outline: none; border-color: var(--cyan); }
+.exp-count { margin-top: 10px; font-size: .82rem; color: var(--text-2); }
+.exp-count strong { color: var(--text); }
+.exp-loading { color: var(--dim); }
+.exp-err { color: var(--red-ink); }
+.exp-board { flex: 0 0 auto; }
+.exp-table { width: 100%; border-collapse: collapse; font-size: .8rem; border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+.exp-table th { text-align: left; font-size: .66rem; font-weight: 600; color: var(--dim); padding: 8px 12px; border-bottom: 1px solid var(--border); background: var(--surf); white-space: nowrap; }
+.exp-table td { padding: 7px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.exp-table tbody tr:last-child td { border-bottom: none; }
+.exp-table tbody tr:hover { background: var(--surf2); }
+.exp-td-check { width: 34px; }
+.exp-check { width: 17px; height: 17px; accent-color: var(--cyan); cursor: pointer; }
+.exp-rating { font-family: var(--font-mono); font-weight: 700; color: var(--text); }
+.exp-theme { display: inline-block; font-size: .66rem; padding: 1px 7px; border-radius: 999px; background: var(--cyan-dim); color: var(--cyan); margin: 1px 0; }
+.exp-id { font-family: var(--font-mono); font-size: .72rem; color: var(--dim); }
+.exp-actionbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; padding: 12px 14px; background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); flex-wrap: wrap; }
+.exp-selcount { font-size: .82rem; font-weight: 600; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.exp-actionbtns { display: flex; gap: 8px; }
+
+@media (max-width: 960px) {
+  /* L'explorateur lit le corpus LOCAL (18 Go) via l'usine Python : il n'a pas de sens
+     sur mobile. On masque le bouton (`!important` bat le display:'' inline pose par la
+     detection) pour PRESERVER l'arbitrage « 7 sections tiennent » (une 8e icone
+     deborderait : mesure 292px pour 335 dispo), et la section affiche une note. */
+  #csnav-explorer { display: none !important; }
+  #csec-explorer #exp-body { display: none; }
+  #csec-explorer .exp-mobile-note { display: block; background: var(--surf2); border: 1px solid var(--border); border-radius: var(--r); padding: 14px 16px; font-size: .85rem; color: var(--text-2); }
+}

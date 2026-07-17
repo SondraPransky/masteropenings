@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "otkb"
+version = "0.1.0"
+description = "Opening Tactical Knowledge Base — usine locale d'indexation des puzzles d'ouverture Lichess"
+requires-python = ">=3.13"
+# v0.1 = stdlib seule (csv, sqlite3, tomllib, dataclasses) : aucune dép runtime.
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+# Analyse de coups offline (tranche 2-bis) : rejeu de la solution.
+analysis = ["python-chess>=1.999"]
+# Explorateur interactif (v0.2) : GUI locale + échiquier.
+ui = ["nicegui>=1.4"]
+# Passe 2 (v0.4) : download parallèle des parties.
+pass2 = ["python-chess>=1.999", "httpx>=0.27"]
+
+[project.scripts]
+otkb = "otkb.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["otkb*"]
+
+[tool.setuptools.package-data]
+"otkb.db" = ["*.sql"]
+"otkb.assets" = ["*.json"]
+"otkb.ui" = ["static/*"]   # assets Chessground vendus (JS + CSS + pièces cburnett)
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

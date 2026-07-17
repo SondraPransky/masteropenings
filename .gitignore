@@ -17,6 +17,15 @@ Thumbs.db
 /playwright/.cache/
 tests/e2e/.auth/
 
+# OTKB (usine locale monorepo) — CODE versionné, DONNÉES et SECRET jamais commités.
+# Le corpus (.db 18 Go, CSV 1 Go) reste sur la machine ; le pont le sert en local.
+otkb/**/__pycache__/
+otkb/data/
+*.db
+*.sqlite
+lichess_db_puzzle.csv
+config.local.toml
+
 # Outillage Claude Code local (skill impeccable) — pas du code de l'app
 .github/hooks/
 .github/skills/

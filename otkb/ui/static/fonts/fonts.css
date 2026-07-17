@@ -1,0 +1,24 @@
+/* Polices vendues localement (offline, latin). Open Font License.
+   Variables : un fichier/famille couvre la plage font-weight. Cf. DESIGN.md. */
+
+@font-face{
+  font-family:'Bricolage Grotesque';
+  font-style:normal;
+  font-weight:700 800;
+  font-display:swap;
+  src:url('/otkb-static/fonts/bricolage-grotesque.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Hanken Grotesk';
+  font-style:normal;
+  font-weight:400 700;
+  font-display:swap;
+  src:url('/otkb-static/fonts/hanken-grotesk.woff2') format('woff2');
+}
+@font-face{
+  font-family:'JetBrains Mono';
+  font-style:normal;
+  font-weight:400 500;
+  font-display:swap;
+  src:url('/otkb-static/fonts/jetbrains-mono.woff2') format('woff2');
+}

@@ -305,7 +305,7 @@ function totalSessions() {
 // NAVIGATION
 // ══════════════════════════════════════════════════════
 function switchCoachSection(sec) {
-  const sections = ['overview','classes','modules','eleves','heatmap','parties','export'];
+  const sections = ['overview','classes','modules','explorer','eleves','heatmap','parties','export'];
   sections.forEach(s => {
     const el = document.getElementById('csec-'+s);
     if (el) el.style.display = s===sec ? '' : 'none';
@@ -330,6 +330,7 @@ function switchCoachSection(sec) {
       window.renderProfView?.();
     });
   }
+  if (sec==='explorer') { window.renderExplorer?.(); }
   if (sec==='heatmap') { window.renderHeatmap?.(); }
   if (sec==='parties') { loadTeacherGames().then(()=>{ _syncPartiesFilter(); window.renderPartiesTab?.(); }); }
 }
@@ -1013,6 +1014,7 @@ async function _coachLoad() {
   await _sbLoadTeacherOverlays();   // lignes ajoutees par les eleves sur ses modules
   G._coachLoading = (G._sbErrorAt && G._sbErrorAt >= t0) ? 'error' : null;
   window.renderOverview?.(); window.renderProfView?.();
+  window._expDetectBridge?.();   // révèle la section Explorateur si l'usine OTKB locale répond
 }
 window.retryCoachLoad = _coachLoad;
 
