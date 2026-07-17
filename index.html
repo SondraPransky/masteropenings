@@ -433,15 +433,33 @@
       <div class="exp-mobile-note">L'explorateur s'utilise sur écran large (il lit le corpus local complet).</div>
       <div id="exp-body">
         <div class="exp-pos">
+          <div id="exp-board" class="exp-board"></div>
           <div class="exp-pos-fields">
-            <label class="exp-label" for="exp-input">Position <span class="exp-hint">— coups UCI (<code>e2e4 e7e5 g1f3</code>) ou FEN</span></label>
+            <label class="exp-label" for="exp-opening">Ouverture <span class="exp-hint">— ou joue les coups sur l'échiquier</span></label>
+            <input id="exp-opening" class="exp-in" list="exp-opening-list" placeholder="Choisir une ouverture…" autocomplete="off" onchange="explorerPickOpening(this.value)">
+            <datalist id="exp-opening-list"></datalist>
+            <label class="exp-label" for="exp-input" style="margin-top:12px">Position <span class="exp-hint">— coups UCI (<code>e2e4 e7e5 g1f3</code>) ou FEN</span></label>
             <div class="exp-pos-row">
               <input id="exp-input" class="exp-in" type="text" placeholder="e2e4 e7e5 g1f3" autocomplete="off" spellcheck="false">
+              <button class="btn btn-ghost btn-sm" onclick="explorerResetBoard()" title="Position de départ"><i class="ti ti-rotate" aria-hidden="true"></i></button>
               <button class="btn btn-primary" onclick="explorerLoad()"><i class="ti ti-search" aria-hidden="true"></i> Explorer</button>
+            </div>
+            <div class="exp-filters">
+              <span class="exp-filters-lbl">Niveau élève :</span>
+              <div class="exp-levelchips" id="exp-levelchips">
+                <button type="button" class="exp-levelchip" data-min="0" data-max="1000" onclick="explorerSetLevel(this)">Débutant</button>
+                <button type="button" class="exp-levelchip" data-min="1000" data-max="1500" onclick="explorerSetLevel(this)">Intermédiaire</button>
+                <button type="button" class="exp-levelchip" data-min="1500" data-max="2000" onclick="explorerSetLevel(this)">Avancé</button>
+                <button type="button" class="exp-levelchip" data-min="2000" data-max="4000" onclick="explorerSetLevel(this)">Expert</button>
+              </div>
+              <span class="exp-range">
+                <input id="exp-min" class="exp-num" type="number" min="0" max="4000" placeholder="min" onchange="explorerLoad()">
+                <span class="exp-range-dash">–</span>
+                <input id="exp-max" class="exp-num" type="number" min="0" max="4000" placeholder="max" onchange="explorerLoad()">
+              </span>
             </div>
             <div id="exp-count" class="exp-count"></div>
           </div>
-          <div id="exp-board" class="exp-board" aria-hidden="true"></div>
         </div>
         <div id="exp-results"></div>
         <div id="exp-actionbar" class="exp-actionbar" style="display:none">

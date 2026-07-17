@@ -2290,6 +2290,23 @@ textarea {
 .exp-loading { color: var(--dim); }
 .exp-err { color: var(--red-ink); }
 .exp-board { flex: 0 0 auto; }
+.exp-playboard { display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); width: 288px; height: 288px; border-radius: var(--rs); overflow: hidden; border: 1px solid var(--border); }
+.exp-sq { background: var(--board-light, #f0d9b5); display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; }
+.exp-sq-d { background: var(--board-dark, #b58863); }
+.exp-sq img { width: 90%; height: 90%; pointer-events: none; }
+.exp-sq-sel::after { content: ''; position: absolute; inset: 0; box-shadow: inset 0 0 0 3px var(--cyan); }
+.exp-sq:hover { filter: brightness(1.06); }
+/* Filtres de difficulté FIDE (calibrage au niveau de l'élève). */
+.exp-filters { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+.exp-filters-lbl { font-size: .76rem; font-weight: 600; color: var(--text-2); }
+.exp-levelchips { display: flex; gap: 5px; flex-wrap: wrap; }
+.exp-levelchip { font-size: .72rem; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--surf2); color: var(--text-2); cursor: pointer; font-family: inherit; }
+.exp-levelchip:hover { border-color: var(--cyan); }
+.exp-levelchip.on { background: var(--cyan-dim); border-color: var(--cyan-glow); color: var(--cyan); font-weight: 600; }
+.exp-range { display: flex; align-items: center; gap: 4px; }
+.exp-num { width: 62px; background: var(--surf2); border: 1px solid var(--border); border-radius: var(--rs); padding: 5px 8px; color: var(--text); font-family: var(--font-mono); font-size: .78rem; }
+.exp-num:focus { outline: none; border-color: var(--cyan); }
+.exp-range-dash { color: var(--dim); }
 .exp-table { width: 100%; border-collapse: collapse; font-size: .8rem; border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
 .exp-table th { text-align: left; font-size: .66rem; font-weight: 600; color: var(--dim); padding: 8px 12px; border-bottom: 1px solid var(--border); background: var(--surf); white-space: nowrap; }
 .exp-table td { padding: 7px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }

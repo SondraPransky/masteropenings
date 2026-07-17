@@ -134,7 +134,11 @@ interface Window {
   explorerLoad?: (...a: any[]) => any;
   explorerCreatePacket?: (...a: any[]) => any;
   explorerExportPgn?: (...a: any[]) => any;
+  explorerResetBoard?: (...a: any[]) => any;
+  explorerPickOpening?: (...a: any[]) => any;
+  explorerSetLevel?: (...a: any[]) => any;
   _expToggleSel?: (...a: any[]) => any;
+  _expClickSq?: (...a: any[]) => any;
   _expDetectBridge?: (...a: any[]) => any;      // détection du pont OTKB local
   pgnToEditorTree?: (...a: any[]) => any;
   openWeakspotPosition?: (...a: any[]) => any;

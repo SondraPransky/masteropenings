@@ -43,6 +43,17 @@ logger = get_logger(__name__)
 
 _SORTS = ("popularity", "rating_asc", "rating_desc")
 
+# Asset nom d'ouverture → coups UCI (1200 entrées), chargé une fois à la demande.
+_OPENINGS_PATH = Path(__file__).with_name("assets") / "openings_moves.json"
+_openings_cache: dict[str, str] | None = None
+
+
+def _openings() -> dict[str, str]:
+    global _openings_cache
+    if _openings_cache is None:
+        _openings_cache = json.loads(_OPENINGS_PATH.read_text(encoding="utf-8"))
+    return _openings_cache
+
 
 def _int_or_none(qs: dict, key: str) -> int | None:
     """Lit un entier optionnel d'une query-string (None si absent/vide/invalide)."""
@@ -98,6 +109,8 @@ class _Handler(BaseHTTPRequestHandler):
                 return self._through(qs)
             if route == "/puzzle":
                 return self._puzzle(qs)
+            if route == "/openings":
+                return self._openings_route()
             if route == "/export":
                 return self._export(qs)
             return self._err(404, f"route inconnue : {route}")
@@ -156,6 +169,14 @@ class _Handler(BaseHTTPRequestHandler):
             "id": pz.puzzle_id, "fen": pz.fen, "moves": pz.moves,
             "rating": pz.rating, "themes": pz.themes, "game_url": pz.game_url,
         })
+
+    def _openings_route(self) -> None:
+        # nom lisible (underscores → espaces) → coups UCI ; trié par nom.
+        ops = _openings()
+        self._send(200, {"openings": [
+            {"name": name.replace("_", " "), "moves": moves}
+            for name, moves in sorted(ops.items())
+        ]})
 
     def _export(self, qs: dict) -> None:
         nfen = self._resolve(qs)
