@@ -114,7 +114,7 @@ Session « ce que je peux faire seule » (choix utilisatrice : les points 3 et 4
 
 ### 🔖 POINT DE REPRISE (17 juillet 2026, fin de journée)
 
-**État au 17/07 (4e session) : les 21 commits OTKB + échiquiers ont été fusionnés dans `main` (fast-forward), working tree propre. ⚠️ `main` n'est PAS forcément poussé sur `origin` — le push a été laissé à la décision de l'utilisatrice (il déploie sur Pages, et l'étape B — drill Chessground — n'est pas validée).** Reste vrai : la couche d'édition élève n'a jamais tourné en connecté (risque côté données) + **l'étape B non validée** (risque côté drill).
+**État au 17/07 (4e session, mesuré après `fetch` : `main` == `origin/main` = `d122f8a`, Action Pages lancée) : les 21 commits OTKB + échiquiers sont fusionnés dans `main` ET POUSSÉS (déployés sur Pages, décision utilisatrice — elle teste l'étape B sur le site en ligne). Working tree propre.** ⚠️ **L'étape B (drill Chessground) est DÉPLOYÉE mais toujours NON VALIDÉE par un coup humain** — si le drill casse en ligne, `git revert` de `f1c3505` remet le canvas. Reste aussi ouvert : la couche d'édition élève jamais connectée (risque données).
 
 > ⚠️ **Cette ligne s'est périmée QUATRE fois.** **Ne jamais s'y fier — la mesurer**, après un `git fetch` (sans quoi `origin/main` est une référence locale périmée) :
 > `git fetch origin && git rev-list --left-right --count origin/main...main`
