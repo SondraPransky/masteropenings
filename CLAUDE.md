@@ -18,6 +18,18 @@ L’application doit permettre :
 **Phase : le refactoring est terminé → on entre dans la construction produit.**
 Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un prof — toi — + ses élèves) ; le **multi-coachs viendra après**. Pas encore d’utilisateurs réels.
 
+### 🔖 Session du 17 juillet 2026 (5e) — refactor explorateur + mascotte + polish (poussé sur `main`)
+
+Session « qualité + une touche produit ». typecheck + **116 tests** + build verts ; poussé/déployé.
+
+- **REFACTO explorateur (revue thermo-nuclear).** `lib/coach-explorer.js` (963 l.) découpé : nouveau socle **`lib/coach-explorer-core.js`** (état partagé `EX` muté-jamais-réassigné + helpers purs `playUci`/`toggleLevel`/`levelChipsHTML`, patron `coach-core`/`CS`) + module **`lib/coach-explorer-export.js`** (dialogue « Dossier de puzzles », sous-fonctionnalité autonome). Dédup en place : `playUci` (idiome uci→move répété ~8×), toggle de niveaux FIDE (copié 2×), teardown de puzzle centralisé (`_expClearPuzzle`). **Le solveur reste dans le core** (couplage board/game assumé — l'extraire disperserait l'état mutable). ⚠️ **`board.js` NON touché** (choix utilisatrice — zone critique + étape B non validée) : le §1 de la revue (sync Chessground partagé entre `board.js` et l'explorateur) reste à faire APRÈS validation de l'étape B. ⚠️ Refactor **non vérifié au navigateur** (pont OTKB + base 18 Go absents en session) → validé par typecheck/tests/build + relecture.
+- **FEAT bouton « Couleur » du plateau.** Le sélecteur de couleur d'échiquier (`openBoardSettings`, existait déjà, enfoui dans le menu compte) gagne un point d'entrée sur la page drill (barre de contrôles, à côté de « Retourner »). Vérifié navigateur (ouvre le modal, change `data-board`, persiste `mc_board`).
+- **POLISH make-interfaces (site).** Le socle était déjà traité ; comblé les trous : press-scale `.96` + transitions explicites sur `.exp-mvpill`/`.exp-levelchip`/`.sh-card-act`/`.board-theme-opt`, transition sur `.acct-dd-item`, contour d'image (noir/blanc pur, principe 11) sur `.board-theme-swatch`. `transition: all` toujours à 0, font-smoothing/text-wrap/tabular-nums déjà en place.
+- **FEAT mascotte « chat-cavalier » (Phase 1).** Décision produit (annule le « pas de mascotte » du DESIGN.md, désormais amendé) : une mascotte pixel inline-SVG **au budget délice uniquement**. `lib/mascot.js` (générateur 40×42, contour auto, robe **Roux** active, 4 robes conservées). Livrée dans le **hero « Bienvenue » du premier lancement** (`lib/student.js`, état vierge) + CSS `.msc-*` (bob/patte basse/queue, garde `reduced-motion`). Vérifié navigateur (1013 pixels, palette Roux, 3 animations). **Phases 2 (fin sans-faute `cheer`) et 3 (états vides `sleep`) PAS faites.** Détail → mémoire [[mascotte-chat-cavalier]].
+- **CHORE** : `.agents/` + `skills-lock.json` gitignorés (skills d'agents installées en local via la CLI `skills`).
+
+⚠️ **RESTE À FAIRE (au-delà de la mascotte)** — voir le POINT DE REPRISE ci-dessous, mis à jour : validation étape B drill Chessground sur vrai écran ; couche d'édition élève en connecté ; contenu réel ; **§1 revue (sync Chessground partagé board.js↔explorateur)** ; **extraction `app.js` → `lib/supabase-data.js`** (après smoke test connecté) ; mascotte phases 2-3 ; micro-anims non-mascotte (pop de série, stagger de grille).
+
 ### 🔖 GROSSE SESSION du 17 juillet 2026 (4e) — OTKB intégré + unité des échiquiers (branche `feat/otkb-explorer` **fusionnée dans `main`**)
 
 **Deux gros chantiers, 21 commits, tout sur `main` (fast-forward).** ⚠️ **Push/déploiement à décider** : merger sur `main` local ≠ déployer ; le push déclenche Pages. **⚠️ 1 chantier NON VALIDÉ subsiste (étape B ci-dessous)** — à essayer sur un vrai écran avant de s'y fier.

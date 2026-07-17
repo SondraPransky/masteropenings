@@ -29,6 +29,9 @@ config.local.toml
 # Outillage Claude Code local (skill impeccable) — pas du code de l'app
 .github/hooks/
 .github/skills/
+# Skills d'agents installées au niveau projet (CLI `skills add`) — outillage local
+.agents/
+skills-lock.json
 # État runtime du serveur `impeccable live` (pid/port/token de la machine locale).
 # `.impeccable/live/config.json` et `design.json`, eux, sont du config → suivis.
 .impeccable/live/server.json

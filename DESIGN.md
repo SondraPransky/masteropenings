@@ -97,7 +97,7 @@ components:
 
 EECoach est le cahier d'exercices soigné d'une académie d'échecs : du papier clair (zinc, jamais crème), une notation monospacée qui appartient visiblement au jeu, et **une seule encre indigo** réservée à ce qui compte — l'action principale, la sélection, la progression. Le système écrit peu et souligne encore moins : la hiérarchie vient de la structure (sections, bordures 1px, poids typographiques), pas de la décoration. L'outil s'efface devant la tâche ; un élève de dix ans comme un adulte du club doit réviser sans réfléchir à l'interface.
 
-Ce que le système **rejette explicitement** (anti-références PRODUCT.md) : le dashboard SaaS générique (cartes identiques, gros KPI + gradient, fond crème, eyebrows en capitales) ; la densité-cockpit de chess.com/lichess ; l'app enfantine sur-gamifiée (couleurs criardes, mascottes) ; le corporate froid et gris. La seule chaleur autorisée vient du jeu lui-même : figurines ♔♞, notation algébrique, mini-échiquiers.
+Ce que le système **rejette explicitement** (anti-références PRODUCT.md) : le dashboard SaaS générique (cartes identiques, gros KPI + gradient, fond crème, eyebrows en capitales) ; la densité-cockpit de chess.com/lichess ; l'app enfantine sur-gamifiée (couleurs criardes, confetti permanents) ; le corporate froid et gris. La chaleur vient d'abord du jeu lui-même (figurines ♔♞, notation algébrique, mini-échiquiers) ; une mascotte « chat-cavalier » l'appuie, mais **strictement au budget délice** (voir la règle de la mascotte).
 
 **Key Characteristics:**
 - Fond zinc neutre (#fafafa), surfaces blanches, bordures 1px — jamais de teinte crème/beige.
@@ -190,6 +190,8 @@ Une **seule** échelle sémantique, déclarée en tokens dans `:root` — aucun 
 
 **La règle du z-index nommé.** Tout empilement global passe par un token de la Z-Scale. Deux calques qui peuvent coexister n'ont **jamais** la même valeur : une égalité n'est pas une décision, c'est l'ordre du DOM qui tranche à ta place. (Corrigé le 17/07/2026 : `#promo-backdrop` et `#del-dialog` étaient tous deux à 9999.)
 
+**La règle de la mascotte.** Le « chat-cavalier » (pixel inline-SVG, `lib/mascot.js`) est la seule concession à la mascotte — et elle ne paraît qu'aux **moments rares à forte émotion** : accueil premier lancement (`wave`, livré), fin de paquet sans faute (`cheer`, à venir), états vides (`sleep`, à venir). **Jamais** sur l'échiquier, les dashboards, la nav, ni aucun écran vu plusieurs fois par jour — l'y mettre casserait le « jamais sur-gamifié ». Robe active = Roux (3 autres conservées, swap = 1 constante). Trois mouvements discrets (bob, patte basse, queue), tous gardés par `prefers-reduced-motion` (le chat se fige, il n'est jamais retiré).
+
 ## 5. Components
 
 Caractère : **sobres et sûrs**. Affordances standard, rien ne se réinvente — la familiarité est gagnée, la personnalité vient du contenu échiquéen, pas des contrôles.
@@ -232,7 +234,7 @@ Canvas central avec pièces cburnett (SVG locaux), coordonnées, flèches/formes
 ### Don't:
 - **Don't** reproduire « le dashboard SaaS générique » (PRODUCT.md) : cartes identiques, gros KPI + gradient, fond crème/beige, eyebrows en petites capitales tracked.
 - **Don't** viser la densité de chess.com/lichess (« le site d'échecs surchargé ») : pas de panneaux partout, le calme est un choix.
-- **Don't** sur-gamifier (« l'app enfantine ») : pas de confetti, pas de mascotte, pas de couleur criarde ; la coche « sans faute » dessinée reste l'exception rare.
+- **Don't** sur-gamifier (« l'app enfantine ») : pas de confetti, pas de couleur criarde, et la mascotte reste cantonnée au budget délice (règle de la mascotte) ; la coche « sans faute » dessinée reste l'exception rare.
 - **Don't** retomber dans « le corporate froid et gris » : la chaleur passe par les figurines, le ton du copy et l'encouragement — pas par un beige plaqué.
 - **Don't** utiliser `--gold` pour un deuxième accent : l'ambre est un état (échéance/attention), l'or des badges, jamais une décoration.
 - **Don't** écrire `transition: all`, une ombre noire pure, un `border-left` coloré >1px, ou un gradient text — bannis.
