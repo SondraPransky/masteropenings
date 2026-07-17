@@ -159,6 +159,7 @@ interface Window {
   _expDragEnd?: (...a: any[]) => any;
   _expTouchStart?: (...a: any[]) => any;
   _expToggleSel?: (...a: any[]) => any;
+  _expToggleAll?: (...a: any[]) => any;         // tout cocher (page courante)
   _expClickSq?: (...a: any[]) => any;
   _expDetectBridge?: (...a: any[]) => any;      // détection du pont OTKB local
   pgnToEditorTree?: (...a: any[]) => any;

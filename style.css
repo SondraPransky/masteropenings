@@ -2391,3 +2391,34 @@ textarea {
 .exp-dl-switch input { width: 16px; height: 16px; accent-color: var(--cyan); }
 .exp-dl-preview { margin-top: 6px; display: flex; flex-direction: column; gap: 2px; }
 .exp-dl-line { font-size: .74rem; color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* — passe /frontend-design (mesures du 17/07) : les 8 correctifs — */
+/* P1 : le geste primaire toujours sous la main (actionbar collante) ; la nav
+   fait 58px, la barre colle au bas de la fenêtre au-dessus du contenu. */
+.exp-actionbar { position: sticky; bottom: 10px; z-index: var(--z-nav, 50); }
+.exp-actionbar-live { box-shadow: var(--shadow-lg, 0 8px 24px rgba(30,27,75,.15)); border-color: var(--cyan-glow); }
+/* P1 : l'aperçu épinglé SUIT le défilement des 45 lignes (sinon il n'est utile
+   que sur les ~8 premières — mesuré : table 2 128px, aperçu 260px). */
+.exp-prevcol { position: sticky; top: 72px; }
+/* P1 : invitation du premier lancement (l'état vide dit le geste de l'écran). */
+.exp-invite { background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); padding: 16px 18px; max-width: 520px; }
+.exp-invite-title { font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.exp-invite p { margin: 0 0 8px; font-size: .85rem; color: var(--text-2); }
+.exp-invite ul { margin: 0; padding-left: 18px; font-size: .82rem; color: var(--text-2); }
+.exp-invite li { margin: 2px 0; }
+/* P1 : la pastille « Noirs » (#18181b) disparaissait sur le fond sombre
+   (#18181b aussi) — l'anneau porte alors le contraste. */
+[data-theme="dark"] .exp-trait-b { border-color: var(--text-2); }
+/* P2 : focus clavier visible sur les contrôles custom (les lignes l'ont déjà). */
+.exp-mvpill:focus-visible, .exp-levelchip:focus-visible, .exp-check:focus-visible,
+.exp-th-sort:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+/* P2 : coordonnées dans les cases du bord (style Chessground, encre = la
+   couleur de la case opposée, comme Lichess). */
+.exp-coord { position: absolute; font-family: var(--font-mono); font-size: .55rem; font-weight: 600; opacity: .85; pointer-events: none; z-index: 1; }
+.exp-coord-f { right: 3px; bottom: 1px; }
+.exp-coord-r { left: 3px; top: 1px; }
+.exp-sq .exp-coord { color: #b58863; }
+.exp-sq-d .exp-coord { color: #f0d9b5; }
+/* P2 : skeleton du tableau pendant la recherche (patron .skeleton existant). */
+.exp-skel { display: flex; flex-direction: column; gap: 8px; padding: 4px 0; }
+.exp-skel-row { height: 30px; }
