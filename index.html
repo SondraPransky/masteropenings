@@ -642,10 +642,12 @@
       <!-- ÉCHIQUIER -->
       <div class="board-wrap" id="board-wrap">
         <div class="board-outer">
-          <div class="ranks-col" id="ranks-col"></div>
-          <canvas id="board" width="480" height="480"></canvas>
+          <div class="ranks-col" id="ranks-col" style="display:none"></div>
+          <!-- Chessground (le board de Lichess) est monté ici par lib/board.js ;
+               il dessine ses propres coordonnées → ranks-col/files-row masqués. -->
+          <div id="board"></div>
         </div>
-        <div class="files-row" id="files-row"></div>
+        <div class="files-row" id="files-row" style="display:none"></div>
         <div class="btn-row" style="margin-top:6px">
           <button class="btn btn-ghost btn-sm" onclick="flipBoard()"><i class="ti ti-arrows-exchange" aria-hidden="true"></i> Retourner</button>
           <span id="test-btns" style="display:inline-flex;gap:6px">
