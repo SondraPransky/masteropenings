@@ -896,6 +896,19 @@ textarea {
    sinon ils occupent toute la barre et ecrasent le champ nom. */
 #editor-side, #editor-level { width: auto; }
 
+/* Barre d'annotation NAG de l'editeur (!! ! !? ?! ? ?? +- =...). La GEOMETRIE vit ici ;
+   les couleurs restent inline dans renderEditorNagBar (etat actif / desactive). */
+.ed-nag-btn {
+  min-width: 28px; padding: 3px 6px; border-radius: var(--rs);
+  font-family: inherit; font-size: .82rem; font-weight: 700;
+}
+.ed-nag-clear { font-weight: 400; }
+@media (hover: none) {
+  /* Le prof annote au doigt (decision produit du 17/07) : ces boutons rendaient 23px,
+     soit la moitie d'une cible tactile — et ce sont EUX l'outil d'annotation. */
+  .ed-nag-btn { min-width: 44px; min-height: 44px; padding: 6px 8px; }
+}
+
 /* Colonne du plateau : ne jamais depasser la largeur dispo (sinon overflow + plateau
    decentre en mobile, car les blocs annotation/commentaire forcent ~490px). */
 #editor-board-col { max-width: 100%; box-sizing: border-box; }
