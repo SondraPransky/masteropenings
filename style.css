@@ -2329,6 +2329,10 @@ textarea {
 /* — garde « jouez au moins un coup complet » — */
 .exp-guard { font-size: .85rem; color: var(--dim); padding: 8px 2px; }
 /* — bloc « puzzles qui suivent » — */
+/* Rythme vertical du bloc « puzzles qui suivent » : sans lui, en-tête, filtres,
+   compteur et l'aperçu/tableau s'empilaient au ras (aperçu collé à la ligne du
+   dessus — audit 17/07). */
+#exp-through { display: flex; flex-direction: column; gap: 12px; }
 .exp-through-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .exp-through-title { font-size: .95rem; font-weight: 700; color: var(--text); }
 .exp-th-total { color: var(--cyan); font-family: var(--font-mono); font-weight: 700; margin-left: 4px; }
