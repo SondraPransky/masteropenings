@@ -110,6 +110,26 @@ describe('extractAllLines — parsing PGN', () => {
     const main = lines.find(l => l.depth === 0);
     expect(main.moves.map(m => m.san)).toEqual(['d4', 'd5']);
   });
+
+  it('extrait une ligne d’UN SEUL coup, avec ou sans résultat', () => {
+    for (const pgn of ['1. e4', '1. e4 *', '1. e4 1-0']) {
+      const main = extractAllLines(pgn).find(l => l.depth === 0);
+      expect(main, pgn).toBeTruthy();
+      expect(main.moves.map(m => m.san), pgn).toEqual(['e4']);
+    }
+  });
+
+  it('garde une variante réduite à un seul coup', () => {
+    const lines = extractAllLines('1. e4 e5 2. Nf3 (2. Bc4) Nc6 *');
+    const variation = lines.find(l => l.depth > 0);
+    expect(variation).toBeTruthy();
+    expect(variation.moves.map(m => m.san)).toEqual(['Bc4']);
+  });
+
+  it('rejette une ligne sans aucun coup jouable', () => {
+    expect(extractAllLines('*')).toEqual([]);
+    expect(extractAllLines('1. Zz9 *')).toEqual([]);
+  });
 });
 
 // ─────────────────────────────────────────────────────────────
