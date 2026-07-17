@@ -505,6 +505,35 @@
       </div>
     </div>
 
+    <!-- Modal : dossier PGN calibré (explorateur — transpose le dialogue OTKB) -->
+    <div class="overlay" id="modal-exp-export">
+      <div class="modal" style="max-width:460px;width:96vw;max-height:92vh;overflow-y:auto;padding:24px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <div class="modal-title" style="margin:0"><i class="ti ti-download" aria-hidden="true"></i> Dossier de puzzles à donner à un élève</div>
+          <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-exp-export')">✕</button>
+        </div>
+        <div class="exp-hint" style="margin-bottom:12px">Puzzles dont une partie passe par cette position, à un moment ou un autre.</div>
+        <div class="exp-filters" style="margin-bottom:10px">
+          <span class="exp-filters-lbl">Niveau élève :</span>
+          <div class="exp-levelchips" id="expdl-levels"></div>
+        </div>
+        <label class="exp-label" for="expdl-sort">Tri</label>
+        <select id="expdl-sort" class="exp-in" style="margin-bottom:10px" onchange="_expDlRefresh()">
+          <option value="rating_asc">Difficulté ↑</option>
+          <option value="rating_desc">Difficulté ↓</option>
+        </select>
+        <label class="exp-label" for="expdl-limit">Nombre de puzzles (lot)</label>
+        <input id="expdl-limit" class="exp-in" type="number" min="1" step="5" value="45" style="margin-bottom:10px">
+        <label class="exp-dl-switch"><input type="checkbox" id="expdl-full"> Partie complète (depuis le coup 1, avec <code>[%start]</code>)</label>
+        <div id="expdl-count" class="exp-count" style="color:var(--cyan);margin-top:8px"></div>
+        <div id="expdl-preview" class="exp-dl-preview"></div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
+          <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-exp-export')">Fermer</button>
+          <button class="btn btn-primary btn-sm" onclick="explorerDlDownload()"><i class="ti ti-download" aria-hidden="true"></i> Télécharger le PGN</button>
+        </div>
+      </div>
+    </div>
+
     <!-- ── SECTION : Heatmap ── -->
     <div id="csec-heatmap" style="display:none">
       <div class="cs-header">

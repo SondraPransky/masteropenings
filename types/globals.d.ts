@@ -145,6 +145,9 @@ interface Window {
   explorerThermalMode?: (...a: any[]) => any;   // bascule critiques ⇄ sacrifices
   explorerOpenAtPuzzle?: (...a: any[]) => any;  // « puzzles à résoudre ici »
   explorerOpenExport?: (...a: any[]) => any;
+  explorerDlToggleLevel?: (...a: any[]) => any; // dialogue dossier PGN calibré
+  explorerDlDownload?: (...a: any[]) => any;
+  _expDlRefresh?: (...a: any[]) => any;
   explorerOpenPuzzle?: (...a: any[]) => any;    // solveur intégré (clic sur une ligne)
   explorerPuzzleHint?: (...a: any[]) => any;
   explorerPuzzleSolution?: (...a: any[]) => any;

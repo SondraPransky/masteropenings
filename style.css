@@ -2385,3 +2385,9 @@ textarea {
   #csec-explorer #exp-body, #csec-explorer .exp-banner { display: none; }
   #csec-explorer .exp-mobile-note { display: block; background: var(--surf2); border: 1px solid var(--border); border-radius: var(--r); padding: 14px 16px; font-size: .85rem; color: var(--text-2); }
 }
+
+/* — dialogue « dossier de puzzles » (transpose le dialogue de l'outil OTKB) — */
+.exp-dl-switch { display: flex; align-items: center; gap: 8px; font-size: .82rem; color: var(--text-2); cursor: pointer; }
+.exp-dl-switch input { width: 16px; height: 16px; accent-color: var(--cyan); }
+.exp-dl-preview { margin-top: 6px; display: flex; flex-direction: column; gap: 2px; }
+.exp-dl-line { font-size: .74rem; color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
