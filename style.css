@@ -2310,6 +2310,32 @@ textarea {
 .exp-trait-b { background: #18181b; border: 1.5px solid var(--dim); }
 .exp-th-sort { cursor: pointer; user-select: none; }
 .exp-th-sort:hover { color: var(--cyan); }
+/* Rangée « Flux » : tableau BORNÉ + aperçu épinglé à droite (piste B de l'outil
+   OTKB : le schéma ChessBase — survoler une ligne met à jour l'échiquier). */
+.exp-flux { display: flex; gap: 16px; align-items: flex-start; }
+.exp-flux #exp-results { flex: 0 1 660px; min-width: 0; overflow-x: auto; }
+.exp-prevcol { flex: 0 0 260px; }
+.exp-prev-cap { font-family: var(--font-mono); font-size: .72rem; color: var(--dim); margin-top: 6px; min-height: 1.2em; }
+.exp-table tbody tr { cursor: pointer; }
+.exp-table tbody tr:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
+/* Indice du solveur : case source suggérée */
+.exp-sq-hint::after { content: ''; position: absolute; inset: 0; box-shadow: inset 0 0 0 3px var(--gold); }
+/* Panneau solveur : en mode puzzle il REMPLACE les champs d'exploration (comme
+   l'outil OTKB remplace ses cartes par le panneau puzzle), et la liste s'efface. */
+.exp-solver { display: flex; flex-direction: column; gap: 10px; }
+.exp-sol-head { display: flex; align-items: baseline; gap: 10px; }
+.exp-sol-title { font-weight: 700; font-size: 1rem; }
+.exp-sol-msg { font-size: .85rem; color: var(--text-2); min-height: 1.4em; }
+.exp-sol-msg.ok { color: var(--green-ink); font-weight: 700; font-size: 1rem; }
+.exp-sol-msg.ko { color: var(--red-ink); }
+.exp-sol-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.exp-sol-back { align-self: flex-start; }
+.exp-pz-on .exp-pos-fields > :not(#exp-solver) { display: none; }
+.exp-pz-on .exp-flux, .exp-pz-on .exp-actionbar { display: none !important; }
+@media (max-width: 1100px) {
+  /* en étroit, l'aperçu épinglé cède la place au tableau (comme .otkb-prevcol) */
+  .exp-prevcol { display: none; }
+}
 .exp-table { width: 100%; border-collapse: collapse; font-size: .8rem; border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
 .exp-table th { text-align: left; font-size: .66rem; font-weight: 600; color: var(--dim); padding: 8px 12px; border-bottom: 1px solid var(--border); background: var(--surf); white-space: nowrap; }
 .exp-table td { padding: 7px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }

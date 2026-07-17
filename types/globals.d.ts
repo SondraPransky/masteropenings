@@ -138,6 +138,12 @@ interface Window {
   explorerPickOpening?: (...a: any[]) => any;
   explorerToggleLevel?: (...a: any[]) => any;
   explorerToggleSort?: (...a: any[]) => any;
+  explorerOpenPuzzle?: (...a: any[]) => any;    // solveur intégré (clic sur une ligne)
+  explorerPuzzleHint?: (...a: any[]) => any;
+  explorerPuzzleSolution?: (...a: any[]) => any;
+  explorerPuzzleNext?: (...a: any[]) => any;
+  explorerPuzzleExit?: (...a: any[]) => any;
+  _expPrev?: (...a: any[]) => any;              // aperçu épinglé (survol d'une ligne)
   _expToggleSel?: (...a: any[]) => any;
   _expClickSq?: (...a: any[]) => any;
   _expDetectBridge?: (...a: any[]) => any;      // détection du pont OTKB local

@@ -450,8 +450,28 @@
             </div>
             <div id="exp-count" class="exp-count"></div>
           </div>
+          <!-- Panneau du solveur (remplace les champs pendant la résolution d'un puzzle) -->
+          <div id="exp-solver" class="exp-solver" style="display:none">
+            <div class="exp-sol-head">
+              <span id="exp-sol-title" class="exp-sol-title">Puzzle</span>
+              <span id="exp-sol-rating" class="exp-rating"></span>
+            </div>
+            <div id="exp-sol-msg" class="exp-sol-msg"></div>
+            <div class="exp-sol-btns">
+              <button class="btn btn-ghost btn-sm" onclick="explorerPuzzleHint()"><i class="ti ti-bulb" aria-hidden="true"></i> Indice</button>
+              <button class="btn btn-ghost btn-sm" onclick="explorerPuzzleSolution()"><i class="ti ti-eye" aria-hidden="true"></i> Solution</button>
+              <button class="btn btn-blue btn-sm" id="exp-sol-next" onclick="explorerPuzzleNext()"><i class="ti ti-player-play" aria-hidden="true"></i> Suivant</button>
+            </div>
+            <button class="btn btn-ghost btn-sm exp-sol-back" onclick="explorerPuzzleExit()"><i class="ti ti-arrow-back-up" aria-hidden="true"></i> Retour à l'exploration</button>
+          </div>
         </div>
-        <div id="exp-results"></div>
+        <div class="exp-flux">
+          <div id="exp-results"></div>
+          <div id="exp-preview" class="exp-prevcol" style="display:none">
+            <div id="exp-prev-board"></div>
+            <div id="exp-prev-cap" class="exp-prev-cap">Survolez une ligne</div>
+          </div>
+        </div>
         <div id="exp-actionbar" class="exp-actionbar" style="display:none">
           <span id="exp-selcount" class="exp-selcount">0 sélectionné</span>
           <div class="exp-actionbtns">
