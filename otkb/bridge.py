@@ -30,6 +30,7 @@ Stdlib (`http.server`, `json`, `urllib`) + python-chess (déjà requis par `reso
 from __future__ import annotations
 
 import json
+import types
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
@@ -37,6 +38,7 @@ from urllib.parse import parse_qs, urlparse
 import chess
 
 from .explorer.query import MoveParseError, resolve_fen
+from .fen import normalize_fen
 from .logging_setup import get_logger
 from .ui.data import UiData
 from .ui.levels import LEVELS, levels_ranges
@@ -139,6 +141,10 @@ class _Handler(BaseHTTPRequestHandler):
                 return self._through(qs)
             if route == "/puzzle":
                 return self._puzzle(qs)
+            if route == "/context":
+                return self._context(qs)
+            if route == "/at":
+                return self._at(qs)
             if route == "/levels":
                 return self._levels_route()
             if route == "/openings":
@@ -165,6 +171,75 @@ class _Handler(BaseHTTPRequestHandler):
         fen = (qs.get("fen") or [None])[0]
         return resolve_fen(moves=moves, fen=fen)
 
+    def _board(self, qs: dict) -> chess.Board:
+        """Le `chess.Board` de la position (les suites REJOUENT ses enfants)."""
+        moves = (qs.get("moves") or [None])[0]
+        fen = (qs.get("fen") or [None])[0]
+        if fen:
+            return chess.Board(fen)
+        board = chess.Board()
+        for tok in (moves or "").split():
+            try:
+                board.push_uci(tok)
+            except (ValueError, AssertionError) as exc:
+                raise MoveParseError(f"Coup UCI invalide : {tok!r}") from exc
+        return board
+
+    def _preview_row(self, summary) -> dict | None:
+        """Ligne de tableau : position POSÉE (après moves[0]) + trait du solveur +
+        motifs FR — même construction que _preview_of dans l'outil coach."""
+        pd = self.data.puzzle(summary.puzzle_id)
+        if pd is None or not pd.moves:
+            return None
+        board = chess.Board(pd.fen)
+        try:
+            board.push_uci(pd.moves[0])
+        except (ValueError, AssertionError):
+            return None
+        return {
+            "id": summary.puzzle_id, "rating": summary.rating,
+            "fen": board.board_fen(),
+            "white": board.turn == chess.WHITE,
+            "themes_fr": _fr_themes(summary.themes),
+        }
+
+    def _context(self, qs: dict) -> None:
+        """Tout le CONTEXTE d'une position en un aller-retour : compteurs, suites
+        (cache position_children), carte thermique, fraîcheur des caches."""
+        board = self._board(qs)
+        nfen = normalize_fen(board.fen())
+        counts = self.data.counts(nfen)
+        conts = self.data.continuations(
+            types.SimpleNamespace(board=board), counts.through_count)
+        squares = self.data.position_squares(nfen)
+        self._send(200, {
+            "nfen": nfen,
+            "ply": board.ply(),
+            "start": counts.start_count,
+            "through": counts.through_count,
+            "continuations": None if conts is None else [
+                {"uci": c.uci, "san": c.san, "games": c.game_count} for c in conts
+            ],
+            "squares": squares,
+            "stale": self.data.position_caches_stale(),
+            "counts_missing": self.data.position_counts_missing(),
+        })
+
+    def _at(self, qs: dict) -> None:
+        """Puzzles qui DÉMARRENT exactement à la position (rarement non vide dans
+        l'ouverture — la carte « Puzzles à résoudre ici » de l'outil coach)."""
+        nfen = self._resolve(qs)
+        def _i(key: str, default: int) -> int:
+            v = (qs.get(key) or [""])[0].strip()
+            try:
+                return int(v) if v else default
+            except ValueError:
+                return default
+        rows = self.data.puzzles_at(
+            nfen, sort="popularity", limit=_i("limit", 8), offset=_i("offset", 0))
+        out = [r for r in (self._preview_row(s) for s in rows) if r is not None]
+        self._send(200, {"nfen": nfen, "puzzles": out})
+
     def _through(self, qs: dict) -> None:
         nfen = self._resolve(qs)
         # tri par défaut = difficulté croissante, comme l'outil coach OTKB
@@ -184,24 +259,7 @@ class _Handler(BaseHTTPRequestHandler):
         total = self.data.count_through_multi(nfen, ranges)
         rows = self.data.puzzles_through_multi(
             nfen, ranges, sort=sort, limit=limit, offset=offset)
-        out = []
-        for s in rows:
-            # Position POSÉE (après moves[0], le coup adverse) + trait du solveur —
-            # même construction que _preview_of dans l'outil coach.
-            pd = self.data.puzzle(s.puzzle_id)
-            if pd is None or not pd.moves:
-                continue
-            board = chess.Board(pd.fen)
-            try:
-                board.push_uci(pd.moves[0])
-            except (ValueError, AssertionError):
-                continue
-            out.append({
-                "id": s.puzzle_id, "rating": s.rating,
-                "fen": board.board_fen(),                 # placement seul (aperçu)
-                "white": board.turn == chess.WHITE,       # trait du SOLVEUR
-                "themes_fr": _fr_themes(s.themes),
-            })
+        out = [r for r in (self._preview_row(s) for s in rows) if r is not None]
         self._send(200, {"nfen": nfen, "total": total, "sort": sort, "puzzles": out})
 
     def _puzzle(self, qs: dict) -> None:
