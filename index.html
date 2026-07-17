@@ -446,17 +446,7 @@
             </div>
             <div class="exp-filters">
               <span class="exp-filters-lbl">Niveau élève :</span>
-              <div class="exp-levelchips" id="exp-levelchips">
-                <button type="button" class="exp-levelchip" data-min="0" data-max="1000" onclick="explorerSetLevel(this)">Débutant</button>
-                <button type="button" class="exp-levelchip" data-min="1000" data-max="1500" onclick="explorerSetLevel(this)">Intermédiaire</button>
-                <button type="button" class="exp-levelchip" data-min="1500" data-max="2000" onclick="explorerSetLevel(this)">Avancé</button>
-                <button type="button" class="exp-levelchip" data-min="2000" data-max="4000" onclick="explorerSetLevel(this)">Expert</button>
-              </div>
-              <span class="exp-range">
-                <input id="exp-min" class="exp-num" type="number" min="0" max="4000" placeholder="min" onchange="explorerLoad()">
-                <span class="exp-range-dash">–</span>
-                <input id="exp-max" class="exp-num" type="number" min="0" max="4000" placeholder="max" onchange="explorerLoad()">
-              </span>
+              <div class="exp-levelchips" id="exp-levelchips"></div>
             </div>
             <div id="exp-count" class="exp-count"></div>
           </div>

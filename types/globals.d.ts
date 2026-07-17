@@ -136,7 +136,8 @@ interface Window {
   explorerExportPgn?: (...a: any[]) => any;
   explorerResetBoard?: (...a: any[]) => any;
   explorerPickOpening?: (...a: any[]) => any;
-  explorerSetLevel?: (...a: any[]) => any;
+  explorerToggleLevel?: (...a: any[]) => any;
+  explorerToggleSort?: (...a: any[]) => any;
   _expToggleSel?: (...a: any[]) => any;
   _expClickSq?: (...a: any[]) => any;
   _expDetectBridge?: (...a: any[]) => any;      // détection du pont OTKB local

@@ -225,8 +225,7 @@ def cmd_serve_api(cfg: Config, host: str, port: int) -> None:
     from .bridge import serve
     if not cfg.db_path.exists():
         raise SystemExit(f"Base introuvable : {cfg.db_path} (lancer d'abord ingest).")
-    with Database(cfg.db_path) as db:
-        serve(db, host=host, port=port)
+    serve(cfg.db_path, host=host, port=port)
 
 
 def cmd_explore(
