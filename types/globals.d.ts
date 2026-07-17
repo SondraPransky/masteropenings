@@ -144,6 +144,10 @@ interface Window {
   explorerPuzzleNext?: (...a: any[]) => any;
   explorerPuzzleExit?: (...a: any[]) => any;
   _expPrev?: (...a: any[]) => any;              // aperçu épinglé (survol d'une ligne)
+  _expDragStart?: (...a: any[]) => any;         // drag & drop de l'échiquier explorateur
+  _expDrop?: (...a: any[]) => any;
+  _expDragEnd?: (...a: any[]) => any;
+  _expTouchStart?: (...a: any[]) => any;
   _expToggleSel?: (...a: any[]) => any;
   _expClickSq?: (...a: any[]) => any;
   _expDetectBridge?: (...a: any[]) => any;      // détection du pont OTKB local
