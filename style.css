@@ -11,6 +11,14 @@
   --border:   #e4e4e7;
   --border-h: #d4d4d8;
 
+  /* ── Couleur des échiquiers (source unique — pilotée par [data-board]) ──
+     Tous les plateaux du site (drill, éditeur, setup, miniboards, explorateur
+     Chessground) lisent ces 2 variables → un seul point de vérité, choisi par
+     l'utilisateur dans les paramètres façon Lichess. `bois` = défaut. */
+  --board-light: #f0d9b5;
+  --board-dark:  #b58863;
+  --board-move:  rgba(205,210,106,.75);   /* surlignage du dernier coup (case claire) */
+
   /* ── Indigo — accent primaire ── */
   /* Une SEULE famille d'indigo. Un indigo-500 parallele (rgba(99,102,241,…)) a vecu sur
      17 sites a cote de ces tokens — souvent dans la meme regle (bordure 99,102,241 sur
@@ -96,6 +104,13 @@
   --shadow:    0 1px 3px rgba(24,24,27,.08), 0 1px 2px rgba(24,24,27,.05);
   --shadow-lg: 0 10px 30px rgba(30,27,75,.12), 0 4px 8px rgba(24,24,27,.06);
 }
+
+/* ── Thèmes d'échiquier (façon Lichess) — [data-board] posé sur <html> ──
+   `bois` est le défaut (déjà dans :root). Les couleurs de dernier coup sont
+   dérivées de la case claire de chaque thème pour rester lisibles. */
+:root[data-board="bleu"] { --board-light: #dee3e6; --board-dark: #8ca2ad; --board-move: rgba(101,158,181,.55); }
+:root[data-board="vert"] { --board-light: #ebecd0; --board-dark: #779556; --board-move: rgba(155,199,0,.45); }
+:root[data-board="gris"] { --board-light: #dcdcdc; --board-dark: #8f8f8f; --board-move: rgba(120,140,180,.45); }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -2406,3 +2421,11 @@ textarea {
 /* P2 : skeleton du tableau pendant la recherche (patron .skeleton existant). */
 .exp-skel { display: flex; flex-direction: column; gap: 8px; padding: 4px 0; }
 .exp-skel-row { height: 30px; }
+
+/* — Sélecteur de couleur d'échiquier (modal-board-settings) — */
+.board-theme-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.board-theme-opt { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--surf2); border: 1.5px solid var(--border); border-radius: var(--r); cursor: pointer; font-family: inherit; font-size: .85rem; color: var(--text); }
+.board-theme-opt:hover { border-color: var(--cyan); }
+.board-theme-opt.on { border-color: var(--cyan); background: var(--cyan-dim); color: var(--cyan); font-weight: 600; }
+.board-theme-swatch { width: 34px; height: 34px; border-radius: var(--rs); border: 1px solid var(--border); flex: 0 0 auto; }
+.board-theme-lbl { flex: 1; text-align: left; }

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EECoach — Révision d'ouvertures</title>
-<script>!function(){var t=localStorage.getItem('mc_theme')||'light';if(t==='dark')document.documentElement.setAttribute('data-theme','dark')}()</script>
+<script>!function(){var t=localStorage.getItem('mc_theme')||'light';if(t==='dark')document.documentElement.setAttribute('data-theme','dark');var b=localStorage.getItem('mc_board')||'bois';document.documentElement.setAttribute('data-board',b)}()</script>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#4f46e5">
 <link rel="apple-touch-icon" href="icon.svg">
@@ -43,6 +43,7 @@
         <div class="acct-dd-name" id="acct-dd-name"></div>
         <span id="nav-role-chip" style="display:none"></span>
       </div>
+      <button class="acct-dd-item" onclick="openBoardSettings()"><i class="ti ti-checkerboard" aria-hidden="true"></i> Couleur de l'échiquier</button>
       <button class="acct-dd-item" onclick="logoutUser()"><i class="ti ti-logout" aria-hidden="true"></i> Se déconnecter</button>
     </div>
   </div>
@@ -1232,6 +1233,17 @@
 </div>
 
 <!-- Modal : Réglages de la révision espacée (P4) -->
+<div class="overlay" id="modal-board-settings">
+  <div class="modal" style="max-width:420px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <div class="modal-title" style="margin:0"><i class="ti ti-checkerboard" aria-hidden="true"></i> Couleur de l'échiquier</div>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-board-settings')">✕</button>
+    </div>
+    <div class="exp-hint" style="margin-bottom:14px">S'applique à tous les échiquiers du site.</div>
+    <div class="board-theme-grid" id="board-theme-grid"></div>
+  </div>
+</div>
+
 <div class="overlay" id="modal-sr-settings">
   <div class="modal" style="max-width:440px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">

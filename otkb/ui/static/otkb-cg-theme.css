@@ -1,0 +1,17 @@
+/* Thème d'échiquier Chessground piloté par les variables EECoach.
+   `chessground.brown.css` code le damier en SVG base64 en dur ; on le REMPLACE
+   par un damier CSS dérivé de --board-light / --board-dark (le sélecteur de thème
+   façon Lichess). Ne modifie pas le vendor : ce fichier est chargé APRÈS lui et
+   gagne par ordre de cascade. Le damier est symétrique → correct dans les 2
+   orientations (le flip de chessground préserve la parité a1-foncé). */
+cg-board {
+  background-color: var(--board-light) !important;
+  background-image:
+    conic-gradient(
+      var(--board-dark) 0deg 90deg,
+      transparent 90deg 180deg,
+      var(--board-dark) 180deg 270deg,
+      transparent 270deg 360deg
+    ) !important;
+  background-size: 25% 25% !important;   /* une tuile = 2×2 cases → 8×8 sur le plateau */
+}

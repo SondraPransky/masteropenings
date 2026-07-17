@@ -245,6 +245,42 @@ document.addEventListener('DOMContentLoaded', function() {
   if (btn) btn.innerHTML = document.documentElement.getAttribute('data-theme') === 'dark' ? '<i class="ti ti-sun" aria-hidden="true"></i>' : '<i class="ti ti-moon" aria-hidden="true"></i>';
 });
 
+// ── Couleur de l'échiquier (façon Lichess) ─────────────
+// Source unique : l'attribut [data-board] sur <html> pilote les variables CSS
+// --board-* que TOUS les plateaux lisent (drill, éditeur, setup, miniboards,
+// explorateur Chessground). Posé au boot (snippet inline d'index.html), changé ici.
+const BOARD_THEMES = [
+  { key: 'bois', label: 'Bois',  light: '#f0d9b5', dark: '#b58863' },
+  { key: 'bleu', label: 'Bleu',  light: '#dee3e6', dark: '#8ca2ad' },
+  { key: 'vert', label: 'Vert',  light: '#ebecd0', dark: '#779556' },
+  { key: 'gris', label: 'Gris',  light: '#dcdcdc', dark: '#8f8f8f' },
+];
+function setBoardTheme(key) {
+  if (!BOARD_THEMES.some(t => t.key === key)) key = 'bois';
+  document.documentElement.setAttribute('data-board', key);
+  localStorage.setItem('mc_board', key);
+  _renderBoardThemeGrid();
+  // redessiner le plateau visible (le canvas lit la variable ; Chessground suit le CSS)
+  window.drawBoard?.();
+  window.renderEditorBoard?.();
+}
+function _renderBoardThemeGrid() {
+  const host = document.getElementById('board-theme-grid');
+  if (!host) return;
+  const cur = document.documentElement.getAttribute('data-board') || 'bois';
+  // aperçu = mini-damier 2×2 des 2 teintes du thème
+  host.innerHTML = BOARD_THEMES.map(t => `
+    <button type="button" class="board-theme-opt${t.key === cur ? ' on' : ''}" onclick="setBoardTheme('${t.key}')" aria-pressed="${t.key === cur}">
+      <span class="board-theme-swatch" aria-hidden="true" style="background-color:${t.light};background-image:conic-gradient(${t.dark} 0deg 90deg,transparent 90deg 180deg,${t.dark} 180deg 270deg,transparent 270deg 360deg);background-size:50% 50%"></span>
+      <span class="board-theme-lbl">${t.label}</span>
+    </button>`).join('');
+}
+function openBoardSettings() {
+  document.getElementById('acct-dropdown')?.classList.remove('on');
+  _renderBoardThemeGrid();
+  document.getElementById('modal-board-settings')?.classList.add('on');
+}
+
 // ══════════════════════════════════════════════════════
 // ÉTAT SESSION → lib/session.js (objet `S` partagé, jamais réassigné)
 // ══════════════════════════════════════════════════════
@@ -1432,4 +1468,5 @@ Object.assign(window, {
   selectDrill, setBoardComment, setBoardPrompt, setFeedback, showHint, signInGoogle,
   togglePwd, showLoginTab, skipPosition, startDrill, submitNewPassword, switchCoachSection,
   saveModule, toast, toggleTheme, toggleAcctMenu, totalSessions, updateScores, updateSessionInfo,
+  setBoardTheme, openBoardSettings,
 });
