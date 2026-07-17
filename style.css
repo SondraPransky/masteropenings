@@ -2301,7 +2301,7 @@ textarea {
 .exp-banner { background: var(--gold-dim); color: var(--gold-ink); border: 1px solid var(--gold-glow); border-radius: var(--r); padding: 10px 14px; font-size: .82rem; margin: 4px 0 14px; }
 .exp-cols { display: flex; gap: 22px; align-items: flex-start; flex-wrap: wrap; }
 .exp-left { flex: 0 0 auto; width: min(440px, 100%); display: flex; flex-direction: column; gap: 10px; }
-.exp-right { flex: 1 1 460px; min-width: min(320px, 100%); display: flex; flex-direction: column; gap: 14px; }
+.exp-right { flex: 1 1 460px; min-width: min(320px, 100%); display: flex; flex-direction: column; gap: 14px; container-type: inline-size; }
 .exp-label { display: block; font-size: .78rem; font-weight: 600; color: var(--text-2); }
 .exp-hint { color: var(--dim); font-weight: 400; font-size: .76rem; }
 .exp-hint code, .exp-label code { font-family: var(--font-mono); font-size: .9em; background: var(--surf2); padding: 1px 5px; border-radius: var(--rs); }
@@ -2339,7 +2339,7 @@ textarea {
 .exp-filters { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .exp-filters-lbl { font-size: .76rem; font-weight: 600; color: var(--text-2); }
 .exp-levelchips { display: flex; gap: 5px; flex-wrap: wrap; }
-.exp-levelchip { font-size: .72rem; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--surf2); color: var(--text-2); cursor: pointer; font-family: inherit; }
+.exp-levelchip { font-size: .72rem; padding: 6px 11px; border-radius: 999px; border: 1px solid var(--border); background: var(--surf2); color: var(--text-2); cursor: pointer; font-family: inherit; }
 .exp-levelchip:hover { border-color: var(--cyan); }
 .exp-levelchip.on { background: var(--cyan-dim); border-color: var(--cyan-glow); color: var(--cyan); font-weight: 600; }
 /* Trait aux Blancs/Noirs : pastille TOUJOURS doublée du libellé (daltonisme). */
@@ -2360,8 +2360,11 @@ textarea {
 .exp-table tbody tr { cursor: pointer; }
 .exp-table tbody tr:hover { background: var(--surf2); }
 .exp-table tbody tr:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
-.exp-td-check { width: 34px; }
-.exp-check { width: 17px; height: 17px; accent-color: var(--cyan); cursor: pointer; }
+.exp-td-check { width: 34px; padding: 0; }
+/* La cible cliquable de la coche = toute la cellule (>=24px, WCAG 2.5.8) via un
+   <label> qui remplit la case ; le visuel de la coche reste discret (18px). */
+.exp-check-cell { display: flex; align-items: center; justify-content: center; min-width: 34px; min-height: 34px; cursor: pointer; }
+.exp-check { width: 18px; height: 18px; accent-color: var(--cyan); cursor: pointer; }
 .exp-rating { font-family: var(--font-mono); font-weight: 700; color: var(--text); }
 .exp-pager { display: flex; align-items: center; justify-content: center; gap: 12px; }
 .exp-pager-pos { font-size: .78rem; color: var(--text-2); font-variant-numeric: tabular-nums; }
@@ -2388,8 +2391,11 @@ textarea {
 .exp-pz-on #exp-suites, .exp-pz-on #exp-through, .exp-pz-on #exp-at,
 .exp-pz-on #exp-guard, .exp-pz-on #exp-thermal { display: none !important; }
 
-@media (max-width: 1100px) {
-  /* en étroit, l'aperçu épinglé cède la place au tableau (comme .otkb-prevcol) */
+/* L'aperçu épinglé cède la place au tableau quand la COLONNE (pas le viewport)
+   est trop étroite : la sidebar coach mange ~400px, donc une media-query viewport
+   laissait l'aperçu écraser le tableau à ~220px sur un laptop 1280-1366px. La
+   container query mesure la place réelle : sous 640px de colonne, table pleine. */
+@container (max-width: 640px) {
   .exp-prevcol { display: none; }
 }
 @media (max-width: 960px) {
