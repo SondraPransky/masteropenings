@@ -1157,6 +1157,7 @@ textarea {
   display: flex; align-items: center; gap: 9px; width: 100%;
   padding: 9px 12px; border: none; border-radius: 8px; background: none;
   font-family: inherit; font-size: .84rem; color: var(--text-2); cursor: pointer; text-align: left;
+  transition: background .15s, color .15s;
 }
 .acct-dd-item:hover { background: var(--surf2); color: var(--red); }
 .acct-dd-item .ti { font-size: 1rem; }
@@ -1340,6 +1341,20 @@ textarea {
 .sh-hero-btn:active { transform:translateY(0) scale(.98); }
 /* Mobile : pleine largeur = cible tactile confortable (le hero y est étroit, aucun risque d'étirement). */
 @media (max-width:560px) { .sh-hero-btn { width:100%; } }
+/* Mascotte « chat-cavalier » (budget délice) — hero premier lancement.
+   Le chat à gauche, le texte + CTA à droite ; empilé sous 480px (chat au-dessus). */
+.sh-welcome { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+.sh-welcome-cat { flex:0 0 auto; }
+.sh-welcome-txt { flex:1 1 240px; min-width:0; }
+@media (max-width:480px) { .sh-welcome { justify-content:center; text-align:center; } }
+.msc { display:block; }
+.msc-anim { transform-box:fill-box; transform-origin:50% 100%; animation:msc-bob 2.9s ease-in-out infinite; }
+.msc-paw  { transform-box:fill-box; transform-origin:50% 100%; animation:msc-paw 3.1s ease-in-out infinite; }
+.msc-tail { transform-box:fill-box; transform-origin:76% 100%; animation:msc-tail 3.8s ease-in-out infinite; }
+@keyframes msc-bob  { 0%,100%{transform:translateY(0) rotate(0)} 50%{transform:translateY(-2px) rotate(-1deg)} }
+@keyframes msc-paw  { 0%,26%,100%{transform:rotate(0)} 10%,18%{transform:rotate(-13deg)} }
+@keyframes msc-tail { 0%{transform:rotate(-3deg)} 50%{transform:rotate(7deg)} 100%{transform:rotate(-3deg)} }
+@media (prefers-reduced-motion:reduce) { .msc-anim,.msc-paw,.msc-tail { animation:none; } .msc-tail { transform:rotate(2deg); } }
 /* Desktop : la bande large se scinde en 2 zones — texte à gauche, action à droite.
    Empilé, le contenu (~320px) ne remplit que le tiers gauche des 1048px du hero.
    Réservé au hero ACTIONNABLE : les états calmes n'ont pas de CTA à équilibrer
@@ -1498,7 +1513,8 @@ textarea {
 
 /* Rangée de boutons d'action (bas de carte) */
 .sh-mod-actions { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
-.sh-card-act { flex-shrink:0; width:34px; height:34px; border-radius:50%; border:1px solid var(--border); background:var(--surf); color:var(--dim); cursor:pointer; font-size:.9rem; display:flex; align-items:center; justify-content:center; transition:filter .15s, border-color .15s, color .15s; position:relative; }
+.sh-card-act { flex-shrink:0; width:34px; height:34px; border-radius:50%; border:1px solid var(--border); background:var(--surf); color:var(--dim); cursor:pointer; font-size:.9rem; display:flex; align-items:center; justify-content:center; transition:filter .15s, border-color .15s, color .15s, transform .1s; position:relative; }
+.sh-card-act:active { transform:scale(.96); }
 /* Zone cliquable étendue à 40px (le gap de 8px entre boutons évite tout chevauchement) */
 .sh-card-act::before { content:""; position:absolute; inset:-3px; border-radius:50%; }
 .sh-card-act:hover { filter:brightness(1.06); border-color:var(--cyan); color:var(--cyan); }
@@ -2321,8 +2337,9 @@ textarea {
 /* — suites les plus jouées : pastilles soulignées (part relative) — */
 .exp-card { background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); padding: 10px 14px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .exp-suites-lbl { font-size: .8rem; font-weight: 700; color: var(--text); margin-right: 4px; }
-.exp-mvpill { position: relative; display: inline-flex; align-items: baseline; gap: 5px; padding: 4px 9px 6px; border: none; background: none; cursor: pointer; font-family: inherit; border-radius: var(--rs); }
+.exp-mvpill { position: relative; display: inline-flex; align-items: baseline; gap: 5px; padding: 4px 9px 6px; border: none; background: none; cursor: pointer; font-family: inherit; border-radius: var(--rs); transition: background .15s, transform .1s; }
 .exp-mvpill:hover { background: var(--surf2); }
+.exp-mvpill:active { transform: scale(.96); }
 .exp-mvpill-mv { font-family: var(--font-mono); font-size: .9rem; font-weight: 700; color: var(--text); }
 .exp-mvpill-pc { font-size: .7rem; color: var(--dim); font-variant-numeric: tabular-nums; }
 .exp-mvpill-under { position: absolute; left: 9px; right: 9px; bottom: 2px; height: 3px; border-radius: 999px; background: var(--cyan); transform-origin: left; }
@@ -2339,8 +2356,9 @@ textarea {
 .exp-filters { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .exp-filters-lbl { font-size: .76rem; font-weight: 600; color: var(--text-2); }
 .exp-levelchips { display: flex; gap: 5px; flex-wrap: wrap; }
-.exp-levelchip { font-size: .72rem; padding: 6px 11px; border-radius: 999px; border: 1px solid var(--border); background: var(--surf2); color: var(--text-2); cursor: pointer; font-family: inherit; }
+.exp-levelchip { font-size: .72rem; padding: 6px 11px; border-radius: 999px; border: 1px solid var(--border); background: var(--surf2); color: var(--text-2); cursor: pointer; font-family: inherit; transition: border-color .15s, background .15s, color .15s, transform .1s; }
 .exp-levelchip:hover { border-color: var(--cyan); }
+.exp-levelchip:active { transform: scale(.96); }
 .exp-levelchip.on { background: var(--cyan-dim); border-color: var(--cyan-glow); color: var(--cyan); font-weight: 600; }
 /* Trait aux Blancs/Noirs : pastille TOUJOURS doublée du libellé (daltonisme). */
 .exp-trait { display: inline-block; width: 9px; height: 9px; border-radius: 999px; margin-right: 5px; vertical-align: -1px; }
@@ -2453,8 +2471,12 @@ textarea {
 
 /* — Sélecteur de couleur d'échiquier (modal-board-settings) — */
 .board-theme-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-.board-theme-opt { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--surf2); border: 1.5px solid var(--border); border-radius: var(--r); cursor: pointer; font-family: inherit; font-size: .85rem; color: var(--text); }
+.board-theme-opt { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--surf2); border: 1.5px solid var(--border); border-radius: var(--r); cursor: pointer; font-family: inherit; font-size: .85rem; color: var(--text); transition: border-color .15s, background .15s, color .15s, transform .1s; }
 .board-theme-opt:hover { border-color: var(--cyan); }
+.board-theme-opt:active { transform: scale(.96); }
 .board-theme-opt.on { border-color: var(--cyan); background: var(--cyan-dim); color: var(--cyan); font-weight: 600; }
-.board-theme-swatch { width: 34px; height: 34px; border-radius: var(--rs); border: 1px solid var(--border); flex: 0 0 auto; }
+/* Pastille = aperçu d'image du damier : contour noir/blanc pur (jamais un neutre
+   teinté, qui accrocherait la couleur dessous et salirait le bord — principe 11). */
+.board-theme-swatch { width: 34px; height: 34px; border-radius: var(--rs); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .12); flex: 0 0 auto; }
+[data-theme="dark"] .board-theme-swatch { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14); }
 .board-theme-lbl { flex: 1; text-align: left; }
