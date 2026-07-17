@@ -132,7 +132,8 @@ Stratégie **Restrained** : neutres zinc + un accent indigo ≤10% de toute surf
 > **Calibrage (corrigé le 16/07/2026 — 17 échecs AA trouvés) : une encre se mesure contre son propre `-dim`, PAS contre `--surf`.** C'est l'appariement réel des pastilles du produit (`_tierBg` + `_tierPct`, `.badge-green`, `.feedback`…), et il coûte ~1 point de ratio. Calibré sur surface plate, `--green-ink` (alors #15803d) rendait 5.0:1 sur `--surf` mais **4.49:1** sur `--green-dim` → toutes les pastilles vertes de l'app échouaient. Même piège pour `--dim`, calibré sur `--surf2` (4.81) mais utilisé sur `--surf3` (4.16). **Tout nouveau token `-ink` se vérifie sur `-dim` × {surf, surf2, surf3, page}, dans les 2 thèmes.**
 > **En dark**, les `-ink` s'aliassent sur le token de base **seulement s'il tient sur son `-dim`** (vérifié : vert 6.32, ambre 5.34). Le rouge n'y rendait que 4.34 → il a sa propre encre `#fca5a5`. Et les boutons PLEINS y prennent une **encre foncée** (`#18181b`) : l'accent dark est clair, le blanc n'y rend que 2.98:1.
 **La règle des trois variantes.** Chaque couleur sémantique a exactement **trois** déclinaisons, et aucun site n'écrit un rgba à la main : `-dim` (fond teinté) · `-ink` (texte petit, AA) · `-glow` (bordure/anneau). Le trio existe pour vert/ambre/rouge/bleu comme pour l'indigo (`--cyan-glow`).
-> **Le symptôme à surveiller : une famille parallèle.** Trois fois de suite, le même défaut a été trouvé — une palette voisine vivant à côté des tokens, presque toujours dans une **bordure** pendant que le fond et le texte étaient déjà tokenisés : rose-600 à côté de red-600 (clair, 14 sites), rose-400 + emerald-400 + sky-400 à côté de red/green/blue-400 (**dark**, 14 sites), yellow-400/500 à côté d'amber (les deux thèmes). Toutes balayées le 16/07/2026. La cause racine : `-glow` n'existait pas, donc chaque bordure improvisait sa propre teinte. Un `var(--gold-glow, rgba(202,138,4,.25))` traînait même dans le code — un fallback vers un token jamais créé. Si tu écris un rgba dans une bordure, c'est que le token manque : crée-le.
+> **Le symptôme à surveiller : une famille parallèle.** **Quatre** fois de suite, le même défaut a été trouvé — une palette voisine vivant à côté des tokens, presque toujours dans une **bordure** pendant que le fond et le texte étaient déjà tokenisés : rose-600 à côté de red-600 (clair, 14 sites), rose-400 + emerald-400 + sky-400 à côté de red/green/blue-400 (**dark**, 14 sites), yellow-400/500 à côté d'amber (les deux thèmes) — balayées le 16/07/2026 — puis **indigo-500 (`rgba(99,102,241,…)`) à côté de l'accent lui-même** (17 sites, balayé le 17/07/2026). La cause racine des trois premières : `-glow` n'existait pas, donc chaque bordure improvisait sa teinte. Un `var(--gold-glow, rgba(202,138,4,.25))` traînait même dans le code — un fallback vers un token jamais créé.
+> **La 4e est la plus instructive : `--cyan-glow` existait déjà.** Ce n'était donc pas un token manquant mais de la dérive pure — et une dérive *invisible en clair*, où #4f46e5 et #6366f1 se ressemblent assez pour passer. Le vrai dégât est en **sombre** : le rgba en dur ne flippe pas, donc `border: rgba(99,102,241)` restait l'indigo CLAIR sur fond sombre, dans la règle même dont le fond était `var(--cyan-dim)`. **Un rgba écrit à la main est un bug de thème en attente** : si tu en écris un, c'est que le token manque — ou que tu ne l'as pas cherché.
 **La règle des couleurs d'auteur.** Dans un arbre de variantes, la couleur d'un coup dit **qui l'a écrit** — c'est sémantique, jamais décoratif. **Violet = le coach** (ses annotations de partie, ses réponses dans la copie d'un élève) · **bleu (`--blue-ink`) = l'élève** (ses lignes greffées sur un module du coach) · **aucune couleur = personne**, c'est le contenu d'origine. Un seul helper les applique (`_authorStyle`, `lib/editor.js`) ; ne pas réintroduire d'hex en dur (`COACH_COL` était `#7c3aed`, qui ne rendait que 3.11:1 en dark).
 **La règle du hue unique.** Un seul bouton PLEIN indigo par zone d'écran. Le deuxième niveau est TONAL (fond `indigo-dim`, texte indigo), le troisième est GHOST (bordure neutre). Il n'existe pas de deuxième accent plein.
 
@@ -161,7 +162,9 @@ L'échelle complète : **2px** (barres) · **4px** (petites pastilles carrées) 
 
 ### Named Rules
 **La règle du bas de l'échelle.** Une barre de progression fait 3 à 6px de haut : à 6px de radius elle devient une pilule, ce qui n'est pas la forme voulue. **2px** (et 3-4px pour les rails un peu plus épais) est donc un palier légitime, pas de la dérive — il vaut pour `.prog-bar`, `.eleve-progbar`, `.srdash-bar`, `.ed-mini-bar`, le pouce de scrollbar. Ne pas « corriger » ces valeurs vers 6px.
-**La règle de la pilule.** Une pastille se ferme avec **999px**, jamais avec un nombre magique qui *donne* un rond à la taille actuelle. `padding: 2px 8px; border-radius: 20px` a l'air d'une pilule tant que le padding ne bouge pas — c'est une coïncidence, pas un système. (7 sites corrigés le 16/07/2026 ; il en restait 14 déjà corrects.)
+**La règle de la pilule.** Une pastille se ferme avec **999px**, jamais avec un nombre magique qui *donne* un rond à la taille actuelle. `padding: 2px 8px; border-radius: 20px` a l'air d'une pilule tant que le padding ne bouge pas — c'est une coïncidence, pas un système. (7 sites corrigés le 16/07/2026 ; `.csnav-badge`, `border-radius: 10px; padding: 1px 7px`, le 17/07.)
+
+**La règle du conteneur segmenté.** Un conteneur qui enveloppe des enfants arrondis prend le radius de l'enfant **+ son padding**, sinon les coins ne sont pas concentriques. `.login-tabs` (12px) enveloppe `.login-tab` (8px) avec 3px de padding : le palier au-dessus de `--r` est ici **géométrique**, pas de la dérive. Arrondir au palier documenté le plus proche, ne pas inventer la valeur exacte (11px).
 
 ## 4. Elevation
 
@@ -173,8 +176,19 @@ L'échelle complète : **2px** (barres) · **4px** (petites pastilles carrées) 
 - **base** (`0 1px 3px rgba(24,24,27,.08), 0 1px 2px rgba(24,24,27,.05)`) : toasts, dropdowns.
 - **lg** (`0 10px 30px rgba(30,27,75,.12), 0 4px 8px rgba(24,24,27,.06)`) : modals — la pointe indigo (#1e1b4b) est délibérée.
 
+### Z-Scale
+
+Une **seule** échelle sémantique, déclarée en tokens dans `:root` — aucun z-index global en dur, nulle part :
+`--z-nav: 50` · `--z-sticky: 60` · `--z-modal: 200` · `--z-modal-nested: 210` · `--z-toast: 300` · `--z-drag: 400` · `--z-dialog-backdrop: 500` · `--z-dialog: 510` · `--z-promo-backdrop: 600` · `--z-promo: 610`.
+
 ### Named Rules
-**La règle de l'ombre teintée.** Aucune ombre `rgba(0,0,0,…)` : toute ombre porte le hue zinc (#18181b) ou indigo profond (#1e1b4b). Si une ombre paraît « sale », c'est qu'elle est noire.
+**La règle de l'ombre teintée.** En thème **clair**, aucune ombre `rgba(0,0,0,…)` : toute ombre porte le hue zinc (#18181b) ou indigo profond (#1e1b4b). Si une ombre paraît « sale », c'est qu'elle est noire.
+
+**La portée de cette règle — elle s'arrête au thème clair.** En sombre, le fond (`--bg` #09090b) est **plus sombre que les deux hues prescrits** (zinc #18181b, indigo #1e1b4b) : les appliquer poserait une tache *plus claire* que le fond, donc un halo, pas une ombre. Les ombres du dark (`--shadow-*`, `#board`, `.sh-hero`) sont donc **noires à dessein**. Un détecteur qui les signale a raison sur la lettre et tort sur le fond. (Mesuré le 17/07/2026 : c'est de l'arithmétique de luminance, pas un avis.)
+
+**Ce qui n'est pas une ombre.** La règle ne vise que l'élévation. Restent légitimement noirs : les **voiles** de modal (`.overlay`, `#del-backdrop` — un voile assombrit, il ne porte pas de hue), les **contours d'image** (`inset 0 0 0 1px rgba(0,0,0,.08)` sur les vignettes bois `.lib-folder`/`.lib-eyebrow`), et le **rendu canvas** de l'échiquier (marqueurs de coups légaux, ombre portée des glyphes de pièces — `lib/board.js`, `lib/editor.js`).
+
+**La règle du z-index nommé.** Tout empilement global passe par un token de la Z-Scale. Deux calques qui peuvent coexister n'ont **jamais** la même valeur : une égalité n'est pas une décision, c'est l'ordre du DOM qui tranche à ta place. (Corrigé le 17/07/2026 : `#promo-backdrop` et `#del-dialog` étaient tous deux à 9999.)
 
 ## 5. Components
 

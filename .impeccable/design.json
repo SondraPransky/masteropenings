@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-07-16T13:30:00Z",
+  "generatedAt": "2026-07-17T10:29:34.721Z",
   "title": "Design System: EECoach",
   "extensions": {
     "colorMeta": {
@@ -171,6 +171,58 @@
         "name": "tablet",
         "value": "700px"
       }
+    ],
+    "zScale": [
+      {
+        "name": "--z-nav",
+        "value": "50",
+        "purpose": "Barre de navigation collante."
+      },
+      {
+        "name": "--z-sticky",
+        "value": "60",
+        "purpose": "Dropdowns, en-tetes collants locaux."
+      },
+      {
+        "name": "--z-modal",
+        "value": "200",
+        "purpose": "Overlay + modals."
+      },
+      {
+        "name": "--z-modal-nested",
+        "value": "210",
+        "purpose": "Modal ouvert PAR-DESSUS un modal (import PGN d exercices)."
+      },
+      {
+        "name": "--z-toast",
+        "value": "300",
+        "purpose": "Toasts."
+      },
+      {
+        "name": "--z-drag",
+        "value": "400",
+        "purpose": "Piece fantome pendant un drag — au-dessus de l editeur."
+      },
+      {
+        "name": "--z-dialog-backdrop",
+        "value": "500",
+        "purpose": "Voile du dialogue de suppression."
+      },
+      {
+        "name": "--z-dialog",
+        "value": "510",
+        "purpose": "Dialogue de suppression."
+      },
+      {
+        "name": "--z-promo-backdrop",
+        "value": "600",
+        "purpose": "Voile du selecteur de promotion."
+      },
+      {
+        "name": "--z-promo",
+        "value": "610",
+        "purpose": "Selecteur de promotion — le plus haut : il bloque le coup en cours."
+      }
     ]
   },
   "components": [
@@ -265,7 +317,7 @@
       },
       {
         "name": "La règle de l'ombre teintée",
-        "body": "Aucune ombre rgba(0,0,0,…) : toute ombre porte le hue zinc ou indigo profond. Si une ombre paraît sale, c'est qu'elle est noire.",
+        "body": "En thème clair, aucune ombre rgba(0,0,0,…) : toute ombre porte le hue zinc (#18181b) ou indigo profond (#1e1b4b). Si une ombre paraît « sale », c'est qu'elle est noire.",
         "section": "elevation"
       },
       {
@@ -280,7 +332,27 @@
       },
       {
         "name": "La règle de la pilule",
-        "body": "Une pastille se ferme avec 999px, jamais avec un nombre magique qui donne un rond à la taille actuelle. 'padding: 2px 8px; border-radius: 20px' a l'air d'une pilule tant que le padding ne bouge pas — c'est une coïncidence, pas un système.",
+        "body": "Une pastille se ferme avec 999px, jamais avec un nombre magique qui donne un rond à la taille actuelle. padding: 2px 8px; border-radius: 20px a l'air d'une pilule tant que le padding ne bouge pas — c'est une coïncidence, pas un système.",
+        "section": "rounding"
+      },
+      {
+        "name": "La portée de cette règle — elle s'arrête au thème clair",
+        "body": "En sombre, le fond (--bg #09090b) est plus sombre que les deux hues prescrits (zinc #18181b, indigo #1e1b4b) : les appliquer poserait une tache plus claire que le fond, donc un halo, pas une ombre. Les ombres du dark (--shadow-*, #board, .sh-hero) sont donc noires à dessein. Un détecteur qui les signale a raison sur la lettre et tort sur le fond.",
+        "section": "elevation"
+      },
+      {
+        "name": "Ce qui n'est pas une ombre",
+        "body": "La règle ne vise que l'élévation. Restent légitimement noirs : les voiles de modal (.overlay, #del-backdrop), les contours d'image (inset 0 0 0 1px rgba(0,0,0,.08) sur .lib-folder/.lib-eyebrow), et le rendu canvas de l'échiquier (marqueurs de coups légaux, ombre portée des glyphes — lib/board.js, lib/editor.js).",
+        "section": "elevation"
+      },
+      {
+        "name": "La règle du z-index nommé",
+        "body": "Tout empilement global passe par un token de la Z-Scale. Deux calques qui peuvent coexister n'ont jamais la même valeur : une égalité n'est pas une décision, c'est l'ordre du DOM qui tranche à ta place.",
+        "section": "elevation"
+      },
+      {
+        "name": "La règle du conteneur segmenté",
+        "body": "Un conteneur qui enveloppe des enfants arrondis prend le radius de l'enfant + son padding, sinon les coins ne sont pas concentriques. .login-tabs (12px) enveloppe .login-tab (8px) avec 3px de padding : le palier au-dessus de --r est ici géométrique, pas de la dérive.",
         "section": "rounding"
       }
     ],

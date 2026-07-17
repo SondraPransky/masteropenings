@@ -12,8 +12,13 @@
   --border-h: #d4d4d8;
 
   /* ── Indigo — accent primaire ── */
+  /* Une SEULE famille d'indigo. Un indigo-500 parallele (rgba(99,102,241,…)) a vecu sur
+     17 sites a cote de ces tokens — souvent dans la meme regle (bordure 99,102,241 sur
+     fond var(--cyan-dim)), donc il ne flippait PAS avec le theme. Balaye le 17/07/2026 ;
+     ne pas le reintroduire : l'accent est #4f46e5 en clair, #818cf8 en sombre. */
   --cyan:      #4f46e5;
   --cyan-dim:  rgba(79,70,229,.08);
+  --cyan-dim-h: rgba(79,70,229,.14);  /* tint au survol d'un element -dim cliquable */
   --cyan-glow: rgba(79,70,229,.30);
 
   /* ── Amber — actions importantes / achievements ── */
@@ -65,6 +70,23 @@
   --font-display: 'Bricolage Grotesque', var(--font-ui);                            /* titres / hero */
   --font-mono:    'JetBrains Mono', ui-monospace, monospace;                         /* notation / données */
 
+  /* ── Empilement (z-index) — UNE echelle semantique, du fond vers la surface ──
+     Tout z-index global se nomme ici. Avant le 17/07/2026 la moitie haute vivait en dur
+     dans index.html et sautait a 999/9998/9999/9999/10000, avec une EGALITE a 9999
+     (#promo-backdrop vs #del-dialog) que seul l'ordre du DOM tranchait. L'ordre relatif
+     ci-dessous est celui d'alors ; seule l'egalite est levee (le selecteur de promotion
+     passe au-dessus du dialogue de suppression — c'est lui qui bloque le coup en cours). */
+  --z-nav:             50;
+  --z-sticky:          60;
+  --z-modal:          200;
+  --z-modal-nested:   210;   /* modal ouvert PAR-DESSUS un modal (import PGN d'exercices) */
+  --z-toast:          300;
+  --z-drag:           400;   /* piece fantome pendant un drag — au-dessus de l'editeur */
+  --z-dialog-backdrop: 500;
+  --z-dialog:          510;
+  --z-promo-backdrop:  600;
+  --z-promo:           610;  /* selecteur de promotion — le plus haut : il bloque le coup */
+
   /* ── Mise en forme — shadcn ── */
   --r:    8px;
   --rs:    6px;
@@ -105,7 +127,7 @@ nav {
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
-  z-index: 50;
+  z-index: var(--z-nav);
   gap: 10px;
   overflow: hidden;
 }
@@ -177,7 +199,7 @@ nav {
   font-weight: 600;
   background: var(--cyan-dim);
   color: var(--cyan);
-  border: 1px solid rgba(99,102,241,.25);
+  border: 1px solid var(--cyan-glow);
   border-radius: 999px;
   padding: 5px 14px;
   cursor: pointer;
@@ -185,7 +207,7 @@ nav {
   font-family: inherit;
   white-space: nowrap;
 }
-#reviser-tout-btn:hover { background: rgba(99,102,241,.14); border-color: rgba(99,102,241,.4); }
+#reviser-tout-btn:hover { background: var(--cyan-dim-h); }
 
 #nav-student {
   font-size: .78rem;
@@ -393,7 +415,7 @@ textarea {
   box-shadow:
     0 0 0 8px var(--surf),
     0 0 0 9px var(--border),
-    0 20px 50px rgba(0,0,0,.15);
+    0 20px 50px rgba(30,27,75,.15);   /* indigo profond — regle de l'ombre teintee */
   touch-action: none;
 }
 
@@ -567,7 +589,7 @@ textarea {
 .sr-prog-fill { height: 100%; background: var(--cyan); border-radius: 3px; transition: width .3s; }
 .sr-counts { display: flex; gap: 8px; }
 .sr-count { display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px; border-radius: 999px; font-size: .72rem; font-weight: 600; }
-.sr-count.sr-new { background: rgba(99, 102, 241, .15); color: var(--cyan); }
+.sr-count.sr-new { background: var(--cyan-dim); color: var(--cyan); }
 .sr-count.sr-rev { background: rgba(245, 158, 11, .15); color: #92400e; }
 .sr-backlog { display: flex; align-items: center; gap: 6px; margin-top: 8px; padding: 6px 10px; border-radius: 8px;
   background: rgba(245, 158, 11, .10); color: #b45309; font-size: .72rem; font-weight: 600; }
@@ -588,7 +610,7 @@ textarea {
 .srdash-bar-lbl { font-size: .7rem; color: var(--dim); white-space: nowrap; }   /* ≥11px — public enfant, lisibilité mobile */
 /* Réglages SR (P4) */
 .sr-set-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border); font-size: .86rem; color: var(--text); }
-.sr-set-input { background: var(--surf2); border: 1px solid var(--border); border-radius: 7px; padding: 6px 10px; color: var(--text); font-family: inherit; font-size: .85rem; }
+.sr-set-input { background: var(--surf2); border: 1px solid var(--border); border-radius: var(--rs); padding: 6px 10px; color: var(--text); font-family: inherit; font-size: .85rem; }
 /* Résumé révisions côté coach (P3) */
 .sr-coach-summary { background: var(--surf2); border-radius: var(--rs); padding: 8px 11px; font-size: .76rem; color: var(--text-2); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
 
@@ -680,7 +702,7 @@ textarea {
   font-weight: 600; border: 1px solid transparent;
 }
 .mastery-pill.ok  { background: var(--green-dim);  color: var(--green-ink); border-color: var(--green-glow); }
-.mastery-pill.mid { background: var(--cyan-dim);       color: var(--cyan); border-color: rgba(99,102,241,.2); }
+.mastery-pill.mid { background: var(--cyan-dim);       color: var(--cyan); border-color: var(--cyan-glow); }
 .mastery-pill.low { background: var(--red-dim);   color: var(--red-ink);  border-color: var(--red-glow); }
 
 .deadline-pill {
@@ -781,7 +803,7 @@ textarea {
 .overlay {
   position: fixed; inset: 0;
   background: rgba(15,23,42,.55);
-  z-index: 200; display: none;
+  z-index: var(--z-modal); display: none;
   align-items: center; justify-content: center;
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
@@ -889,7 +911,7 @@ textarea {
 /* ══ TOAST ════════════════════════════════════ */
 .toast {
   position: fixed; bottom: 24px; right: 24px;
-  z-index: 300;
+  z-index: var(--z-toast);
   background: var(--surf);
   border: 1px solid var(--border);
   border-radius: var(--r);
@@ -1022,7 +1044,10 @@ textarea {
 [data-theme="dark"] .toast.warn { border-color: var(--gold-glow);  color: var(--gold-ink); }[data-theme="dark"] .overlay { background: rgba(0,0,0,.82); }
 [data-theme="dark"] .modal-sub { color: var(--dim); }
 [data-theme="dark"] #board {
-  box-shadow: 0 0 0 5px #0d1421, 0 0 0 6px rgba(99,102,241,.12),
+  /* Ombres noires assumees : en sombre le fond (--bg #09090b) est PLUS SOMBRE que les hues
+     de la regle de l'ombre teintee (zinc #18181b, indigo #1e1b4b) → les teinter ferait un
+     halo, pas une ombre. Voir DESIGN.md, « la portee de la regle de l'ombre teintee ». */
+  box-shadow: 0 0 0 5px #0d1421, 0 0 0 6px rgba(129,140,248,.12),
               0 20px 60px rgba(0,0,0,.9), 0 6px 20px rgba(0,0,0,.6);
 }
 
@@ -1060,7 +1085,7 @@ textarea {
 .role-chip.teacher {
   background: var(--cyan-dim);
   color: var(--cyan);
-  border: 1px solid rgba(99,102,241,.22);
+  border: 1px solid var(--cyan-glow);
 }
 .role-chip.student {
   background: var(--green-dim);
@@ -1090,7 +1115,7 @@ textarea {
 .acct-dropdown {
   display: none; position: fixed; top: 56px; right: 12px;
   min-width: 210px; background: var(--surf); border: 1px solid var(--border);
-  border-radius: 12px; box-shadow: var(--shadow); padding: 6px; z-index: 60;
+  border-radius: 12px; box-shadow: var(--shadow); padding: 6px; z-index: var(--z-sticky);
 }
 .acct-dropdown.on { display: block; }
 .acct-dd-head { padding: 10px 12px 12px; border-bottom: 1px solid var(--border); margin-bottom: 6px; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
@@ -1117,15 +1142,15 @@ textarea {
   background-image:
     repeating-linear-gradient(
       45deg,
-      rgba(99,102,241,.035) 0,
-      rgba(99,102,241,.035) 1px,
+      rgba(79,70,229,.035) 0,
+      rgba(79,70,229,.035) 1px,
       transparent 1px,
       transparent 40px
     ),
     repeating-linear-gradient(
       -45deg,
-      rgba(99,102,241,.025) 0,
-      rgba(99,102,241,.025) 1px,
+      rgba(79,70,229,.025) 0,
+      rgba(79,70,229,.025) 1px,
       transparent 1px,
       transparent 40px
     );
@@ -1133,12 +1158,12 @@ textarea {
 }
 [data-theme="dark"] #page-login::before {
   background-image:
-    repeating-linear-gradient(45deg,rgba(99,102,241,.06) 0,rgba(99,102,241,.06) 1px,transparent 1px,transparent 40px),
-    repeating-linear-gradient(-45deg,rgba(99,102,241,.04) 0,rgba(99,102,241,.04) 1px,transparent 1px,transparent 40px);
+    repeating-linear-gradient(45deg,rgba(129,140,248,.06) 0,rgba(129,140,248,.06) 1px,transparent 1px,transparent 40px),
+    repeating-linear-gradient(-45deg,rgba(129,140,248,.04) 0,rgba(129,140,248,.04) 1px,transparent 1px,transparent 40px);
 }
 /* Halo indigo doux derriere la carte de login (profondeur, surface vitrine) */
-#page-login { background: radial-gradient(52% 42% at 50% 44%, rgba(99,102,241,.10), transparent 72%); }
-[data-theme="dark"] #page-login { background: radial-gradient(52% 42% at 50% 44%, rgba(99,102,241,.16), transparent 72%); }
+#page-login { background: radial-gradient(52% 42% at 50% 44%, rgba(79,70,229,.10), transparent 72%); }
+[data-theme="dark"] #page-login { background: radial-gradient(52% 42% at 50% 44%, rgba(129,140,248,.16), transparent 72%); }
 
 /* Cartes Export : hover discret (elles portent une action de telechargement) */
 #csec-export .card { transition: border-color .2s, box-shadow .2s, transform .2s; }
@@ -1169,7 +1194,7 @@ textarea {
   font-size: 3rem;
   display: block;
   margin-bottom: 8px;
-  filter: drop-shadow(0 4px 12px rgba(99,102,241,.3));
+  filter: drop-shadow(0 4px 12px rgba(79,70,229,.3));
 }
 .login-logo-title {
   font-family: var(--font-display);
@@ -1187,7 +1212,9 @@ textarea {
 .login-tabs {
   display: flex;
   background: var(--surf2);
-  border-radius: 10px;
+  /* Conteneur segmente : le radius suit l'interne + le padding (.login-tab 8px + 3px),
+     d'ou un palier au-dessus de --r. 12px est le palier documente le plus proche. */
+  border-radius: 12px;
   padding: 3px;
   gap: 3px;
   margin-bottom: 24px;
@@ -1449,14 +1476,14 @@ textarea {
 .sh-card-play { background:var(--cyan); color:#fff; border-color:var(--cyan); margin-left:auto; }
 .sh-card-play:hover { color:#fff; }
 .sh-empty { font-size:.82rem; color:var(--dim); padding:26px 18px; text-align:center; line-height:1.6; border:1px solid var(--border); border-radius:12px; background:var(--surf); }
-.onb-card { background:var(--cyan-dim); border:1px solid rgba(99,102,241,.25); border-radius:var(--r); padding:14px 16px; margin-bottom:16px; }
+.onb-card { background:var(--cyan-dim); border:1px solid var(--cyan-glow); border-radius:var(--r); padding:14px 16px; margin-bottom:16px; }
 .onb-head { display:flex; align-items:center; gap:10px; font-weight:700; font-size:.92rem; margin-bottom:8px; }
 .onb-prog { font-size:.72rem; font-weight:700; color:var(--cyan); background:var(--surf); border:1px solid var(--border); border-radius:999px; padding:2px 9px; }
 .onb-x { margin-left:auto; background:none; border:none; color:var(--dim); font-size:1.15rem; cursor:pointer; line-height:1; padding:0 4px; position:relative; }
 .onb-x::before { content:""; position:absolute; inset:-10px; } /* cible tactile 40px */
 .onb-x:hover { color:var(--text); }
 .onb-step { display:flex; align-items:center; gap:10px; padding:8px 0; font-size:.85rem; }
-.onb-step + .onb-step { border-top:1px solid rgba(99,102,241,.12); }
+.onb-step + .onb-step { border-top:1px solid rgba(79,70,229,.12); }
 .onb-check { width:20px; height:20px; flex-shrink:0; border-radius:50%; border:1.5px solid var(--border-h); display:flex; align-items:center; justify-content:center; font-size:.7rem; color:#fff; }
 .onb-step.on .onb-check { background:var(--green); border-color:var(--green); }
 .onb-step.on .onb-label { color:var(--dim); text-decoration:line-through; }
@@ -1562,7 +1589,7 @@ textarea {
   /* --text-2 et pas --dim : le badge est un COMPTE (une donnee), pas du texte estompe —
      et --dim sur --surf3 (la surface la plus foncee) ne rend que 4.16:1 en clair / 4.07 en dark. */
   background: var(--surf3); color: var(--text-2);
-  border-radius: 10px; padding: 1px 7px;
+  border-radius: 999px; padding: 1px 7px;  /* pilule — pas un 10px qui l'imite a ce padding */
   font-variant-numeric: tabular-nums; /* le compte « à annoter » décrémente en direct */
   flex-shrink: 0;
 }
@@ -1719,7 +1746,7 @@ textarea {
 .pg-maia > summary:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; border-radius: 6px; }
 
 /* Tooltip échiquier flottant (hover/focus d'une erreur — points faibles + détail élève). */
-.wsx-tip { position: fixed; z-index: 60; background: var(--surf); border: 1px solid var(--border);
+.wsx-tip { position: fixed; z-index: var(--z-sticky); background: var(--surf); border: 1px solid var(--border);
   border-radius: var(--r); padding: 8px; box-shadow: var(--shadow-lg); pointer-events: none; }
 .wsx-tip-cap { font-size: .7rem; color: var(--dim); margin-top: 6px; text-align: center; }
 .ed-review-hint { font-weight: 400; font-size: .7rem; color: var(--dim); }
@@ -1825,10 +1852,10 @@ textarea {
 .mcard-menu { position: relative; flex: 0 0 auto; }
 .mcard-menu > summary { list-style: none; display: inline-flex; }
 .mcard-menu > summary::-webkit-details-marker { display: none; }
-.mcard-menu-list { position: absolute; right: 0; top: calc(100% + 4px); z-index: 60; min-width: 210px;
+.mcard-menu-list { position: absolute; right: 0; top: calc(100% + 4px); z-index: var(--z-sticky); min-width: 210px;
   background: var(--surf); border: 1px solid var(--border); border-radius: var(--rs); box-shadow: var(--shadow-lg); padding: 4px; }
 .mcard-menu-item { display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 10px; border: none;
-  background: none; border-radius: 7px; font-family: inherit; font-size: .8rem; color: var(--text); text-align: left; cursor: pointer; }
+  background: none; border-radius: var(--rs); font-family: inherit; font-size: .8rem; color: var(--text); text-align: left; cursor: pointer; }
 .mcard-menu-item:hover { background: var(--surf2); }
 .mcard-menu-item:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
 .mcard-menu-item.danger { color: var(--red); }
@@ -1956,7 +1983,7 @@ textarea {
 .lib-list { display: flex; flex-direction: column; gap: 8px; }
 .lib-entry {
   display: flex; align-items: center; gap: 14px;
-  background: var(--surf); border: 1px solid var(--border); border-radius: 10px;
+  background: var(--surf); border: 1px solid var(--border); border-radius: var(--r);
   padding: 12px 14px; transition: border-color .15s, box-shadow .15s;
 }
 .lib-entry:hover { border-color: var(--border-h); box-shadow: var(--shadow-xs); }

@@ -555,7 +555,7 @@
             <span id="s-mode-badge" class="badge" style="background:var(--surf2);color:var(--dim)"></span>
             <span id="s-turn"  style="font-size:.77rem;color:var(--dim)"></span>
           </div>
-          <div id="student-bar" style="display:none;margin-top:10px;padding:8px 10px;background:var(--bg);border-radius:7px;align-items:center;gap:8px">
+          <div id="student-bar" style="display:none;margin-top:10px;padding:8px 10px;background:var(--bg);border-radius:var(--r);align-items:center;gap:8px">
             <span style="font-size:1rem"><i class="ti ti-user" aria-hidden="true"></i></span>
             <span id="student-name-display" style="font-weight:600;font-size:.88rem"></span>
           </div>
@@ -581,7 +581,7 @@
           </div>
           <div class="prog-bar" style="margin-bottom:10px"><div id="learn-prog-fill" class="prog-fill" style="background:var(--cyan);width:0%;transition:width .3s"></div></div>
           <div id="learn-notation" class="notation-moves" style="max-height:160px;overflow-y:auto;margin-bottom:10px"></div>
-          <div id="learn-comment" style="font-size:.82rem;color:var(--text);line-height:1.55;padding:8px 10px;background:var(--bg);border-radius:7px;margin-bottom:10px;height:58px;overflow-y:auto"></div>
+          <div id="learn-comment" style="font-size:.82rem;color:var(--text);line-height:1.55;padding:8px 10px;background:var(--bg);border-radius:var(--r);margin-bottom:10px;height:58px;overflow-y:auto"></div>
           <div id="study-bubble" class="study-bubble" style="display:none"></div>
           <div id="study-guess-row" style="display:none;margin-bottom:8px">
             <button id="study-guess-btn" class="btn btn-ghost btn-sm" style="width:100%" onclick="toggleStudyGuess()"><i class="ti ti-target" aria-hidden="true"></i> Devine le coup</button>
@@ -857,7 +857,7 @@
           </div>
         </div>
 
-        <div id="ex-sol-empty" style="text-align:center;color:var(--dim);font-size:.85rem;padding:34px 14px;border:1px dashed var(--border);border-radius:10px;line-height:1.6">
+        <div id="ex-sol-empty" style="text-align:center;color:var(--dim);font-size:.85rem;padding:34px 14px;border:1px dashed var(--border);border-radius:14px;line-height:1.6">
           Choisis une position pour commencer :<br><b>Sur l'échiquier</b>, <b>FEN</b> ou <b>PGN</b>.<br>Ou clique un exercice de la liste pour le modifier.
         </div>
 
@@ -891,7 +891,7 @@
 </div>
 
 <div class="overlay" id="modal-exercise-pgn">
-  <div class="modal" style="max-width:560px;width:96vw;max-height:94vh;overflow-y:auto;padding:24px;z-index:210">
+  <div class="modal" style="max-width:560px;width:96vw;max-height:94vh;overflow-y:auto;padding:24px;z-index:var(--z-modal-nested)">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
       <div class="modal-title" style="margin:0"><i class="ti ti-clipboard-text" aria-hidden="true"></i> Importer des exercices (PGN)</div>
       <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-exercise-pgn')">✕</button>
@@ -1030,7 +1030,7 @@
 </div>
 
 <!-- ════ ÉDITEUR DE VARIANTES ════ -->
-<div class="overlay" id="modal-pgn-editor" style="align-items:stretch;padding:0;z-index:200">
+<div class="overlay" id="modal-pgn-editor" style="align-items:stretch;padding:0;z-index:var(--z-modal)">
   <div aria-label="Éditeur de variantes" style="display:flex;flex-direction:column;height:100dvh;max-height:100dvh;background:var(--bg);width:100%;max-width:980px;margin:0 auto;box-shadow:var(--shadow)">
     <!-- Header -->
     <div id="editor-header" style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-bottom:1px solid var(--border);flex-shrink:0;gap:12px">
@@ -1168,13 +1168,13 @@
 
 <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 <canvas id="ghost-canvas" width="60" height="60"
-  style="position:fixed;pointer-events:none;z-index:999;display:none;"></canvas>
+  style="position:fixed;pointer-events:none;z-index:var(--z-drag);display:none;"></canvas>
 <div id="promo-backdrop" onclick="cancelPromo()" ontouchstart="cancelPromo()"
-  style="display:none;position:fixed;inset:0;z-index:9999"></div>
+  style="display:none;position:fixed;inset:0;z-index:var(--z-promo-backdrop)"></div>
 <div id="del-backdrop" onclick="cancelDel()"
-  style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.45)"></div>
+  style="display:none;position:fixed;inset:0;z-index:var(--z-dialog-backdrop);background:rgba(0,0,0,.45)"></div>
 <div id="del-dialog"
-  style="display:none;position:fixed;z-index:9999;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:24px 28px;min-width:260px;max-width:340px;box-shadow:0 8px 32px rgba(0,0,0,.3);text-align:center">
+  style="display:none;position:fixed;z-index:var(--z-dialog);left:50%;top:50%;transform:translate(-50%,-50%);background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:24px 28px;min-width:260px;max-width:340px;box-shadow:var(--shadow-lg);text-align:center">
   <div style="font-size:1rem;font-weight:600;margin-bottom:8px;color:var(--text)">Supprimer ce module ?</div>
   <div style="font-size:.85rem;color:var(--dim);margin-bottom:20px">Ses résultats et parties seront également supprimés.</div>
   <div style="display:flex;gap:10px;justify-content:center">
@@ -1183,7 +1183,7 @@
   </div>
 </div>
 <div id="promo-pick"
-  style="display:none;position:fixed;z-index:10000;flex-direction:row;gap:6px;border-radius:8px;padding:8px 10px;box-shadow:0 4px 20px rgba(0,0,0,.4);background:var(--surf);border:1px solid var(--border)"></div>
+  style="display:none;position:fixed;z-index:var(--z-promo);flex-direction:row;gap:6px;border-radius:8px;padding:8px 10px;box-shadow:var(--shadow);background:var(--surf);border:1px solid var(--border)"></div>
 
 <!-- App = un seul module ES (importe lib/core.js + lib/dbmap.js ; chess.js + supabase restent en CDN ci-dessus, globals window.Chess/window.supabase) -->
 <script type="module" src="./app.js"></script>
