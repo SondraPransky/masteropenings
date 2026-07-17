@@ -154,13 +154,8 @@ interface Window {
   explorerPuzzleNext?: (...a: any[]) => any;
   explorerPuzzleExit?: (...a: any[]) => any;
   _expPrev?: (...a: any[]) => any;              // aperçu épinglé (survol d'une ligne)
-  _expDragStart?: (...a: any[]) => any;         // drag & drop de l'échiquier explorateur
-  _expDrop?: (...a: any[]) => any;
-  _expDragEnd?: (...a: any[]) => any;
-  _expTouchStart?: (...a: any[]) => any;
   _expToggleSel?: (...a: any[]) => any;
   _expToggleAll?: (...a: any[]) => any;         // tout cocher (page courante)
-  _expClickSq?: (...a: any[]) => any;
   _expDetectBridge?: (...a: any[]) => any;      // détection du pont OTKB local
   pgnToEditorTree?: (...a: any[]) => any;
   openWeakspotPosition?: (...a: any[]) => any;
@@ -296,3 +291,7 @@ interface Window {
   _afterMaiaReady?: (...a: any[]) => any;
   _checkPTEnd?: (...a: any[]) => any;
 }
+
+// Imports d'assets par le bundler (Vite) : CSS chargés en chunks lazy
+// (chessground de l'explorateur) — pas des modules TS.
+declare module '*.css';

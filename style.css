@@ -2294,19 +2294,10 @@ textarea {
 .exp-count { font-size: .82rem; color: var(--text-2); }
 .exp-loading { color: var(--dim); }
 .exp-err { color: var(--red-ink); }
-/* — échiquier jouable : l'atelier (480px chez l'original, borné par la colonne) — */
-.exp-board { width: 100%; }
-.exp-playboard { display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); width: 100%; aspect-ratio: 1; border-radius: var(--rs); overflow: hidden; border: 1px solid var(--border); }
-.exp-sq { background: var(--board-light, #f0d9b5); display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; }
-.exp-sq-d { background: var(--board-dark, #b58863); }
-.exp-sq img { width: 90%; height: 90%; pointer-events: none; position: relative; z-index: 1; }
-.exp-sq:hover { filter: brightness(1.06); }
-.exp-sq-sel::after { content: ''; position: absolute; inset: 0; box-shadow: inset 0 0 0 3px var(--cyan); z-index: 2; }
-.exp-sq-hint::after { content: ''; position: absolute; inset: 0; box-shadow: inset 0 0 0 3px var(--gold); z-index: 2; }
-.exp-sq-last::before { content: ''; position: absolute; inset: 0; background: var(--cyan); opacity: .22; }
-.exp-sq-check::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle, var(--red) 0%, transparent 75%); opacity: .55; }
-.exp-sq-dest::after { content: ''; position: absolute; width: 26%; height: 26%; left: 37%; top: 37%; border-radius: 999px; background: rgba(20, 30, 25, .28); }
-.exp-sq-capt::after { content: ''; position: absolute; inset: 6%; border-radius: 999px; border: 4px solid rgba(20, 30, 25, .28); box-sizing: border-box; }
+/* — échiquier CHESSGROUND (le board de Lichess, assets vendus dans otkb/) —
+   le conteneur porte la taille ; chessground remplit (cg-wrap, base.css). */
+.exp-board { width: 100%; aspect-ratio: 1; border-radius: var(--rs); overflow: hidden; border: 1px solid var(--border); }
+#exp-prev-board { width: 100%; aspect-ratio: 1; border-radius: var(--rs); overflow: hidden; border: 1px solid var(--border); }
 /* — suites les plus jouées : pastilles soulignées (part relative) — */
 .exp-card { background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); padding: 10px 14px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .exp-suites-lbl { font-size: .8rem; font-weight: 700; color: var(--text); margin-right: 4px; }
@@ -2412,13 +2403,6 @@ textarea {
 /* P2 : focus clavier visible sur les contrôles custom (les lignes l'ont déjà). */
 .exp-mvpill:focus-visible, .exp-levelchip:focus-visible, .exp-check:focus-visible,
 .exp-th-sort:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
-/* P2 : coordonnées dans les cases du bord (style Chessground, encre = la
-   couleur de la case opposée, comme Lichess). */
-.exp-coord { position: absolute; font-family: var(--font-mono); font-size: .55rem; font-weight: 600; opacity: .85; pointer-events: none; z-index: 1; }
-.exp-coord-f { right: 3px; bottom: 1px; }
-.exp-coord-r { left: 3px; top: 1px; }
-.exp-sq .exp-coord { color: #b58863; }
-.exp-sq-d .exp-coord { color: #f0d9b5; }
 /* P2 : skeleton du tableau pendant la recherche (patron .skeleton existant). */
 .exp-skel { display: flex; flex-direction: column; gap: 8px; padding: 4px 0; }
 .exp-skel-row { height: 30px; }
