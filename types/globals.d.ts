@@ -138,6 +138,13 @@ interface Window {
   explorerPickOpening?: (...a: any[]) => any;
   explorerToggleLevel?: (...a: any[]) => any;
   explorerToggleSort?: (...a: any[]) => any;
+  explorerPage?: (...a: any[]) => any;          // pagination du tableau through
+  explorerPlayUci?: (...a: any[]) => any;       // suites les plus jouées (pastilles)
+  explorerUndo?: (...a: any[]) => any;
+  explorerRedo?: (...a: any[]) => any;
+  explorerThermalMode?: (...a: any[]) => any;   // bascule critiques ⇄ sacrifices
+  explorerOpenAtPuzzle?: (...a: any[]) => any;  // « puzzles à résoudre ici »
+  explorerOpenExport?: (...a: any[]) => any;
   explorerOpenPuzzle?: (...a: any[]) => any;    // solveur intégré (clic sur une ligne)
   explorerPuzzleHint?: (...a: any[]) => any;
   explorerPuzzleSolution?: (...a: any[]) => any;

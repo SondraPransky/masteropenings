@@ -431,52 +431,75 @@
         </div>
       </div>
       <div class="exp-mobile-note">L'explorateur s'utilise sur écran large (il lit le corpus local complet).</div>
+      <div id="exp-banner" class="exp-banner" style="display:none"></div>
       <div id="exp-body">
-        <div class="exp-pos">
-          <div id="exp-board" class="exp-board"></div>
-          <div class="exp-pos-fields">
-            <label class="exp-label" for="exp-opening">Ouverture <span class="exp-hint">— ou joue les coups sur l'échiquier</span></label>
+        <div class="exp-cols">
+          <!-- ── colonne GAUCHE : l'atelier (échiquier + navigation + contexte) ── -->
+          <div class="exp-left">
+            <div id="exp-board" class="exp-board"></div>
+            <div id="exp-moves" class="exp-moves" aria-live="polite"></div>
+            <label class="exp-label" for="exp-opening">Ouverture</label>
             <input id="exp-opening" class="exp-in" list="exp-opening-list" placeholder="Choisir une ouverture…" autocomplete="off" onchange="explorerPickOpening(this.value)">
             <datalist id="exp-opening-list"></datalist>
-            <label class="exp-label" for="exp-input" style="margin-top:12px">Position <span class="exp-hint">— coups UCI (<code>e2e4 e7e5 g1f3</code>) ou FEN</span></label>
+            <label class="exp-label" for="exp-input" style="margin-top:10px">Position <span class="exp-hint">— FEN ou coups UCI</span></label>
             <div class="exp-pos-row">
               <input id="exp-input" class="exp-in" type="text" placeholder="e2e4 e7e5 g1f3" autocomplete="off" spellcheck="false">
-              <button class="btn btn-ghost btn-sm" onclick="explorerResetBoard()" title="Position de départ"><i class="ti ti-rotate" aria-hidden="true"></i></button>
-              <button class="btn btn-primary" onclick="explorerLoad()"><i class="ti ti-search" aria-hidden="true"></i> Explorer</button>
+              <button class="btn btn-primary btn-sm" onclick="explorerLoad()">Aller</button>
             </div>
-            <div class="exp-filters">
-              <span class="exp-filters-lbl">Niveau élève :</span>
-              <div class="exp-levelchips" id="exp-levelchips"></div>
+            <div id="exp-ctrl-explore" class="exp-ctrl">
+              <button class="btn btn-ghost btn-sm" onclick="explorerResetBoard()"><i class="ti ti-rotate" aria-hidden="true"></i> Départ</button>
+              <button class="btn btn-ghost btn-sm" onclick="explorerUndo()"><i class="ti ti-arrow-back-up" aria-hidden="true"></i> Annuler</button>
+              <span class="exp-hint">Glissez les pièces — flèches ← → pour naviguer.</span>
             </div>
-            <div id="exp-count" class="exp-count"></div>
+            <div id="exp-ctrl-puzzle" class="exp-ctrl" style="display:none">
+              <button class="btn btn-blue btn-sm" onclick="explorerPuzzleExit()"><i class="ti ti-arrow-back-up" aria-hidden="true"></i> Quitter le puzzle</button>
+              <span class="exp-hint">Retour à la position explorée.</span>
+            </div>
+            <div id="exp-thermal" style="display:none"></div>
           </div>
-          <!-- Panneau du solveur (remplace les champs pendant la résolution d'un puzzle) -->
-          <div id="exp-solver" class="exp-solver" style="display:none">
-            <div class="exp-sol-head">
-              <span id="exp-sol-title" class="exp-sol-title">Puzzle</span>
-              <span id="exp-sol-rating" class="exp-rating"></span>
+          <!-- ── colonne DROITE : le héros (suites → puzzles qui suivent) ── -->
+          <div class="exp-right">
+            <div id="exp-suites" class="exp-card" style="display:none"></div>
+            <div id="exp-guard" class="exp-guard" style="display:none">Jouez au moins un coup complet pour voir les puzzles qui suivent la position.</div>
+            <div id="exp-through" style="display:none">
+              <div class="exp-through-head">
+                <span class="exp-through-title">Puzzles qui suivent <strong id="exp-th-total" class="exp-th-total"></strong></span>
+                <button class="btn btn-blue btn-sm" onclick="explorerOpenExport()" title="Dossier PGN de ces puzzles, calibré par niveau"><i class="ti ti-download" aria-hidden="true"></i> Télécharger</button>
+              </div>
+              <div class="exp-filters">
+                <span class="exp-filters-lbl">Niveau élève :</span>
+                <div class="exp-levelchips" id="exp-levelchips"></div>
+              </div>
+              <div id="exp-count" class="exp-count"></div>
+              <div class="exp-flux">
+                <div id="exp-results"></div>
+                <div id="exp-preview" class="exp-prevcol" style="display:none">
+                  <div id="exp-prev-board"></div>
+                  <div id="exp-prev-cap" class="exp-prev-cap">Survolez une ligne</div>
+                </div>
+              </div>
+              <div id="exp-pager" class="exp-pager" style="display:none"></div>
+              <div id="exp-actionbar" class="exp-actionbar" style="display:none">
+                <span id="exp-selcount" class="exp-selcount">0 sélectionné</span>
+                <div class="exp-actionbtns">
+                  <button class="btn btn-primary btn-sm" onclick="explorerCreatePacket()"><i class="ti ti-puzzle" aria-hidden="true"></i> Créer un paquet</button>
+                </div>
+              </div>
             </div>
-            <div id="exp-sol-msg" class="exp-sol-msg"></div>
-            <div class="exp-sol-btns">
-              <button class="btn btn-ghost btn-sm" onclick="explorerPuzzleHint()"><i class="ti ti-bulb" aria-hidden="true"></i> Indice</button>
-              <button class="btn btn-ghost btn-sm" onclick="explorerPuzzleSolution()"><i class="ti ti-eye" aria-hidden="true"></i> Solution</button>
-              <button class="btn btn-blue btn-sm" id="exp-sol-next" onclick="explorerPuzzleNext()"><i class="ti ti-player-play" aria-hidden="true"></i> Suivant</button>
+            <div id="exp-at" style="display:none"></div>
+            <!-- Panneau du solveur (remplace le héros pendant la résolution) -->
+            <div id="exp-solver" class="exp-solver" style="display:none">
+              <div class="exp-sol-head">
+                <span id="exp-sol-title" class="exp-sol-title">Puzzle</span>
+                <span id="exp-sol-rating" class="exp-rating"></span>
+              </div>
+              <div id="exp-sol-msg" class="exp-sol-msg"></div>
+              <div class="exp-sol-btns">
+                <button class="btn btn-ghost btn-sm" onclick="explorerPuzzleHint()"><i class="ti ti-bulb" aria-hidden="true"></i> Indice</button>
+                <button class="btn btn-ghost btn-sm" onclick="explorerPuzzleSolution()"><i class="ti ti-eye" aria-hidden="true"></i> Solution</button>
+                <button class="btn btn-blue btn-sm" id="exp-sol-next" onclick="explorerPuzzleNext()"><i class="ti ti-player-play" aria-hidden="true"></i> Suivant</button>
+              </div>
             </div>
-            <button class="btn btn-ghost btn-sm exp-sol-back" onclick="explorerPuzzleExit()"><i class="ti ti-arrow-back-up" aria-hidden="true"></i> Retour à l'exploration</button>
-          </div>
-        </div>
-        <div class="exp-flux">
-          <div id="exp-results"></div>
-          <div id="exp-preview" class="exp-prevcol" style="display:none">
-            <div id="exp-prev-board"></div>
-            <div id="exp-prev-cap" class="exp-prev-cap">Survolez une ligne</div>
-          </div>
-        </div>
-        <div id="exp-actionbar" class="exp-actionbar" style="display:none">
-          <span id="exp-selcount" class="exp-selcount">0 sélectionné</span>
-          <div class="exp-actionbtns">
-            <button class="btn btn-blue btn-sm" onclick="explorerExportPgn()"><i class="ti ti-download" aria-hidden="true"></i> Exporter PGN</button>
-            <button class="btn btn-primary btn-sm" onclick="explorerCreatePacket()"><i class="ti ti-puzzle" aria-hidden="true"></i> Créer un paquet</button>
           </div>
         </div>
       </div>
