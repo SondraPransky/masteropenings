@@ -99,7 +99,7 @@ function check(name, cond, detail = '') {
 const uid53 = () => Date.now() * 1000 + Math.floor(Math.random() * 1000);
 
 // ── Main ────────────────────────────────────────────────────
-const created = { games: [], classId: null, resultTs: null, practiceTs: null, moduleId: null, coachResultTs: null, coachPracticeTs: null };
+const created = { games: [], classId: null, resultTs: null, practiceTs: null, moduleId: null, overlayId: null, coachResultTs: null, coachPracticeTs: null };
 let coach, student, studentProfile, origExtra, origMastery;
 
 async function run() {
@@ -383,6 +383,76 @@ async function run() {
     const seenP = (rdP.data || []).some(r => String(r.ts) === String(pRec.ts));
     check('coach : LIT la practice de son eleve (RLS drill_id)', rdP.ok && seenP, `status=${rdP.status} vues=${(rdP.data||[]).length}`);
   }
+
+  // ── 15. COUCHE D'EDITION ELEVE (overlay additif) ────────────
+  //  LE SEUL VRAI RISQUE DONNEES OUVERT (CLAUDE.md point 1) : jamais teste connecte
+  //  (sb=null en local). L'eleve greffe SES lignes sur le MODULE du coach — une ligne
+  //  `modules` a DEUX proprietaires : teacher_id=coach (il LIT) ET owner_student_id=eleve
+  //  (il ECRIT). extra.overlayOf pointe le module coach ; `tree` ne contient QUE le diff
+  //  (les ajouts). On prouve le round-trip reseau + les DEUX branches du OR de
+  //  modules_read/insert/update + la preservation de la propriete quand le coach repond.
+  //  (L'isolation entre DEUX eleves distincts exigerait un 3e compte — hors gate 2-comptes ;
+  //   ici on couvre tout ce qui l'est avec eleve+coach.)
+  {
+    created.overlayId = uid53();
+    const FEN = 'rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2';
+    // Diff jsonb = les ajouts de l'eleve, indexes par FEN (forme reelle de _sbFetchStudentOverlays).
+    const DIFF = { [FEN]: [{ san: 'Nf3', author: 'student', comment: 'je prefere developper ici' }] };
+    const overlay = {
+      id: created.overlayId,
+      teacherId: coach.uid,                 // -> LISIBLE par le coach (modules_read OR teacher_id)
+      ownerStudentId: student.uid,          // -> ECRIVABLE par l'eleve (modules_insert_owner)
+      name: 'GATE overlay', side: 'w', varmode: 'tree',
+      tree: DIFF, sessions: [],
+      overlayOf: created.moduleId,          // le module coach etendu (test 11)
+      overlayBy: { student: 'Eleve', studentEmail: GATE_STUDENT_EMAIL, studentPseudo: studentProfile?.pseudo || null },
+      updatedAt: Date.now(),
+    };
+    const row = _sbModuleToRow(overlay);
+    row.owner_student_id = student.uid;     // comme _sbSaveStudentOverlay : force le proprietaire
+
+    // 15a — l'eleve ECRIT sa couche (modules_insert_owner : owner_student_id = auth.uid()).
+    const ins = await rest(student.token, 'POST', 'modules', { body: row, prefer: 'return=representation' });
+    check('eleve : insert couche edition (owner_student_id)', ins.ok, `${ins.status} ${JSON.stringify(ins.data)}`);
+
+    // 15b — l'eleve RELIT sa couche (_sbFetchStudentOverlays : eq owner_student_id + filtre overlayOf!=null).
+    const rdS = await rest(student.token, 'GET', `modules?owner_student_id=eq.${student.uid}&id=eq.${created.overlayId}&select=*`);
+    const oS = rdS.data?.[0] ? _sbRowToModule(rdS.data[0]) : null;
+    check('eleve : relit sa couche (overlayOf round-trip)', String(oS?.overlayOf) === String(created.moduleId), JSON.stringify(oS?.overlayOf));
+    check('eleve : diff (tree jsonb) intact', JSON.stringify(oS?.tree) === JSON.stringify(DIFF), JSON.stringify(oS?.tree));
+
+    // 15c — le COACH LIT la couche greffee sur SON module (_sbLoadTeacherOverlays : eq teacher_id).
+    const rdC = await rest(coach.token, 'GET', `modules?teacher_id=eq.${coach.uid}&select=*`);
+    const mods = (rdC.data || []).map(_sbRowToModule);
+    const oC = mods.find(m => String(m.id) === String(created.overlayId));
+    check('coach : LIT la couche de son eleve (modules_read OR teacher_id)', !!oC, `vues=${(rdC.data || []).length}`);
+    check('coach : identite eleve denormalisee (overlayBy) round-trip', oC?.overlayBy?.studentEmail === GATE_STUDENT_EMAIL, JSON.stringify(oC?.overlayBy));
+
+    // 15d — DISCRIMINANT anti-pollution : la couche porte overlayOf!=null, le module coach non.
+    //  _sbLoadTeacherModules/_sbFetchPersonalModules filtrent overlayOf==null (cote client) ;
+    //  on prouve que le champ qui les distingue survit au round-trip dans les DEUX sens.
+    const coachMod = mods.find(m => String(m.id) === String(created.moduleId));
+    check('anti-pollution : module coach overlayOf==null, couche overlayOf!=null',
+      coachMod?.overlayOf == null && oC?.overlayOf != null, `mod=${coachMod?.overlayOf} overlay=${oC?.overlayOf}`);
+
+    // 15e — le COACH repond SANS voler la ligne (_sbSaveCoachOverlayReply : teacher_id=lui,
+    //  owner_student_id PRESERVE). modules_update_owner autorise via la branche teacher_id.
+    const REPLY = { [FEN]: [
+      { san: 'Nf3', author: 'student', comment: 'je prefere developper ici' },
+      { san: 'Bc4', author: 'coach', comment: 'bien, et enchaine par Bc4' },
+    ] };
+    const replyRow = _sbModuleToRow({ ...overlay, tree: REPLY });
+    replyRow.teacher_id = coach.uid;            // son droit d'ecriture sur cette ligne
+    replyRow.owner_student_id = student.uid;    // NE PAS ecraser le proprietaire eleve
+    const upC = await rest(coach.token, 'PATCH', `modules?id=eq.${created.overlayId}`, { body: replyRow, prefer: 'return=representation' });
+    check('coach : repond dans la couche (modules_update OR teacher_id)', upC.ok && upC.data?.length === 1, `${upC.status} ${JSON.stringify(upC.data)}`);
+
+    // 15f — apres la reponse coach, l'eleve reste PROPRIETAIRE et voit la reponse.
+    const rdS2 = await rest(student.token, 'GET', `modules?id=eq.${created.overlayId}&select=*`);
+    const oS2 = rdS2.data?.[0] ? _sbRowToModule(rdS2.data[0]) : null;
+    check("propriete preservee : owner_student_id reste l'eleve", oS2?.ownerStudentId === student.uid, JSON.stringify(oS2?.ownerStudentId));
+    check('eleve : voit la reponse du coach dans sa couche', JSON.stringify(oS2?.tree) === JSON.stringify(REPLY), JSON.stringify(oS2?.tree));
+  }
 }
 
 // ── Nettoyage : supprime tout ce que la gate a cree ─────────
@@ -397,6 +467,8 @@ async function cleanup() {
     if (created.practiceTs) await rest(student.token, 'DELETE', `practice?student_id=eq.${student.uid}&ts=eq.${created.practiceTs}`);
     if (created.coachPracticeTs) await rest(student.token, 'DELETE', `practice?student_id=eq.${student.uid}&ts=eq.${created.coachPracticeTs}`);
     if (created.classId) await rest(coach.token, 'DELETE', `classes?id=eq.${created.classId}`);
+    // La couche overlay a 2 proprietaires (modules_delete_owner est un OR) : l'eleve la supprime.
+    if (created.overlayId) await rest(student.token, 'DELETE', `modules?id=eq.${created.overlayId}`);
     if (created.moduleId) await rest(coach.token, 'DELETE', `modules?id=eq.${created.moduleId}`);
     // Restaure profiles.extra / mastery de l'eleve.
     if (student) {

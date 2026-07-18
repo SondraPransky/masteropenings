@@ -90,6 +90,50 @@ describe('mapping module ↔ ligne SQL', () => {
   });
 });
 
+// Le filtre anti-pollution CLIENT : une couche d'édition élève (overlayOf != null) partage
+// des colonnes avec les vrais modules (teacher_id pour le coach, owner_student_id pour l'élève),
+// donc les MÊMES requêtes SQL la ramènent. app.js la sépare par `.overlayOf == null` :
+//   - _sbLoadTeacherModules : .eq(teacher_id) puis .filter(m => m.overlayOf == null) → « Mes modules »
+//   - _sbFetchPersonalModules : .eq(owner_student_id) puis .filter(m => m.overlayOf == null) → perso
+//   - _sbFetchStudentOverlays / _sbLoadTeacherOverlays : .filter(m => m.overlayOf != null) → les couches
+// La gate connectée prouve que overlayOf survit au round-trip réseau ; ce test prouve que le
+// PRÉDICAT partitionne correctement le jeu de lignes mixte (le contenu de ces filtres).
+describe('filtre anti-pollution des couches d\'édition (overlayOf)', () => {
+  const isModule  = m => m.overlayOf == null;   // le prédicat exact d'app.js
+  const isOverlay = m => m.overlayOf != null;
+
+  // Requête coach : .eq('teacher_id', coach) → SES modules + les couches greffées dessus.
+  it('côté coach : « Mes modules » exclut les couches, « overlays » ne garde qu\'elles', () => {
+    const rows = [
+      _sbModuleToRow({ id: 1, teacherId: 'coach', name: 'Espagnole', tree: {}, sessions: [] }),
+      _sbModuleToRow({ id: 2, teacherId: 'coach', name: 'Sicilienne', tree: {}, sessions: [] }),
+      // une couche d'un élève sur le module 1 : porte teacher_id=coach ET owner_student_id=élève
+      _sbModuleToRow({ id: 3, teacherId: 'coach', ownerStudentId: 'eleve', name: 'Espagnole',
+                       overlayOf: 1, overlayBy: { student: 'Léa', studentEmail: 'l@x.fr', studentPseudo: 'lea' }, tree: {}, sessions: [] }),
+    ].map(_sbRowToModule);
+
+    const mesModules = rows.filter(isModule);
+    const overlays   = rows.filter(isOverlay);
+    expect(mesModules.map(m => m.id)).toEqual([1, 2]);          // la couche n'y est PAS
+    expect(overlays.map(m => m.id)).toEqual([3]);               // et n'apparaît QUE là
+    expect(overlays[0].overlayOf).toBe(1);                      // rattachée au bon module coach
+  });
+
+  // Requête élève : .eq('owner_student_id', élève) → SES modules perso + SES couches.
+  it('côté élève : « Mes révisions perso » exclut les couches', () => {
+    const rows = [
+      _sbModuleToRow({ id: 10, ownerStudentId: 'eleve', personal: true, name: 'Mon perso', tree: {}, sessions: [] }),
+      _sbModuleToRow({ id: 11, ownerStudentId: 'eleve', teacherId: 'coach', name: 'Espagnole', overlayOf: 1, tree: {}, sessions: [] }),
+    ].map(_sbRowToModule);
+
+    const perso    = rows.filter(isModule);
+    const mesAjouts = rows.filter(isOverlay);
+    expect(perso.map(m => m.id)).toEqual([10]);                 // le perso seul, pas la couche
+    expect(mesAjouts.map(m => m.id)).toEqual([11]);
+    expect(perso[0].personal).toBe(true);
+  });
+});
+
 describe('mapping classe ↔ ligne SQL', () => {
   const cls = {
     id: 1700000009999,

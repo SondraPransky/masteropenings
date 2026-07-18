@@ -55,6 +55,7 @@ npm run gate
 | 12 | élève | **partie Lichess** : PGN annoté (en-têtes + `%clk`) round-trip à l'identique dans `games.pgn` |
 | 13 | coach + élève | **outillage coach** : `classes.extra.targetedReviews` (révisions ciblées) + `classes.extra.deadlines` (échéances) round-trip ; l'élève lit sa révision ciblée (RLS `classes_read`) |
 | 14 | coach | **suivi élève** : lit le `result` + la `practice` de son élève rattachés à son module (RLS `results_read`/`practice_read` via `drill_id`) |
+| 15 | élève + coach | **couche d'édition élève** (le seul vrai risque données restant) : l'élève greffe un overlay sur le module coach — ligne `modules` à 2 propriétaires (`teacher_id`=coach lit, `owner_student_id`=élève écrit), `extra.overlayOf` + `tree`=diff. Prouve : insert élève (`modules_insert_owner`), relecture élève, lecture coach (`modules_read` OR `teacher_id`), identité dénormalisée `overlayBy`, discriminant anti-pollution `overlayOf`, et la **réponse coach qui préserve `owner_student_id`** (`_sbSaveCoachOverlayReply` ne vole pas la ligne). *(Isolation entre 2 élèves distincts = hors gate 2-comptes.)* |
 
 Le script **crée puis supprime** ses données (classe, partie, result,
 practice, module) et **restaure** `profiles.extra` / `mastery` de l'élève.
