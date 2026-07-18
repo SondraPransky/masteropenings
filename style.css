@@ -1824,6 +1824,8 @@ textarea {
 .ed-review-item { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); }
 .ed-review-item:last-child { border-bottom: none; }
 .ed-review-move { font-family: var(--font-mono); font-weight: 700; font-size: .95rem; flex-shrink: 0; min-width: 42px; }
+/* Marqueur d'auteur dans la notation (WCAG 1.4.1 : distingue coach/eleve sans la couleur seule). */
+.ed-author-mark { font-size: .82em; margin-right: 2px; vertical-align: baseline; }
 .ed-review-body { flex: 1; min-width: 0; }
 .ed-review-meta { font-size: .74rem; color: var(--dim); }
 .ed-review-cmt { font-size: .75rem; color: var(--text-2); font-style: italic; line-height: 1.4; }
