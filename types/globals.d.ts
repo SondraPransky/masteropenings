@@ -93,6 +93,8 @@ interface Window {
   escapeHtml?: (...a: any[]) => any;
   toast?: (...a: any[]) => any;
   save?: (...a: any[]) => any;
+  _cache?: (...a: any[]) => any;
+  updateStudentBar?: (...a: any[]) => any;
   showPromoPicker?: (...a: any[]) => any;
   renderDrillList?: (...a: any[]) => any;
   renderClassModuleSelect?: (...a: any[]) => any;
