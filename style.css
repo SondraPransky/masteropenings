@@ -746,6 +746,14 @@ textarea {
 /* Survol : la bordure PLEINE passe a l'accent (le side-stripe 3px est banni par le
    DESIGN.md). --cyan-glow au lieu de l'indigo-500 en dur, et il bascule en dark. */
 .game-row:hover { border-color: var(--cyan-glow); box-shadow: var(--shadow-xs); }
+/* Layout interne d'une partie partagée (coach-games.js _pgGroupsHTML) — one-off inline extraits. */
+.game-row-main { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.game-row-l { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.game-row-info { min-width: 0; }
+.game-row-who { font-weight: 600; font-size: .85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.game-row-meta { font-size: .72rem; color: var(--dim); }
+.pg-empty-note { color: var(--dim); font-size: .82rem; padding: 18px 4px; }
+.pg-todo-count { color: var(--red); }   /* « N à annoter » — signal d'action */
 .game-result { font-size: .72rem; font-family: 'JetBrains Mono', monospace; font-weight: 700; }
 /* Regle de l'encre : 11.5px bold = petit texte -> variantes -ink (le token de base plafonne a 3.3:1). */
 .game-result.win  { color: var(--green-ink); }
@@ -1686,6 +1694,21 @@ textarea {
 .cls-detail-title { flex: 1; min-width: 0; }
 /* Rangée élève du suivi de classe (hérite .ov-row) — statut aligné à droite. */
 .cls-stu-row { padding: 5px 6px; }
+/* Détail d'une classe (coach-classes.js) — one-off inline extraits (couleurs conditionnelles restées inline). */
+.cls-detail-name { font-size: 1.05rem; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cls-detail-meta { font-size: .75rem; color: var(--dim); }
+.cls-detail-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.cls-empty-note { color: var(--dim); font-size: .8rem; padding: 8px 0; }
+.cls-mod-group { margin-top: 12px; }
+.cls-mod-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.cls-mod-name { font-weight: 600; font-size: .84rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cls-mod-meta { flex-shrink: 0; display: flex; align-items: center; gap: 6px; }
+.cls-mod-count { font-size: .72rem; color: var(--dim); }
+.cls-stu-status { flex-shrink: 0; }
+.cls-stu-pct { font-weight: 700; }             /* couleur = _tierPct(pct), inline */
+.cls-stu-since { color: var(--dim); font-size: .72rem; }
+.cls-stu-late { color: var(--red); font-size: .76rem; font-weight: 700; }
+.cls-stu-none { color: var(--dim); font-size: .78rem; }
 
 /* Points faibles — vocabulaire partagé (modale « Voir la position », chips, panneaux). */
 .wsx-move { font-family: var(--font-mono); font-size: 1rem; font-weight: 700; }
