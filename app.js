@@ -996,13 +996,18 @@ async function _sbUpdatePassword(pwd) {
 }
 
 // Équivalent de fbAuth.onAuthStateChanged : pilote la session + le routage.
+let _authedUid = null; // dernier utilisateur routé — évite de re-router sur TOKEN_REFRESHED / re-SIGNED_IN (focus onglet)
 function _sbInitAuth() {
   sb.auth.onAuthStateChange(async (event, session) => {
     // Lien de réinitialisation cliqué → formulaire « nouveau mot de passe ».
     if (event === 'PASSWORD_RECOVERY') { showRecoveryForm(); return; }
     const u = session && session.user;
     G.currentUser = _sbUser(u);
-    if (!u) { updateNav(); goPage('login'); return; }
+    if (!u) { _authedUid = null; updateNav(); goPage('login'); return; }
+    // Session déjà routée pour ce même utilisateur (refresh de token, retour d'onglet…) :
+    // ne pas re-router ni recharger — l'utilisateur est peut-être en plein drill.
+    if (u.id === _authedUid) return;
+    _authedUid = u.id;
     // Rôle choisi avant une connexion Google (OAuth ne passe pas par le formulaire) — usage unique.
     let pendingRole = null;
     try { pendingRole = localStorage.getItem('mc_pending_role'); if (pendingRole) localStorage.removeItem('mc_pending_role'); } catch (e) {}
