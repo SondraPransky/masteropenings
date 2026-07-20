@@ -905,7 +905,11 @@
       </button>
       <button class="create-choice" onclick="closeModal('modal-create-choice');openCreateDrillModal()">
         <span class="create-choice-ico"><i class="ti ti-clipboard-text" aria-hidden="true"></i></span>
-        <span class="create-choice-txt"><b>Coller un PGN</b><small>Importe une partie ou une ouverture (fichier .pgn possible)</small></span>
+        <span class="create-choice-txt"><b>Coller un PGN</b><small>Colle le texte d'une partie ou d'une ouverture</small></span>
+      </button>
+      <button class="create-choice" onclick="closeModal('modal-create-choice');openCreateDrillFromFile()">
+        <span class="create-choice-ico"><i class="ti ti-file-import" aria-hidden="true"></i></span>
+        <span class="create-choice-txt"><b>Depuis un fichier .pgn</b><small>Choisis un fichier PGN sur ton ordinateur</small></span>
       </button>
       <div class="create-sep">Autres options</div>
       <button class="create-choice sm" onclick="closeModal('modal-create-choice');openLibrary()">
@@ -1074,7 +1078,7 @@
     <div class="frow">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
         <label style="margin:0">PGN <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--dim);font-size:.72rem">— collez, ou importez un fichier</span></label>
-        <label class="btn btn-blue btn-sm" style="cursor:pointer;font-size:.8rem;margin:0;color:#fff"><i class="ti ti-file-import" aria-hidden="true"></i> Choisir un fichier .pgn<input type="file" accept=".pgn,.txt" onchange="loadPgnFile(event)" style="display:none"></label>
+        <label class="btn btn-blue btn-sm" style="cursor:pointer;font-size:.8rem;margin:0;color:#fff"><i class="ti ti-file-import" aria-hidden="true"></i> Choisir un fichier .pgn<input type="file" id="inp-pgn-file" accept=".pgn,.txt" onchange="loadPgnFile(event)" style="display:none"></label>
       </div>
       <textarea id="inp-pgn" spellcheck="false" autocorrect="off" autocomplete="off"
         style="height:140px"
