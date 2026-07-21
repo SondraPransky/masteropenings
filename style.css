@@ -1926,8 +1926,25 @@ textarea {
 .mcard-menu { position: relative; flex: 0 0 auto; }
 .mcard-menu > summary { list-style: none; display: inline-flex; }
 .mcard-menu > summary::-webkit-details-marker { display: none; }
-.mcard-menu-list { position: absolute; right: 0; top: calc(100% + 4px); z-index: var(--z-sticky); min-width: 210px;
-  background: var(--surf); border: 1px solid var(--border); border-radius: var(--rs); box-shadow: var(--shadow-lg); padding: 4px; }
+/* position:FIXED (ancre par _mcardMenuAnchor) : `.mcard:hover` applique un
+   transform, qui cree un contexte d'empilement — un menu absolu y resterait
+   prisonnier et passerait derriere les cartes suivantes.
+   ⚠ MAIS un ancetre transforme devient aussi le bloc conteneur d'un enfant
+   `position:fixed` (meme regle que pour `absolute`) : les coordonnees viewport
+   seraient alors lues DANS la carte (mesure : 309px de decalage). D'ou la regle
+   ci-dessous — la carte renonce a son transform tant que son menu est ouvert. */
+/* ⚠ `transition:none` AUTANT que `transform:none` : la carte anime son transform
+   sur 0.2s, et pendant toute l'animation il reste NON NUL — la carte demeure donc
+   le bloc conteneur du menu fixe, qui s'affiche a des coordonnees relatives a la
+   carte (mesure : ~470px trop bas) avant de sauter a sa place en fin d'animation.
+   C'est exactement le « il apparait en bas puis revient » signale le 21/07. */
+.mcard:has(.mcard-menu[open]) { transform: none; transition: none; }
+.mcard-menu-list { position: fixed; z-index: var(--z-modal); min-width: 210px; width: 210px;
+  background: var(--surf); border: 1px solid var(--border); border-radius: var(--rs); box-shadow: var(--shadow-lg); padding: 4px;
+  /* Invisible tant que _mcardMenuAnchor ne l'a pas place : l'evenement `toggle`
+     est ASYNCHRONE, donc le navigateur peignait une frame non-ancree (le menu
+     surgissait en bas de page avant de remonter). */
+  visibility: hidden; }
 .mcard-menu-item { display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 10px; border: none;
   background: none; border-radius: var(--rs); font-family: inherit; font-size: .8rem; color: var(--text); text-align: left; cursor: pointer; }
 .mcard-menu-item:hover { background: var(--surf2); }
@@ -2567,3 +2584,55 @@ textarea {
 @media (max-width: 480px) {
   .pgnb-row { grid-template-columns: 1fr; gap: 4px; }
 }
+
+/* ── Analyse d'ouvertures v2 : layout table + aperçu épinglé ── */
+.oaa-layout { display: grid; grid-template-columns: minmax(0, 1fr) 288px; gap: 16px; align-items: start; }
+.oaa-aside { position: sticky; top: 12px; }
+.oaa-board-pin { border: 1px solid var(--border); border-radius: var(--r); background: var(--surf); padding: 12px; }
+.oaa-pin-wrap { position: relative; width: 260px; max-width: 100%; }
+.oaa-pin-wrap > div { width: 100% !important; }
+.oaa-arrows { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.oaa-pin-cap { margin-top: 10px; font-size: .76rem; color: var(--text-2); line-height: 1.5; }
+.oaa-pin-empty { font-size: .78rem; color: var(--dim); padding: 28px 8px; text-align: center; }
+.oaa-bad { color: var(--red-ink); font-weight: 600; }
+.oaa-good { color: var(--green-ink); font-weight: 600; }
+.oaa-row { cursor: pointer; }
+.oaa-row:hover { background: var(--surf2); }
+.oaa-row.pinned { background: var(--cyan-dim); box-shadow: inset 2px 0 0 var(--cyan); }
+.oaa-th-sort { background: none; border: none; padding: 0; font: inherit; color: inherit; cursor: pointer; text-transform: inherit; letter-spacing: inherit; }
+.oaa-th-sort:hover { color: var(--cyan); }
+.oaa-stu-chip { display: inline-block; font-size: .68rem; padding: 1px 7px; border-radius: 999px; background: var(--cyan-dim); color: var(--cyan); margin: 1px 2px 1px 0; }
+.oaa-stu-more { background: var(--surf3); color: var(--dim); }
+.oaa-act { width: 34px; }
+/* Modale « La position » */
+.oaa-pos-grid { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 20px; align-items: start; }
+.oaa-pos-board { width: 320px; }
+.oaa-pos-line { font-size: .76rem; color: var(--dim); margin-bottom: 8px; }
+.oaa-pos-verdict { font-size: .88rem; line-height: 1.6; margin: 0 0 14px; }
+.oaa-pos-stat { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: .8rem; }
+.oaa-pos-stat span { color: var(--dim); }
+.oaa-pos-stu { margin-top: 12px; font-size: .78rem; }
+.oaa-pos-stu > span { color: var(--dim); display: block; margin-bottom: 5px; }
+.oaa-pos-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
+/* Modale « Nouveau paquet » */
+.oaa-pk-classes { display: flex; flex-direction: column; gap: 4px; max-height: 180px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--rs); padding: 8px; background: var(--surf); }
+.oaa-pk-cls { display: flex; align-items: center; gap: 8px; font-size: .82rem; font-weight: 400; text-transform: none; letter-spacing: 0; cursor: pointer; padding: 4px 2px; margin: 0; }
+.oaa-pk-cls input { width: auto; margin: 0; accent-color: var(--cyan); cursor: pointer; }
+.oaa-pk-cls > span:last-child { margin-left: auto; }
+/* Note de croisement affichée dans Points faibles (sens inverse) */
+.oaa-lichess-note { display: block; font-size: .68rem; color: var(--dim); margin-top: 2px; }
+@media (max-width: 960px) {
+  /* L'aperçu épinglé disparaît : la table reprend toute la largeur (la modale
+     « Voir la position » reste le chemin pour regarder un échiquier). */
+  .oaa-layout { grid-template-columns: minmax(0, 1fr); }
+  .oaa-aside { display: none; }
+  .oaa-pos-grid { grid-template-columns: minmax(0, 1fr); }
+  .oaa-pos-board { width: 100%; max-width: 320px; }
+}
+@media (hover: none) {
+  .oaa-th-sort { min-height: 44px; }
+  .oaa-pk-cls { min-height: 44px; }
+}
+.oaa-th-sort:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.oaa-empty .btn { margin-top: 14px; }
+.oaa-refresh { flex-shrink: 0; }

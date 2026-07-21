@@ -631,7 +631,54 @@
 
 <!-- Tooltip échiquier flottant (points faibles + détail élève) : rempli par wsTip(). -->
 <div id="ws-board-tip" class="wsx-tip" style="display:none" aria-hidden="true"></div>
-<div id="oaa-tip" class="wsx-tip" style="display:none" aria-hidden="true"></div>
+
+<!-- Modale : position d'une erreur en grand (Analyse d'ouvertures) -->
+<div class="overlay" id="modal-oaa-pos">
+  <div class="modal" style="max-width:720px;width:96vw;max-height:92vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div class="modal-title" style="margin:0"><i class="ti ti-search" aria-hidden="true"></i> La position</div>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-oaa-pos')" aria-label="Fermer">✕</button>
+    </div>
+    <div id="oaa-pos-body"></div>
+  </div>
+</div>
+
+<!-- Modale : créer un paquet d'exercices depuis les erreurs (+ assignation) -->
+<div class="overlay" id="modal-oaa-packet">
+  <div class="modal" style="max-width:520px;width:96vw;max-height:92vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="modal-title" style="margin:0"><i class="ti ti-puzzle" aria-hidden="true"></i> Nouveau paquet d'exercices</div>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-oaa-packet')" aria-label="Fermer">✕</button>
+    </div>
+    <div class="frow">
+      <label for="oaa-pk-name">Nom du paquet <span id="oaa-pk-count" class="oaa-sub-td"></span></label>
+      <input type="text" id="oaa-pk-name" placeholder="Ex : Erreurs — Gambit du centre">
+    </div>
+    <div class="frow">
+      <label for="oaa-pk-level">Niveau</label>
+      <select id="oaa-pk-level">
+        <option value="Débutant">Débutant (~900)</option>
+        <option value="Intermédiaire" selected>Intermédiaire (~1300)</option>
+        <option value="Avancé">Avancé (~1600)</option>
+        <option value="Expert">Expert (~1900)</option>
+        <option value="Maître">Maître (~2200)</option>
+        <option value="Grand-Maître">Grand-Maître (~2500)</option>
+      </select>
+    </div>
+    <div class="frow">
+      <label>Assigner à <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--dim);font-size:.72rem">— optionnel</span></label>
+      <div id="oaa-pk-classes" class="oaa-pk-classes"></div>
+    </div>
+    <div class="frow">
+      <label for="oaa-pk-deadline">Échéance <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--dim);font-size:.72rem">— optionnel</span></label>
+      <input type="date" id="oaa-pk-deadline" style="max-width:200px">
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
+      <button class="btn btn-ghost" onclick="closeModal('modal-oaa-packet')">Annuler</button>
+      <button class="btn btn-primary" onclick="oaaPacketSave()"><i class="ti ti-check" aria-hidden="true"></i> Créer le paquet</button>
+    </div>
+  </div>
+</div>
 </div>
 
 <!-- ════════════════════════════════════════

@@ -362,9 +362,18 @@ function switchCoachSection(sec) {
   if (sec==='analytics') {
     // Analyse d'ouvertures (OA/D18) : les docs vivent dans Supabase (worker local
     // `py -m oa.eecoach_worker`) — chargement lazy à l'ouverture, rendu ensuite.
-    Promise.resolve(window._sbLoadOaAnalyses?.()).then(()=>{ window.renderOaAnalytics?.(); });
+    // Les RÉSULTATS sont chargés aussi : la table croise les erreurs Lichess avec
+    // les positions que MES élèves ratent (colonne « Tes élèves »).
+    Promise.all([
+      Promise.resolve(window._sbLoadOaAnalyses?.()),
+      loadTeacherResults(),
+    ]).then(()=>{ window._oaaResetStuCache?.(); window.renderOaAnalytics?.(); });
   }
-  if (sec==='heatmap') { window.renderHeatmap?.(); }
+  if (sec==='heatmap') {
+    // Points faibles : les analyses OA enrichissent chaque position d'un « aussi
+    // ratée par N % des X+ Lichess » (croisement, sens inverse). Non bloquant.
+    Promise.resolve(window._sbLoadOaAnalyses?.()).then(()=>{ window.renderHeatmap?.(); });
+  }
   if (sec==='parties') { loadTeacherGames().then(()=>{ _syncPartiesFilter(); window.renderPartiesTab?.(); }); }
 }
 

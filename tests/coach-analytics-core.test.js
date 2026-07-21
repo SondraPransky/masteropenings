@@ -2,7 +2,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   bucketShort, bucketLabel, fmtLoss, fmtPct, fmtCrit, fmtDwr,
-  filterErrors, errorToKp, errorComment,
+  filterErrors, filterErrorsIndexed, sortErrors, oaaFenIndex, errorToKp, errorComment,
 } from '../lib/coach-analytics-core.js';
 
 const ERR = {
@@ -44,6 +44,43 @@ describe('filtre par tranche', () => {
     expect(filterErrors(errors, 2000)).toHaveLength(1);
     expect(filterErrors(errors, 1800)).toHaveLength(0);
     expect(filterErrors(null, 'all')).toEqual([]);
+  });
+});
+
+describe('sortErrors (tri de la table)', () => {
+  const idx = filterErrorsIndexed([
+    { ...ERR, freq: .3, lossCp: 90, crit: .5 },
+    { ...ERR, freq: .7, lossCp: 20, crit: .9 },
+    { ...ERR, freq: .5, lossCp: 20, crit: .7 },
+  ], 'all');
+  it('trie sur les 3 clés dans les 2 sens', () => {
+    expect(sortErrors(idx, 'freq', -1).map(x => x.e.freq)).toEqual([.7, .5, .3]);
+    expect(sortErrors(idx, 'lossCp', 1).map(x => x.e.lossCp)).toEqual([20, 20, 90]);
+    expect(sortErrors(idx, 'crit', -1).map(x => x.e.crit)).toEqual([.9, .7, .5]);
+  });
+  it('stable : à valeur égale, l\'ordre du doc est conservé et l\'index d\'origine suit', () => {
+    const byLoss = sortErrors(idx, 'lossCp', 1);
+    expect(byLoss[0].i).toBe(1);   // les deux 20 cp gardent l'ordre du doc (i=1 avant i=2)
+    expect(byLoss[1].i).toBe(2);
+  });
+});
+
+describe('oaaFenIndex (jointure par position)', () => {
+  const norm = f => f.split(/\s+/).slice(0, 4).join(' ');   // normFen injecté (test)
+  it('groupe les erreurs par position normalisée (les compteurs ne comptent pas)', () => {
+    const doc = { errors: [
+      { ...ERR, fen: ERR.fen },
+      { ...ERR, fen: ERR.fen.replace('0 1', '4 9'), bucket: 2000 },   // même position, compteurs ≠
+      { ...ERR, fen: '8/8/8/8/8/8/8/K6k w - - 0 1' },
+    ] };
+    const map = oaaFenIndex(doc, norm);
+    expect(map.size).toBe(2);
+    expect(map.get(norm(ERR.fen))).toEqual([0, 1]);
+    expect(map.get(norm('8/8/8/8/8/8/8/K6k w - - 0 1'))).toEqual([2]);
+  });
+  it('doc vide / fen manquant → index vide sans crash', () => {
+    expect(oaaFenIndex(null, norm).size).toBe(0);
+    expect(oaaFenIndex({ errors: [{ san: 'e4' }] }, norm).size).toBe(0);
   });
 });
 
