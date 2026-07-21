@@ -554,6 +554,9 @@ function updateSessionInfo() {
   if (total <= 1) { bar.style.display = 'none'; return; }
   bar.style.display = 'block';
   const sess = currentSession();
+  // Module a chapitres (arbre multi-parties) : le vocabulaire est « Chapitre ».
+  const kind = document.getElementById('session-kind');
+  if (kind) kind.textContent = S.drill?.varmode === 'tree' ? 'Chapitre' : 'Session';
   document.getElementById('session-label').textContent = sess.label;
   document.getElementById('session-prog').textContent  = (S.sessionIdx + 1) + ' / ' + total;
   document.getElementById('session-fill').style.width  = ((S.sessionIdx + 1) / total * 100) + '%';
@@ -582,7 +585,7 @@ function startDrill(i) {
   S.ko         = 0;
   S.sel        = null;
   S.flipped    = (d.side === 'b');
-  S.sessionIdx = 0;   // toujours repartir de la session 1
+  S.sessionIdx = 0; S.chapterTree = null;   // toujours repartir de la session 1 (chapitre 1)
   S.postTheory = false;
   window._setStudyLayout?.(false);   // reset propre (réactivé par startStudyPhase si arbre)
 
@@ -627,6 +630,13 @@ function nextSession() {
   S.ok = 0; S.ko = 0;
   updateScores(); clearLog(); clearFeedback();
   const sess = currentSession();
+  // Module a CHAPITRES (arbre multi-parties) : le chapitre suivant repart par la
+  // phase Apprentissage (etude de SA partie du PGN), comme au lancement du module.
+  if (S.drill.varmode === 'tree') {
+    updateSessionInfo();
+    window.startStudyPhase?.();
+    return;
+  }
   if (S.drill.mode === 'line' && sess?.moves?.length) {
     window.startLearnPhase?.();
   } else {

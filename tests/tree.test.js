@@ -1,7 +1,7 @@
 import { isPlayerMove, _buildDrillTree, _treePlayerPositions, _materialHint,
          _mergeStudentLayer, _diffAgainstCoach, _countLayerMoves, _editorTreeToDrillTree,
-         buildTreeModule, gameModuleName } from '../lib/tree.js';
-import { extractAllLines, splitPgnGames, pgnStartFen } from '../lib/core.js';
+         buildTreeModule, gameModuleName, chapterCount, chapterPgn } from '../lib/tree.js';
+import { extractAllLines, splitPgnGames, pgnStartFen, replacePgnGame } from '../lib/core.js';
 
 // `Chess` est injecté en global par tests/setup.js (comme dans le navigateur).
 const START = new Chess().fen();
@@ -316,5 +316,92 @@ describe('gameModuleName — nommage depuis les en-tetes du coach', () => {
   });
   test('en-tetes vides ou "?" → nom de repli numerote', () => {
     expect(gameModuleName('[Event "?"]\n[White "?"]\n\n1. e4 *', 'Mon fichier', 2)).toBe('Mon fichier (3)');
+  });
+});
+
+// ── B2 : un fichier multi-parties = un module a CHAPITRES ────────────────────
+describe('buildTreeModule — module a chapitres (B2)', () => {
+  test('PGN a 2 parties → UN module, 2 sessions aux bons labels/startFen, arbre fusionne', () => {
+    const m = buildTreeModule({ id: 1, name: 'Danois', pgn: PGN_MULTI, side: 'w' });
+    expect(m.sessions).toHaveLength(2);
+    expect(m.sessions[0].label).toBe('Le Gambit Danois — Les Noirs refusent');
+    expect(m.sessions[1].label).toBe('Le Gambit Danois — Les Noirs acceptent');
+    expect(m.sessions[0].startFen).toBe(START);
+    expect(m.sessions[1].startFen).toBe(FEN_MID);
+    // arbre fusionne : il contient des noeuds des DEUX parties
+    expect(m.tree[START.split(' ').slice(0, 4).join(' ')]).toBeTruthy();
+    expect(m.tree[FEN_MID.split(' ').slice(0, 4).join(' ')]).toBeTruthy();
+  });
+
+  test('mono-partie : une session « Arbre complet », comportement inchange', () => {
+    const m = buildTreeModule({ id: 1, name: 'x', pgn: '1. e4 e5 2. Nf3 *', side: 'w' });
+    expect(m.sessions).toHaveLength(1);
+    expect(m.sessions[0].label).toBe('Arbre complet');
+  });
+
+  test('une partie sans coup jouable ne cree pas de chapitre, gameIdx garde l alignement', () => {
+    const withEmpty = `[Event "?"]\n[White "Vide"]\n\n*\n\n` + PGN_MULTI;
+    const m = buildTreeModule({ id: 1, name: 'x', pgn: withEmpty, side: 'w' });
+    expect(m.sessions).toHaveLength(2);                    // la partie vide est sautee
+    expect(m.sessions[0].gameIdx).toBe(1);
+    // chapterPgn suit gameIdx, pas l index de session
+    expect(chapterPgn(m, 0)).toContain('Les Noirs refusent');
+    expect(chapterPgn(m, 1)).toContain('Les Noirs acceptent');
+  });
+});
+
+describe('chapterCount / chapterPgn', () => {
+  test('compte et decoupe', () => {
+    const m = buildTreeModule({ id: 1, name: 'x', pgn: PGN_MULTI, side: 'w' });
+    expect(chapterCount(m)).toBe(2);
+    expect(chapterPgn(m, 1)).toContain('1. Ng5 d5');
+  });
+  test('module mono-partie ou non-arbre → 1', () => {
+    expect(chapterCount(buildTreeModule({ id: 1, name: 'x', pgn: '1. e4 *', side: 'w' }))).toBe(1);
+    expect(chapterCount({ varmode: 'line', pgn: PGN_MULTI })).toBe(1);
+  });
+});
+
+describe('_treePlayerPositions — UNION des chapitres', () => {
+  test('2 chapitres DISJOINTS : les positions des deux sont comptees', () => {
+    // chapitre 2 depuis une position que le chapitre 1 n atteint jamais
+    const FEN_ILE = '8/8/4k3/8/8/4K3/4P3/8 w - - 0 1';
+    const pgn = `[Event "?"]\n[White "Ch1"]\n\n1. e4 e5 *\n\n[Event "?"]\n[White "Ch2"]\n[SetUp "1"]\n[FEN "${FEN_ILE}"]\n\n1. e3 Kd6 2. Kd4 *`;
+    const m = buildTreeModule({ id: 1, name: 'x', pgn, side: 'w' });
+    const pos = _treePlayerPositions(m);
+    const fens = pos.map(p => p.fen.split(' ')[0]);
+    expect(fens).toContain(START.split(' ')[0]);           // e4 du chapitre 1
+    expect(fens).toContain(FEN_ILE.split(' ')[0]);         // e3 du chapitre 2 (perdu sans union)
+  });
+
+  test('module mono-session : resultat identique a avant', () => {
+    const m = buildTreeModule({ id: 1, name: 'x', pgn: '1. e4 e5 2. Nf3 *', side: 'w' });
+    expect(_treePlayerPositions(m).length).toBe(2);        // e4, Nf3
+  });
+});
+
+describe('replacePgnGame — edition d un chapitre sans toucher les autres', () => {
+  test('remplace la partie 2, la partie 1 est intacte octet pour octet', () => {
+    const games0 = splitPgnGames(PGN_MULTI);
+    const nouveau = games0[1].replace('1. Ng5 d5', '1. Ng5 d5 2. exd5');
+    const out = replacePgnGame(PGN_MULTI, 1, nouveau);
+    const games1 = splitPgnGames(out);
+    expect(games1).toHaveLength(2);
+    expect(games1[0]).toBe(games0[0]);
+    expect(games1[1]).toContain('2. exd5');
+  });
+  test('index hors bornes : PGN rendu tel quel', () => {
+    expect(replacePgnGame(PGN_MULTI, 5, 'x')).toBe(PGN_MULTI);
+  });
+});
+
+describe('gameModuleName — un titre peut contenir « ?! » (annotation d echecs)', () => {
+  test('« 5.g4!? » n est pas un placeholder', () => {
+    const g = '[Event "?"]\n[White "On va plus loin : 4...a6 5.g4!?"]\n[Black "?"]\n\n1. e4 *';
+    expect(gameModuleName(g, 'x', 2)).toBe('On va plus loin : 4...a6 5.g4!?');
+  });
+  test('le placeholder « ? » seul reste rejete', () => {
+    const g = '[Event "?"]\n[White "?"]\n[Black "?"]\n\n1. e4 *';
+    expect(gameModuleName(g, 'Repli', 2)).toBe('Repli (3)');
   });
 });

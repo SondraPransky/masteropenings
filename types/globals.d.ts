@@ -121,6 +121,7 @@ interface Window {
   currentGame?: (...a: any[]) => any;   // reste dans app.js, consommé par lib/board.js
   startDrill?: (...a: any[]) => any;
   nextDrill?: (...a: any[]) => any;
+  nextSession?: (...a: any[]) => any;
   switchCoachSection?: (...a: any[]) => any;
   sm2Get?: (...a: any[]) => any;
 
