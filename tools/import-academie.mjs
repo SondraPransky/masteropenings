@@ -122,7 +122,7 @@ function collect() {
   ].filter(f => !EXCLUDE.some(re => re.test(f)));
 
   const mods = [], skipped = [];
-  const seenGame = new Set();
+  const seenFile = new Set();
   let seq = 0;
   const baseId = Date.now();
 
@@ -134,26 +134,26 @@ function collect() {
     if (!side) { skipped.push({ rel, why: 'camp non defini' }); continue; }
 
     const raw = readFileSync(f, 'utf8').replace(/^﻿/, '');
-    const chunks = splitPgnGames(raw);
-    const games = chunks.length ? chunks : [raw];
-    games.forEach((chunk, gi) => {
-      // Deux fichiers peuvent porter la meme partie : on ne l'importe qu'une fois.
-      const h = createHash('sha1').update(chunk.replace(/\s+/g, ' ').trim()).digest('hex');
-      if (seenGame.has(h)) { skipped.push({ rel, why: `partie ${gi + 1} en double` }); return; }
-      seenGame.add(h);
+    // Deux fichiers identiques (copies) : on n'importe qu'une fois.
+    const h = createHash('sha1').update(raw.replace(/\s+/g, ' ').trim()).digest('hex');
+    if (seenFile.has(h)) { skipped.push({ rel, why: 'fichier en double (contenu identique)' }); continue; }
+    seenFile.add(h);
 
-      let d = null;
-      try {
-        d = buildTreeModule({
-          id: baseId + (seq++),
-          name: games.length > 1 ? gameModuleName(chunk, basename(f, '.pgn'), gi) : gameModuleName(chunk, basename(f, '.pgn'), null),
-          pgn: chunk, side, level: null, deadline: null, hideComments: false,
-        });
-      } catch (e) { skipped.push({ rel, why: `partie ${gi + 1} : ${e.message}` }); return; }
-      if (!d) { skipped.push({ rel, why: `partie ${gi + 1} : aucune ligne jouable` }); return; }
-      d.folder = folder;
-      mods.push({ mod: d, rel, folder });
-    });
+    // UN FICHIER = UN MODULE (a chapitres) : buildTreeModule fusionne l'arbre et
+    // cree une session par partie — la meme fabrique que l'app.
+    let d = null;
+    try {
+      // Nom du module : en-tete White de la 1re partie, sinon le nom de fichier.
+      const first = splitPgnGames(raw)[0] || raw;
+      d = buildTreeModule({
+        id: baseId + (seq++),
+        name: gameModuleName(first, basename(f, '.pgn'), null).split(' — ')[0],
+        pgn: raw, side, level: null, deadline: null, hideComments: false,
+      });
+    } catch (e) { skipped.push({ rel, why: e.message }); continue; }
+    if (!d) { skipped.push({ rel, why: 'aucune ligne jouable' }); continue; }
+    d.folder = folder;
+    mods.push({ mod: d, rel, folder });
   }
   return { mods, skipped };
 }
@@ -184,10 +184,12 @@ console.log(`\n${mods.length} modules a importer, ${Object.keys(byFolder).length
 // ⚠ On compte les positions REELLEMENT a reviser (_treePlayerPositions), pas les
 // noeuds de l'arbre : c'est precisement cette confusion qui masquait les modules
 // vides. Un module a 0 ici est inutilisable, quel que soit son nombre de noeuds.
-console.log('dossier                                        camp  mod  a reviser  commentaires  vides');
-let totPos = 0, totCmt = 0, totEmpty = 0;
+console.log('dossier                                        camp  mod  chap  a reviser  commentaires  vides');
+let totPos = 0, totCmt = 0, totEmpty = 0, totChap = 0;
 for (const [f, v] of Object.entries(byFolder)) {
   const pos = v.reduce((a, x) => a + _treePlayerPositions(x.mod).length, 0);
+  const chap = v.reduce((a, x) => a + x.mod.sessions.length, 0);
+  totChap += chap;
   const empty = v.filter(x => _treePlayerPositions(x.mod).length === 0).length;
   totEmpty += empty;
   const cmt = v.reduce((a, x) => a + Object.values(x.mod.tree)
@@ -195,10 +197,10 @@ for (const [f, v] of Object.entries(byFolder)) {
   totPos += pos; totCmt += cmt;
   const camps = [...new Set(v.map(x => x.mod.side))].join('/');
   console.log(f.slice(0, 44).padEnd(46) + camps.padEnd(6) + String(v.length).padStart(3)
-    + String(pos).padStart(11) + String(cmt).padStart(14) + String(empty || '').padStart(7));
+    + String(chap).padStart(6) + String(pos).padStart(11) + String(cmt).padStart(14) + String(empty || '').padStart(7));
 }
 console.log(''.padEnd(46) + ''.padEnd(6) + String(mods.length).padStart(3)
-  + String(totPos).padStart(11) + String(totCmt).padStart(14) + String(totEmpty || '').padStart(7));
+  + String(totChap).padStart(6) + String(totPos).padStart(11) + String(totCmt).padStart(14) + String(totEmpty || '').padStart(7));
 if (totEmpty) {
   console.error(`\n✗ ${totEmpty} module(s) sans aucune position a reviser — import bloque.`);
   process.exit(3);

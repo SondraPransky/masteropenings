@@ -18,6 +18,33 @@ L’application doit permettre :
 **Phase : le refactoring est terminé → on entre dans la construction produit.**
 Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un prof — toi — + ses élèves) ; le **multi-coachs viendra après**. Pas encore d’utilisateurs réels.
 
+### 🔖 Session du 21 juillet 2026 (3e) — ▶ MODULES À CHAPITRES (B2) : un fichier PGN = un module à N chapitres
+
+**Retour utilisatrice après l'import : « les variantes dans les mêmes PGN devraient être regroupées »** → grill-me (elle a choisi **B**, le modèle, contre ma recommandation A d'affichage) puis /apex. **Les 73 modules à plat deviennent 31 modules à chapitres** (73 chapitres, 4 883 positions à réviser, 1 600 commentaires, 0 vide) — rechargés sur `testcoach`.
+
+#### La mesure qui a dicté le design
+**Les chapitres d'un même fichier se chevauchent massivement** (18 fichiers/18, 139 paires/174 : le ch.2 démarre sur la ligne du ch.1 — ce sont des tranches de profondeur d'une même théorie). Conséquences :
+- **l'arbre persisté reste FUSIONNÉ** (une position = un nœud = un historique Leitner, clé `normFen_san` → la dédup entre chapitres est gratuite) — c'est lui que lisent la file SR et la carte élève ;
+- **le drill d'un chapitre reconstruit l'arbre de SA partie à la volée** (`chapterPgn` → `_buildDrillTree`), sinon le chapitre 1 avalerait tout le fichier et « Chapitre 1/5 terminé » serait un mensonge ;
+- **rien de nouveau en base** : `sessions[i] = {label, startFen, gameIdx}` (jsonb existant) ; un module B2 reste lisible par l'app d'avant. Contre-mesure au trou silencieux : **`_treePlayerPositions` sème sa BFS avec les racines de TOUTES les sessions (union)** — un chapitre déconnecté ne peut plus disparaître de la révision (testé sur chapitres disjoints). Mesuré par ailleurs : 0 nœud inatteignable sur les 31 fichiers réels.
+
+#### Livré (typecheck + **152 tests** (+11) + build verts, tout vérifié navigateur sur le vrai fichier Anti-Najdorf)
+| Brique | Contenu |
+|---|---|
+| `lib/core.js` | `replacePgnGame(pgn, idx, chunk)` (pur) — remplace UNE partie d'un PGN multi-parties |
+| `lib/tree.js` | `buildTreeModule` multi-parties (arbre fusionné + une session/partie, labels dérivés des en-têtes White/Black via `gameModuleName`) ; `chapterCount`/`chapterPgn` (via `sessions[i].gameIdx` — une partie sans coup jouable ne crée pas de session, les index se décaleraient) ; union dans `_treePlayerPositions` |
+| `lib/drill.js` | `S.chapterTree` + accesseur `_drillTree()` (4 sites) ; `showEndModal` : « Chapitre N/M terminé ! » + bouton primaire **« Chapitre suivant → »** quand `_treeUnseenCount()===0` |
+| `lib/study.js` | Apprentissage borné au chapitre (7 nœuds affichés sur les 456 du fichier, mesuré) ; barre « Chapitre N/M » dès l'étude |
+| `app.js` | `nextSession()` : branche arbre → `startStudyPhase` du chapitre suivant ; libellé « Chapitre » (`#session-kind`) ; `S.chapterTree=null` aux entrées hors chapitre (SR, `startDrill`) |
+| `lib/editor.js` | **Édition PAR chapitre** : sélecteur (modal `modal-chapter-pick`, patron create-choice) → `_E.chapIdx` ; `_saveEditorChapter` **préserve les en-têtes originaux du chunk** (sinon `splitPgnGames` ne re-découpe plus) et ne remplace que le movetext → **chapitres voisins intacts octet pour octet (vérifié)**. ⚠️ L'ancien chemin écrasait `pgn`+`sessions` en partie unique = destructeur |
+| `lib/modules.js` | Import UI (collage + lot) : retour à UN module par fichier (le « N modules » du matin est remplacé) ; aperçu « 4 parties → 1 module à 4 chapitres » ; badge carte « N chapitres » |
+| `tools/import-academie.mjs` | Un module/fichier ; rapport chapitres + positions **union** ; `--undo` des 73 puis `--apply` → 31 |
+
+#### ⚠️ Bug trouvé PAR L'UTILISATRICE après livraison (corrigé + 2 tests)
+`gameModuleName` rejetait tout en-tête **contenant** un `?` → le chapitre « On va plus loin : 4...a6 **5.g4!?** » tombait en repli « Chapitre (3) ». **`!?`/`?!` sont des annotations d'échecs banales dans les titres de la coach** — le placeholder ChessBase est la valeur `?` SEULE (`v !== '?'`, jamais `includes`). Lot Supabase rejoué : 0 label de repli sur les 31 modules.
+
+**Reste** : vue élève connectée sur un module à chapitres (carte + SR) jamais vue par un vrai login élève (couvert par tests unitaires + relecture Supabase seulement) ; import sur le VRAI compte coach ; 969 exercices ; 163 diapositives.
+
 ### 🔖 Session du 21 juillet 2026 (2e) — ▶ LE CONTENU RÉEL : 2 bugs d'import + 73 modules chargés
 
 **Le fonds `Desktop/Academie` fait 348 PGN, pas 89** — les « 40 mats + 42 tactiques + 7 ouvertures » de ce fichier étaient l'échantillon de test de juillet. Mesuré en passant les 348 fichiers dans les **vrais parseurs du projet** : 969 exercices parsent proprement (93 fichiers), 784 parties annotées (112 fichiers), et **163 positions commentées SANS coup jouable** (diagrammes `[%cal]` des leçons) — celles-là **n'ont aucune place dans EECoach aujourd'hui**, trou produit assumé.
