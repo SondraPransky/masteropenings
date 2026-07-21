@@ -1878,6 +1878,82 @@ textarea {
 .cs-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; flex-wrap: wrap; max-width: 100%; }
 
 /* Module cards */
+/* ── Répertoire : liste de lignes (échelle 30-200 modules) ────────────────────
+   Une grille de cartes ne peut pas tenir la ligne d'ouverture (6 demi-coups), et
+   c'est ELLE qui identifie un module pour un coach : « 1.e4 c5 2.♘f3 d6 », c'est
+   la Najdorf, plus vite que n'importe quel nom. La liste met les coups dans une
+   COLONNE alignée → on lit les 1.e4 et les 1.d4 en balayant verticalement.
+   Sections = le camp (♔/♚) : la seule structure vraie d'un répertoire.
+   ⚠ Pas de `transform` au survol : c'est lui qui piège le menu ⋯ en position
+   fixed (contexte d'empilement, cf. .mcard:has(...)). Une ligne ne lévite pas. */
+.mod-folder-pick { display: inline-flex; align-items: center; }
+.mod-folder-pick select { font-size: .8rem; width: auto; max-width: 15rem; }
+
+.mgroup { margin: 0 0 26px; }
+.mgroup-head {
+  display: flex; align-items: baseline; gap: 10px;
+  padding: 0 0 8px; margin-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+.mgroup-side { font-size: 1.1rem; line-height: 1; color: var(--text); }
+.mgroup-title { font-weight: 800; font-size: .95rem; letter-spacing: -.3px; }
+.mgroup-n { font-family: var(--font-mono); font-size: .74rem; color: var(--dim); font-variant-numeric: tabular-nums; }
+
+.mrow {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) minmax(0, 15rem) auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  transition: background-color .15s ease;
+  position: relative;
+}
+.mrow:last-child { border-bottom: 0; }
+.mrow:hover { background: var(--surf2); }
+.mrow:focus-within { background: var(--surf2); }
+
+/* Numéro de référence du coach (« 760 »), quand son dossier en porte un. */
+.mrow-num {
+  font-family: var(--font-mono); font-size: .76rem; font-weight: 500;
+  color: var(--dim); font-variant-numeric: tabular-nums; text-align: right;
+}
+/* Une ligne = UNE ligne. Le nom peut s'élider ; ce qui l'identifie vraiment
+   (les premiers coups) vit dans sa propre colonne, jamais tronquée avant lui. */
+.mrow-main { min-width: 0; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.mrow-name {
+  font-weight: 700; font-size: .875rem; line-height: 1.35;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
+}
+.mrow-chap { color: var(--dim); }
+
+/* LA signature : la ligne d'ouverture, en notation figurine monospacée. */
+.mrow-line {
+  font-family: var(--font-mono); font-size: .78rem; color: var(--text-2);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.mrow-stats {
+  display: flex; align-items: center; gap: 12px;
+  font-family: var(--font-mono); font-size: .74rem; color: var(--dim);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.mrow-stats b { color: var(--text-2); font-weight: 600; }
+.mrow-acts { display: flex; align-items: center; gap: 6px; }
+.mrow-flags { display: flex; align-items: center; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+
+/* Étroit : le nom garde la 1re rangée avec les actions ; les coups et les
+   compteurs partagent la seconde (les coups à gauche, les chiffres à droite). */
+@media (max-width: 900px) {
+  .mrow { grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; row-gap: 5px; }
+  .mrow-main  { grid-column: 2; grid-row: 1; }
+  .mrow-acts  { grid-column: 3; grid-row: 1; }
+  .mrow-line  { grid-column: 2; grid-row: 2; }
+  .mrow-stats { grid-column: 3; grid-row: 2; justify-content: flex-end; }
+}
+@media (hover: none) {
+  .mrow { padding: 12px; }
+}
+
 .mcard-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
