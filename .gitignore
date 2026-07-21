@@ -40,3 +40,6 @@ skills-lock.json
 # État runtime du serveur `impeccable live` (pid/port/token de la machine locale).
 # `.impeccable/live/config.json` et `design.json`, eux, sont du config → suivis.
 .impeccable/live/server.json
+
+# Manifestes d import en masse (ids des modules crees, propres a chaque run)
+import-academie-*.json
