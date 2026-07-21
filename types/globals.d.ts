@@ -143,6 +143,8 @@ interface Window {
   oaaCreatePacket?: (...a: any[]) => any;       // « Créer un paquet » (lib/coach-analytics-export.js)
   oaaRefresh?: (...a: any[]) => any;            // recharge forcée des analyses OA
   buildExercisePacket?: (...a: any[]) => any;   // constructeur canonique du module-paquet (lib/exercises.js)
+  importPgnBatch?: (...a: any[]) => any;        // import en lot de fichiers .pgn (lib/modules.js)
+  pgnBatchCancel?: (...a: any[]) => any;
   _sbLoadOaAnalyses?: (...a: any[]) => any;     // loader Supabase oa_analyses (lib/supabase-data.js)
   renderExplorer?: (...a: any[]) => any;        // section Explorateur (lib/coach-explorer.js)
   explorerLoad?: (...a: any[]) => any;

@@ -2549,3 +2549,17 @@ textarea {
 .oaa-hm-1 { background: var(--gold-dim); }
 .oaa-hm-2 { background: var(--red-dim); }
 .oaa-hm-3 { background: var(--red-dim); box-shadow: inset 0 0 0 2px var(--red-glow); }
+
+/* Import en LOT de fichiers .pgn (modal Nouveau module, .pgnb-*) */
+.pgnb-head { font-size: .78rem; color: var(--text-2); margin: 14px 0 10px; }
+.pgnb-row { display: grid; grid-template-columns: minmax(90px, 150px) 1fr auto auto; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); }
+.pgnb-row.pgnb-err { grid-template-columns: minmax(90px, 150px) 1fr; }
+.pgnb-file { font-size: .72rem; color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pgnb-name { font-size: .82rem; padding: 6px 9px; border-radius: var(--rs); border: 1px solid var(--border); background: var(--surf); color: var(--text); font-family: inherit; min-width: 0; }
+.pgnb-side { font-size: .8rem; padding: 6px 8px; border-radius: var(--rs); border: 1px solid var(--border); background: var(--surf); color: var(--text); font-family: inherit; }
+.pgnb-pos { font-size: .7rem; color: var(--dim); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pgnb-msg { font-size: .76rem; color: var(--red-ink); }
+.pgnb-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+@media (max-width: 480px) {
+  .pgnb-row { grid-template-columns: 1fr; gap: 4px; }
+}

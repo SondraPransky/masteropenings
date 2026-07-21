@@ -1091,10 +1091,10 @@
       <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-create-drill')">✕</button>
     </div>
 
-    <div class="frow">
+    <div class="frow" id="cd-single-pgn">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
-        <label style="margin:0">PGN <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--dim);font-size:.72rem">— collez, ou importez un fichier</span></label>
-        <label class="btn btn-blue btn-sm" style="cursor:pointer;font-size:.8rem;margin:0;color:#fff"><i class="ti ti-file-import" aria-hidden="true"></i> Choisir un fichier .pgn<input type="file" id="inp-pgn-file" accept=".pgn,.txt" onchange="loadPgnFile(event)" style="display:none"></label>
+        <label style="margin:0">PGN <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--dim);font-size:.72rem">— collez, ou importez un ou plusieurs fichiers</span></label>
+        <label class="btn btn-blue btn-sm" style="cursor:pointer;font-size:.8rem;margin:0;color:#fff"><i class="ti ti-file-import" aria-hidden="true"></i> Choisir des fichiers .pgn<input type="file" id="inp-pgn-file" accept=".pgn,.txt" multiple onchange="loadPgnFile(event)" style="display:none"></label>
       </div>
       <textarea id="inp-pgn" spellcheck="false" autocorrect="off" autocomplete="off"
         style="height:140px"
@@ -1102,7 +1102,7 @@
         placeholder="Collez votre PGN :&#10;&#10;1. e4 {Contrôle du centre} e5 2. Nf3 Nc6 3. Bb5 {Clouage du cavalier} a6 *"></textarea>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end">
+    <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end" id="cd-single-meta">
       <div class="frow" style="margin:0">
         <label>Nom du module</label>
         <input type="text" id="inp-name" placeholder="Ex : Espagnole – rupture centrale">
@@ -1146,7 +1146,10 @@
 
     <div id="drill-preview" style="display:none;margin-top:12px;padding:12px 14px;background:var(--surf2);border:1px solid var(--border);border-radius:var(--r);font-size:.8rem"></div>
 
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
+    <!-- Import en LOT (plusieurs fichiers .pgn sélectionnés) : rendu par _renderPgnBatch (lib/modules.js) -->
+    <div id="pgn-batch" style="display:none"></div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)" id="cd-footer">
       <button class="btn btn-ghost" onclick="loadExample()">Exemple</button>
       <button class="btn btn-ghost btn-sm" onclick="previewDrill()"><i class="ti ti-eye" aria-hidden="true"></i> Aperçu</button>
       <button class="btn btn-primary" onclick="importDrill()"><i class="ti ti-plus" aria-hidden="true"></i> Créer le module</button>
