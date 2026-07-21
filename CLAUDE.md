@@ -18,6 +18,29 @@ L’application doit permettre :
 **Phase : le refactoring est terminé → on entre dans la construction produit.**
 Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un prof — toi — + ses élèves) ; le **multi-coachs viendra après**. Pas encore d’utilisateurs réels.
 
+### 🔖 Session du 21 juillet 2026 (2e) — ▶ LE CONTENU RÉEL : 2 bugs d'import + 73 modules chargés
+
+**Le fonds `Desktop/Academie` fait 348 PGN, pas 89** — les « 40 mats + 42 tactiques + 7 ouvertures » de ce fichier étaient l'échantillon de test de juillet. Mesuré en passant les 348 fichiers dans les **vrais parseurs du projet** : 969 exercices parsent proprement (93 fichiers), 784 parties annotées (112 fichiers), et **163 positions commentées SANS coup jouable** (diagrammes `[%cal]` des leçons) — celles-là **n'ont aucune place dans EECoach aujourd'hui**, trou produit assumé.
+
+**Périmètre de lancement (arbitrage utilisatrice)** : `Ouvertures en vogue` + `Revue/Nataf`, **que du répertoire d'ouverture**.
+
+#### ⚠️ Les 2 bugs d'import, tous deux SILENCIEUX, trouvés sur ce contenu
+Le fonds est exporté de **ChessBase** : un fichier de leçon = **plusieurs parties**, chacune depuis une position `[SetUp]/[FEN]`. Cette forme cassait les **deux** chemins d'import.
+1. **Le module vide.** `importDrill` et `_pgnBatchRun` écrivaient en dur `sessions[0].startFen = new Chess().fen()`, alors que `extractAllLines` enracine l'arbre sur le `[FEN]` du PGN. `_treePlayerPositions` parcourt depuis `startFen` → **0 position atteinte**. Le module se crée, la carte s'affiche avec un compte flatteur (**l'aperçu comptait les nœuds de l'arbre, pas les positions jouables** — c'est ce qui masquait le bug), et le drill ne propose rien. **13 fichiers sur 40**. Anti-Najdorf : **0 → 222 positions**.
+2. **Les parties fusionnées.** `extractAllLines` prend le **premier** `[FEN]` du texte comme racine unique et rejoue tout à la suite ; les coups illégaux dans la position courante sont **silencieusement sautés** (`if (!r) { i++; continue; }`). Grünfeld : **162 demi-coups retenus contre 639** en séparant les parties. Sur les 40 fichiers : 6 947 → 12 528 (**+80 %**).
+
+**Correctif** — `pgnStartFen()` + `splitPgnGames()` (purs, `lib/core.js`, **source unique de vérité** : `extractAllLines` consomme le premier) et **`buildTreeModule()` / `gameModuleName()`** (`lib/tree.js`, patron de `buildExercisePacket`) consommés par les **deux** chemins d'import → ils ne peuvent plus diverger. **Règle : une partie PGN = un module.** Aperçu, lot et toast disent désormais le nombre réel de modules. **+10 tests (131 → 141)**, typecheck + build verts. Vérifié navigateur sur le vrai fichier : 4 modules créés par le vrai bouton, drill lancé, coup `a4` attendu et accepté, commentaire de Nataf porté.
+
+#### ⚠️ Le camp (Blancs/Noirs) n'est PAS dérivable — mais un signal l'est
+L'heuristique **de branchement** (le camp enseigné branche moins) : 60/121 indécis et **9 accords contre 10 désaccords** avec les libellés de la coach — pile ou face ; elle se trompe même sur « Répertoire Noirs - Espagnole ». Celle de **la répartition des commentaires** (le camp enseigné en porte plus), **validée d'abord sur les 7 dossiers de vérité terrain : 7/7**, puis appliquée aux ambigus. Les égalités parfaites (Grünfeld 37/37) restent tranchées par l'utilisatrice. **Ne jamais deviner un camp sans valider l'heuristique sur des cas connus d'abord.**
+
+#### Livré
+`tools/import-academie.mjs` — import en masse headless (auth + REST, patron `tests/gate/gate.mjs`), qui **consomme `buildTreeModule` de lib/** (0 logique réécrite) et `_sbModuleToRow`. Simulation par défaut, `--apply` pour écrire, **manifeste d'ids → `--undo`** pour supprimer exactement le lot (⚠️ `_sbModuleToRow` reconstruit `extra` de zéro : pas de tag custom possible, d'où le manifeste). **Garde-fou : l'import se bloque si un module a 0 position à réviser** — la métrique est `_treePlayerPositions`, jamais le nombre de nœuds.
+
+**Résultat sur `testcoach` : 73 modules, 19 dossiers, 5 331 positions à réviser, 1 745 commentaires, 0 module vide.** Relus depuis Supabase (`startFen` custom persisté, commentaires intacts) ; vue coach vérifiée à cette échelle (75 cartes, chips de dossier avec comptes justes, 0 débordement à 375px). Écartés avec l'utilisatrice : les `exercices*.pgn` de 767/770 (**ce sont des exercices, pas des lignes** — 46 modules en moins) et la copie imbriquée `Gambit Rubinstein/` (version plus ancienne : coquilles, et **sans les flèches `[%cal]/[%csl]`**).
+
+**Reste** : rejouer l'import sur le **vrai** compte coach (`ACADEMIE_ROOT` + creds dans `.env`) ; router les 969 exercices vers des paquets ; décider du sort des 163 diapositives de leçon.
+
 ### 🔖 Session du 21 juillet 2026 — ▶ NOUVELLE PIÈCE : ANALYSE D'OUVERTURES (intégration du projet « Ouvertures - data »)
 
 **Décision produit : le projet `Desktop/Ouvertures - data` (« Human Opening Analytics », package Python `opening_analytics` — erreurs humaines par tranche Elo via Lichess Explorer + Stockfish, criticality) est intégré dans EECoach.** Réalise le D18 de son propre CLAUDE.md. **Arbitrages utilisatrice** : (1) **worker Supabase** — PAS un pont localhost comme OTKB : les analyses vivent dans Supabase, la SPA les lit partout, aucun process local à la consultation ; (2) **les 4 surfaces** (erreurs / « Créer un paquet » / trous du répertoire / diagnostics) — le trainer oa n'est PAS repris (doublon assumé avec le drill EECoach, l'élève s'entraîne via les paquets) ; (3) **monorepo façon OTKB** (`oa/`, 610 Ko code seul, 0 secret — token = env `OA_LICHESS_TOKEN` ; données `data-oa/` gitignorées ; le repo « Ouvertures - data » reste le repo de dev, la copie est un vendoring daté).
