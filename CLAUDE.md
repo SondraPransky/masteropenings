@@ -18,6 +18,42 @@ L’application doit permettre :
 **Phase : le refactoring est terminé → on entre dans la construction produit.**
 Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un prof — toi — + ses élèves) ; le **multi-coachs viendra après**. Pas encore d’utilisateurs réels.
 
+### 🔖 Session du 21 juillet 2026 (4e) — ▶ REFONTE de la vue MODULES coach (grille de cartes → répertoire en lignes)
+
+**Retour utilisatrice une fois le contenu chargé : « refais-moi le design des modules ».** Passe `/frontend-design` **au volume réel** (les 33 modules de `testcoach` réinjectés en local). Le système visuel (DESIGN.md) n'a **pas** bougé : aucune couleur, aucune police ajoutée — le problème était l'architecture de l'information, pas l'identité.
+
+#### Le diagnostic (mesuré, pas supposé)
+- **La navigation par dossiers était un mur vide de sens** : 21 pastilles sur **186px** de haut, et **14 dossiers sur 19 ne contiennent qu'UN module** (le dossier y répète le nom).
+- Les cartes ne montraient **aucun échec** — un nom, « 10 pos. », un badge. Rien de ce qu'un coach reconnaît.
+- **3,6 écrans** pour 33 modules.
+
+#### Les décisions
+| Décision | Pourquoi |
+|---|---|
+| **Sections = le camp** (♔ Blancs 25 / ♚ Noirs 8) | La seule structure vraie d'un répertoire, et la question du coach en assignant. Aucun heuristique de nom, contrairement à un regroupement par « source ». |
+| **Signature : la ligne d'ouverture en figurines monospacées, colonne alignée** | `1.d4 ♘f6 2.c4 g6 3.♘c3 d5` identifie une ouverture plus vite qu'un nom. L'**alignement** est l'intérêt : les 1.e4 s'empilent, on balaie verticalement. S'appuie sur une règle déjà écrite (« mono = la notation, la signature échecs »). |
+| **Les numéros 760-777 deviennent une gouttière** | C'est la série réelle de la coach, pas de la numérotation décorative. |
+| **Mur de pastilles → `<select>` compact** | Le dossier redevient ce qu'il est : un filtre occasionnel. Renommage/déplacement préservés. |
+| **Sous-titre = ce que le répertoire CONTIENT** | « 33 modules · 75 chapitres · 4 972 positions à réviser », pas un compte de cartes. |
+
+**Risque assumé** : la grille de cartes disparaît au profit de lignes. Une carte de 248px ne peut pas tenir 6 demi-coups, et sans alignement la ligne d'ouverture perd tout son intérêt.
+
+| | avant | après |
+|---|---|---|
+| Hauteur desktop | 3,6 écrans | **2,3** |
+| Hauteur par module | 94px | **49px** |
+| Mobile 375px | — | 3,8 écrans, 0 débordement |
+| Rendu | — | **7 ms** |
+| Contraste AA | — | 5,53 clair / 7,76 sombre |
+
+#### ⚠️ Deux pièges rencontrés DANS MON PROPRE CODE (mesurés, à ne pas refaire)
+1. **Compter les positions par `_treePlayerPositions` dans une liste = 15,2 s pour 33 modules** (1,1 s pour le seul Grünfeld : la BFS crée un objet `Chess` par arête). Un **balayage O(n)** de l'arbre (`node.player.length && isPlayerMove(node.startFen, side)`) donne le **résultat IDENTIQUE** (295 = 295) en 0,7 ms — l'arbre étant bâti depuis ses propres lignes, aucun nœud n'y est inatteignable (0 orphelin sur les 31 fichiers). `_treePlayerPositions` reste l'autorité là où la justesse prime (garde-fou d'import).
+2. **Ne JAMAIS mettre en cache du HTML qui dépend du pont `window`** : je mémoïsais la ligne d'ouverture déjà rendue, or `window.fig` n'est pas encore posé au tout premier `renderDrillList` → les figurines n'apparaissaient **jamais** de toute la session (et une page fraîche ne le montrait pas : seul un changement de clé de cache le révélait). On mémoïse l'**analyse**, jamais la présentation.
+
+**Aussi** : `.mrow` n'a **pas** de `transform` au survol — c'est lui qui piégeait le menu ⋯ en `position:fixed` (4 passes en juillet, cf. [[css-transform-containing-block]]). Une ligne de liste ne lévite pas ; le problème est supprimé par construction, pas contourné.
+
+**Reste** : les **paquets d'exercices** se rangeraient aussi dans une section de camp (discutable) — ce compte n'en a aucun, non vu en vrai. La **vue élève** garde ses cartes, non touchée.
+
 ### 🔖 Session du 21 juillet 2026 (3e) — ▶ MODULES À CHAPITRES (B2) : un fichier PGN = un module à N chapitres
 
 **Retour utilisatrice après l'import : « les variantes dans les mêmes PGN devraient être regroupées »** → grill-me (elle a choisi **B**, le modèle, contre ma recommandation A d'affichage) puis /apex. **Les 73 modules à plat deviennent 31 modules à chapitres** (73 chapitres, 4 883 positions à réviser, 1 600 commentaires, 0 vide) — rechargés sur `testcoach`.

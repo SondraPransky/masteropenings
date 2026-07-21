@@ -218,6 +218,13 @@ Caractère : **sobres et sûrs**. Affordances standard, rien ne se réinvente �
 ### Navigation
 - Nav haute sticky 58px, blanc translucide + `backdrop-filter: blur(16px)`, bordure basse. Sidebar coach 210px (rangée horizontale scrollable en mobile) : boutons ghost, actif = fond indigo-dim + texte indigo, badges compteurs `tabular-nums`.
 
+### Le Répertoire en lignes (`.mgroup` / `.mrow`)
+Liste des modules du coach, à l'échelle (30-200 entrées). **Sections = le camp** (♔ Blancs / ♚ Noirs) : la seule structure vraie d'un répertoire, et la question posée en assignant. Une ligne = 49px : gouttière du numéro de série (mono, `tabular-nums`) · nom · **ligne d'ouverture** · compteurs (chapitres, positions) · actions.
+
+**La ligne d'ouverture est la signature du composant** : les 6 premiers demi-coups en notation figurine monospacée, dans une **colonne alignée** — `1.d4 ♘f6 2.c4 g6 3.♘c3 d5` identifie une ouverture plus vite qu'un nom, et l'alignement permet de balayer les 1.e4 et les 1.d4 verticalement. C'est l'application directe de la règle « mono = la notation » à un écran de gestion.
+
+⚠ **Pas de `transform` au survol** (fond seulement) : c'est lui qui crée un contexte d'empilement et piège un menu `position:fixed` — le bug qui a coûté 4 passes sur `.mcard`. Une ligne de liste ne lévite pas.
+
 ### L'Échiquier (composant signature)
 Canvas central avec pièces cburnett (SVG locaux), coordonnées, flèches/formes d'annotation. Les mini-échiquiers (`renderStaticBoard`, grille 8 rangées explicites) portent les positions dans les tables, tooltips (`wsTip`) et cartes d'exercices. C'est LA source d'identité visuelle — tout écran qui parle d'une position la montre.
 
@@ -230,6 +237,8 @@ Canvas central avec pièces cburnett (SVG locaux), coordonnées, flèches/formes
 - **Do** montrer l'échiquier (mini ou tooltip) chaque fois qu'on parle d'une position.
 - **Do** respecter `prefers-reduced-motion` sur chaque animation ; easings ease-out, 120–300ms, propriétés explicites.
 - **Do** donner ≥40px de cible tactile (`.btn-ico`, `min-height` sous `hover:none`) — le public inclut des enfants sur téléphone.
+- **Do** identifier un contenu d'échecs par **son échiquier ou ses coups**, jamais par son seul nom : une liste d'ouvertures porte sa ligne (`.mrow-line`), une position porte son mini-échiquier. C'est le pendant en gestion de la règle « montrer l'échiquier ».
+- **Do** faire porter à un niveau de navigation une information réelle : un groupement dont la plupart des entrées sont des singletons (mesuré : 14 dossiers sur 19) est un mur, pas une hiérarchie — il redevient un filtre.
 
 ### Don't:
 - **Don't** reproduire « le dashboard SaaS générique » (PRODUCT.md) : cartes identiques, gros KPI + gradient, fond crème/beige, eyebrows en petites capitales tracked.
