@@ -333,7 +333,7 @@ function totalSessions() {
 // NAVIGATION
 // ══════════════════════════════════════════════════════
 function switchCoachSection(sec) {
-  const sections = ['overview','classes','modules','explorer','eleves','heatmap','parties','export'];
+  const sections = ['overview','classes','modules','explorer','analytics','eleves','heatmap','parties','export'];
   sections.forEach(s => {
     const el = document.getElementById('csec-'+s);
     if (el) el.style.display = s===sec ? '' : 'none';
@@ -359,6 +359,11 @@ function switchCoachSection(sec) {
     });
   }
   if (sec==='explorer') { window.renderExplorer?.(); }
+  if (sec==='analytics') {
+    // Analyse d'ouvertures (OA/D18) : les docs vivent dans Supabase (worker local
+    // `py -m oa.eecoach_worker`) — chargement lazy à l'ouverture, rendu ensuite.
+    Promise.resolve(window._sbLoadOaAnalyses?.()).then(()=>{ window.renderOaAnalytics?.(); });
+  }
   if (sec==='heatmap') { window.renderHeatmap?.(); }
   if (sec==='parties') { loadTeacherGames().then(()=>{ _syncPartiesFilter(); window.renderPartiesTab?.(); }); }
 }

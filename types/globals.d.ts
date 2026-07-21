@@ -132,6 +132,16 @@ interface Window {
   renderStudentPage?: (...a: any[]) => any;   // page profil exhaustive (lib/coach-student-page.js)
   closeStudentPage?: (...a: any[]) => any;    // retour à la liste des élèves
   renderHeatmap?: (...a: any[]) => any;
+  renderOaAnalytics?: (...a: any[]) => any;     // section Analyse d'ouvertures (lib/coach-analytics.js)
+  oaaSelectModule?: (...a: any[]) => any;
+  oaaSetBucket?: (...a: any[]) => any;
+  oaaSetTab?: (...a: any[]) => any;
+  oaaSetGapColor?: (...a: any[]) => any;
+  oaaToggleSel?: (...a: any[]) => any;
+  oaaTip?: (...a: any[]) => any;
+  oaaTipHide?: (...a: any[]) => any;
+  oaaCreatePacket?: (...a: any[]) => any;       // « Créer un paquet » (lib/coach-analytics-export.js)
+  _sbLoadOaAnalyses?: (...a: any[]) => any;     // loader Supabase oa_analyses (lib/supabase-data.js)
   renderExplorer?: (...a: any[]) => any;        // section Explorateur (lib/coach-explorer.js)
   explorerLoad?: (...a: any[]) => any;
   explorerCreatePacket?: (...a: any[]) => any;

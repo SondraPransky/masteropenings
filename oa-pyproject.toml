@@ -1,0 +1,20 @@
+# Trace des dependances du package vendore `oa/` (copie du package
+# `opening_analytics` du projet « Ouvertures - data », 2026-07-21).
+# Le repo de developpement d'oa reste "Desktop/Ouvertures - data" ; cette copie
+# sert le worker Supabase D18 (`oa/eecoach_worker.py`). Les DONNEES (cache
+# sqlite, 0 secret) ne sont JAMAIS copiees : `data-oa/` est gitignore et le
+# token Lichess vit dans l'env (`OA_LICHESS_TOKEN`), jamais dans le code.
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "oa"
+version = "0.1.0"
+description = "Human Opening Analytics — erreurs humaines par tranche Elo (vendore pour le worker Supabase EECoach)"
+requires-python = ">=3.10"
+dependencies = [
+  "chess>=1.10",   # python-chess (pipeline, SAN, FEN-4)
+  "flask>=3.0",    # webapp.py (non utilise par le worker, garde pour copie fidele)
+]

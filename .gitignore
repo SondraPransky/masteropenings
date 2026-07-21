@@ -26,6 +26,11 @@ otkb/data/
 lichess_db_puzzle.csv
 config.local.toml
 
+# OA (analytics d'ouvertures monorepo) — CODE versionné, DONNÉES jamais commitées.
+# Le cache d'analyse du worker Supabase vit dans data-oa/ (sqlite local).
+oa/**/__pycache__/
+data-oa/
+
 # Outillage Claude Code local (skill impeccable) — pas du code de l'app
 .github/hooks/
 .github/skills/

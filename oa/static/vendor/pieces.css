@@ -1,0 +1,13 @@
+/* Map Chessground piece elements (<piece class="white pawn">) to the local cburnett SVGs. */
+.cg-wrap piece.pawn.white   { background-image: url('/static/vendor/pieces/wP.svg'); }
+.cg-wrap piece.knight.white { background-image: url('/static/vendor/pieces/wN.svg'); }
+.cg-wrap piece.bishop.white { background-image: url('/static/vendor/pieces/wB.svg'); }
+.cg-wrap piece.rook.white   { background-image: url('/static/vendor/pieces/wR.svg'); }
+.cg-wrap piece.queen.white  { background-image: url('/static/vendor/pieces/wQ.svg'); }
+.cg-wrap piece.king.white   { background-image: url('/static/vendor/pieces/wK.svg'); }
+.cg-wrap piece.pawn.black   { background-image: url('/static/vendor/pieces/bP.svg'); }
+.cg-wrap piece.knight.black { background-image: url('/static/vendor/pieces/bN.svg'); }
+.cg-wrap piece.bishop.black { background-image: url('/static/vendor/pieces/bB.svg'); }
+.cg-wrap piece.rook.black   { background-image: url('/static/vendor/pieces/bR.svg'); }
+.cg-wrap piece.queen.black  { background-image: url('/static/vendor/pieces/bQ.svg'); }
+.cg-wrap piece.king.black   { background-image: url('/static/vendor/pieces/bK.svg'); }

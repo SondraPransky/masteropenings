@@ -2505,3 +2505,42 @@ textarea {
 .board-theme-swatch { width: 34px; height: 34px; border-radius: var(--rs); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .12); flex: 0 0 auto; }
 [data-theme="dark"] .board-theme-swatch { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14); }
 .board-theme-lbl { flex: 1; text-align: left; }
+
+/* ══════════ VUE COACH — Analyse d'ouvertures (OA/D18, .oaa-*) ══════════
+   Les documents du worker Supabase : erreurs par tranche Elo, trous du
+   répertoire, diagnostics. Calqué sur .wsx-table / .exp-* (tokens seuls). */
+.oaa-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.oaa-modsel { font-size: .82rem; padding: 7px 10px; border-radius: var(--rs); border: 1px solid var(--border); background: var(--surf); color: var(--text); font-family: inherit; max-width: 320px; }
+.oaa-fresh { font-size: .72rem; color: var(--dim); }
+.oaa-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
+.oaa-chip { font-size: .72rem; padding: 6px 11px; border-radius: 999px; border: 1px solid var(--border); background: var(--surf2); color: var(--text-2); cursor: pointer; font-family: inherit; transition: border-color .15s, background .15s, color .15s, transform .1s; }
+.oaa-chip:active { transform: scale(.96); }
+.oaa-chip.on { background: var(--cyan-dim); border-color: var(--cyan-dim-h, var(--cyan-glow)); color: var(--cyan); font-weight: 600; }
+.oaa-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 14px; }
+.oaa-tab { font-size: .8rem; padding: 8px 14px; border: none; background: none; color: var(--text-2); cursor: pointer; font-family: inherit; border-bottom: 2px solid transparent; transition: color .15s, border-color .15s; }
+.oaa-tab.on { color: var(--cyan); border-bottom-color: var(--cyan); font-weight: 600; }
+.oaa-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-bottom: 10px; }
+.oaa-selcount { font-size: .74rem; color: var(--dim); }
+.oaa-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--r); background: var(--surf); }
+.oaa-table td.oaa-check { width: 30px; }
+.oaa-line { color: var(--text-2); font-size: .74rem; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.oaa-move .mono-move { font-weight: 600; }
+.oaa-sub { display: block; font-size: .68rem; color: var(--dim); font-weight: 400; }
+.oaa-sub-td { font-size: .72rem; color: var(--dim); }
+.oaa-crit { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--red-ink); }
+.oaa-none { padding: 22px; color: var(--dim); font-size: .84rem; text-align: center; }
+.oaa-explain { font-size: .76rem; color: var(--text-2); margin: 0 0 10px; }
+.oaa-gaps-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.oaa-diag-grid { display: grid; gap: 18px; }
+.oaa-diag-block h3 { font-size: .9rem; margin: 0 0 4px; }
+.oaa-diag-block { border: 1px solid var(--border); border-radius: var(--r); background: var(--surf); padding: 14px; overflow-x: auto; }
+.oaa-empty { max-width: 560px; margin: 40px auto; text-align: center; border: 1px dashed var(--border); border-radius: 14px; padding: 28px 24px; color: var(--text-2); }
+.oaa-empty-ico { font-size: 2rem; color: var(--cyan); }
+.oaa-empty h3 { margin: 8px 0 6px; color: var(--text); }
+.oaa-empty p { font-size: .82rem; margin: 6px 0; }
+.oaa-empty code { display: inline-block; background: var(--surf2); border: 1px solid var(--border); border-radius: var(--rs); padding: 6px 12px; font-size: .8rem; margin: 6px 0; }
+.oaa-empty-note { font-size: .72rem; color: var(--dim); }
+@media (hover: none) {
+  .oaa-chip, .oaa-tab { min-height: 44px; }
+}
+.oaa-chip:focus-visible, .oaa-tab:focus-visible, .oaa-row:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }

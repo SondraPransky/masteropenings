@@ -237,6 +237,10 @@
       <span class="csnav-ico"><i class="ti ti-map-search" aria-hidden="true"></i></span>
       <span class="csnav-lbl">Explorateur</span>
     </button>
+    <button class="csnav-btn" id="csnav-analytics" onclick="switchCoachSection('analytics')">
+      <span class="csnav-ico"><i class="ti ti-chart-histogram" aria-hidden="true"></i></span>
+      <span class="csnav-lbl">Analyse d'ouvertures</span>
+    </button>
     <div class="csnav-divider"></div>
     <div class="csnav-group">Analyse</div>
     <button class="csnav-btn" id="csnav-heatmap" onclick="switchCoachSection('heatmap')">
@@ -421,6 +425,17 @@
         </div>
         <div id="ws-modal-body"></div>
       </div>
+    </div>
+
+    <!-- ── SECTION : Analyse d'ouvertures (worker OA/D18 → Supabase, coach only) ── -->
+    <div id="csec-analytics" style="display:none">
+      <div class="cs-header">
+        <div>
+          <h1 class="cs-title">Analyse d'ouvertures</h1>
+          <div class="cs-sub">Où les humains se trompent réellement dans tes modules — par tranche Elo (données Lichess).</div>
+        </div>
+      </div>
+      <div id="oaa-body"></div>
     </div>
 
     <!-- ── SECTION : Explorateur de puzzles (pont OTKB local, coach only) ── -->
@@ -616,6 +631,7 @@
 
 <!-- Tooltip échiquier flottant (points faibles + détail élève) : rempli par wsTip(). -->
 <div id="ws-board-tip" class="wsx-tip" style="display:none" aria-hidden="true"></div>
+<div id="oaa-tip" class="wsx-tip" style="display:none" aria-hidden="true"></div>
 </div>
 
 <!-- ════════════════════════════════════════
