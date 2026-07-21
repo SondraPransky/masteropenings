@@ -40,6 +40,11 @@ from .pipeline import analyze_chapter
 SUPABASE_URL = "https://smoftbuyejoyxlonhjcu.supabase.co"
 SUPABASE_KEY = "sb_publishable_Bn0asUgcNYPYA1wnl9bokw_k1xshFC4"
 
+# Console Windows : cp1252 ne sait pas imprimer les fleches/coches du worker.
+for _stream in (sys.stdout, sys.stderr):
+    if _stream is not None and hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+
 ROOT = Path(__file__).resolve().parent.parent          # racine du repo EECoach
 DATA_DIR = ROOT / "data-oa"                            # cache sqlite local (gitignore)
 
