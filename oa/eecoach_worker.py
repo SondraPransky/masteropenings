@@ -60,6 +60,16 @@ CAP_DANGER = 40
 # Tranches servies aux vues par-tranche (la zone calibree D12 : 1600 Lichess et +).
 DOC_BUCKETS = (1600, 1800, 2000, 2200, 2500)
 
+# ⚠ PROFONDEUR MINIMALE (arbitrage utilisatrice, 21/07) : sous le 4e coup, une
+# « divergence humaine couteuse » n'est PAS une erreur — c'est un CHOIX d'ouverture.
+# Mesure sur le vrai cache : « Gambit du centre » cataloguait 11 erreurs au ply 0
+# (= « le 1er coup des Blancs est mauvais ») et, au ply 3, « Nc6 au lieu de exd4 »
+# sur 697 231 parties — c.-a-d. Noir qui DECLINE le gambit. Comparer des evals a
+# cette profondeur n'a pas de sens, et ces lignes mangeaient les plafonds par
+# tranche au detriment du vrai contenu (les Bxc3 du ply 15).
+# ply = nb de demi-coups AVANT la position ou la faute est jouee (6 = 4e coup).
+MIN_ERROR_PLY = 6
+
 
 # ── .env + HTTP minimal ──────────────────────────────────────────────────────
 def _load_env(path: Path) -> dict[str, str]:
@@ -142,27 +152,49 @@ def _reset_chapter(conn, chapter_key: str) -> None:
 
 
 # ── Construction du document d'analyse (vue pure du cache OA) ────────────────
-def _sample_lines(conn, chapter_id: int) -> dict[int, str]:
-    """position_id -> ligne SAN representative la plus courte (contexte d'affichage)."""
+def _sample_lines(conn, chapter_id: int) -> tuple[dict[int, str], dict[int, int]]:
+    """position_id -> (ligne SAN representative la plus courte, ply le plus court).
+
+    Le ply vient du MIN(paths.ply) deja calcule par `iter_chapter_positions` : une
+    position atteinte par transposition compte a sa profondeur la PLUS FAIBLE (on
+    ne rattrape pas une ligne de depart en la reatteignant par un chemin long).
+    """
     lines: dict[int, str] = {}
+    plies: dict[int, int] = {}
     for pos in ingest.iter_chapter_positions(conn, chapter_id):
         seq = (pos["sample_sequence"] or "").split()
-        lines[int(pos["id"])] = lifetime._san_line(seq)
-    return lines
+        pid = int(pos["id"])
+        lines[pid] = lifetime._san_line(seq)
+        plies[pid] = int(pos["min_ply"] or 0)
+    return lines, plies
 
 
-def build_analysis_doc(conn, chapter_id: int, chapter_name: str) -> dict:
+def _line_plies(san_line: str) -> int:
+    """Nb de demi-coups d'une ligne SAN (« 1. e4 e5 2. d4 » -> 3).
+
+    Les sections de diagnostic ne rendent que la ligne en texte (pas d'id de
+    position) : on y relit la profondeur pour leur appliquer le meme seuil que la
+    table des erreurs — sinon l'onglet Diagnostics reparlerait des lignes que
+    l'onglet Erreurs vient d'ecarter.
+    """
+    return sum(1 for tok in (san_line or "").split() if not tok.rstrip(".").isdigit())
+
+
+def build_analysis_doc(conn, chapter_id: int, chapter_name: str, min_ply: int = MIN_ERROR_PLY) -> dict:
     """Le doc jsonb complet d'un module : meta + errors + gaps + diagnostics.
 
     Tout est precalcule (FEN complets, SAN, libelles de ligne) pour que la SPA
     n'ait qu'a afficher. Chaque section est plafonnee (Supabase gratuit).
     """
-    san_of = _sample_lines(conn, chapter_id)
+    san_of, ply_of = _sample_lines(conn, chapter_id)
 
     # 1. Erreurs (le coeur) — tri criticality (l'ORDER BY de la requete), cap
     # PAR TRANCHE et restreint aux tranches que la SPA sait filtrer (DOC_BUCKETS)
     # — un cap global laissait 2200/2500 vides et des buckets <1600 sans chip.
-    all_errors = db.errors_for_chapter(conn, chapter_id)
+    # Le filtre de PROFONDEUR passe AVANT le cap : sinon les lignes de depart
+    # (les plus jouees, donc les mieux classees) consommeraient les 40 places.
+    all_errors = [e for e in db.errors_for_chapter(conn, chapter_id)
+                  if ply_of.get(int(e["position_id"]), 0) >= min_ply]
     kept_per_bucket: dict[int, int] = {}
     errors = []
     for e in all_errors:
@@ -211,11 +243,14 @@ def build_analysis_doc(conn, chapter_id: int, chapter_name: str) -> dict:
             } for g in rows]
         gap_doc[col] = per_bucket
 
-    # 3. Diagnostics compacts.
+    # 3. Diagnostics compacts — MEME seuil de profondeur que la table des erreurs
+    # (les caps s'appliquent APRES le filtre, pour ne pas gaspiller les places).
     hm = heatmap.chapter_heatmap(conn, chapter_id)
-    heat = [[ply, bucket, round(crit, 5)] for (ply, bucket), crit in sorted(hm.grid.items())]
+    heat = [[ply, bucket, round(crit, 5)] for (ply, bucket), crit in sorted(hm.grid.items())
+            if ply >= min_ply]
 
-    lifes = lifetime.chapter_error_lifetimes(conn, chapter_id)[:CAP_LIFETIME]
+    lifes = [lf for lf in lifetime.chapter_error_lifetimes(conn, chapter_id)
+             if _line_plies(lf.line) >= min_ply][:CAP_LIFETIME]
     life_doc = [{
         "san": lf.mistake_san, "bestSan": lf.best_san, "line": lf.line,
         "buckets": lf.buckets, "span": lf.span,
@@ -224,7 +259,8 @@ def build_analysis_doc(conn, chapter_id: int, chapter_name: str) -> dict:
 
     expected: dict[str, list] = {}
     for bucket in DOC_BUCKETS:
-        evs = expected_value.chapter_expected_values(conn, chapter_id, bucket)
+        evs = [ev for ev in expected_value.chapter_expected_values(conn, chapter_id, bucket)
+               if _line_plies(ev.line) >= min_ply]
         expected[str(bucket)] = [{
             "line": ev.line, "san": ev.mistake_san,
             "reach": round(ev.reach_probability, 5),
@@ -232,7 +268,8 @@ def build_analysis_doc(conn, chapter_id: int, chapter_name: str) -> dict:
             "ev": round(ev.expected_value, 6),
         } for ev in evs[:CAP_EXPECTED_PER_BUCKET]]
 
-    dangers = danger_depth.chapter_danger_depths(conn, chapter_id)[:CAP_DANGER]
+    dangers = [d for d in danger_depth.chapter_danger_depths(conn, chapter_id)
+               if _line_plies(d.line) >= min_ply][:CAP_DANGER]
     danger_doc = [{
         "line": d.line, "move": d.danger_move,
         "san": d.first_mistake_san, "crit": round(d.peak_criticality, 5),
@@ -246,6 +283,9 @@ def build_analysis_doc(conn, chapter_id: int, chapter_name: str) -> dict:
         "docBuckets": list(DOC_BUCKETS),
         "fide": {str(k): v for k, v in BUCKET_FIDE_EQUIV.items()},
         "repColor": color,
+        "minPly": min_ply,
+        # `errors` = ce qui EXISTE apres le seuil de profondeur (c'est le chiffre
+        # honnete a afficher) ; `kept` = ce qui tient dans les plafonds du doc.
         "totals": {"errors": len(all_errors), "kept": len(errors)},
         "errors": errors,
         "gaps": gap_doc,
@@ -262,6 +302,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--modules", help="ids de modules a analyser (separes par des virgules) ; defaut = tous")
     ap.add_argument("--limit-positions", type=int, default=None, help="borne le nb de positions analysees (passe rapide)")
     ap.add_argument("--no-deepen", action="store_true", help="saute l'etape 6 (lignes de refutation Stockfish)")
+    ap.add_argument("--min-ply", type=int, default=MIN_ERROR_PLY,
+                    help=f"profondeur minimale d'une erreur, en demi-coups (defaut {MIN_ERROR_PLY} = 4e coup)")
     ap.add_argument("--dry-run", action="store_true", help="analyse + doc, sans push Supabase")
     ap.add_argument("--json-out", help="dossier ou ecrire les docs JSON produits (debug/seed)")
     ap.add_argument("--force", action="store_true", help="tourner meme sans OA_LICHESS_TOKEN (aucune erreur ne sera detectee)")
@@ -325,7 +367,7 @@ def main(argv: list[str] | None = None) -> int:
         finally:
             pgn_path.unlink(missing_ok=True)
 
-        doc = build_analysis_doc(conn, result.chapter_id, name)
+        doc = build_analysis_doc(conn, result.chapter_id, name, min_ply=args.min_ply)
         size_kb = len(json.dumps(doc, ensure_ascii=False).encode("utf-8")) / 1024
         print(f"  doc : {len(doc['errors'])} erreurs (sur {doc['totals']['errors']}), "
               f"{size_kb:.0f} Ko")
