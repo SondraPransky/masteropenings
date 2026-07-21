@@ -59,7 +59,14 @@ describe('errorToKp (« Créer un paquet »)', () => {
   it('rejette une erreur incomplète', () => {
     expect(errorToKp(null)).toBeNull();
     expect(errorToKp({ ...ERR, bestSan: '' })).toBeNull();
+    expect(errorToKp({ ...ERR, bestSan: null })).toBeNull();
     expect(errorToKp({ ...ERR, fen: 'pas-un-fen' })).toBeNull();
+  });
+  it('rejette un bestSan qui est de l’UCI (exercice insoluble) mais accepte les SAN valides', () => {
+    expect(errorToKp({ ...ERR, bestSan: 'd7d6' })).toBeNull();     // UCI ≠ SAN
+    expect(errorToKp({ ...ERR, bestSan: 'e1g1' })).toBeNull();
+    for (const san of ['d6', 'Nf3', 'exd5', 'O-O', 'O-O-O+', 'e8=Q#', 'Qxh7#', 'Rad1'])
+      expect(errorToKp({ ...ERR, bestSan: san })).not.toBeNull();
   });
   it('le commentaire pédagogique porte la ligne, la fréquence et le coût', () => {
     const c = errorComment(ERR);

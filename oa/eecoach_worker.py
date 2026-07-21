@@ -44,7 +44,10 @@ ROOT = Path(__file__).resolve().parent.parent          # racine du repo EECoach
 DATA_DIR = ROOT / "data-oa"                            # cache sqlite local (gitignore)
 
 # Plafonds du doc jsonb (Supabase gratuit : viser < 300 Ko / module).
-CAP_ERRORS = 150          # erreurs, toutes tranches confondues (tri criticality)
+# ⚠ Le cap des erreurs est PAR TRANCHE (revue 21/07) : un cap global par
+# criticality etait domine par les buckets <1600 (volumineux) et laissait les
+# tranches 2200/2500 quasi vides dans la SPA (mesure : 8/40 et 0/2 gardees).
+CAP_ERRORS_PER_BUCKET = 40   # erreurs gardees par tranche servie (DOC_BUCKETS)
 CAP_GAPS_PER_CELL = 15    # trous par (couleur x tranche)
 CAP_LIFETIME = 40
 CAP_EXPECTED_PER_BUCKET = 15
@@ -68,6 +71,15 @@ def _load_env(path: Path) -> dict[str, str]:
     return out
 
 
+class SupabaseHttpError(Exception):
+    """Erreur HTTP Supabase — une Exception ordinaire (PAS SystemExit) pour que
+    la boucle par module puisse continuer et que le 401 puisse etre re-tente."""
+
+    def __init__(self, method: str, url: str, code: int, detail: str):
+        super().__init__(f"✗ Supabase {method} {url.split('?')[0]} -> {code} : {detail}")
+        self.code = code
+
+
 def _http_json(method: str, url: str, *, token: str | None = None,
                body: object | None = None, extra: dict[str, str] | None = None):
     headers = {"apikey": SUPABASE_KEY, "Content-Type": "application/json"}
@@ -83,7 +95,7 @@ def _http_json(method: str, url: str, *, token: str | None = None,
             return json.loads(raw) if raw.strip() else None
     except urllib.error.HTTPError as err:
         detail = err.read().decode("utf-8", "replace")[:300]
-        raise SystemExit(f"✗ Supabase {method} {url.split('?')[0]} -> {err.code} : {detail}")
+        raise SupabaseHttpError(method, url, err.code, detail)
 
 
 def _login(email: str, pwd: str) -> tuple[str, str]:
@@ -110,6 +122,20 @@ def _fetch_modules(token: str, uid: str) -> list[dict]:
     return out
 
 
+def _reset_chapter(conn, chapter_key: str) -> None:
+    """Purge paths + errors du chapitre AVANT re-analyse, pour que le doc
+    reflete exactement le PGN courant du module (sinon l'ingestion APPEND et
+    les erreurs s'accumulent a travers les runs — lignes supprimees comprises).
+    Les caches chers (positions / stats / evals, cles par FEN-4) sont conserves."""
+    row = conn.execute("SELECT id FROM chapters WHERE name = ?", (chapter_key,)).fetchone()
+    if row is None:
+        return
+    cid = int(row["id"])
+    conn.execute("DELETE FROM errors WHERE chapter_id = ?", (cid,))
+    conn.execute("DELETE FROM paths WHERE chapter_id = ?", (cid,))
+    conn.commit()
+
+
 # ── Construction du document d'analyse (vue pure du cache OA) ────────────────
 def _sample_lines(conn, chapter_id: int) -> dict[int, str]:
     """position_id -> ligne SAN representative la plus courte (contexte d'affichage)."""
@@ -128,10 +154,19 @@ def build_analysis_doc(conn, chapter_id: int, chapter_name: str) -> dict:
     """
     san_of = _sample_lines(conn, chapter_id)
 
-    # 1. Erreurs (le coeur) — tri criticality (deja l'ORDER BY de la requete).
+    # 1. Erreurs (le coeur) — tri criticality (l'ORDER BY de la requete), cap
+    # PAR TRANCHE et restreint aux tranches que la SPA sait filtrer (DOC_BUCKETS)
+    # — un cap global laissait 2200/2500 vides et des buckets <1600 sans chip.
     all_errors = db.errors_for_chapter(conn, chapter_id)
+    kept_per_bucket: dict[int, int] = {}
     errors = []
-    for e in all_errors[:CAP_ERRORS]:
+    for e in all_errors:
+        bucket = int(e["elo_bucket"])
+        if bucket not in DOC_BUCKETS:
+            continue
+        if kept_per_bucket.get(bucket, 0) >= CAP_ERRORS_PER_BUCKET:
+            continue
+        kept_per_bucket[bucket] = kept_per_bucket.get(bucket, 0) + 1
         f4 = e["fen4"]
         errors.append({
             "fen": _ensure_full_fen(f4),
@@ -139,7 +174,9 @@ def build_analysis_doc(conn, chapter_id: int, chapter_name: str) -> dict:
             "line": san_of.get(int(e["position_id"]), ""),
             "san": e["mistake_move_san"] or e["mistake_move_uci"],
             "uci": e["mistake_move_uci"],
-            "bestSan": e["best_move_san"] or e["best_move_uci"],
+            # bestSan = un SAN ou rien — JAMAIS le repli UCI (un kp.san en UCI
+            # rendrait l'exercice insoluble dans le drill, revue 21/07).
+            "bestSan": e["best_move_san"],
             "bestUci": e["best_move_uci"],
             "freq": round(float(e["mistake_frequency"]), 4),
             "games": int(e["mistake_games"]),
@@ -204,7 +241,7 @@ def build_analysis_doc(conn, chapter_id: int, chapter_name: str) -> dict:
         "docBuckets": list(DOC_BUCKETS),
         "fide": {str(k): v for k, v in BUCKET_FIDE_EQUIV.items()},
         "repColor": color,
-        "totals": {"errors": len(all_errors)},
+        "totals": {"errors": len(all_errors), "kept": len(errors)},
         "errors": errors,
         "gaps": gap_doc,
         "heatmap": heat,
@@ -238,8 +275,12 @@ def main(argv: list[str] | None = None) -> int:
     os.environ.setdefault("OA_LICHESS_TOKEN", env.get("OA_LICHESS_TOKEN", ""))
 
     print(f"→ Connexion Supabase ({email}) …")
-    token, uid = _login(email, pwd)
-    modules = _fetch_modules(token, uid)
+    try:
+        token, uid = _login(email, pwd)
+        modules = _fetch_modules(token, uid)
+    except SupabaseHttpError as err:
+        print(err)
+        return 1
     if args.modules:
         wanted = {m.strip() for m in args.modules.split(",")}
         modules = [m for m in modules if str(m["id"]) in wanted]
@@ -256,14 +297,19 @@ def main(argv: list[str] | None = None) -> int:
     pushed = 0
     for mod in modules:
         mid, name = str(mod["id"]), mod["name"] or f"module {mod['id']}"
+        # La cle de chapitre embarque l'ID DU MODULE : le cache OA dedupe les
+        # chapitres par nom, et deux modules homonymes fusionneraient sinon en
+        # un seul chapitre (analyses croisees — revue 21/07).
+        chap_key = f"{name} [eecoach:{mid}]"
         print(f"\n═══ {name} ({mid}) ═══")
         with tempfile.NamedTemporaryFile("w", suffix=".pgn", delete=False,
                                          encoding="utf-8") as tmp:
             tmp.write(mod["pgn"])
             pgn_path = Path(tmp.name)
         try:
+            _reset_chapter(conn, chap_key)
             result = analyze_chapter(
-                conn, config, pgn_path, name,
+                conn, config, pgn_path, chap_key,
                 no_deepen=args.no_deepen,
                 limit_positions=args.limit_positions,
                 on_progress=lambda msg: print("  " + msg),
@@ -291,14 +337,26 @@ def main(argv: list[str] | None = None) -> int:
             print("  (dry-run : pas de push)")
             continue
 
-        _http_json(
-            "POST", f"{SUPABASE_URL}/rest/v1/oa_analyses",
-            token=token,
-            body=[{"module_id": mid, "teacher_id": uid,
-                   "updated_at": datetime.now(timezone.utc).isoformat(),
-                   "data": doc}],
-            extra={"Prefer": "resolution=merge-duplicates"},
-        )
+        # Push tolerant : une longue analyse (20 min/module) peut faire expirer
+        # le token (~1 h) — on re-loge une fois sur 401 ; tout autre echec de
+        # push n'abandonne QUE ce module, pas les suivants.
+        body = [{"module_id": mid, "teacher_id": uid,
+                 "updated_at": datetime.now(timezone.utc).isoformat(),
+                 "data": doc}]
+        try:
+            try:
+                _http_json("POST", f"{SUPABASE_URL}/rest/v1/oa_analyses", token=token,
+                           body=body, extra={"Prefer": "resolution=merge-duplicates"})
+            except SupabaseHttpError as err:
+                if err.code != 401:
+                    raise
+                print("  … token expire, reconnexion")
+                token, uid = _login(email, pwd)
+                _http_json("POST", f"{SUPABASE_URL}/rest/v1/oa_analyses", token=token,
+                           body=body, extra={"Prefer": "resolution=merge-duplicates"})
+        except SupabaseHttpError as err:
+            print(f"  ✗ push en echec : {err}")
+            continue
         pushed += 1
         print("  ✓ pousse dans oa_analyses")
 

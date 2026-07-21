@@ -2544,3 +2544,8 @@ textarea {
   .oaa-chip, .oaa-tab { min-height: 44px; }
 }
 .oaa-chip:focus-visible, .oaa-tab:focus-visible, .oaa-row:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+/* Carte thermique OA : 3 niveaux d'intensité (tokens seuls, lisible aux 2 thèmes). */
+.oaa-hm-cell { width: 34px; height: 18px; }
+.oaa-hm-1 { background: var(--gold-dim); }
+.oaa-hm-2 { background: var(--red-dim); }
+.oaa-hm-3 { background: var(--red-dim); box-shadow: inset 0 0 0 2px var(--red-glow); }
