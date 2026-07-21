@@ -8,6 +8,7 @@ gaps cloud-eval leaves for rare positions.
 
 from __future__ import annotations
 
+import asyncio
 import multiprocessing
 import os
 import shutil
@@ -19,6 +20,18 @@ import chess.engine
 from ..config import EvalConfig
 from ..fen import _ensure_full_fen
 from .base import Eval
+
+
+def _max_seconds() -> float:
+    """Plafond de securite par position en mode profondeur fixe (env OA_STOCKFISH_MAX_S).
+
+    Ce n'est PAS un budget de recherche : c'est ce qui garantit qu'une position
+    ne peut pas bloquer le run indefiniment. 120 s laisse largement le temps
+    d'atteindre depth 20 sur une position d'ouverture."""
+    try:
+        return max(5.0, float(os.environ.get("OA_STOCKFISH_MAX_S", "120")))
+    except ValueError:
+        return 120.0
 
 
 def find_stockfish(explicit_path: str | None = None) -> str | None:
@@ -79,7 +92,15 @@ class StockfishEvalSource:
         movetime = self._config.stockfish_movetime_ms
         if movetime and movetime > 0:
             return chess.engine.Limit(time=movetime / 1000.0)
-        return chess.engine.Limit(depth=self._config.stockfish_depth)
+        # ⚠ LIVENESS : une limite SANS composante `time` desactive tout timeout
+        # cote python-chess (`SimpleEngine._timeout_for` renvoie None si
+        # `limit.time is None`) — un moteur qui cesse de repondre fige alors le
+        # run POUR TOUJOURS (constate le 21/07 : pipeline bloque en [4/6],
+        # Stockfish au repos, aucune exception levee). On garde la profondeur
+        # fixe (deterministe) et on ajoute un PLAFOND TEMPS qui ne sert que de
+        # filet : les positions atteignent depth 20 bien avant.
+        return chess.engine.Limit(depth=self._config.stockfish_depth,
+                                  time=_max_seconds())
 
     def _engine_options(self) -> dict:
         threads = self._config.stockfish_threads
@@ -98,13 +119,16 @@ class StockfishEvalSource:
             return None
         try:
             info = self._analyse(board)
-        except chess.engine.EngineError as exc:
-            # Engine died (crash, killed process, broken pipe). Restart and retry once;
-            # if it fails again, skip this position rather than freezing the whole run.
+        except (chess.engine.EngineError, TimeoutError, asyncio.TimeoutError) as exc:
+            # Moteur mort (crash, process tue, pipe casse) OU muet (plafond temps
+            # depasse : le protocole s'est desynchronise — python-chess leve alors
+            # TimeoutError, pas EngineError). Dans les deux cas : on repart d'un
+            # moteur neuf et on retente une fois, puis on saute la position —
+            # jamais on ne fige le run.
             self._restart()
             try:
                 info = self._analyse(board)
-            except chess.engine.EngineError:
+            except (chess.engine.EngineError, TimeoutError, asyncio.TimeoutError):
                 print(f"      warning: Stockfish failed on a position ({exc}); skipping.")
                 return None
         score = info["score"].white()   # White POV, matching our convention
