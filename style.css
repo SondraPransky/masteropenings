@@ -18,6 +18,13 @@
   --board-light: #f0d9b5;
   --board-dark:  #b58863;
   --board-move:  rgba(205,210,106,.75);   /* surlignage du dernier coup (case claire) */
+  /* Flèches d'annotation — les brosses de Chessground (le plateau de Lichess).
+     Volontairement PAS --red/--green : ce sont des couleurs d'interface, pensées
+     pour du texte sur nos surfaces, pas pour du trait plein sur du bois. Ces deux
+     teintes-ci sont calibrees pour rester lisibles sur case claire ET foncee, dans
+     les 4 themes de plateau — c'est du mobilier d'echiquier, comme les pieces. */
+  --arrow-red:   #882020;
+  --arrow-green: #15781b;
 
   /* ── Indigo — accent primaire ── */
   /* Une SEULE famille d'indigo. Un indigo-500 parallele (rgba(99,102,241,…)) a vecu sur
