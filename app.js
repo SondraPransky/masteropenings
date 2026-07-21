@@ -303,6 +303,12 @@ function figurineText(text) {
 
 function currentGame() {
   if (S.preview && S.preview.game) return S.preview.game;   // aperçu lecture-seule (clic-navigation)
+  // Session de révision espacée : la position vit dans S.game (posée par
+  // loadPosition), quel que soit le mode PROPRE du module. Sans cette garde, un
+  // module `varmode:'tree'` renvoyait S.lineGame — null en SR — et le plateau se
+  // peignait VIDE. Même précédence que la couche d'entrée (lib/board.js:224, qui
+  // route S.sr.active vers le flux « positions » AVANT de regarder varmode).
+  if (S.sr && S.sr.active) return S.game;
   if (S.drill?.varmode === 'tree') return S.lineGame;
   return S.drill?.mode === 'line' ? S.lineGame : S.game;
 }
