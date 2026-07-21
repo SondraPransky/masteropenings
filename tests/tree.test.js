@@ -1,6 +1,7 @@
 import { isPlayerMove, _buildDrillTree, _treePlayerPositions, _materialHint,
-         _mergeStudentLayer, _diffAgainstCoach, _countLayerMoves, _editorTreeToDrillTree } from '../lib/tree.js';
-import { extractAllLines } from '../lib/core.js';
+         _mergeStudentLayer, _diffAgainstCoach, _countLayerMoves, _editorTreeToDrillTree,
+         buildTreeModule, gameModuleName } from '../lib/tree.js';
+import { extractAllLines, splitPgnGames, pgnStartFen } from '../lib/core.js';
 
 // `Chess` est injecté en global par tests/setup.js (comme dans le navigateur).
 const START = new Chess().fen();
@@ -231,5 +232,89 @@ describe('_editorTreeToDrillTree — conversion sans perte d’auteur', () => {
     expect(find(merged, 'Bb5').author).toBe('coach');          // PAS re-tagué 'student' par la greffe
     expect(find(merged, 'e4').author).toBeUndefined();         // les lignes du coach restent neutres
     expect(find(merged, 'e5').author).toBeUndefined();
+  });
+});
+
+// ── Import : les 2 defauts trouves sur le fonds reel (juillet 2026) ──────────
+// Contenu de test = la forme exacte des exports ChessBase de l'academie :
+// plusieurs parties par fichier, chacune partant d'une position [SetUp]/[FEN].
+const FEN_MID = 'r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4';
+const PGN_POS = `[Event "?"]
+[White "Italienne"]
+[Black "Gestion du coup Bg5"]
+[SetUp "1"]
+[FEN "${FEN_MID}"]
+
+1. d3 h6 2. c3 *`;
+const PGN_MULTI = `[Event "?"]
+[White "Le Gambit Danois"]
+[Black "Les Noirs refusent"]
+
+1. e4 e5 2. d4 exd4 3. c3 d5 *
+
+[Event "?"]
+[White "Le Gambit Danois"]
+[Black "Les Noirs acceptent"]
+[SetUp "1"]
+[FEN "${FEN_MID}"]
+
+1. Ng5 d5 *`;
+
+describe('buildTreeModule — startFen = racine reelle de l’arbre', () => {
+  test('PGN partant d’une position : sessions[0].startFen suit le [FEN], pas la position initiale', () => {
+    const m = buildTreeModule({ id: 1, name: 'x', pgn: PGN_POS, side: 'w' });
+    expect(m.sessions[0].startFen).toBe(FEN_MID);
+    expect(m.sessions[0].startFen).not.toBe(START);
+  });
+
+  test('le module est REELLEMENT jouable (regression : 0 position a reviser)', () => {
+    const m = buildTreeModule({ id: 1, name: 'x', pgn: PGN_POS, side: 'w' });
+    expect(_treePlayerPositions(m).length).toBeGreaterThan(0);
+    // ce que faisait l’import avant le correctif : startFen force a la position initiale
+    const broken = { ...m, sessions: [{ startFen: START }] };
+    expect(_treePlayerPositions(broken).length).toBe(0);
+  });
+
+  test('PGN standard : comportement inchange', () => {
+    const m = buildTreeModule({ id: 1, name: 'x', pgn: '1. e4 e5 2. Nf3 *', side: 'w' });
+    expect(m.sessions[0].startFen).toBe(START);
+    expect(_treePlayerPositions(m).length).toBeGreaterThan(0);
+  });
+
+  test('rien d’extractible → null (l’appelant decide du message)', () => {
+    expect(buildTreeModule({ id: 1, name: 'x', pgn: '[Event "?"]\n\n*', side: 'w' })).toBe(null);
+  });
+});
+
+describe('splitPgnGames — une partie = un module', () => {
+  test('decoupe sur les en-tetes [Event]', () => {
+    expect(splitPgnGames(PGN_MULTI)).toHaveLength(2);
+  });
+
+  test('chaque partie garde SA position de depart', () => {
+    const [g1, g2] = splitPgnGames(PGN_MULTI);
+    expect(pgnStartFen(g1)).toBe(START);
+    expect(pgnStartFen(g2)).toBe(FEN_MID);
+  });
+
+  test('coller les parties bout a bout perd des coups ; les separer les conserve', () => {
+    const ensemble = extractAllLines(PGN_MULTI).reduce((a, l) => a + l.moves.length, 0);
+    const separe = splitPgnGames(PGN_MULTI)
+      .reduce((a, c) => a + extractAllLines(c).reduce((b, l) => b + l.moves.length, 0), 0);
+    expect(separe).toBeGreaterThan(ensemble);
+  });
+
+  test('PGN a une seule partie : une seule entree', () => {
+    expect(splitPgnGames('[Event "?"]\n\n1. e4 *')).toHaveLength(1);
+  });
+});
+
+describe('gameModuleName — nommage depuis les en-tetes du coach', () => {
+  test('White + Black', () => {
+    expect(gameModuleName(splitPgnGames(PGN_MULTI)[1], 'fallback', 1))
+      .toBe('Le Gambit Danois — Les Noirs acceptent');
+  });
+  test('en-tetes vides ou "?" → nom de repli numerote', () => {
+    expect(gameModuleName('[Event "?"]\n[White "?"]\n\n1. e4 *', 'Mon fichier', 2)).toBe('Mon fichier (3)');
   });
 });
