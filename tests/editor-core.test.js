@@ -83,6 +83,13 @@ describe('nagGlyphs / _nagGroup', () => {
     expect(nagGlyphs({})).toBe('');
     expect(nagGlyphs({ nags: [] })).toBe('');
   });
+  it('couvre les NAG du contenu réel des coachs ($11/$36/$132 s\'affichaient en "$n")', () => {
+    expect(nagGlyphs({ nags: [11] })).toBe('=');
+    expect(nagGlyphs({ nags: [36] })).toBe('↑');
+    expect(nagGlyphs({ nags: [132] })).toBe('⇆');
+    expect(nagGlyphs({ nags: [44] })).toBe('=∞');
+    expect(nagGlyphs({ nags: [999] })).toBe('$999');   // le repli reste pour l'inconnu
+  });
   test('groupe : 1..9 = qualité, 10+ = évaluation', () => {
     expect(_nagGroup(3)).toBe('q');
     expect(_nagGroup(9)).toBe('q');
