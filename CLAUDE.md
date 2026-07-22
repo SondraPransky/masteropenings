@@ -28,6 +28,10 @@ Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un pr
 
 **Reste** : (a) dérouler le workflow sur du VRAI contenu (Gambit du centre + son analyse de 137 erreurs + pont OTKB) ; (b) la carte élève **jamais vue en connecté réel** (l'échéance passe par `_sbLoadStudentModules`) — même file que la couche d'édition élève ; (c) un jeu de démo est resté dans le localStorage de dev (module 9001 + paquets 9002/9003 + classe 8001).
 
+#### ▶ Même session (suite) — 2 demandes utilisatrice sur le répertoire
+- **Gouttière des numéros de dossier retirée** (`6d1217e`) : « tu n'as pas enlevé les numéros devant les modules » — même règle que les numéros de chapitres (3e session). Le numéro (« 760 ») ne s'affiche plus nulle part sur la rangée ; il reste dans le filtre de dossiers, et les mots du dossier-descripteur restent en sous-titre. ⚠ Les TROIS grilles de `.mrow` (desktop / ≤900 / ≤700) référençaient la colonne : ma première passe avait laissé la grille ≤700 décalée (ligne d'ouverture à 216px au lieu de 279, mesurée) — re-vérifier chaque breakpoint quand on retire une colonne de grille.
+- **Titres de chapitres éditables depuis le répertoire** (`849cb09`) : crayon par chapitre dans la rangée dépliable (survol desktop, 44px tactile). ⚠ Le titre édité serait **reperdu en silence** par `_saveEditorChapter` (qui rebâtit `sessions` depuis le PGN via `buildTreeModule`) → il vit AUSSI dans une **surcouche `extra.chapTitles`** (clé `gameIdx`, les 2 mappers dbmap) que `applyChapTitles` (tree.js) ré-applique après chaque reconstruction. **Le PGN n'est jamais réécrit** : l'en-tête reste la source, le titre édité prime. +3 tests → **191**.
+
 ### 🔖 Session du 22 juillet 2026 (3e) — ▶ panneau de paramètres OA à rails + arbitrage du doublon 777
 
 **Deux demandes utilisatrice** : (a) retirer les numéros devant les chapitres du panneau dépliable (« aucun intérêt ») — fait ; (b) **filtrer les erreurs OA par camp, et « ce genre de module pour définir tous les paramètres qu'on veut »** (référence : une vidéo mp4 d'un sélecteur à rangées de crans + pilule — frames extraites via OpenCV pour lire le patron).
