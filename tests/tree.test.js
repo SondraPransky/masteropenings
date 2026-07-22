@@ -1,4 +1,4 @@
-import { isPlayerMove, _buildDrillTree, _treePlayerPositions, _materialHint,
+import { isPlayerMove, _buildDrillTree, _treePlayerPositions, _treePositionsScan, _materialHint,
          _mergeStudentLayer, _diffAgainstCoach, _countLayerMoves, _editorTreeToDrillTree,
          buildTreeModule, gameModuleName, chapterCount, chapterPgn } from '../lib/tree.js';
 import { extractAllLines, splitPgnGames, pgnStartFen, replacePgnGame } from '../lib/core.js';
@@ -52,6 +52,39 @@ describe('_treePlayerPositions — points de décision élève', () => {
   });
   test('un drill non-arbre renvoie une liste vide', () => {
     expect(_treePlayerPositions({ varmode: 'line' })).toEqual([]);
+  });
+});
+
+describe('_treePositionsScan — balayage O(n) ≡ BFS sur un arbre sans orphelin', () => {
+  const keysOf = list => list.map(p => p.masteryKey).sort();
+
+  test('même ensemble de clés que _treePlayerPositions (module simple)', () => {
+    const lines = extractAllLines('1. e4 e5 2. Nf3 Nc6 (2... Nf6 3. Nxe5 d6) 3. Bb5 *');
+    const tree = _buildDrillTree(lines, 'w');
+    const drill = { id: 1, varmode: 'tree', tree, side: 'w', sessions: [{ startFen: START }] };
+    expect(keysOf(_treePositionsScan(drill))).toEqual(keysOf(_treePlayerPositions(drill)));
+  });
+
+  test('même ensemble sur un module à chapitres (multi-parties)', () => {
+    const pgn = '[Event "A"]\n[White "Ch. 1"]\n\n1. e4 e5 2. Nf3 *\n\n[Event "B"]\n[White "Ch. 2"]\n\n1. d4 d5 2. c4 *';
+    const m = buildTreeModule({ id: 2, name: 'x', pgn, side: 'w' });
+    expect(keysOf(_treePositionsScan(m))).toEqual(keysOf(_treePlayerPositions(m)));
+    expect(_treePositionsScan(m).length).toBeGreaterThan(0);
+  });
+
+  test('mémoïsation : invalidée par updatedAt', () => {
+    const lines = extractAllLines('1. e4 e5 *');
+    const tree = _buildDrillTree(lines, 'w');
+    const drill = { id: 3, varmode: 'tree', tree, side: 'w', updatedAt: 1 };
+    const a = _treePositionsScan(drill);
+    expect(_treePositionsScan(drill)).toBe(a);            // même clé → même référence
+    drill.updatedAt = 2;
+    expect(_treePositionsScan(drill)).not.toBe(a);        // édition → recalcul
+    expect(keysOf(_treePositionsScan(drill))).toEqual(keysOf(a));
+  });
+
+  test('un drill non-arbre renvoie une liste vide', () => {
+    expect(_treePositionsScan({ varmode: 'line' })).toEqual([]);
   });
 });
 
