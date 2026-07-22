@@ -18,6 +18,22 @@ L’application doit permettre :
 **Phase : le refactoring est terminé → on entre dans la construction produit.**
 Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un prof — toi — + ses élèves) ; le **multi-coachs viendra après**. Pas encore d’utilisateurs réels.
 
+### 🔖 Session du 22 juillet 2026 (3e) — ▶ panneau de paramètres OA à rails + arbitrage du doublon 777
+
+**Deux demandes utilisatrice** : (a) retirer les numéros devant les chapitres du panneau dépliable (« aucun intérêt ») — fait ; (b) **filtrer les erreurs OA par camp, et « ce genre de module pour définir tous les paramètres qu'on veut »** (référence : une vidéo mp4 d'un sélecteur à rangées de crans + pilule — frames extraites via OpenCV pour lire le patron).
+
+#### Le panneau de paramètres (onglet Erreurs de l'analyse d'ouvertures)
+**Quatre rails composables** — Camp fautif (`stm`, la donnée existait déjà dans chaque erreur : 0 changement worker) · Tranche Elo · Coût plancher (≥ ¼/½/1/2 pions) · Criticité (Top 50/20/10). Un rail = un radiogroup à crans, la pilule se remplit jusqu'au cran (pur indicateur de position). Vérifié sur le vrai doc (137 erreurs Gambit du centre) : Noirs 81 → +coût 77 → top 10 → 10. Réglages mémorisés (`mc_oaa_params`) ; tout changement vide la sélection (règle existante de la tranche). **« Top N » sélectionne l'ensemble par rang de criticité mais restitue dans l'ordre du tri courant** → compose avec n'importe quel tri. Helpers purs `filterErrorsIndexed(opts)`/`capTopCrit` + 6 tests (**178**).
+- **La tranche a quitté la barre** : chaque réglage vit là où il agit. Trous/Diagnostics (qui la consomment) reçoivent leurs propres chips, synchronisées avec le rail.
+- ⚠ **2 pièges mesurés** : (1) pilule en % d'une piste `1fr` → débordait **955px** après le dernier cran ; piste `inline-grid` à colonnes égales, géométrie `(k+½)/n` exacte (delta 0 mesuré sur les 4 rails). (2) **`--cyan` sur `--cyan-dim` tient sur `--bg` mais PAS sur `--surf2`** (4,03:1 en sombre — l'illusion venait des chips, qui vivent sur `--bg`) → nouveau token **`--cyan-ink`** (règle de l'encre : clair = alias, sombre = indigo-300) → 5,1 / 6,03.
+
+#### Le doublon « Gambit du centre » — la fusion était le MAUVAIS outil, le garde-fou l'a dit
+Arbitrage utilisatrice : « c'est un doublon ». La fusion simulée a été **ARRÊTÉE par le garde-fou** (« 8 parties pour 2 modules ») — et c'est lui qui a révélé la vraie forme : **les deux modules contiennent les MÊMES 4 leçons** (en-têtes White/Black identiques). Le petit (« Ouverture – Le gambit du centre », 1 chapitre « Arbre complet ») est un **import du 20/07, antérieur aux fixes de parsing** (parties fusionnées, coups sautés — d'où 167 nœuds contre 388). ⚠ **Le contrôle de redondance se lit DANS LES DEUX SENS** : supprimer le petit perd 23 positions (lignes par correspondance ultra-profondes — le commentaire du fichier dit lui-même « qui va trouver cette position ? Personne ! ») ; supprimer le gros en perdrait **144**. Premier réflexe utilisatrice : garder le petit — **les chiffres présentés, elle a choisi B** : supprimer le petit, garder le nom du gros. **⚠ La suppression n'est PAS encore exécutée** (le classifieur de permissions bloque `--delete` ; commandes fournies, à lancer à la main) ; le petit a été rangé dans le dossier 777 (`--move`, appliqué) pour que les jumeaux soient au moins côte à côte.
+
+`tools/modules-admin.mjs` gagne **`--move`** (extra fusionné, jamais reconstruit) et le **re-clé des analyses `oa_analyses`** dans `--merge` ET `--delete` — sans lui, l'analyse de 137 erreurs du module supprimé devenait une entrée FANTÔME de la section OA. Jamais d'écrasement : cible déjà analysée → signalement, arbitrage humain.
+
+**typecheck + 178 tests + build verts, 0 erreur console, 2 thèmes AA, mobile 0 débordement.** **Reste** : lancer la suppression du petit (2 commandes en session) ; rangée dépliable jamais vue sur un VRAI téléphone.
+
 ### 🔖 Session du 22 juillet 2026 (2e) — ▶ `/apex` + `/frontend-design` : la vue MODULES au volume réel
 
 **Demande utilisatrice : « il y a un gros travail UX/UI à faire sur les modules encore ».** Les 4 surfaces cochées (répertoire, cycle de vie, vue élève, détail) et 3 symptômes : *je ne vois pas ce qu'il y a dedans* · *c'est laid / pas fini* · *les actions sont mal placées*.
@@ -47,7 +63,7 @@ Trois modules s'appellent **« Gambit Koltanowski » à l'identique**. Ce qui le
 
 **typecheck + 172 tests (+4) + build verts, 0 erreur console, 2 thèmes, 0 débordement à 375/1366/1440.**
 
-**Reste** : les 2 jumeaux (« Le gambit du centre » / « Ouverture – Le gambit du centre », identiques jusqu'au 16e demi-coup) sont un **doublon de fonds**, pas un défaut d'UI — à arbitrer avec l'utilisatrice (fusion ou renommage), comme Mieses le 22/07. La **rangée dépliable n'a jamais été vue sur un VRAI téléphone** (mesurée en simulation).
+**Reste** : ~~les 2 jumeaux « gambit du centre »~~ → **arbitré en 3e session** (supprimer le petit, import bogué du 20/07 — voir le bloc ci-dessus ; suppression à lancer à la main). La **rangée dépliable n'a jamais été vue sur un VRAI téléphone** (mesurée en simulation).
 
 ### 🔖 Session du 22 juillet 2026 — ▶ `/impeccable audit` (Analyse d'ouvertures + vue modules) : 16/20 → corrigé
 
