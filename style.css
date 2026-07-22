@@ -1915,7 +1915,16 @@ textarea {
 
 .mrow {
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr) minmax(0, 15rem) auto auto;
+  /* Ligne d'ouverture à 24rem : la profondeur est désormais DISCRIMINANTE
+     (jusqu'à 10 demi-coups quand deux modules partagent leur début — mesuré :
+     à 6 fixes, 15 modules sur 27 étaient ambigus). Le nom garde un plancher :
+     c'est lui qui tranche quand la ligne ne peut pas (modules jumeaux).
+     ⚠ Largeur de colonne PAR SECTION (--mrow-linew, posée par renderDrillList
+     depuis la profondeur réelle du groupe) : une largeur par rangée
+     (fit-content) casserait l'alignement vertical — tout l'intérêt de la
+     signature — et un 24rem fixe affamait le nom (218px) quand le groupe
+     n'avait que des lignes courtes (mesuré à 1366). */
+  grid-template-columns: 42px minmax(11rem, 1fr) minmax(0, var(--mrow-linew, 24rem)) auto auto;
   align-items: center;
   gap: 14px;
   padding: 10px 12px;
@@ -1940,6 +1949,14 @@ textarea {
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
 }
 .mrow-chap { color: var(--dim); }
+/* Les mots du dossier-descripteur (« Noirs exd4 ») : le texte de la coach,
+   verbatim, quand il ajoute ce que le nom ne dit pas — c'est lui qui distingue
+   trois « Gambit Koltanowski » homonymes. Inline après le nom (baseline flex),
+   jamais une rangée dédiée. */
+.mrow-sub {
+  font-size: .76rem; color: var(--dim); font-weight: 500;
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 
 /* LA signature : la ligne d'ouverture, en notation figurine monospacée. */
 .mrow-line {
@@ -1953,6 +1970,60 @@ textarea {
 }
 .mrow-stats b { color: var(--text-2); font-weight: 600; }
 .mrow-acts { display: flex; align-items: center; gap: 6px; }
+/* Affordance du dépliage : la rangée EST le bouton (les actions gardent le leur). */
+.mrow-chev { display: inline-flex; color: var(--dim); font-size: .8rem; transition: transform .18s ease; }
+.mrow.open .mrow-chev { transform: rotate(180deg); }
+.mrow { cursor: pointer; }
+.mrow.open { background: var(--surf2); border-bottom-color: transparent; }
+.mrow:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
+
+/* ── Détail dépliable : les chapitres du module, enfin visibles ─────────────
+   Libellés verbatim de la coach (72 en base, 0 affiché avant) + « Jouer » par
+   chapitre ; l'échiquier suit le chapitre survolé (startFen déjà en mémoire). */
+.mrow-detail {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px; align-items: start;
+  padding: 4px 12px 16px 68px;   /* aligné sous le nom (gouttière 42 + gap 14 + padding 12) */
+  background: var(--surf2);
+  border-bottom: 1px solid var(--border);
+}
+.mdet-chaps { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.mdet-chap {
+  display: grid; grid-template-columns: 24px minmax(0, 1fr) auto;
+  align-items: center; gap: 10px;
+  padding: 8px 10px; border: 0; border-radius: var(--rs);
+  background: transparent; color: var(--text); text-align: left;
+  font: inherit; font-size: .84rem; cursor: pointer;
+  transition: background-color .12s ease;
+}
+.mdet-chap:hover, .mdet-chap:focus-visible { background: var(--surf3); }
+.mdet-chap:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
+.mdet-chap-num {
+  font-family: var(--font-mono); font-size: .74rem; color: var(--dim);
+  font-variant-numeric: tabular-nums; text-align: right;
+}
+.mdet-chap-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mdet-chap-play { color: var(--cyan); opacity: 0; transition: opacity .12s ease; }
+.mdet-chap:hover .mdet-chap-play, .mdet-chap:focus-visible .mdet-chap-play { opacity: 1; }
+.mdet-exos { font-size: .84rem; color: var(--text-2); padding: 8px 10px; }
+.mdet-side { display: flex; flex-direction: column; gap: 8px; align-items: center; }
+.mdet-board { line-height: 0; border-radius: var(--rs); overflow: hidden; }
+.mdet-facts {
+  display: flex; flex-wrap: wrap; gap: 4px 12px; justify-content: center;
+  font-family: var(--font-mono); font-size: .72rem; color: var(--dim);
+  font-variant-numeric: tabular-nums; max-width: 176px;
+}
+.mdet-facts b { color: var(--text-2); font-weight: 600; }
+.mdet-due b { color: var(--red-ink); }
+@media (max-width: 700px) {
+  .mrow-detail { grid-template-columns: 1fr; padding-left: 12px; }
+  .mdet-side { flex-direction: row; align-items: flex-start; }
+  .mdet-chap { min-height: 44px; }
+  .mdet-chap-play { opacity: 1; }   /* pas de survol au doigt : l'affordance reste visible */
+}
+@media (prefers-reduced-motion: reduce) {
+  .mrow-chev, .mdet-chap, .mdet-chap-play { transition: none; }
+}
 .mrow-flags { display: flex; align-items: center; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
 
 /* Étroit : le nom garde la 1re rangée avec les actions ; les coups et les
@@ -1988,7 +2059,11 @@ textarea {
     row-gap: 4px;
   }
   .mrow-main  { grid-column: 2 / span 2; grid-row: 1; }
-  .mrow-line  { grid-column: 2 / span 2; grid-row: 2; }
+  /* La ligne REPLIE au lieu de s'élider : étendue jusqu'à 10 demi-coups
+     (profondeur discriminante), elle ne tient plus toujours en 235px — et
+     l'élision mangerait précisément les demi-coups qui distinguent, sans
+     tooltip au doigt. Deux rangées de mono valent mieux qu'une ligne amputée. */
+  .mrow-line  { grid-column: 2 / span 2; grid-row: 2; white-space: normal; }
   .mrow-stats { grid-column: 2; grid-row: 3; justify-content: flex-start; }
   .mrow-acts  { grid-column: 3; grid-row: 3; }
 }

@@ -583,7 +583,12 @@ function startDrill(i) {
   S.ko         = 0;
   S.sel        = null;
   S.flipped    = (d.side === 'b');
-  S.sessionIdx = 0; S.chapterTree = null;   // toujours repartir de la session 1 (chapitre 1)
+  // Chapitre demandé explicitement (répertoire coach, « Jouer » sur un chapitre) ;
+  // sinon toujours repartir de la session 1 (chapitre 1). Consommé une seule fois.
+  S.sessionIdx = Number.isInteger(S.startChapter)
+    ? Math.max(0, Math.min(S.startChapter, (d.sessions?.length || 1) - 1)) : 0;
+  S.startChapter = null;
+  S.chapterTree = null;
   S.postTheory = false;
   window._setStudyLayout?.(false);   // reset propre (réactivé par startStudyPhase si arbre)
 

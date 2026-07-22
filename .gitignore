@@ -48,3 +48,4 @@ import-academie-*.json
 # des lignes Supabase entieres (PGN inclus), donc du contenu duplique et date.
 # A garder en local le temps de verifier l arbitrage, pas dans l historique.
 tools/backup-*.json
+_scratch-*
