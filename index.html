@@ -159,8 +159,10 @@
       <div id="sh-plan-list"></div>
     </div>
 
-    <!-- Modules assignés par le prof -->
-    <div class="sh-section-head">
+    <!-- Modules assignés par le prof. Masquée quand tout vit dans les plans de
+         travail : « Aucun module assigné » sous un plan qui contient le module
+         serait un mensonge d'état vide (constaté au déroulé du 22/07). -->
+    <div class="sh-section-head" id="sh-modules-head">
       <h2 class="sh-section-label" style="margin:0">Mes modules</h2>
     </div>
     <div id="sh-module-list"></div>
