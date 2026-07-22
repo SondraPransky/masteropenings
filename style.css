@@ -1989,7 +1989,7 @@ textarea {
 }
 .mdet-chaps { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .mdet-chap {
-  display: grid; grid-template-columns: 24px minmax(0, 1fr) auto;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto;
   align-items: center; gap: 10px;
   padding: 8px 10px; border: 0; border-radius: var(--rs);
   background: transparent; color: var(--text); text-align: left;
@@ -1998,10 +1998,6 @@ textarea {
 }
 .mdet-chap:hover, .mdet-chap:focus-visible { background: var(--surf3); }
 .mdet-chap:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
-.mdet-chap-num {
-  font-family: var(--font-mono); font-size: .74rem; color: var(--dim);
-  font-variant-numeric: tabular-nums; text-align: right;
-}
 .mdet-chap-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mdet-chap-play { color: var(--cyan); opacity: 0; transition: opacity .12s ease; }
 .mdet-chap:hover .mdet-chap-play, .mdet-chap:focus-visible .mdet-chap-play { opacity: 1; }
