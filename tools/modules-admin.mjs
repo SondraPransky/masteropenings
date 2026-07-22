@@ -13,6 +13,9 @@
 //        → supprime, apres controle de REDONDANCE et sauvegarde JSON complete
 //    ... --rename <id> --name "<nouveau nom>" [--apply]
 //        → renomme un module (le libelle des chapitres, lui, vient du PGN)
+//    ... --move <id> [--apply]
+//        → range le module dans le dossier nomme par --folder (extra FUSIONNE,
+//          jamais reconstruit — prealable a un --merge inter-dossiers)
 //
 //  ⚠ La suppression est irreversible cote Supabase : le script ecrit d'abord les
 //  lignes entieres dans tools/backup-<horodatage>.json (PGN inclus), de quoi
@@ -37,6 +40,7 @@ const FOLDER = flag('--folder');
 const DELETE_IDS = (flag('--delete') || '').split(',').map(s => s.trim()).filter(Boolean);
 const MERGE_IDS = (flag('--merge') || '').split(',').map(s => s.trim()).filter(Boolean);
 const RENAME_ID = flag('--rename');
+const MOVE_ID = flag('--move');
 const NEW_NAME = flag('--name');
 const APPLY = argv.includes('--apply');
 
@@ -115,6 +119,25 @@ for (const m of inFolder) {
   const pos = m.varmode === 'tree' ? _treePlayerPositions(m).length : null;
   console.log(`    arbre     : ${Object.keys(m.tree || {}).length} noeuds   pgn: ${(m.pgn || '').length} car.`);
   console.log(`    a reviser : ${pos == null ? 'n/a' : pos + ' positions'}${pos === 0 ? '   ⚠ MODULE VIDE' : ''}\n`);
+}
+
+// ── Rangement d'un module dans le dossier nomme ──────────────────────────────
+// Cherche l'id PARTOUT (c'est le point : il n'est pas encore dans --folder).
+// ⚠ `extra` est relu puis FUSIONNE, jamais reconstruit de zero (le piege
+// `_sbModuleToRow` documente : reconstruire perdrait les autres cles).
+if (MOVE_ID) {
+  const m = (res.data || []).find(x => String(x.id) === String(MOVE_ID));
+  if (!m) { console.error(`⚠ ARRET : id ${MOVE_ID} introuvable dans le compte`); process.exit(1); }
+  console.log(`=== ${APPLY ? 'RANGEMENT' : 'SIMULATION de rangement'} ===`);
+  console.log(`  id=${m.id}  "${m.name}"`);
+  console.log(`    dossier avant : ${m.extra?.folder || '(sans dossier)'}`);
+  console.log(`    dossier apres : ${FOLDER}`);
+  if (!APPLY) { console.log('\n(simulation — relancer avec --apply pour ecrire)'); process.exit(0); }
+  const extra = { ...(m.extra || {}), folder: FOLDER };
+  const up = await rest(token, 'PATCH', `modules?id=eq.${m.id}&teacher_id=eq.${uid}`,
+    { body: { extra }, prefer: 'return=representation' });
+  console.log(`  PATCH → ${up.status} ${up.ok ? 'OK, extra = ' + JSON.stringify(up.data?.[0]?.extra) : JSON.stringify(up.data)}`);
+  process.exit(up.ok ? 0 : 1);
 }
 
 // ── Garde-fou : ce qu'on supprime est-il VRAIMENT redondant ? ────────────────
@@ -209,6 +232,25 @@ if (MERGE_IDS.length) {
     console.log(`  DELETE ${m.id} → ${d.status} ${d.ok ? 'OK' : JSON.stringify(d.data)}`);
   }
 
+  // Les analyses OA (oa_analyses) des modules absorbes suivent la fusion : sans
+  // re-cle, elles deviennent des entrees FANTOMES dans la section « Analyse
+  // d'ouvertures » (leur module n'existe plus). Le module fusionne etant un
+  // surensemble des positions analysees, l'analyse reste valable telle quelle
+  // (le worker la rafraichira au prochain run, cache FEN-4 → quasi gratuit).
+  // Si la tete a DEJA une analyse, on n'ecrase rien : on signale, arbitrage humain.
+  const oaHead = await rest(token, 'GET', `oa_analyses?module_id=eq.${head.id}&teacher_id=eq.${uid}&select=module_id`);
+  for (const m of src.slice(1)) {
+    const oa = await rest(token, 'GET', `oa_analyses?module_id=eq.${m.id}&teacher_id=eq.${uid}&select=module_id`);
+    if (!(oa.data || []).length) continue;
+    if ((oaHead.data || []).length) {
+      console.log(`  ⚠ analyse OA de ${m.id} NON re-clee : ${head.id} en a deja une (arbitrer a la main)`);
+      continue;
+    }
+    const rk = await rest(token, 'PATCH', `oa_analyses?module_id=eq.${m.id}&teacher_id=eq.${uid}`,
+      { body: { module_id: head.id } });
+    console.log(`  RE-CLE analyse OA ${m.id} → ${head.id} : ${rk.status} ${rk.ok ? 'OK' : JSON.stringify(rk.data)}`);
+  }
+
   const after = await rest(token, 'GET', `modules?teacher_id=eq.${uid}&select=id,name,sessions,extra`);
   const left = (after.data || []).filter(r => (r.extra?.folder || '') === FOLDER);
   console.log(`\n=== Relu depuis Supabase : ${left.length} module(s) dans « ${FOLDER} » ===`);
@@ -276,6 +318,22 @@ for (const m of targets) {
   const d = await rest(token, 'DELETE', `modules?id=eq.${m.id}&teacher_id=eq.${uid}`);
   console.log(`  DELETE ${m.id} → ${d.status} ${d.ok ? 'OK' : JSON.stringify(d.data)}`);
   if (!d.ok) ko++;
+}
+
+// Analyses OA des modules supprimes : sans re-cle elles deviennent des entrees
+// FANTOMES de la section « Analyse d'ouvertures ». Quand un survivant du MEME
+// dossier couvre le contenu (cas du doublon), on re-cle sur lui ; s'il en a
+// deja une, ou s'il n'y a pas de survivant unique, on signale sans rien casser.
+const survivor = survivors.length === 1 ? survivors[0] : null;
+for (const m of targets) {
+  const oa = await rest(token, 'GET', `oa_analyses?module_id=eq.${m.id}&teacher_id=eq.${uid}&select=module_id`);
+  if (!(oa.data || []).length) continue;
+  if (!survivor) { console.log(`  ⚠ analyse OA de ${m.id} orpheline (pas de survivant unique — arbitrer a la main)`); continue; }
+  const oaS = await rest(token, 'GET', `oa_analyses?module_id=eq.${survivor.id}&teacher_id=eq.${uid}&select=module_id`);
+  if ((oaS.data || []).length) { console.log(`  ⚠ analyse OA de ${m.id} NON re-clee : ${survivor.id} en a deja une`); continue; }
+  const rk = await rest(token, 'PATCH', `oa_analyses?module_id=eq.${m.id}&teacher_id=eq.${uid}`,
+    { body: { module_id: survivor.id } });
+  console.log(`  RE-CLE analyse OA ${m.id} → ${survivor.id} : ${rk.status} ${rk.ok ? 'OK' : JSON.stringify(rk.data)}`);
 }
 
 const after = await rest(token, 'GET', `modules?teacher_id=eq.${uid}&select=id,name,sessions,extra`);
