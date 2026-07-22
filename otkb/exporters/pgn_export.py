@@ -108,7 +108,7 @@ def export_through_position(
     game_join = "LEFT JOIN games g ON g.game_id = p.game_id " if annotated else ""
     game_col = ", g.pgn AS game_pgn" if annotated else ""
     sql, params = through_query(
-        normalized_fen,
+        db.fen_key(normalized_fen),
         columns=("p.puzzle_id, p.fen, p.moves, p.rating, p.game_url, "
                  f"p.opening_tags, p.themes{game_col}"),
         extra_join=game_join, sort=sort,

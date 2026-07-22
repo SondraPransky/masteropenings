@@ -72,8 +72,9 @@ class PositionCounts:
 def count_position(db: Database, normalized_fen: str, examples: int = 5) -> PositionCounts:
     """Compte les puzzles à/à travers une position et renvoie quelques exemples."""
     con = db.conn
+    key = db.fen_key(normalized_fen)
     start = con.execute(
-        "SELECT COUNT(*) n FROM puzzles WHERE normalized_fen = ?", (normalized_fen,)
+        "SELECT COUNT(*) n FROM puzzles WHERE normalized_fen = ?", (key,)
     ).fetchone()["n"]
     through = through_count(db, normalized_fen)
 
@@ -82,7 +83,7 @@ def count_position(db: Database, normalized_fen: str, examples: int = 5) -> Posi
         for r in con.execute(
             "SELECT puzzle_id, rating, themes FROM puzzles "
             "WHERE normalized_fen = ? ORDER BY popularity DESC LIMIT ?",
-            (normalized_fen, examples),
+            (key, examples),
         ):
             ex.append((r["puzzle_id"], r["rating"], r["themes"]))
 

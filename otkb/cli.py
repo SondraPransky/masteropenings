@@ -358,6 +358,11 @@ def build_parser() -> argparse.ArgumentParser:
                            help="pont HTTP local consommé par EECoach (vue coach)")
     p_api.add_argument("--host", default="127.0.0.1")
     p_api.add_argument("--port", type=int, default=8127)
+
+    p_red = sub.add_parser(
+        "reduce",
+        help="construire la base réduite (fen hashé 64 bits, ~5 Go) — l'original n'est pas touché")
+    p_red.add_argument("--out", help="chemin de la base réduite (défaut : otkb-z.db à côté)")
     return parser
 
 
@@ -410,6 +415,9 @@ def main(argv: list[str] | None = None) -> int:
         cmd_ui(cfg, args.host, args.port, args.no_show)
     elif args.command == "serve-api":
         cmd_serve_api(cfg, args.host, args.port)
+    elif args.command == "reduce":
+        from .reduce import cmd_reduce
+        cmd_reduce(cfg, args.out)
     return 0
 
 

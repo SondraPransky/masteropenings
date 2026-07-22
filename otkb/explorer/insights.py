@@ -264,7 +264,7 @@ def list_puzzles_at(
         FROM puzzles WHERE normalized_fen = :fen
         ORDER BY {order} LIMIT :limit OFFSET :offset
         """,
-        {"fen": normalized_fen, "limit": limit, "offset": offset},
+        {"fen": db.fen_key(normalized_fen), "limit": limit, "offset": offset},
     )
     return [
         PuzzleSummary(r["puzzle_id"], r["rating"], r["popularity"], r["themes"] or "")
@@ -362,7 +362,7 @@ def count_puzzles_through(
     return db.conn.execute(
         f"SELECT COUNT(*) n FROM (SELECT puzzle_rating, puzzle_id FROM positions "
         f"WHERE normalized_fen = :fen{where} GROUP BY puzzle_rating, puzzle_id)",
-        {"fen": normalized_fen, **params},
+        {"fen": db.fen_key(normalized_fen), **params},
     ).fetchone()["n"]
 
 
@@ -377,7 +377,7 @@ def popularity_pushable(db: Database, normalized_fen: str) -> bool:
     try:
         return db.conn.execute(
             "SELECT 1 FROM position_popularity WHERE normalized_fen = ? LIMIT 1",
-            (normalized_fen,),
+            (db.fen_key(normalized_fen),),
         ).fetchone() is not None
     except sqlite3.OperationalError:
         return False
@@ -454,7 +454,7 @@ def list_puzzles_through(
     `sort` ∈ THROUGH_SORTS ; `limit=None` → tous (usage export en lot).
     """
     sql, args = through_query(
-        normalized_fen, columns="p.puzzle_id, p.rating, p.popularity, p.themes",
+        db.fen_key(normalized_fen), columns="p.puzzle_id, p.rating, p.popularity, p.themes",
         sort=sort, limit=limit, offset=offset,
         rating_min=rating_min, rating_max=rating_max,
         pop_cached=sort == "popularity" and popularity_pushable(db, normalized_fen),
@@ -555,7 +555,7 @@ def themes_at_position(
 ) -> list[Share]:
     """Motifs tactiques portés par les puzzles démarrant à cette position."""
     total = db.conn.execute(
-        "SELECT COUNT(*) n FROM puzzles WHERE normalized_fen = ?", (normalized_fen,)
+        "SELECT COUNT(*) n FROM puzzles WHERE normalized_fen = ?", (db.fen_key(normalized_fen),)
     ).fetchone()["n"]
     if not total:
         return []
@@ -576,7 +576,7 @@ def themes_at_position(
         ORDER BY c DESC
         LIMIT :limit
         """,
-        {"fen": normalized_fen, "limit": limit},
+        {"fen": db.fen_key(normalized_fen), "limit": limit},
     )
     return [
         Share(label=r["label"] or r["slug"], slug=r["slug"], count=r["c"], pct=100.0 * r["c"] / total)
@@ -711,7 +711,7 @@ def through_count(db: Database, normalized_fen: str) -> int:
     try:
         row = db.conn.execute(
             "SELECT through_count FROM position_counts WHERE normalized_fen = ?",
-            (normalized_fen,),
+            (db.fen_key(normalized_fen),),
         ).fetchone()
         if row is not None:
             return row["through_count"]
@@ -719,7 +719,7 @@ def through_count(db: Database, normalized_fen: str) -> int:
         pass  # table absente (base antérieure au cache) → comptage direct
     return db.conn.execute(
         "SELECT COUNT(DISTINCT puzzle_id) n FROM positions WHERE normalized_fen = ?",
-        (normalized_fen,),
+        (db.fen_key(normalized_fen),),
     ).fetchone()["n"]
 
 
@@ -742,7 +742,7 @@ def squares_at_position(
             SELECT puzzle_id FROM puzzles WHERE normalized_fen = :fen
         )
         """,
-        {"fen": normalized_fen},
+        {"fen": db.fen_key(normalized_fen)},
     ).fetchall()
     crit, sac = Counter(), Counter()
     for r in rows:
@@ -761,7 +761,7 @@ def squares_at_position(
 def openings_at_position(db: Database, normalized_fen: str, *, limit: int = 8) -> list[Share]:
     """Ouvertures (tags) des puzzles démarrant à cette position, par volume."""
     total = db.conn.execute(
-        "SELECT COUNT(*) n FROM puzzles WHERE normalized_fen = ?", (normalized_fen,)
+        "SELECT COUNT(*) n FROM puzzles WHERE normalized_fen = ?", (db.fen_key(normalized_fen),)
     ).fetchone()["n"]
     if not total:
         return []
@@ -776,7 +776,7 @@ def openings_at_position(db: Database, normalized_fen: str, *, limit: int = 8) -
         ORDER BY c DESC
         LIMIT :limit
         """,
-        {"fen": normalized_fen, "limit": limit},
+        {"fen": db.fen_key(normalized_fen), "limit": limit},
     )
     return [
         Share(label=r["name"], slug=r["tag"], count=r["c"], pct=100.0 * r["c"] / total)
@@ -787,13 +787,17 @@ def openings_at_position(db: Database, normalized_fen: str, *, limit: int = 8) -
 # ---------------------------------------------------------------------------
 # Suites de coups (opening explorer) — à travers l'index `positions`
 # ---------------------------------------------------------------------------
-def _link_children(board: chess.Board, child_counts: dict[str, int],
-                   limit: int, min_games: int) -> list[Continuation]:
-    """Relie des FEN-enfants comptées aux coups légaux du plateau (offline)."""
+def _link_children(board: chess.Board, child_counts: dict, limit: int,
+                   min_games: int, key=lambda fen: fen) -> list[Continuation]:
+    """Relie des FEN-enfants comptées aux coups légaux du plateau (offline).
+
+    `key` = `db.fen_key` sur une base réduite : les clés de `child_counts` y
+    sont des hashs, chaque candidat doit être hashé pareil avant le lookup.
+    """
     out: list[Continuation] = []
     for move in board.legal_moves:
         board.push(move)
-        child_fen = normalize_fen(board.fen())
+        child_fen = key(normalize_fen(board.fen()))
         board.pop()
         g = child_counts.get(child_fen)
         if g and g >= min_games:
@@ -815,7 +819,7 @@ def continuations(
     positions d'ouverture). Une position absente du cache est RARE : le self-join
     direct y est instantané. Renvoie [] si l'index est vide pour cette position.
     """
-    parent_fen = normalize_fen(board.fen())
+    parent_fen = db.fen_key(normalize_fen(board.fen()))
     try:
         cached = db.conn.execute(
             "SELECT child_fen, game_count FROM position_children WHERE parent_fen = ?",
@@ -825,7 +829,8 @@ def continuations(
         cached = []
     if cached:
         return _link_children(
-            board, {r["child_fen"]: r["game_count"] for r in cached}, limit, min_games
+            board, {r["child_fen"]: r["game_count"] for r in cached}, limit, min_games,
+            key=db.fen_key,
         )
 
     rows = db.conn.execute(
@@ -842,7 +847,7 @@ def continuations(
     child_counts = {r["child"]: r["g"] for r in rows}
     if not child_counts:
         return []
-    return _link_children(board, child_counts, limit, min_games)
+    return _link_children(board, child_counts, limit, min_games, key=db.fen_key)
 
 
 def build_position_children(db: Database, min_count: int = POSITION_COUNTS_MIN) -> int:

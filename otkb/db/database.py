@@ -7,6 +7,7 @@ un traitement interruptible/reprenable (INSERT OR IGNORE, transactions).
 
 from __future__ import annotations
 
+import hashlib
 import sqlite3
 from pathlib import Path
 from typing import Iterable
@@ -32,6 +33,27 @@ _HEAVY_POSITION_INDEXES = (
     "idx_positions_game_ply",
 )
 _HEAVY_ROWS_THRESHOLD = 1_000_000
+
+# ---------------------------------------------------------------------------
+# Clé de position — base RÉDUITE (plan figé du 18/07, réduction 18 Go → ~5 Go).
+# Dans une base réduite (`otkb reduce`), les colonnes `normalized_fen` (et les
+# clés des caches) stockent un HASH 64 bits du FEN normalisé au lieu du TEXT de
+# 58 octets. Le hash porte sur la CHAÎNE normalisée (blake2b-8) et non sur un
+# Zobrist échiquéen : la sémantique d'égalité est STRICTEMENT celle du TEXT
+# qu'il remplace (deux fens égaux ⇔ deux hashs égaux, aucune fusion de
+# transpositions en plus ou en moins) — l'équivalence des compteurs est donc
+# vérifiable, pas seulement plausible. Les requêtes SQL ne changent pas d'un
+# octet (SQLite est typé dynamiquement) : seule la VALEUR liée au paramètre
+# est convertie, via `Database.fen_key`, au point d'entrée de chaque fonction.
+# ---------------------------------------------------------------------------
+FEN_KEY_SETTING = "fen_key"
+FEN_KEY_BLAKE2B64 = "blake2b64"
+
+
+def fen_hash64(normalized_fen: str) -> int:
+    """Hash 64 bits signé (int SQLite natif) d'un FEN normalisé."""
+    d = hashlib.blake2b(normalized_fen.encode("utf-8"), digest_size=8).digest()
+    return int.from_bytes(d, "big", signed=True)
 
 
 class Database:
@@ -61,6 +83,27 @@ class Database:
         # caches d'ID pour éviter un round-trip par jonction
         self._opening_ids: dict[str, int] = {}
         self._theme_ids: dict[str, int] = {}
+        # None = pas encore détecté (le marqueur vit dans `settings`)
+        self._fen_hashed: bool | None = None
+
+    # -- clé de position (base réduite) ------------------------------------
+    def fen_key(self, normalized_fen: str | int) -> str | int:
+        """La valeur à lier aux paramètres `normalized_fen` des requêtes.
+
+        Base classique → le TEXT reçu, inchangé. Base réduite (`otkb reduce`,
+        marqueur `fen_key` dans settings) → son hash 64 bits. Idempotent : un
+        int (déjà converti) ressort tel quel — les helpers peuvent donc se
+        rappeler entre eux sans double conversion.
+        """
+        if isinstance(normalized_fen, int):
+            return normalized_fen
+        if self._fen_hashed is None:
+            try:
+                self._fen_hashed = (
+                    self.get_setting(FEN_KEY_SETTING) == FEN_KEY_BLAKE2B64)
+            except sqlite3.OperationalError:   # table settings absente
+                self._fen_hashed = False
+        return fen_hash64(normalized_fen) if self._fen_hashed else normalized_fen
 
     # -- cycle de vie ------------------------------------------------------
     def __enter__(self) -> "Database":
