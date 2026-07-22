@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import {
   bucketShort, bucketLabel, fmtLoss, fmtPct, fmtCrit, fmtDwr,
   fmtLossShort, fmtDwrShort,
-  filterErrors, filterErrorsIndexed, sortErrors, oaaFenIndex, errorToKp, errorComment,
+  filterErrors, filterErrorsIndexed, capTopCrit, sortErrors, oaaFenIndex, errorToKp, errorComment,
 } from '../lib/coach-analytics-core.js';
 
 const ERR = {
@@ -45,6 +45,45 @@ describe('filtre par tranche', () => {
     expect(filterErrors(errors, 2000)).toHaveLength(1);
     expect(filterErrors(errors, 1800)).toHaveLength(0);
     expect(filterErrors(null, 'all')).toEqual([]);
+  });
+});
+
+describe('filtre du panneau de paramètres (camp / coût plancher)', () => {
+  const errors = [
+    { ...ERR, bucket: 1600, stm: 'w', lossCp: 30 },
+    { ...ERR, bucket: 1600, stm: 'b', lossCp: 120 },
+    { ...ERR, bucket: 2000, stm: 'w', lossCp: 250 },
+  ];
+  it('camp fautif : all / w / b', () => {
+    expect(filterErrors(errors, 'all', { side: 'all' })).toHaveLength(3);
+    expect(filterErrors(errors, 'all', { side: 'w' })).toHaveLength(2);
+    expect(filterErrors(errors, 'all', { side: 'b' })).toHaveLength(1);
+  });
+  it('coût plancher en centipions', () => {
+    expect(filterErrors(errors, 'all', { minLossCp: 100 })).toHaveLength(2);
+    expect(filterErrors(errors, 'all', { minLossCp: 0 })).toHaveLength(3);
+  });
+  it('les axes se composent (tranche × camp × coût)', () => {
+    expect(filterErrors(errors, 1600, { side: 'b', minLossCp: 100 })).toHaveLength(1);
+    expect(filterErrors(errors, 1600, { side: 'w', minLossCp: 100 })).toHaveLength(0);
+  });
+  it('opts absent = comportement historique', () => {
+    expect(filterErrors(errors, 1600)).toHaveLength(2);
+  });
+});
+
+describe('capTopCrit (les N plus critiques, ordre d\'affichage conservé)', () => {
+  const idx = filterErrorsIndexed([
+    { ...ERR, crit: .2 }, { ...ERR, crit: .9 }, { ...ERR, crit: .5 }, { ...ERR, crit: .7 },
+  ], 'all');
+  it('0 ou n >= longueur = inchangé (même référence)', () => {
+    expect(capTopCrit(idx, 0)).toBe(idx);
+    expect(capTopCrit(idx, 10)).toBe(idx);
+  });
+  it('sélectionne par rang de criticité mais restitue dans l\'ordre reçu', () => {
+    const top2 = capTopCrit(idx, 2);
+    expect(top2.map(x => x.e.crit)).toEqual([.9, .7]);       // ordre du doc, pas le rang
+    expect(top2.map(x => x.i)).toEqual([1, 3]);              // les index d'origine suivent
   });
 });
 

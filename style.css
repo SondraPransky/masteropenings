@@ -32,6 +32,7 @@
      fond var(--cyan-dim)), donc il ne flippait PAS avec le theme. Balaye le 17/07/2026 ;
      ne pas le reintroduire : l'accent est #4f46e5 en clair, #818cf8 en sombre. */
   --cyan:      #4f46e5;
+  --cyan-ink:  var(--cyan);   /* tient sur --cyan-dim quel que soit le fond dessous (clair) */
   --cyan-dim:  rgba(79,70,229,.08);
   --cyan-dim-h: rgba(79,70,229,.14);  /* tint au survol d'un element -dim cliquable */
   --cyan-glow: rgba(79,70,229,.30);
@@ -1030,6 +1031,10 @@ textarea {
   --border:    #27272a;
   --border-h:  #3f3f46;
   --cyan:      #818cf8;
+  /* ⚠ #818cf8 sur --cyan-dim NE TIENT PAS quand le -dim composite sur --surf2
+     (4,03:1 mesuré — il tient sur --bg, d'où l'illusion des chips). L'encre se
+     calibre contre son -dim sur TOUTES les surfaces (règle du 16/07). */
+  --cyan-ink:  #a5b4fc;
   --cyan-dim:  rgba(129,140,248,.14);
   --cyan-glow: rgba(129,140,248,.35);
   --gold:      #f59e0b;
@@ -2737,6 +2742,61 @@ textarea {
 .oaa-tab.on { color: var(--cyan); border-bottom-color: var(--cyan); font-weight: 600; }
 /* wrap : au téléphone, tri + filtre + « Créer un paquet » dépassent 375px et le
    select de tri sortait par la GAUCHE (poussé par son margin-right:auto). */
+/* ── Panneau de paramètres : un RAIL par axe (réf. utilisatrice du 22/07) ──
+   Chaque rangée = un radiogroup à crans ; la pilule (.oaa-rail-fill) se remplit
+   jusqu'au cran choisi — pur indicateur de position, comme un curseur à crans.
+   Sa largeur dérive de --k/--n posés par le rendu : (k + ½) / n. */
+.oaa-params {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 12px 14px; margin-bottom: 12px;
+  background: var(--surf2); border: 1px solid var(--border); border-radius: 12px;
+  position: relative;
+}
+.oaa-rail { display: grid; grid-template-columns: 72px minmax(0, 1fr); align-items: center; gap: 12px; }
+.oaa-rail-l { font-size: .74rem; font-weight: 600; color: var(--dim); }
+/* ⚠ inline-grid à colonnes 1fr, PAS un grid pleine largeur à colonnes auto :
+   la pilule est en % de la piste — sur une piste 1fr elle débordait loin après
+   le dernier cran (mesuré : 955px pour 3 crans de 260px), et des colonnes auto
+   inégales faussent (k + ½)/n. En inline-grid auto-dimensionné, les 1fr
+   s'égalisent sur le plus large libellé → la géométrie est exacte. */
+.oaa-rail-track {
+  position: relative; display: inline-grid; justify-self: start;
+  grid-template-columns: repeat(var(--n), 1fr);
+  align-items: center; max-width: 100%;
+}
+.oaa-rail-fill {
+  position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  height: 28px; border-radius: 999px;
+  width: calc((var(--k) + .5) / var(--n) * 100%);
+  background: var(--cyan-dim); border: 1px solid var(--cyan-dim-h, var(--cyan-glow));
+  transition: width .18s ease;
+  pointer-events: none;
+}
+.oaa-rail-stop {
+  position: relative; z-index: 1;
+  font-family: inherit; font-size: .74rem; font-weight: 500;
+  padding: 6px 12px; border: 0; border-radius: 999px;
+  background: transparent; color: var(--dim); cursor: pointer;
+  transition: color .15s, background-color .15s;
+  white-space: nowrap;
+}
+.oaa-rail-stop:hover { color: var(--text-2); }
+.oaa-rail-stop.on { color: var(--cyan-ink); font-weight: 700; }
+.oaa-rail-stop:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
+.oaa-params-count {
+  position: absolute; top: 12px; right: 14px;
+  font-family: var(--font-mono); font-size: .72rem; color: var(--dim);
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 640px) {
+  .oaa-rail { grid-template-columns: 1fr; gap: 2px; }
+  .oaa-rail-track { grid-template-columns: repeat(var(--n), minmax(0, 1fr)); }
+  .oaa-rail-stop { padding: 8px 4px; }
+  .oaa-params-count { position: static; align-self: flex-end; }
+}
+@media (hover: none) { .oaa-rail-stop { min-height: 44px; } }
+@media (prefers-reduced-motion: reduce) { .oaa-rail-fill, .oaa-rail-stop { transition: none; } }
+
 .oaa-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
 .oaa-selcount { font-size: .74rem; color: var(--dim); }
 .oaa-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--r); background: var(--surf); }
