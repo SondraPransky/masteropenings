@@ -153,7 +153,12 @@ Stratégie **Restrained** : neutres zinc + un accent indigo ≤10% de toute surf
 - **Mono/Data** (500–700, 0.72–1.85rem, `tabular-nums`) : notation, KPI, compteurs qui se mettent à jour en direct.
 
 ### Named Rules
-**La règle de la figurine.** Un coup d'échecs ne s'écrit jamais en lettre seule quand la figurine existe : `fig()` convertit (Cf3 → ♞f3) partout où un coup est affiché.
+**La règle de la figurine.** Un coup d'échecs ne s'écrit jamais en lettre seule quand la figurine existe. Deux outils, deux domaines :
+
+- **`fig(san)`** — un coup produit par le moteur, donc en SAN **anglais** : `Nf3` → `♘f3`. Glyphes **blancs** (`♔♕♖♗♘`) quel que soit le camp : ce sont des symboles de pièce, pas de couleur. *(⚠ Cette règle annonçait « Cf3 → ♞f3 » : doublement faux — `fig` ne touche pas au `C` français, et rend `♘` et non `♞`. Corrigé le 22/07 après mesure.)*
+- **`figurineTitle(texte)`** — un titre **écrit à la main** par la coach, qui peut être en notation française. Le fonds mélange les deux : `4.**C**c4!?` et `3.**D**xd4!?` sont français (Cavalier, Dame), `8.**Q**e3-**R**xe4` est anglais.
+
+⚠ **La collision du `R`** : Rook anglais `♖` contre Roi français `♔`. On ne devine **jamais** — un titre faux (« Tour e8 » devenu « Roi e8 ») est pire qu'une lettre. Seules les lettres non ambiguës sont converties (`K Q B N` / `D T F C`) ; le `R` ne l'est que si une autre lettre du **même titre** tranche la langue. `Est Indienne — Re8` reste donc en lettre : pour le convertir, on **renomme le module**, on ne devine pas.
 **La règle des capitales.** `text-transform: uppercase` est réservé aux séparateurs de navigation (`.csnav-group`). Aucun eyebrow, aucun titre en capitales.
 
 ## 3 bis. Rounding
