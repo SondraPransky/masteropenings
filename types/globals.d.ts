@@ -143,6 +143,12 @@ interface Window {
   oaaTipHide?: (...a: any[]) => any;
   oaaCreatePacket?: (...a: any[]) => any;       // « Créer un paquet » (lib/coach-analytics-export.js)
   oaaPacketSave?: (...a: any[]) => any;         // validation de la modale paquet (+ assignation)
+  openPlanComposer?: (...a: any[]) => any;      // composeur de Plan de travail (lib/coach-plans.js)
+  planComposerSave?: (...a: any[]) => any;
+  planComposerDelete?: (...a: any[]) => any;
+  planComposerPick?: (...a: any[]) => any;
+  planComposerGoOa?: (...a: any[]) => any;
+  _plSyncBoxes?: (...a: any[]) => any;
   oaaSort?: (...a: any[]) => any;               // tri des colonnes de la table d'erreurs
   oaaToggleMine?: (...a: any[]) => any;         // filtre « où mes élèves trébuchent »
   oaaHover?: (...a: any[]) => any;              // aperçu épinglé : survol

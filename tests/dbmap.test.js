@@ -30,7 +30,15 @@ describe('mapping module ↔ ligne SQL', () => {
     expect(row.hide_comments).toBe(false);
     expect(row.updated_at).toBe(1700000001234);
     expect(row.owner_student_id).toBe(null);
-    expect(row.extra).toEqual({ created: '27/06/2026', fromLibrary: true, demo: false, isExercise: false, exType: null, folder: null, overlayOf: null, overlayBy: null });
+    expect(row.extra).toEqual({ created: '27/06/2026', fromLibrary: true, demo: false, isExercise: false, exType: null, folder: null, overlayOf: null, overlayBy: null, plans: [] });
+  });
+
+  it('round-trip : les plans de travail survivent à l\'aller-retour extra', () => {
+    const plans = [{ id: 'p1', name: 'Plan — 1400', puzzles: ['10'], errors: ['11'] }];
+    const back = _sbRowToModule(_sbModuleToRow({ ...drill, plans }));
+    expect(back.plans).toEqual(plans);
+    // Un module sans plans en ressort avec une liste vide (jamais undefined).
+    expect(_sbRowToModule(_sbModuleToRow(drill)).plans).toEqual([]);
   });
 
   it('round-trip : restitue tous les champs persistés', () => {

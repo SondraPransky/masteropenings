@@ -150,6 +150,15 @@
     <!-- Révisions ciblées assignées par le coach -->
     <div id="sh-targeted"></div>
 
+    <!-- Plans de travail (ouverture + puzzles + erreurs types) — masqués si aucun -->
+    <div id="sh-plan-section" style="display:none">
+      <div class="sh-section-head">
+        <h2 class="sh-section-label" style="margin:0"><i class="ti ti-list-check" aria-hidden="true"></i> Mes plans de travail</h2>
+        <div style="font-size:.74rem;color:var(--dim)">Ton programme complet : l'ouverture, les puzzles, les erreurs types.</div>
+      </div>
+      <div id="sh-plan-list"></div>
+    </div>
+
     <!-- Modules assignés par le prof -->
     <div class="sh-section-head">
       <h2 class="sh-section-label" style="margin:0">Mes modules</h2>
@@ -676,6 +685,46 @@
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
       <button class="btn btn-ghost" onclick="closeModal('modal-oaa-packet')">Annuler</button>
       <button class="btn btn-primary" onclick="oaaPacketSave()"><i class="ti ti-check" aria-hidden="true"></i> Créer le paquet</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modale : composeur de Plan de travail (ouverture + puzzles + erreurs types) -->
+<div class="overlay" id="modal-plan-composer">
+  <div class="modal" style="max-width:560px;width:96vw;max-height:92vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div class="modal-title" style="margin:0"><i class="ti ti-list-check" aria-hidden="true"></i> Plan de travail</div>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-plan-composer')" aria-label="Fermer">✕</button>
+    </div>
+    <div id="pl-anchor" style="font-size:.8rem;color:var(--dim);margin-bottom:14px"></div>
+    <div class="frow">
+      <select id="pl-select" onchange="planComposerPick(this.value)" aria-label="Choisir un plan existant ou en créer un nouveau"></select>
+    </div>
+    <div class="frow">
+      <label for="pl-name">Nom du plan</label>
+      <input type="text" id="pl-name" placeholder="Ex : Plan — Gambit Mieses (1400)">
+    </div>
+    <div class="frow">
+      <label><i class="ti ti-puzzle" aria-hidden="true"></i> Puzzles <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--dim);font-size:.72rem">— tes paquets, ou générés depuis l'explorateur</span></label>
+      <div id="pl-puzzles" class="oaa-pk-classes"></div>
+    </div>
+    <div class="frow">
+      <label><i class="ti ti-chart-dots" aria-hidden="true"></i> Erreurs types <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--dim);font-size:.72rem">— issues de l'analyse d'ouvertures</span></label>
+      <div id="pl-errors" class="oaa-pk-classes"></div>
+      <div id="pl-oa-hint" style="margin-top:6px"></div>
+    </div>
+    <div class="frow">
+      <label>Envoyer à <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--dim);font-size:.72rem">— optionnel</span></label>
+      <div id="pl-classes" class="oaa-pk-classes"></div>
+    </div>
+    <div class="frow">
+      <label for="pl-deadline">Échéance <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--dim);font-size:.72rem">— optionnel, commune au plan</span></label>
+      <input type="date" id="pl-deadline" style="max-width:200px">
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
+      <button class="btn btn-ghost danger" id="pl-delete" style="margin-right:auto;display:none" onclick="planComposerDelete()"><i class="ti ti-trash" aria-hidden="true"></i> Supprimer</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-plan-composer')">Annuler</button>
+      <button class="btn btn-primary" id="pl-save-btn" onclick="planComposerSave()"><i class="ti ti-check" aria-hidden="true"></i> Créer le plan</button>
     </div>
   </div>
 </div>

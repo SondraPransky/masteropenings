@@ -1896,6 +1896,27 @@ textarea {
 .sh-targeted-move { font-family: var(--font-mono); font-weight: 700; font-size: 1rem; flex-shrink: 0; min-width: 42px; }
 .cs-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; flex-wrap: wrap; max-width: 100%; }
 
+/* ── Plans de travail (accueil élève) ─────────────────────────────────────
+   UNE carte par plan : rangées numérotées (ouverture → puzzles → erreurs
+   types), menu libre — la première rangée non terminée porte le primaire. */
+.sh-plan { background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); padding: 14px 16px; margin-bottom: 12px; }
+.sh-plan-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+.sh-plan-name { font-weight: 700; font-size: .95rem; min-width: 0; }
+.sh-plan-meta { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.sh-plan-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; min-height: 44px; border-top: 1px solid var(--border); }
+.sh-plan-num { flex-shrink: 0; width: 22px; text-align: center; font-family: var(--font-mono); font-size: .78rem; font-weight: 700; color: var(--dim); font-variant-numeric: tabular-nums; }
+.sh-plan-ico { flex-shrink: 0; font-size: 1.05rem; line-height: 1; }
+.sh-plan-main { flex: 1; min-width: 0; }
+.sh-plan-label { font-size: .84rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sh-plan-prog { font-size: .72rem; color: var(--dim); }
+.sh-plan-row.done .sh-plan-label { color: var(--dim); font-weight: 500; }
+.sh-plan-row.done .sh-plan-prog { color: var(--green-ink); }
+.sh-plan-row .btn { flex-shrink: 0; }
+@media (max-width: 480px) {
+  /* Cible tactile pleine sur les rangées (mesuré : les libellés tiennent à 375). */
+  .sh-plan-row .btn { min-width: 44px; min-height: 44px; justify-content: center; }
+}
+
 /* Module cards */
 /* ── Répertoire : liste de lignes (échelle 30-200 modules) ────────────────────
    Une grille de cartes ne peut pas tenir la ligne d'ouverture (6 demi-coups), et
