@@ -1950,7 +1950,7 @@ textarea {
      (fit-content) casserait l'alignement vertical — tout l'intérêt de la
      signature — et un 24rem fixe affamait le nom (218px) quand le groupe
      n'avait que des lignes courtes (mesuré à 1366). */
-  grid-template-columns: 42px minmax(11rem, 1fr) minmax(0, var(--mrow-linew, 24rem)) auto auto;
+  grid-template-columns: minmax(11rem, 1fr) minmax(0, var(--mrow-linew, 24rem)) auto auto;
   align-items: center;
   gap: 14px;
   padding: 10px 12px;
@@ -1962,11 +1962,6 @@ textarea {
 .mrow:hover { background: var(--surf2); }
 .mrow:focus-within { background: var(--surf2); }
 
-/* Numéro de référence du coach (« 760 »), quand son dossier en porte un. */
-.mrow-num {
-  font-family: var(--font-mono); font-size: .76rem; font-weight: 500;
-  color: var(--dim); font-variant-numeric: tabular-nums; text-align: right;
-}
 /* Une ligne = UNE ligne. Le nom peut s'élider ; ce qui l'identifie vraiment
    (les premiers coups) vit dans sa propre colonne, jamais tronquée avant lui. */
 .mrow-main { min-width: 0; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
@@ -2009,7 +2004,7 @@ textarea {
 .mrow-detail {
   display: grid; grid-template-columns: minmax(0, 1fr) auto;
   gap: 18px; align-items: start;
-  padding: 4px 12px 16px 68px;   /* aligné sous le nom (gouttière 42 + gap 14 + padding 12) */
+  padding: 4px 12px 16px 12px;   /* aligné sous le nom (plus de gouttière depuis le 22/07) */
   background: var(--surf2);
   border-bottom: 1px solid var(--border);
 }
@@ -2051,11 +2046,11 @@ textarea {
 /* Étroit : le nom garde la 1re rangée avec les actions ; les coups et les
    compteurs partagent la seconde (les coups à gauche, les chiffres à droite). */
 @media (max-width: 900px) {
-  .mrow { grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; row-gap: 5px; }
-  .mrow-main  { grid-column: 2; grid-row: 1; }
-  .mrow-acts  { grid-column: 3; grid-row: 1; }
-  .mrow-line  { grid-column: 2; grid-row: 2; }
-  .mrow-stats { grid-column: 3; grid-row: 2; justify-content: flex-end; }
+  .mrow { grid-template-columns: minmax(0, 1fr) auto; gap: 10px; row-gap: 5px; }
+  .mrow-main  { grid-column: 1; grid-row: 1; }
+  .mrow-acts  { grid-column: 2; grid-row: 1; }
+  .mrow-line  { grid-column: 1; grid-row: 2; }
+  .mrow-stats { grid-column: 2; grid-row: 2; justify-content: flex-end; }
 }
 /* ⚠ Sous ~700px, « Jouer »+« Assigner »+⋯ pèsent 220px : avec la gouttière (34)
    et les gaps, le coût FIXE d'une ligne atteignait 298px pour 303px disponibles
@@ -2077,17 +2072,17 @@ textarea {
      c'est plus haut, mais c'est enfin lisible : la ligne d'ouverture, qui EST
      l'identifiant d'un module, tient entière. */
   .mrow {
-    grid-template-columns: 34px minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     row-gap: 4px;
   }
-  .mrow-main  { grid-column: 2 / span 2; grid-row: 1; }
+  .mrow-main  { grid-column: 1 / span 2; grid-row: 1; }
   /* La ligne REPLIE au lieu de s'élider : étendue jusqu'à 10 demi-coups
      (profondeur discriminante), elle ne tient plus toujours en 235px — et
      l'élision mangerait précisément les demi-coups qui distinguent, sans
      tooltip au doigt. Deux rangées de mono valent mieux qu'une ligne amputée. */
-  .mrow-line  { grid-column: 2 / span 2; grid-row: 2; white-space: normal; }
-  .mrow-stats { grid-column: 2; grid-row: 3; justify-content: flex-start; }
-  .mrow-acts  { grid-column: 3; grid-row: 3; }
+  .mrow-line  { grid-column: 1 / span 2; grid-row: 2; white-space: normal; }
+  .mrow-stats { grid-column: 1; grid-row: 3; justify-content: flex-start; }
+  .mrow-acts  { grid-column: 2; grid-row: 3; }
 }
 @media (hover: none) {
   .mrow { padding: 12px; }
