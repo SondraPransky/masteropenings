@@ -136,3 +136,21 @@ describe('fmtLossShort / fmtDwrShort — cellules de table', () => {
     expect(fmtDwrShort(null)).toBe('');
   });
 });
+
+describe('sortErrors — tri par tranche Elo', () => {
+  const idx = filterErrorsIndexed([
+    { ...ERR, bucket: 2000, crit: .5 },
+    { ...ERR, bucket: 1600, crit: .9 },
+    { ...ERR, bucket: 2000, crit: .7 },
+    { ...ERR, bucket: 1800, crit: .3 },
+  ], 'all');
+  it('regroupe les tranches, dans les 2 sens', () => {
+    expect(sortErrors(idx, 'bucket', 1).map(x => x.e.bucket)).toEqual([1600, 1800, 2000, 2000]);
+    expect(sortErrors(idx, 'bucket', -1).map(x => x.e.bucket)).toEqual([2000, 2000, 1800, 1600]);
+  });
+  it('stable : a l interieur d une tranche, l ordre du doc (criticite) est conserve', () => {
+    const asc = sortErrors(idx, 'bucket', 1);
+    const deux = asc.filter(x => x.e.bucket === 2000);
+    expect(deux.map(x => x.i)).toEqual([0, 2]);   // i=0 (.5) avant i=2 (.7) : ordre du doc
+  });
+});

@@ -4,7 +4,7 @@
 // Vendors (chess.js, @supabase/supabase-js) restent chargés en CDN dans index.html.
 // Dans un module ES, un identifiant non déclaré (Chess, supabase) se résout sur
 // globalThis → `new Chess()` et `supabase.createClient` marchent sans import vendor.
-import { _normFen, normalizeSAN, extractAllLines, fig, PIECE_SYMS } from './lib/core.js';
+import { _normFen, normalizeSAN, extractAllLines, fig, PIECE_SYMS, figurineTitle } from './lib/core.js';
 import { isPlayerMove, _buildDrillTree, _treePlayerPositions, _materialHint } from './lib/tree.js';
 import {
   oppSeenKey, _commentDelay, _drillSessions, countPlayerMoves,
@@ -554,7 +554,8 @@ function updateSessionInfo() {
   // Module a chapitres (arbre multi-parties) : le vocabulaire est « Chapitre ».
   const kind = document.getElementById('session-kind');
   if (kind) kind.textContent = S.drill?.varmode === 'tree' ? 'Chapitre' : 'Session';
-  document.getElementById('session-label').textContent = sess.label;
+  // innerHTML (et non textContent) : le libelle de chapitre porte des figurines.
+  document.getElementById('session-label').innerHTML = figurineTitle(escapeHtml(sess.label || ''));
   document.getElementById('session-prog').textContent  = (S.sessionIdx + 1) + ' / ' + total;
   document.getElementById('session-fill').style.width  = ((S.sessionIdx + 1) / total * 100) + '%';
 }

@@ -64,9 +64,27 @@ Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un pr
 
 **⚠ Convention de nommage (règle donnée par l'utilisatrice)** : en français, **un nom d'ouverture dérivé d'une nationalité ou d'un pays prend toujours une MAJUSCULE** — « la **S**candinave », « l'**I**talienne », « la **S**icilienne », « la **F**rançaise », « l'**E**spagnole ». C'est le nom propre d'une ouverture, pas un adjectif. Ajoutée aux Do's du DESIGN.md ; vaut pour les noms de modules, les libellés, les toasts et tout texte généré. *(Le fonds la respectait déjà partout — vérifié : **0 occurrence en minuscule** sur les 30 modules et leurs 72 libellés de chapitre. La seule venait de moi, en recopiant littéralement la casse d'une réponse rapide au lieu d'appliquer la convention du corpus.)*
 
-**État du compte `testcoach` après ce nettoyage : 30 modules, 72 chapitres, 20 dossiers** (33 avant les 3 suppressions).
+#### ▶ Même jour (suite) — figurines dans les titres, tri par tranche, et fusion de 767/770
 
-**Reste** : deux dossiers portent encore plusieurs modules et sont des candidats au même traitement — **`767 - Rubinstein Cxe5` (2 modules)** et **`770 - Gambit danois` (3 modules)** ; le §6 note d'ailleurs que ces deux dossiers sont surtout des **exercices**, à router vers des paquets plutôt qu'à garder comme modules. `Ouvertures en vogue` (7 modules) est légitime : 7 ouvertures distinctes. **L'arbitrage reste à l'utilisatrice** — l'outil inspecte sans rien toucher. Et le `localStorage` de dev garde ses 7 anciens modules tant qu'on ne recharge pas depuis Supabase avec un vrai login.
+**A. Figurines dans les titres de modules et de chapitres** (`figurineTitle`, `lib/core.js`, pur + 7 tests). Rendu : `Grünfeld — 7.♗c4/♘e2 avec 10...b6`, `les plans avec ♘d7-c5`.
+
+⚠️ **Le fonds MÉLANGE les deux notations** — mesuré : `4.**C**c4!?` et `3.**D**xd4!?` sont en **français** (Cavalier, Dame), `8.**Q**e3-**R**xe4` est en **anglais**. Et **`R` est une collision : Rook anglais ♖ vs Roi français ♔**. Convertir au hasard produirait un titre *faux* (« Tour e8 » devenu « Roi e8 »), ce qui est pire qu'une lettre. La fonction ne devine donc jamais : lettres non ambiguës converties (`K Q B N` / `D T F C`), et le `R` **uniquement** si une autre lettre du même titre tranche la langue. Cas réels vérifiés : `8.Qe3-Rxe4` → `8.♕e3-♖xe4` (le Q dit anglais) ; `Est Indienne — Re8` → **inchangé** (rien ne tranche). Appliqué au répertoire, au sélecteur de chapitre et à la barre de session (⚠️ `session-label` passe en `innerHTML`).
+
+**B. Tri par tranche Elo** dans l'analyse d'ouvertures : la colonne Tranche devient triable (+ « Trier : Tranche » dans le select mobile). Le tri étant **stable**, à l'intérieur d'une tranche l'ordre du doc (criticité décroissante) est conservé → « mes 1600, du plus critique au moins critique ». Filtre par tranche et tri par tranche répondent à deux besoins distincts et se composent.
+
+**C. Fusion de `767 - Rubinstein` (2→1, 2 chapitres) et `770 - Gambit danois` (3→1, 3 chapitres)** — arbitrage utilisatrice. **Cas OPPOSÉ à Mieses** : là on jetait du redondant, ici le contenu est **distinct** (171 vs 221 nœuds ; 161/152/138) — des leçons d'une même série que l'import avait éclatées parce qu'elles vivaient dans des fichiers séparés. Nouveau `--merge` : recolle les PGN dans l'ordre donné et laisse **`buildTreeModule`** fabriquer l'arbre fusionné + une session par partie (0 logique réécrite).
+
+Les libellés de chapitre sont **distinguables** grâce à l'en-tête `Black` (« Les Noirs refusent le gambit » / « acceptent » / « Egaliser avec les Noirs ») — `gameModuleName` joint White + Black. ⚠️ **L'id du PREMIER module est conservé** : la clé de maîtrise étant `${élève}_${drillId}_${normFen}_${san}`, ça préserve son historique SR ; celui des modules absorbés devient orphelin (bénin avant lancement, mais raison de fusionner tôt). ⚠️ **Garde-fou** : le script refuse de fusionner si le recollage ne produit pas un chapitre par module, ou si les camps diffèrent. ⚠️ Les PGN ChessBase portent un **BOM UTF-8** qui masque le `[Event]` de tête (`grep '^\[Event'` renvoie 0) — retiré avant recollage, sinon il se retrouve au milieu du PGN.
+
+**Correction d'une note du §6** : les dossiers 767 et 770 y étaient décrits comme « surtout des exercices ». Les `exercices*.pgn` avaient en fait **déjà été écartés à l'import** — ce qui restait était bien du contenu de leçon, d'où la fusion plutôt qu'une reconversion.
+
+**État du compte `testcoach` : 27 modules · 72 chapitres · 4 620 positions à réviser · 0 module vide** (vérifié par `_treePlayerPositions`, jamais par le nombre de nœuds). **Le nombre de chapitres n'a pas bougé** (72 avant/après) : les fusions ont regroupé sans rien perdre. Chaque dossier de répertoire ne porte plus qu'un module ; seuls `Ouvertures en vogue` (7 ouvertures distinctes) et `(sans dossier)` (2) en portent plusieurs, légitimement.
+
+`tools/modules-admin.mjs` gagne `--merge`, `--folder '*'` (balayage global + garde-fou modules vides) et affiche désormais les **positions à réviser** par module.
+
+**État du compte `testcoach` après le nettoyage Mieses : 30 modules, 72 chapitres, 20 dossiers** (33 avant les 3 suppressions).
+
+*(767 et 770 ont depuis été **fusionnés** — voir le bloc « suite » ci-dessus.)* Le `localStorage` de dev garde ses anciens modules à plat tant qu'on ne recharge pas depuis Supabase avec un vrai login.
 
 ### 🔖 Session du 21 juillet 2026 (4e) — ▶ REFONTE de la vue MODULES coach (grille de cartes → répertoire en lignes)
 

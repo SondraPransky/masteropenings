@@ -1,4 +1,4 @@
-import { _normFen, leitnerSchedule, DEFAULT_LADDER_HOURS, normalizeSAN, extractAllLines, fig } from '../lib/core.js';
+import { _normFen, leitnerSchedule, DEFAULT_LADDER_HOURS, normalizeSAN, extractAllLines, fig, figurineTitle } from '../lib/core.js';
 
 // ─────────────────────────────────────────────────────────────
 describe('_normFen — clé de transposition', () => {
@@ -169,5 +169,42 @@ describe('fig — notation figurine', () => {
     expect(fig('')).toBe('');
     expect(fig(null)).toBe(null);
     expect(fig(undefined)).toBe(undefined);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// Titres ecrits a la main par la coach : le fonds MELANGE les notations
+// francaise (C=Cavalier, D=Dame, T=Tour, F=Fou) et anglaise (K,Q,B,N), et `R`
+// est une collision (Rook anglais = ♖ / Roi francais = ♔). Cas reels du corpus.
+describe('figurineTitle — titres en notation mixte FR/EN', () => {
+  test('lettres francaises non ambigues', () => {
+    expect(figurineTitle('4.Cc4!? vs Petroff')).toBe('4.♘c4!? vs Petroff');
+    expect(figurineTitle('Sicilienne 2.d4 cd4 3.Dxd4!?')).toBe('Sicilienne 2.d4 cd4 3.♕xd4!?');
+    expect(figurineTitle('Grunfeld Fc4 et Ce2')).toBe('Grunfeld ♗c4 et ♘e2');
+  });
+  test('lettres anglaises non ambigues', () => {
+    expect(figurineTitle('Anti Najdorf 4.Nf3')).toBe('Anti Najdorf 4.♘f3');
+    expect(figurineTitle('Petroff 5.Qe2')).toBe('Petroff 5.♕e2');
+  });
+  test('R tranche par une autre lettre ANGLAISE du meme titre → Tour', () => {
+    expect(figurineTitle('Le gambit du centre — 8.Qe3-Rxe4'))
+      .toBe('Le gambit du centre — 8.♕e3-♖xe4');
+  });
+  test('R tranche par une autre lettre FRANCAISE du meme titre → Roi', () => {
+    expect(figurineTitle('Finale Cd4 puis Re2')).toBe('Finale ♘d4 puis ♔e2');
+  });
+  test('⚠ R SEUL reste une lettre : convertir au hasard ferait un titre FAUX', () => {
+    // « Est Indienne — Re8 » : Re8 est une Tour, mais rien dans le titre ne le dit.
+    expect(figurineTitle('Est Indienne — Re8')).toBe('Est Indienne — Re8');
+  });
+  test('ne touche pas aux mots ni aux coups de pion', () => {
+    expect(figurineTitle('Gambit Mieses dans la Scandinave')).toBe('Gambit Mieses dans la Scandinave');
+    expect(figurineTitle('Gambit danois 2.d4 exd4')).toBe('Gambit danois 2.d4 exd4');
+    expect(figurineTitle('Spassky Breyer')).toBe('Spassky Breyer');
+    expect(figurineTitle('Anti Marshall d3')).toBe('Anti Marshall d3');
+  });
+  test('valeurs vides', () => {
+    expect(figurineTitle('')).toBe('');
+    expect(figurineTitle(null)).toBe(null);
   });
 });
