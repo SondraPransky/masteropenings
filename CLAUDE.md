@@ -50,6 +50,20 @@ Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un pr
 
 **Reste** : la dette de `font-size` inline sur ~10 `<select>` (battue par la règle 16px à coups de `!important`) ; `.impeccable/design.json` plus ancien que `DESIGN.md` (⚠ `/impeccable document` **régénère DESIGN.md depuis le code** et écraserait l'historique des décisions — rafraîchir le seul sidecar).
 
+#### ▶ Même jour — dédoublonnage du fonds : « 776 - Gambit Mieses » (4 modules → 1) + `tools/modules-admin.mjs`
+
+**Demande utilisatrice : « ne garde que gambitmieses avec ses 4 chapitres, supprime gambitmieses1, 2, 3 ».** Le dossier contient **4 fichiers PGN** : `Gambit Mieses.pgn` (4 parties = 4 chapitres) et `Gambit Mieses1/2/3.pgn` qui **rejouent chacun une leçon déjà dans le gros fichier** (arbres de 235/218/153 nœuds identiques, annotations un peu plus fournies dans les fichiers isolés). Même motif que la copie imbriquée `Gambit Rubinstein/` écartée le 21/07.
+
+**⚠ Piège de méthode évité de justesse : l'état lu dans le navigateur local était PÉRIMÉ.** `localStorage` portait encore les **7 modules à plat** de l'import du matin (73 modules), alors que Supabase était déjà en forme **B2** (1 module à 4 chapitres + 3 isolés = les 4 que voyait l'utilisatrice). J'ai d'abord raisonné sur 7 et annoncé des doublons là où sa lecture était juste. **Ne jamais arbitrer un contenu sur le `localStorage` de dev — `sb=null` en local, cette copie ne se met jamais à jour.**
+
+**Garde-fou avant suppression (c'est lui qui a rendu la décision sûre)** : comparer les **clés d'arbre** (`normFen_san` — l'unité de maîtrise Leitner, donc exactement ce qu'un élève perdrait), pas les noms ni les tailles. Résultat : **100 % des positions des 3 modules déjà présentes dans le module conservé, 0 orpheline** → supprimer ne perdait rien. Une seule position orpheline aurait transformé « nettoyage » en « perte de contenu ».
+
+**Livré** : `tools/modules-admin.mjs` — petit CLI d'administration des modules d'un dossier (patron `import-academie.mjs` : auth + REST, **simulation par défaut**, `--apply` pour écrire). `--folder` (inspection : id, chapitres, positions) · `--delete <ids>` (contrôle de redondance + **sauvegarde JSON complète, PGN inclus**, gitignorée) · `--rename <id> --name "…"`. **Garde-fou : il refuse tout id qu'il n'a pas relu dans le dossier nommé** — une faute de frappe ne peut pas supprimer un module d'ailleurs. Le renommage ne touche que `name` : les libellés de chapitre vivent dans `sessions[].label` et sont dérivés des en-têtes du PGN (`gameModuleName`), les réécrire les ferait diverger de leur source.
+
+**Résultat sur `testcoach`** : dossier « 776 - Gambit Mieses » = **1 module « Gambit Mieses dans la scandinave », 4 chapitres, 567 positions** (Le Gambit Mieses dans la Scandinave · L'idée générale · L'antidote · Quelques idées pour les blancs). 3 DELETE 204, relu depuis Supabase.
+
+**Reste** : le fonds a probablement d'autres doublons du même type (fichiers `*1/2/3.pgn` à côté d'un fichier principal) — l'outil est là pour ça, dossier par dossier, **l'arbitrage restant à l'utilisatrice**. Et le `localStorage` de dev garde ses 7 anciens modules tant qu'on ne recharge pas depuis Supabase avec un vrai login.
+
 ### 🔖 Session du 21 juillet 2026 (4e) — ▶ REFONTE de la vue MODULES coach (grille de cartes → répertoire en lignes)
 
 **Retour utilisatrice une fois le contenu chargé : « refais-moi le design des modules ».** Passe `/frontend-design` **au volume réel** (les 33 modules de `testcoach` réinjectés en local). Le système visuel (DESIGN.md) n'a **pas** bougé : aucune couleur, aucune police ajoutée — le problème était l'architecture de l'information, pas l'identité.

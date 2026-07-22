@@ -43,3 +43,8 @@ skills-lock.json
 
 # Manifestes d import en masse (ids des modules crees, propres a chaque run)
 import-academie-*.json
+
+# Sauvegardes ecrites avant une suppression par tools/modules-admin.mjs : ce sont
+# des lignes Supabase entieres (PGN inclus), donc du contenu duplique et date.
+# A garder en local le temps de verifier l arbitrage, pas dans l historique.
+tools/backup-*.json
