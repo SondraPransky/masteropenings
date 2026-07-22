@@ -18,6 +18,37 @@ L’application doit permettre :
 **Phase : le refactoring est terminé → on entre dans la construction produit.**
 Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un prof — toi — + ses élèves) ; le **multi-coachs viendra après**. Pas encore d’utilisateurs réels.
 
+### 🔖 Session du 22 juillet 2026 (2e) — ▶ `/apex` + `/frontend-design` : la vue MODULES au volume réel
+
+**Demande utilisatrice : « il y a un gros travail UX/UI à faire sur les modules encore ».** Les 4 surfaces cochées (répertoire, cycle de vie, vue élève, détail) et 3 symptômes : *je ne vois pas ce qu'il y a dedans* · *c'est laid / pas fini* · *les actions sont mal placées*.
+
+**⚠️ Méthode qui a tout décidé : mesurer au VOLUME RÉEL, tiré de Supabase — pas du `localStorage` de dev.** Le local était vide ; un dump lecture-seule (script jetable réutilisant `_sbRowToModule`) a chargé les **27 vrais modules / 72 chapitres / 4 620 positions**. Les défauts ci-dessous sont **invisibles sur un jeu de test** : ils naissent tous de la *forme* du corpus (un répertoire profond, pas large).
+
+#### 🐛 P0 trouvé en chemin (personne ne le cherchait) : l'accueil élève gelait ~23 s
+`_moduleStats` (par carte) **et** `_srSessionSize('all')` (compteur du hero) appelaient la BFS `_treePlayerPositions` **par module, à chaque rendu** — **841 ms pour le seul Grünfeld**. La leçon du 21/07 (balayage O(n)) n'avait été appliquée qu'au répertoire coach ; la vue élève était restée sur le chemin lent. → **`_treePositionsScan`** (`lib/tree.js`, mémoïsé `id:updatedAt`) : **819 ms → 0,9 ms**, ensemble **strictement identique** (295 = 295), prouvé par 4 tests d'équivalence (dont un module à chapitres) **+** le navigateur. La BFS reste l'autorité du **garde-fou d'import** (`tools/`), où un arbre pathologique DOIT échouer. *Le bug n'était atteignable qu'avec le contenu réel : un seed léger rend en 26 ms.*
+
+#### ⚠️ La signature du 21/07 n'identifiait RIEN sur le corpus réel
+La refonte du 21/07 posait « la ligne d'ouverture identifie une ouverture plus vite qu'un nom ». **Mesuré : à 6 demi-coups, 15 modules sur 27 (56 %) partagent leur ligne avec un autre** — 4 modules rendaient `1.e4 ♘f3 ♘c6 3.♗c4 ♗c5` à l'identique. La refonte avait été validée sur un critère de *forme* (hauteur, alignement, rendu), jamais sur son **pouvoir discriminant**. Le corpus de cette coach est **profond** (plusieurs modules dans une même famille), pas large : 6 demi-coups tombent au-dessus du point de divergence.
+
+| | avant | après |
+|---|---|---|
+| Modules à ligne ambiguë | **15 / 27** | **2 / 27** (jumeaux réels, le nom tranche) |
+
+→ Chaque ligne s'étend **jusqu'à sa divergence** d'avec ses voisines (plafond 10). ⚠️ La largeur de colonne est **commune par section** (`--mrow-linew`, dérivée de la profondeur réelle du groupe) : l'**alignement vertical est tout l'intérêt** de la signature — un `fit-content` par rangée le casse, et un `24rem` fixe affame le nom (mesuré : 218px à 1366, avec 130px de vide dans la colonne d'à côté).
+
+#### ⚠️ Le design avait jeté les MOTS de la coach, gardé ses numéros
+Trois modules s'appellent **« Gambit Koltanowski » à l'identique**. Ce qui les distingue, la coach l'a écrit elle-même — dans le **nom du dossier** : « 773 - Koltanowski accéléré - **Noirs exd4** » / « 774 - … - **Noirs Fxd4 et Cxd4** ». Le 21/07 notait « les numéros deviennent une gouttière » : il gardait `773` et **jetait la phrase**. → Sous-titre `.mrow-sub` = les mots du dossier-**descripteur** (`NNN - …`) verbatim, débarrassés de la seule redondance stricte avec le nom, en figurines. Les dossiers-**collections** (« Ouvertures en vogue ») n'en produisent aucun : ils répéteraient le même texte sous chacun de leurs modules — c'est le mur de pastilles déjà supprimé.
+
+#### Le détail d'un module : il n'en existait AUCUN
+**72 libellés de chapitre en base, 0 affiché** — « La théorie en 2024 », « L'antidote », « On va plus loin » ne se découvraient qu'en plein drill. C'est exactement le « je ne vois pas ce qu'il y a dedans ». **Arbitrage utilisatrice (sur maquettes ASCII) : rangée dépliable, PAS une page** — on reste dans le répertoire, zéro navigation. Livré : accordéon (un seul ouvert), chapitres avec libellés figurines, **« Jouer » par chapitre** (`S.startChapter`, hook **additif de 4 lignes** dans `startDrill` — défaut inchangé), **échiquier qui suit le chapitre survolé** (les `startFen` sont déjà en mémoire → 0 parsing). Clavier Enter/Espace, `aria-expanded`, cibles 44px, AA sombre ≥ 5,8, 0 débordement à 375.
+
+#### Aussi livré
+**Vue élève** : badge **« N chapitres »** (un module à 5 chapitres se présentait comme un bloc unique) + **figurines dans les noms** (règle du répertoire, jamais appliquée côté élève). **Cycle de vie** : **« Renommer »** au menu ⋯ — l'action n'existait qu'en CLI (`--rename`) ou en ouvrant l'éditeur plein écran ; ⚠ ne touche que `name`, jamais `sessions[].label` (dérivés des en-têtes PGN, les réécrire les ferait diverger de leur source). **Au téléphone la ligne d'ouverture REPLIE au lieu de s'élider** : étendue jusqu'à 10 demi-coups, elle ne tient plus toujours en 235px, et l'élision mangerait précisément les demi-coups qui distinguent — sans tooltip au doigt.
+
+**typecheck + 172 tests (+4) + build verts, 0 erreur console, 2 thèmes, 0 débordement à 375/1366/1440.**
+
+**Reste** : les 2 jumeaux (« Le gambit du centre » / « Ouverture – Le gambit du centre », identiques jusqu'au 16e demi-coup) sont un **doublon de fonds**, pas un défaut d'UI — à arbitrer avec l'utilisatrice (fusion ou renommage), comme Mieses le 22/07. La **rangée dépliable n'a jamais été vue sur un VRAI téléphone** (mesurée en simulation).
+
 ### 🔖 Session du 22 juillet 2026 — ▶ `/impeccable audit` (Analyse d'ouvertures + vue modules) : 16/20 → corrigé
 
 **Audit technique des deux surfaces les plus récentes, au volume réel** (75 modules locaux, doc OA de 60 erreurs sur 5 tranches), mesuré au navigateur dans les 2 thèmes. Score **16/20** — 0 P0, **3 P1, tous responsive**. `typecheck` + **159 tests** (+7) + build verts, 0 erreur console.
