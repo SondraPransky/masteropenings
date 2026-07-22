@@ -143,6 +143,7 @@ interface Window {
   oaaTipHide?: (...a: any[]) => any;
   oaaCreatePacket?: (...a: any[]) => any;       // « Créer un paquet » (lib/coach-analytics-export.js)
   oaaPacketSave?: (...a: any[]) => any;         // validation de la modale paquet (+ assignation)
+  renameChapter?: (...a: any[]) => any;         // renommer un chapitre depuis le répertoire (lib/modules.js)
   openPlanComposer?: (...a: any[]) => any;      // composeur de Plan de travail (lib/coach-plans.js)
   planComposerSave?: (...a: any[]) => any;
   planComposerDelete?: (...a: any[]) => any;

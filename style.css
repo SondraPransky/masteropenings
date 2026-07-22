@@ -2009,6 +2009,17 @@ textarea {
   border-bottom: 1px solid var(--border);
 }
 .mdet-chaps { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.mdet-chap-row { display: flex; align-items: stretch; gap: 2px; min-width: 0; }
+.mdet-chap-row .mdet-chap { flex: 1; min-width: 0; }
+.mdet-chap-edit {
+  flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;
+  min-width: 34px; border: 0; border-radius: var(--rs); background: transparent;
+  color: var(--dim); cursor: pointer; font-size: .85rem;
+  opacity: 0; transition: opacity .12s ease, background-color .12s ease;
+}
+.mdet-chap-row:hover .mdet-chap-edit, .mdet-chap-row:focus-within .mdet-chap-edit { opacity: 1; }
+.mdet-chap-edit:hover, .mdet-chap-edit:focus-visible { background: var(--surf3); color: var(--text); }
+.mdet-chap-edit:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
 .mdet-chap {
   display: grid; grid-template-columns: minmax(0, 1fr) auto;
   align-items: center; gap: 10px;
@@ -2037,9 +2048,10 @@ textarea {
   .mdet-side { flex-direction: row; align-items: flex-start; }
   .mdet-chap { min-height: 44px; }
   .mdet-chap-play { opacity: 1; }   /* pas de survol au doigt : l'affordance reste visible */
+  .mdet-chap-edit { opacity: 1; min-width: 44px; min-height: 44px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .mrow-chev, .mdet-chap, .mdet-chap-play { transition: none; }
+  .mrow-chev, .mdet-chap, .mdet-chap-play, .mdet-chap-edit { transition: none; }
 }
 .mrow-flags { display: flex; align-items: center; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
 

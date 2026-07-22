@@ -1,6 +1,6 @@
 import { isPlayerMove, _buildDrillTree, _treePlayerPositions, _treePositionsScan, _materialHint,
          _mergeStudentLayer, _diffAgainstCoach, _countLayerMoves, _editorTreeToDrillTree,
-         buildTreeModule, gameModuleName, chapterCount, chapterPgn } from '../lib/tree.js';
+         buildTreeModule, gameModuleName, chapterCount, chapterPgn, applyChapTitles } from '../lib/tree.js';
 import { extractAllLines, splitPgnGames, pgnStartFen, replacePgnGame } from '../lib/core.js';
 
 // `Chess` est injecté en global par tests/setup.js (comme dans le navigateur).
@@ -436,5 +436,23 @@ describe('gameModuleName — un titre peut contenir « ?! » (annotation d echec
   test('le placeholder « ? » seul reste rejete', () => {
     const g = '[Event "?"]\n[White "?"]\n[Black "?"]\n\n1. e4 *';
     expect(gameModuleName(g, 'Repli', 2)).toBe('Repli (3)');
+  });
+});
+
+describe('applyChapTitles — surcouche des titres de chapitres édités', () => {
+  test('le titre édité prime sur le libellé dérivé du PGN, clé par gameIdx', () => {
+    const sessions = [
+      { label: 'Blancs — théorie', gameIdx: 0 },
+      { label: 'Chapitre (2)', gameIdx: 2 },   // gameIdx décalé (partie 1 sans coup jouable)
+    ];
+    applyChapTitles(sessions, { '2': 'L\'antidote (ma version)' });
+    expect(sessions[0].label).toBe('Blancs — théorie');
+    expect(sessions[1].label).toBe('L\'antidote (ma version)');
+  });
+  test('sans surcouche, ou session sans gameIdx : repli sur l\'index, rien de cassé', () => {
+    const sessions = [{ label: 'Arbre complet' }];
+    expect(applyChapTitles(sessions, null)[0].label).toBe('Arbre complet');
+    applyChapTitles(sessions, { '0': 'Mon titre' });
+    expect(sessions[0].label).toBe('Mon titre');
   });
 });
