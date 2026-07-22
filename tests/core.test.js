@@ -1,4 +1,4 @@
-import { _normFen, leitnerSchedule, DEFAULT_LADDER_HOURS, normalizeSAN, extractAllLines } from '../lib/core.js';
+import { _normFen, leitnerSchedule, DEFAULT_LADDER_HOURS, normalizeSAN, extractAllLines, fig } from '../lib/core.js';
 
 // ─────────────────────────────────────────────────────────────
 describe('_normFen — clé de transposition', () => {
@@ -143,5 +143,31 @@ describe('normalizeSAN — désambiguïsation tolérante', () => {
     const g = new Chess();
     // Un seul cavalier peut aller en f3 → "Ngf3" est sur-spécifié.
     expect(normalizeSAN('Ngf3', g)).toBe('Nf3');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// `fig` vit dans core.js (et pas seulement derriere le pont window) parce que la
+// liste des modules affiche la ligne d'ouverture en figurines des son PREMIER
+// rendu, avant que app.js n'ait pose window.fig : la vue sortait en SAN brut et
+// rien ne la re-rendait ensuite. Un import ES n'a pas cet ordonnancement.
+describe('fig — notation figurine', () => {
+  test('remplace la lettre de piece EN TETE, pas ailleurs', () => {
+    expect(fig('Nf6')).toBe('♘f6');
+    expect(fig('Qxh7#')).toBe('♕xh7#');
+    expect(fig('Rad1')).toBe('♖ad1');
+    expect(fig('Bb5+')).toBe('♗b5+');
+    expect(fig('Kd2')).toBe('♔d2');
+  });
+  test('ne touche pas aux coups de pion ni au roque', () => {
+    expect(fig('e4')).toBe('e4');
+    expect(fig('exd5')).toBe('exd5');
+    expect(fig('O-O')).toBe('O-O');
+    expect(fig('e8=Q')).toBe('e8=Q');   // la promotion n'est pas en tete
+  });
+  test('traverse les valeurs vides sans crasher', () => {
+    expect(fig('')).toBe('');
+    expect(fig(null)).toBe(null);
+    expect(fig(undefined)).toBe(undefined);
   });
 });

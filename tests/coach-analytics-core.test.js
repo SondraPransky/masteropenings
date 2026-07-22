@@ -2,6 +2,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   bucketShort, bucketLabel, fmtLoss, fmtPct, fmtCrit, fmtDwr,
+  fmtLossShort, fmtDwrShort,
   filterErrors, filterErrorsIndexed, sortErrors, oaaFenIndex, errorToKp, errorComment,
 } from '../lib/coach-analytics-core.js';
 
@@ -111,5 +112,27 @@ describe('errorToKp (« Créer un paquet »)', () => {
     expect(c).toContain('57 % jouent Bxc3');
     expect(c).toContain('perd 0,52 pion');
     expect(c).toContain('1600+');
+  });
+});
+
+// Formats COMPACTS : la forme longue de fmtLoss est une phrase, illisible dans une
+// colonne de table (mesure : 6 lignes par cellule, rangee a 122px, criticite et
+// bouton loupe rejetes hors ecran des 1366px). Le libelle long reste en legende.
+describe('fmtLossShort / fmtDwrShort — cellules de table', () => {
+  it('rend le cout en pions, sans phrase, avec la virgule FR', () => {
+    expect(fmtLossShort(45)).toBe('−0,45');
+    expect(fmtLossShort(210)).toBe('−2,10');
+  });
+  it('est toujours plus court que la forme longue', () => {
+    expect(fmtLossShort(45).length).toBeLessThan(fmtLoss(45).length);
+    expect(fmtDwrShort(0.29).length).toBeLessThan(fmtDwr(0.29).length);
+  });
+  it('rend le signe quel que soit celui de l entree (une faute coute toujours)', () => {
+    expect(fmtLossShort(-45)).toBe('−0,45');
+    expect(fmtDwrShort(-0.29)).toBe('−29 pts');
+  });
+  it('ne rend rien sans donnee (la cellule reste vide, pas « NaN »)', () => {
+    expect(fmtLossShort(null)).toBe('');
+    expect(fmtDwrShort(null)).toBe('');
   });
 });

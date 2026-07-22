@@ -794,8 +794,22 @@ textarea {
 /* Hint clavier invisible sur écrans tactiles */
 @media (hover: none) {
   .keyboard-hint { display: none !important; }
-  /* Cible tactile : les .btn-sm (24-28px au doigt) remontent à ~40px sans changer le desktop */
-  .btn-sm { min-height: 38px; padding-top: 8px; padding-bottom: 8px; }
+  /* Cible tactile : les .btn-sm (24-28px au doigt) remontent sans changer le desktop.
+     ⚠ La valeur disait « ~40px » mais rendait 38 — sous la règle du projet (≥40) et
+     sous le confort visé par un public incluant des enfants. Portée à 44 (AAA 2.5.5).
+     Ces règles sont TACTILES : le desktop ne bouge pas d'un pixel. */
+  .btn-sm { min-height: 44px; padding-top: 8px; padding-bottom: 8px; }
+  /* Les .btn sans modificateur (« + Créer ») rendaient 35px : aucune règle ne les
+     couvrait, seul .btn-sm en avait une. */
+  .btn { min-height: 44px; }
+  /* Les <select> de filtre (type, tri, dossier) rendaient 39px. */
+  select { min-height: 44px; }
+  /* Champ de recherche : le wrapper faisait 39px et l'<input> 21px — taper à côté
+     du texte ne focalisait rien. L'input s'étire sur TOUTE la hauteur du champ ;
+     le padding vertical du wrapper passe donc à 0, sinon « étirer » ne donnerait
+     que 44 − 16 = 28px et la cible resterait sous la barre. */
+  .eleve-search { min-height: 44px; padding-top: 0; padding-bottom: 0; }
+  .eleve-search input { align-self: stretch; min-height: 44px; }
   /* Safari iOS zoome la page au focus de TOUT champ dont la police est < 16px. Le
      <meta viewport> n'a volontairement pas de maximum-scale (ça désactiverait le zoom
      manuel = régression a11y), donc la taille de police est le SEUL levier. Mesuré avant
@@ -1950,8 +1964,39 @@ textarea {
   .mrow-line  { grid-column: 2; grid-row: 2; }
   .mrow-stats { grid-column: 3; grid-row: 2; justify-content: flex-end; }
 }
+/* ⚠ Sous ~700px, « Jouer »+« Assigner »+⋯ pèsent 220px : avec la gouttière (34)
+   et les gaps, le coût FIXE d'une ligne atteignait 298px pour 303px disponibles
+   — il restait 5px au nom ET à la ligne d'ouverture, réduits à une lettre. Le
+   test de débordement passait pourtant : rien ne dépassait, tout était écrasé.
+   Les actions passent donc en icônes seules, comme la nav coach (arbitrage du
+   16/07). Le libellé est masqué VISUELLEMENT (motif .sr-only) et jamais en
+   display:none : c'est le seul texte du bouton, donc son nom accessible. */
+@media (max-width: 700px) {
+  .mrow-btn-lbl {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+  }
+  .mrow-acts .btn { padding-left: 0; padding-right: 0; min-width: 44px; justify-content: center; }
+  /* Les icônes seules ne suffisaient pas : il restait 81px au nom (mesuré), donc
+     toujours un nom tronqué et une ligne d'ouverture illisible. Au téléphone, le
+     nom et la ligne prennent chacun leur RANGÉE pleine largeur (235px), et les
+     compteurs partagent la dernière avec les actions. Une ligne fait 3 rangées —
+     c'est plus haut, mais c'est enfin lisible : la ligne d'ouverture, qui EST
+     l'identifiant d'un module, tient entière. */
+  .mrow {
+    grid-template-columns: 34px minmax(0, 1fr) auto;
+    row-gap: 4px;
+  }
+  .mrow-main  { grid-column: 2 / span 2; grid-row: 1; }
+  .mrow-line  { grid-column: 2 / span 2; grid-row: 2; }
+  .mrow-stats { grid-column: 2; grid-row: 3; justify-content: flex-start; }
+  .mrow-acts  { grid-column: 3; grid-row: 3; }
+}
 @media (hover: none) {
   .mrow { padding: 12px; }
+  /* Cibles tactiles : la rangée est le geste principal du répertoire. */
+  .mrow-acts .btn, .mrow-acts summary { min-height: 44px; min-width: 44px; }
+  .mcard-menu-item { min-height: 44px; }
 }
 
 .mcard-grid {
@@ -2619,11 +2664,45 @@ textarea {
 .oaa-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 14px; }
 .oaa-tab { font-size: .8rem; padding: 8px 14px; border: none; background: none; color: var(--text-2); cursor: pointer; font-family: inherit; border-bottom: 2px solid transparent; transition: color .15s, border-color .15s; }
 .oaa-tab.on { color: var(--cyan); border-bottom-color: var(--cyan); font-weight: 600; }
-.oaa-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-bottom: 10px; }
+/* wrap : au téléphone, tri + filtre + « Créer un paquet » dépassent 375px et le
+   select de tri sortait par la GAUCHE (poussé par son margin-right:auto). */
+.oaa-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
 .oaa-selcount { font-size: .74rem; color: var(--dim); }
 .oaa-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--r); background: var(--surf); }
+/* Styles de table PROPRES à la section. ⚠ Ces tables portaient `.wsx-table` pour
+   récupérer ces 4 déclarations cosmétiques — et héritaient au passage de son
+   reflow en CARTES sous 640px, écrit pour une table à 3 colonnes dont les
+   rangées portent `.wsx-tr`. Les rangées OA ne l'ont pas : le <thead> (donc les
+   3 boutons de tri) disparaissait et les 9 cellules s'empilaient SANS étiquette
+   ni conteneur — 213px par erreur, 15,7 écrans. Le style est désormais local. */
+.oaa-table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+.oaa-table th {
+  text-align: left; font-size: .66rem; font-weight: 600; color: var(--dim);
+  padding: 8px 12px; border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+.oaa-table td { padding: 7px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.oaa-table tbody tr:last-child td { border-bottom: none; }
 .oaa-table td.oaa-check { width: 30px; }
-.oaa-line { color: var(--text-2); font-size: .74rem; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.oaa-check-hit { display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+/* Le coût est une donnée chiffrée, pas une phrase : l'unité vit dans l'en-tête. */
+.oaa-cost { font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* Les sous-libellés sont courts : les laisser passer à la ligne ajoutait une
+   3e ligne à chaque rangée pour rien (83px au lieu de 51). */
+.oaa-move .oaa-sub, .oaa-cost .oaa-sub { white-space: nowrap; }
+/* Le select de tri est la voie MOBILE (l'en-tête porte le tri au-dessus de 640px). */
+.oaa-sortsel { display: none; margin-right: auto; }
+.oaa-sortsel select { font-size: .78rem; padding: 7px 10px; border-radius: var(--rs);
+  border: 1px solid var(--border); background: var(--surf); color: var(--text); font-family: inherit; }
+/* ⚠ `max-width` sur un <td> n'est qu'une indication en `table-layout: auto` : le
+   navigateur l'outrepasse (mesuré — la colonne tenait 260px pour un max de 200).
+   La troncature doit vivre sur un élément INTERNE, qui, lui, la respecte. */
+.oaa-line { color: var(--text-2); font-size: .74rem; }
+.oaa-line-t { display: block; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Entre 960 et 1440px, l'aside (288px) + 9 colonnes ne tiennent pas : c'est la
+   ligne — la seule colonne élastique — qui cède, jamais la criticité ni l'action
+   (mesuré : 95px rejetés hors écran à 1366, dont le bouton loupe).
+   ⚠ Doit rester APRÈS la règle de base : même spécificité, l'ordre tranche. */
+@media (max-width: 1440px) { .oaa-line-t { max-width: 132px; } }
 .oaa-move .mono-move { font-weight: 600; }
 .oaa-sub { display: block; font-size: .68rem; color: var(--dim); font-weight: 400; }
 .oaa-sub-td { font-size: .72rem; color: var(--dim); }
@@ -2650,9 +2729,11 @@ textarea {
 .oaa-chip:focus-visible, .oaa-tab:focus-visible, .oaa-check input:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
 /* Carte thermique OA : 3 niveaux d'intensité (tokens seuls, lisible aux 2 thèmes). */
 .oaa-hm-cell { width: 34px; height: 18px; }
+/* Les 3 niveaux doivent se distinguer À L'ŒIL : 2 et 3 partageaient `--red-dim`
+   (seul un anneau inset les séparait), donc l'échelle n'en rendait que deux. */
 .oaa-hm-1 { background: var(--gold-dim); }
 .oaa-hm-2 { background: var(--red-dim); }
-.oaa-hm-3 { background: var(--red-dim); box-shadow: inset 0 0 0 2px var(--red-glow); }
+.oaa-hm-3 { background: var(--red); }
 
 /* Import en LOT de fichiers .pgn (modal Nouveau module, .pgnb-*) */
 .pgnb-head { font-size: .78rem; color: var(--text-2); margin: 14px 0 10px; }
@@ -2673,7 +2754,11 @@ textarea {
 .oaa-aside { position: sticky; top: 12px; }
 .oaa-board-pin { border: 1px solid var(--border); border-radius: var(--r); background: var(--surf); padding: 12px; }
 .oaa-pin-wrap { position: relative; width: 260px; max-width: 100%; }
-.oaa-pin-wrap > div { width: 100% !important; }
+/* ⚠ `renderStaticBoard` pose une taille INLINE (width ET height, ex. 260px). En
+   n'écrasant que la largeur, un plateau rétréci devenait 182×260 : cases étirées
+   en rectangles, et le calque de flèches (viewBox 8×8, donc letterboxé) cessait
+   de tomber sur les cases. Il faut libérer la hauteur et réimposer le carré. */
+.oaa-pin-wrap > div { width: 100% !important; height: auto !important; aspect-ratio: 1; }
 .oaa-arrows { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .oaa-pin-cap { margin-top: 10px; font-size: .76rem; color: var(--text-2); line-height: 1.5; }
 .oaa-pin-empty { font-size: .78rem; color: var(--dim); padding: 28px 8px; text-align: center; }
@@ -2681,7 +2766,11 @@ textarea {
 .oaa-good { color: var(--green-ink); font-weight: 600; }
 .oaa-row { cursor: pointer; }
 .oaa-row:hover { background: var(--surf2); }
-.oaa-row.pinned { background: var(--cyan-dim); box-shadow: inset 2px 0 0 var(--cyan); }
+/* Le fond teinté PORTE déjà l'état épinglé : le liseré latéral n'ajoutait aucune
+   information, et c'est la forme bannie par le design system (side-stripe). */
+.oaa-row.pinned { background: var(--cyan-dim); }
+/* La porte « Voir les N autres » n'existe qu'en mode carte (≤640px). */
+.oaa-more { display: none; }
 .oaa-th-sort { background: none; border: none; padding: 0; font: inherit; color: inherit; cursor: pointer; text-transform: inherit; letter-spacing: inherit; }
 .oaa-th-sort:hover { color: var(--cyan); }
 .oaa-stu-chip { display: inline-block; font-size: .68rem; padding: 1px 7px; border-radius: 999px; background: var(--cyan-dim); color: var(--cyan); margin: 1px 2px 1px 0; }
@@ -2704,6 +2793,17 @@ textarea {
 .oaa-pk-cls > span:last-child { margin-left: auto; }
 /* Note de croisement affichée dans Points faibles (sens inverse) */
 .oaa-lichess-note { display: block; font-size: .68rem; color: var(--dim); margin-top: 2px; }
+
+/* Postes 1280-1440 : l'aperçu épinglé RÉTRÉCIT au lieu de disparaître. L'arbitrage
+   produit est « aperçu épinglé ET modale », et un 1280 est un poste de coach très
+   courant — c'est la table qui doit récupérer la place, pas le coach qui doit
+   perdre l'échiquier. Le plateau suit (`.oaa-pin-wrap > div` est en width:100%) et
+   les flèches sont en viewBox 8×8 : tout se met à l'échelle, 0 ligne de JS.
+   ⚠ APRÈS les règles de base `.oaa-layout` / `.oaa-pin-wrap` : même spécificité. */
+@media (min-width: 961px) and (max-width: 1440px) {
+  .oaa-layout { grid-template-columns: minmax(0, 1fr) 208px; }
+  .oaa-pin-wrap { width: 184px; }
+}
 @media (max-width: 960px) {
   /* L'aperçu épinglé disparaît : la table reprend toute la largeur (la modale
      « Voir la position » reste le chemin pour regarder un échiquier). */
@@ -2712,9 +2812,67 @@ textarea {
   .oaa-pos-grid { grid-template-columns: minmax(0, 1fr); }
   .oaa-pos-board { width: 100%; max-width: 320px; }
 }
+
+/* ── Erreurs en CARTES sous 640px ─────────────────────────────────────────
+   9 colonnes ne tiennent pas au doigt, et un scroll horizontal niché dans une
+   table de 60 rangées cache justement la criticité et le bouton loupe (le
+   défaut déjà corrigé sur Points faibles le 16/07). On reflow en cartes — mais
+   DÉLIBÉRÉMENT, contrairement à l'héritage `.wsx-table` : chaque valeur garde
+   son étiquette (`data-l`), et le tri masqué avec le <thead> revient en select.
+   Flex plutôt qu'une grille à 9 zones : ça s'adapte seul quand une cellule
+   manque (pas d'élève concerné, pas de dwr) au lieu de laisser un trou. */
+@media (max-width: 640px) {
+  .oaa-sortsel { display: block; }
+  .oaa-scroll { overflow-x: visible; border: none; background: none; border-radius: 0; }
+  .oaa-table, .oaa-table tbody, .oaa-table td { display: block; }
+  .oaa-table thead { display: none; }
+  .oaa-table td, .oaa-table tbody tr:last-child td { padding: 0; border-bottom: none; }
+
+  .oaa-row {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px;
+    padding: 12px; margin-bottom: 8px;
+    background: var(--surf); border: 1px solid var(--border); border-radius: var(--r);
+  }
+  /* L'épinglage est une notion d'aperçu ; l'aside n'existe pas ici. */
+  .oaa-row.pinned { background: var(--surf); box-shadow: none; }
+
+  .oaa-row .oaa-check { order: 0; }
+  .oaa-row .oaa-line  { order: 1; flex: 1 1 60%; }
+  .oaa-row .oaa-line-t { max-width: none; white-space: normal; }
+  .oaa-row .oaa-act   { order: 2; margin-left: auto; width: auto; }
+  .oaa-row .oaa-move  { order: 3; flex: 0 0 auto; }
+  .oaa-row .oaa-best  { order: 4; }
+  .oaa-row .oaa-cost  { order: 5; }
+  .oaa-row .oaa-bucket{ order: 6; }
+  .oaa-row .oaa-crit  { order: 7; }
+  .oaa-row .oaa-stu   { order: 8; flex: 1 1 100%; }
+
+  /* Plafond mobile : 8 erreurs, le reste derrière une porte. Le point de rupture
+     vit ICI (le JS ne fait que poser `.oaa-all`), donc le desktop n'est jamais
+     plafonné — sur grand écran la table entière est l'outil de travail. */
+  .oaa-table:not(.oaa-all) .oaa-row:nth-of-type(n + 9) { display: none; }
+  .oaa-more {
+    display: block; width: 100%; margin: 4px 0 8px; padding: 12px; min-height: 44px;
+    font: inherit; font-size: .82rem; color: var(--cyan); cursor: pointer;
+    background: var(--surf); border: 1px dashed var(--border); border-radius: var(--r);
+  }
+  /* Sans le <thead>, « a6 » / « 9,40 » / « 1600+ » ne veulent plus rien dire. */
+  .oaa-table td[data-l]::before {
+    content: attr(data-l) " ";
+    color: var(--dim); font-size: .68rem; font-weight: 400;
+  }
+  .oaa-row .oaa-sub { display: inline; margin-left: 4px; }
+}
 @media (hover: none) {
   .oaa-th-sort { min-height: 44px; }
   .oaa-pk-cls { min-height: 44px; }
+  /* La case alimente « Créer un paquet » : c'est LA cible de la fabrique
+     d'exercices, et elle rendait 13px. Agrandir la case seule serait laid ; on
+     élargit sa ZONE en l'enveloppant d'un <label> — cliquer les 44px bascule la
+     case (un padding sur le <td> ne l'aurait pas fait). */
+  .oaa-check input { width: 22px; height: 22px; }
+  .oaa-check-hit { min-width: 44px; min-height: 44px; }
+  .oaa-modsel, .oaa-sortsel select { min-height: 44px; }
 }
 .oaa-th-sort:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
 .oaa-empty .btn { margin-top: 14px; }

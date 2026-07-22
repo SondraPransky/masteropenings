@@ -4,7 +4,7 @@
 // Vendors (chess.js, @supabase/supabase-js) restent chargés en CDN dans index.html.
 // Dans un module ES, un identifiant non déclaré (Chess, supabase) se résout sur
 // globalThis → `new Chess()` et `supabase.createClient` marchent sans import vendor.
-import { _normFen, normalizeSAN, extractAllLines } from './lib/core.js';
+import { _normFen, normalizeSAN, extractAllLines, fig, PIECE_SYMS } from './lib/core.js';
 import { isPlayerMove, _buildDrillTree, _treePlayerPositions, _materialHint } from './lib/tree.js';
 import {
   oppSeenKey, _commentDelay, _drillSessions, countPlayerMoves,
@@ -287,11 +287,8 @@ function escapeHtml(s) {
 }
 
 // Notation figurine : remplace K/Q/R/B/N par les symboles Unicode
-const PIECE_SYMS = { K:'♔', Q:'♕', R:'♖', B:'♗', N:'♘' };
-function fig(san) {
-  if (!san) return san;
-  return san.replace(/^([KQRBN])/, m => PIECE_SYMS[m] || m);
-}
+// fig + PIECE_SYMS → lib/core.js (importés ci-dessus). Ils y vivent parce que la
+// liste des modules les consomme AVANT que le pont window ne soit posé.
 // Remplace les coups de pièce (SAN) INLINE dans un texte (commentaire) par la figurine :
 // « après Nb5 » → « après ♘b5 ». Ne touche pas aux mots (ancré sur un motif SAN strict :
 // lettre de pièce + éventuelle désambiguïsation + case d'arrivée). À appliquer APRÈS escapeHtml.
