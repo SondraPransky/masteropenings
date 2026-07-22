@@ -62,7 +62,11 @@ Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un pr
 
 **Résultat sur `testcoach`** : dossier « 776 - Gambit Mieses » = **1 module « Gambit Mieses dans la scandinave », 4 chapitres, 567 positions** (Le Gambit Mieses dans la Scandinave · L'idée générale · L'antidote · Quelques idées pour les blancs). 3 DELETE 204, relu depuis Supabase.
 
-**Reste** : le fonds a probablement d'autres doublons du même type (fichiers `*1/2/3.pgn` à côté d'un fichier principal) — l'outil est là pour ça, dossier par dossier, **l'arbitrage restant à l'utilisatrice**. Et le `localStorage` de dev garde ses 7 anciens modules tant qu'on ne recharge pas depuis Supabase avec un vrai login.
+**⚠ Convention de nommage (règle donnée par l'utilisatrice)** : en français, **un nom d'ouverture dérivé d'une nationalité ou d'un pays prend toujours une MAJUSCULE** — « la **S**candinave », « l'**I**talienne », « la **S**icilienne », « la **F**rançaise », « l'**E**spagnole ». C'est le nom propre d'une ouverture, pas un adjectif. Ajoutée aux Do's du DESIGN.md ; vaut pour les noms de modules, les libellés, les toasts et tout texte généré. *(Le fonds la respectait déjà partout — vérifié : **0 occurrence en minuscule** sur les 30 modules et leurs 72 libellés de chapitre. La seule venait de moi, en recopiant littéralement la casse d'une réponse rapide au lieu d'appliquer la convention du corpus.)*
+
+**État du compte `testcoach` après ce nettoyage : 30 modules, 72 chapitres, 20 dossiers** (33 avant les 3 suppressions).
+
+**Reste** : deux dossiers portent encore plusieurs modules et sont des candidats au même traitement — **`767 - Rubinstein Cxe5` (2 modules)** et **`770 - Gambit danois` (3 modules)** ; le §6 note d'ailleurs que ces deux dossiers sont surtout des **exercices**, à router vers des paquets plutôt qu'à garder comme modules. `Ouvertures en vogue` (7 modules) est légitime : 7 ouvertures distinctes. **L'arbitrage reste à l'utilisatrice** — l'outil inspecte sans rien toucher. Et le `localStorage` de dev garde ses 7 anciens modules tant qu'on ne recharge pas depuis Supabase avec un vrai login.
 
 ### 🔖 Session du 21 juillet 2026 (4e) — ▶ REFONTE de la vue MODULES coach (grille de cartes → répertoire en lignes)
 
