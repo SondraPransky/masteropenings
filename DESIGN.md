@@ -225,6 +225,8 @@ Liste des modules du coach, à l'échelle (30-200 entrées). **Sections = le cam
 
 ⚠ **Pas de `transform` au survol** (fond seulement) : c'est lui qui crée un contexte d'empilement et piège un menu `position:fixed` — le bug qui a coûté 4 passes sur `.mcard`. Une ligne de liste ne lévite pas.
 
+**Au téléphone, une ligne devient 3 rangées** (nom · ligne d'ouverture · compteurs + actions en icônes). Une ligne d'une seule rangée y est impossible : « Jouer » + « Assigner » + ⋯ pèsent 220px, et avec la gouttière le coût fixe atteint 298px sur 303 disponibles — il ne restait **5px** au nom et à la ligne d'ouverture. Ce qui identifie un module passe avant sa compacité.
+
 ### L'Échiquier (composant signature)
 Canvas central avec pièces cburnett (SVG locaux), coordonnées, flèches/formes d'annotation. Les mini-échiquiers (`renderStaticBoard`, grille 8 rangées explicites) portent les positions dans les tables, tooltips (`wsTip`) et cartes d'exercices. C'est LA source d'identité visuelle — tout écran qui parle d'une position la montre.
 
@@ -236,9 +238,11 @@ Canvas central avec pièces cburnett (SVG locaux), coordonnées, flèches/formes
 - **Do** passer toute notation et toute donnée chiffrée en JetBrains Mono `tabular-nums` (les compteurs bougent en direct).
 - **Do** montrer l'échiquier (mini ou tooltip) chaque fois qu'on parle d'une position.
 - **Do** respecter `prefers-reduced-motion` sur chaque animation ; easings ease-out, 120–300ms, propriétés explicites.
-- **Do** donner ≥40px de cible tactile (`.btn-ico`, `min-height` sous `hover:none`) — le public inclut des enfants sur téléphone.
+- **Do** donner **44px** de cible tactile (`min-height`/`min-width` sous `hover:none`) — le public inclut des enfants sur téléphone. Ces règles sont tactiles : les relever ne touche jamais le desktop. ⚠ Agrandir un contrôle ne suffit pas s'il vit dans un conteneur rembourré : c'est la **zone cliquable** qu'il faut élargir (un `<label>` autour d'une case, `align-self: stretch` + padding vertical nul pour un champ), sinon on mesure 44 et l'utilisateur tape à côté.
 - **Do** identifier un contenu d'échecs par **son échiquier ou ses coups**, jamais par son seul nom : une liste d'ouvertures porte sa ligne (`.mrow-line`), une position porte son mini-échiquier. C'est le pendant en gestion de la règle « montrer l'échiquier ».
 - **Do** faire porter à un niveau de navigation une information réelle : un groupement dont la plupart des entrées sont des singletons (mesuré : 14 dossiers sur 19) est un mur, pas une hiérarchie — il redevient un filtre.
+- **Do** garder les données de table **chiffrées** : « −0,45 » avec l'unité dans l'en-tête, jamais la phrase « perd 0,45 pion ». La forme longue vit en légende, en tooltip et en modale. (Mesuré : la phrase passait à 6 lignes dans une colonne de 60px, poussait la rangée à 122px et rejetait la criticité **et** le bouton d'action hors de l'écran dès 1366px.)
+- **Do** plafonner une longue liste **en CSS** au point de rupture, avec une porte « Voir les N autres » : le point de rupture reste dans la feuille de style, le JS ne pose qu'une classe — et comme rien n'est re-rendu, la sélection en cours survit à l'ouverture.
 
 ### Don't:
 - **Don't** reproduire « le dashboard SaaS générique » (PRODUCT.md) : cartes identiques, gros KPI + gradient, fond crème/beige, eyebrows en petites capitales tracked.
@@ -247,3 +251,8 @@ Canvas central avec pièces cburnett (SVG locaux), coordonnées, flèches/formes
 - **Don't** retomber dans « le corporate froid et gris » : la chaleur passe par les figurines, le ton du copy et l'encouragement — pas par un beige plaqué.
 - **Don't** utiliser `--gold` pour un deuxième accent : l'ambre est un état (échéance/attention), l'or des badges, jamais une décoration.
 - **Don't** écrire `transition: all`, une ombre noire pure, un `border-left` coloré >1px, ou un gradient text — bannis.
+- **Don't** emprunter une classe pour son style sans hériter de sa **structure**. `.oaa-table` portait `.wsx-table` pour 4 déclarations cosmétiques et récupérait son reflow en cartes sous 640px, écrit pour une table à 3 colonnes dont les rangées portent `.wsx-tr` : `<thead>` masqué (donc **tout le tri** perdu) et 9 cellules empilées sans étiquette. **Une classe partagée transporte ses media queries** — dupliquer 4 lignes de style coûte moins cher qu'un héritage invisible.
+- **Don't** conclure d'un « 0 débordement » qu'une vue tient au téléphone. Le répertoire ne débordait pas : il **écrasait** le nom et la ligne d'ouverture à 5px. Le bon indicateur est *ce qui reste lisible et atteignable*, jamais *ce qui dépasse*.
+
+### Named Rule — la troncature vit sur un élément interne
+`max-width` sur un `<td>` n'est qu'une **indication** en `table-layout: auto` : le navigateur l'outrepasse (mesuré — colonne à 260px pour un max de 200). Toute troncature de cellule se pose sur un enfant (`.oaa-line-t`), qui, lui, la respecte. Corollaire : quand plusieurs colonnes se disputent la place, c'est la colonne **élastique** (le contexte) qui cède, jamais la donnée décisive ni l'action.

@@ -18,6 +18,38 @@ L’application doit permettre :
 **Phase : le refactoring est terminé → on entre dans la construction produit.**
 Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un prof — toi — + ses élèves) ; le **multi-coachs viendra après**. Pas encore d’utilisateurs réels.
 
+### 🔖 Session du 22 juillet 2026 — ▶ `/impeccable audit` (Analyse d'ouvertures + vue modules) : 16/20 → corrigé
+
+**Audit technique des deux surfaces les plus récentes, au volume réel** (75 modules locaux, doc OA de 60 erreurs sur 5 tranches), mesuré au navigateur dans les 2 thèmes. Score **16/20** — 0 P0, **3 P1, tous responsive**. `typecheck` + **159 tests** (+7) + build verts, 0 erreur console.
+
+**Le socle était sain** : 0 échec de contraste sur 1 125 éléments × 2 thèmes × 4 vues (la règle de l'encre tient), hiérarchie de titres propre, `aria-pressed`/`aria-sort`/`focus-visible` partout, 0 `transition: all`, 12 blocs `reduced-motion`, menu ⋯ correctement clamé et retourné à 375px.
+
+#### Les 3 P1 (tous invisibles à un test de débordement)
+| Défaut (mesuré) | Correctif |
+|---|---|
+| **Le répertoire réduisait chaque module à UNE LETTRE au téléphone.** Coût fixe d'une ligne = **298px** (num 34 + gaps 20 + actions 220 + padding 24) pour 303 disponibles → **5px** au nom ET à la ligne d'ouverture. Il fallait un viewport de **550px** pour 180px de nom. | Actions en **icônes seules** (patron de la nav coach) **+ nom et ligne sur leur propre rangée pleine largeur**. Les icônes seules ne suffisaient pas : mesuré, ça ne rendait que 81px. Nom **223px non tronqué**, ligne **235px entière**. Libellé masqué en `.sr-only`, jamais `display:none` (c'est le nom accessible du bouton). |
+| **Les tables OA perdaient leurs en-têtes — et tout le tri — sous 640px.** `.oaa-table` portait `.wsx-table` pour 4 déclarations cosmétiques et héritait de son **reflow en cartes**, écrit pour une table à 3 colonnes dont les rangées portent `.wsx-tr`. Résultat : `thead` masqué (**0/3 boutons de tri**), 9 cellules empilées **sans étiquette ni carte**, 213px par erreur, **15,7 écrans**. Les 4 tables de la section touchées. | **Découplage** (style local) + carte mobile **délibérée** : `data-l` sur chaque cellule (« Meilleur a6 », « Criticité 9,40 ») et **select de tri** qui remplace le `thead` masqué. Flex plutôt qu'une grille à 9 zones (une cellule absente ne laisse pas de trou). |
+| **Criticité et bouton loupe hors écran dès 1366px** — 115px cachés à 1280, rangées à **122px** parce que `fmtLoss` rend une **phrase** (« perd 0,45 pion ») dans une colonne de 60px → 6 lignes. Exactement le défaut de Points faibles corrigé le 16/07. | `fmtLossShort`/`fmtDwrShort` pour la table (l'unité passe dans l'en-tête), phrase longue conservée en légende/tooltip/modale. Aperçu épinglé **rétréci à 208px** entre 961 et 1440 plutôt que masqué (l'arbitrage produit est « épinglé ET modale »). **1280 et 1366 : 0px caché, rangées 51px, 8,5→3,5 et 9,5→3,9 écrans.** |
+
+#### ⚠️ 3 bugs trouvés en chemin (aucun n'était cherché)
+1. **Les figurines n'apparaissaient JAMAIS dans le répertoire.** `renderDrillList` s'exécute **avant** que `window.fig` ne soit posé, et rien ne re-rend la liste → le répertoire sortait en SAN brut (`Nf6`) **toute la session**. La mémoïsation du 21/07 avait traité le *cache*, pas l'*ordonnancement*. → **`fig` + `PIECE_SYMS` descendent dans `lib/core.js`** (fonction pure) et s'importent ; `app.js` les réexporte sur window pour les 4 autres shims. Un import ES n'a pas ce problème. Vérifié **au premier rendu d'une page fraîche**, seule condition qui le reproduit.
+2. **`max-width` sur un `<td>` est ignoré** en `table-layout: auto` (colonne à 260px pour un max de 200). La troncature doit vivre sur un enfant → `.oaa-line-t`.
+3. **Plateau étiré.** `.oaa-pin-wrap > div` n'écrasait que la **largeur**, or `renderStaticBoard` pose width **et** height en inline → un plateau rétréci devenait 182×260 : cases en rectangles et calque de flèches (viewBox 8×8, letterboxé) désaligné. Latent depuis toujours, révélé par le redimensionnement. → `height:auto` + `aspect-ratio:1`.
+
+#### P2/P3 livrés
+- **Cibles tactiles** : la règle générique disait « ~40px » et rendait **38**. `.btn-sm` 38→**44**, `.btn` (« + Créer ») 35→44 (aucune règle ne le couvrait), `<select>` 39→44, champ de recherche wrapper 39 / input **21**→44. ⚠ `align-self:stretch` seul donnait 44−16 de padding = 28px : le padding vertical passe à 0. Vérifié qu'un clic en haut du champ atteint bien l'input. **0 cible sous 44px** sur les 2 surfaces. Règles `hover:none` → **desktop inchangé**.
+- **Plafond mobile de la liste OA** : 8 erreurs + porte « Voir les N autres » (patron Points faibles) → **10,1 → 1,3 écran** ; desktop **non plafonné**. Le plafond est en **CSS** (`:nth-of-type(n+9)`), le JS ne pose qu'une classe → aucun re-rendu, **la sélection en cours survit** (vérifié).
+- **Carte thermique** : `aria-label` par cellule et **3 niveaux enfin distincts** (2 et 3 partageaient `--red-dim`, seul un anneau les séparait) — l'information par la seule couleur violait le principe produit.
+- **Side-stripe supprimée** sur `.oaa-row.pinned` (le fond teinté portait déjà l'état ; c'était la forme bannie). Caches `_openLineCache`/`_posCache` **bornés** (clé `updatedAt` → chaque édition en créait une nouvelle, jamais réutilisée). « Survole une ligne » → « Choisis une ligne » (excluait le clavier).
+
+#### Laissé tel quel, volontairement
+**Rangées OA non épinglables au clavier** : rendre 60 rangées tabbables créerait 60 arrêts muets pour un lecteur d'écran, et le chemin clavier existe (case → focus pose l'aperçu, loupe → modale). Le « corriger » dégraderait l'a11y.
+**Les 26 findings du détecteur sont inchangés** (26 avant / 26 après : aucun introduit) — faux positifs déjà documentés (`layout-transition` sur les barres pilulaires, `side-tab` = rail neutre de `.study-var`, tirets cadratins FR, artefacts de parsing). **Non silencés** : ça demande un accord explicite.
+
+⚠️ **Piège d'outillage** : `.claude/launch.json` déclarait le port **5173** alors que `vite.config.js` épingle **5174** → l'onglet de preview partait sur un port mort à chaque navigation. Corrigé en local, **mais `.claude/` est gitignoré** : le correctif ne voyage pas, le piège réapparaîtra sur une autre machine.
+
+**Reste** : la dette de `font-size` inline sur ~10 `<select>` (battue par la règle 16px à coups de `!important`) ; `.impeccable/design.json` plus ancien que `DESIGN.md` (⚠ `/impeccable document` **régénère DESIGN.md depuis le code** et écraserait l'historique des décisions — rafraîchir le seul sidecar).
+
 ### 🔖 Session du 21 juillet 2026 (4e) — ▶ REFONTE de la vue MODULES coach (grille de cartes → répertoire en lignes)
 
 **Retour utilisatrice une fois le contenu chargé : « refais-moi le design des modules ».** Passe `/frontend-design` **au volume réel** (les 33 modules de `testcoach` réinjectés en local). Le système visuel (DESIGN.md) n'a **pas** bougé : aucune couleur, aucune police ajoutée — le problème était l'architecture de l'information, pas l'identité.
