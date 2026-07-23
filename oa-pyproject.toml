@@ -1,9 +1,15 @@
 # Trace des dependances du package vendore `oa/` (copie du package
 # `opening_analytics` du projet « Ouvertures - data », 2026-07-21).
-# Le repo de developpement d'oa reste "Desktop/Ouvertures - data" ; cette copie
-# sert le worker Supabase D18 (`oa/eecoach_worker.py`). Les DONNEES (cache
-# sqlite, 0 secret) ne sont JAMAIS copiees : `data-oa/` est gitignore et le
-# token Lichess vit dans l'env (`OA_LICHESS_TOKEN`), jamais dans le code.
+# ⚠ STATUT REVISE (23/07/2026) : le dossier local "Desktop/Ouvertures - data"
+# est SUPPRIME — `oa/` est desormais la copie de developpement, la seule a
+# jour (elle porte le fix timeout OA_STOCKFISH_MAX_S, absent de la source).
+# L'historique et les tests de la source restent clonables :
+# https://github.com/SondraPransky/opening-analytics (pousse a jour au 23/07).
+# Ne JAMAIS re-vendorer par-dessus oa/ : ca reintroduirait le worker qui se
+# fige. Cette copie sert le worker Supabase D18 (`oa/eecoach_worker.py`). Les
+# DONNEES (cache sqlite, 0 secret) ne sont JAMAIS copiees : `data-oa/` est
+# gitignore et le token Lichess vit dans l'env (`OA_LICHESS_TOKEN`), jamais
+# dans le code.
 
 [build-system]
 requires = ["setuptools>=68"]

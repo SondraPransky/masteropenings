@@ -10,10 +10,17 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
-# Repository root = two levels up from this file (src/opening_analytics/config.py).
-ROOT_DIR = Path(__file__).resolve().parents[2]
-DATA_DIR = ROOT_DIR / "data"
-REPORTS_DIR = ROOT_DIR / "reports"
+# Racine du repo EECoach = UN niveau au-dessus de ce fichier (oa/config.py).
+# ⚠ La source disait parents[2] (juste pour son layout src/opening_analytics/) ;
+# recopie telle quelle dans le vendoring, elle remontait jusqu'a Desktop —
+# `python -m oa.cli` aurait ecrit Desktop\data et Desktop\reports. Le projet
+# source « Ouvertures - data » est supprime (23/07) : cette copie est la seule
+# et doit etre autonome. Tout ce qui est local a oa vit sous data-oa/
+# (gitignore), la MEME convention que eecoach_worker.py → CLI et worker
+# partagent le meme cache au lieu d'en creer deux.
+ROOT_DIR = Path(__file__).resolve().parents[1]
+DATA_DIR = ROOT_DIR / "data-oa"
+REPORTS_DIR = DATA_DIR / "reports"
 
 # The 9 Lichess Opening Explorer rating buckets (lower bounds), D11.
 # Each value is the minimum Elo of a band; the API groups games accordingly.
