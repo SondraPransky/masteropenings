@@ -1137,6 +1137,17 @@ textarea {
 /* Zone cliquable étendue à 40px (cible tactile min.) sans changer le visuel */
 #theme-toggle::before { content: ""; position: absolute; inset: -4px; }
 #theme-toggle:hover { background: var(--surf3); color: var(--text); }
+/* Bascule d'icone (soleil <-> lune) : le JS remplace le <i>, donc l'icone
+   apparaissait d'un coup sec. On anime l'ENTREE du nouveau glyphe — scale
+   .25 -> 1, opacite 0 -> 1, flou 4px -> 0. Pose par la classe .ico-swap, que
+   seul le chemin du CLIC ajoute (jamais l'init) : rien ne s'anime au
+   chargement de la page. */
+@keyframes ico-swap-in {
+  from { opacity: 0; transform: scale(.25); filter: blur(4px); }
+  to   { opacity: 1; transform: scale(1);   filter: blur(0); }
+}
+.ico-swap { display: inline-block; animation: ico-swap-in .22s cubic-bezier(.2, 0, 0, 1); }
+@media (prefers-reduced-motion: reduce) { .ico-swap { animation: none; } }
 
 /* ══ ROLE BADGE NAV ══════════════════════════════ */
 .role-chip {
@@ -2814,10 +2825,14 @@ textarea {
   font-family: inherit; font-size: .74rem; font-weight: 500;
   padding: 6px 12px; border: 0; border-radius: 999px;
   background: transparent; color: var(--dim); cursor: pointer;
-  transition: color .15s, background-color .15s;
+  transition: color .15s, background-color .15s, transform .1s;
   white-space: nowrap;
 }
 .oaa-rail-stop:hover { color: var(--text-2); }
+/* Retour tactile au clic : son voisin direct .oaa-chip l'avait deja (passe du
+   17/07), les rails sont arrives apres (22/07) et l'avaient manque — deux
+   controles cote a cote qui ne repondent pas pareil sous le doigt. */
+.oaa-rail-stop:active { transform: scale(.96); }
 .oaa-rail-stop.on { color: var(--cyan-ink); font-weight: 700; }
 .oaa-rail-stop:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
 .oaa-params-count {

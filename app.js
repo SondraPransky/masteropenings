@@ -230,7 +230,13 @@ function toggleTheme() {
   document.documentElement.setAttribute('data-theme', next);
   localStorage.setItem('mc_theme', next);
   const btn = document.getElementById('theme-toggle');
-  if (btn) btn.innerHTML = next === 'dark' ? '<i class="ti ti-sun" aria-hidden="true"></i>' : '<i class="ti ti-moon" aria-hidden="true"></i>';
+  // `.ico-swap` n'est pose QUE sur le chemin du clic : l'init (DOMContentLoaded,
+  // juste dessous) remplace la meme icone sans classe, donc rien ne s'anime au
+  // chargement de la page — l'animation d'entree resterait sinon visible a
+  // chaque rechargement, ce qui la rend bruyante au lieu d'agreable.
+  if (btn) btn.innerHTML = next === 'dark'
+    ? '<i class="ti ti-sun ico-swap" aria-hidden="true"></i>'
+    : '<i class="ti ti-moon ico-swap" aria-hidden="true"></i>';
 }
 document.addEventListener('DOMContentLoaded', function() {
   const btn = document.getElementById('theme-toggle');
