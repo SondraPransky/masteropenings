@@ -1,4 +1,4 @@
-import { _normFen, leitnerSchedule, DEFAULT_LADDER_HOURS, normalizeSAN, extractAllLines, fig, figurineTitle } from '../lib/core.js';
+import { _normFen, leitnerSchedule, DEFAULT_LADDER_HOURS, normalizeSAN, extractAllLines, fig, figurineTitle, drillSelectGroups } from '../lib/core.js';
 
 // ─────────────────────────────────────────────────────────────
 describe('_normFen — clé de transposition', () => {
@@ -206,5 +206,64 @@ describe('figurineTitle — titres en notation mixte FR/EN', () => {
   test('valeurs vides', () => {
     expect(figurineTitle('')).toBe('');
     expect(figurineTitle(null)).toBe(null);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+describe('drillSelectGroups — le <select> de modules de la page drill', () => {
+  const M = (name, extra = {}) => ({ name, ...extra });
+
+  test('separe les ouvertures des paquets d\'exercices', () => {
+    const g = drillSelectGroups([
+      M('Grunfeld'), M('Tactiques', { isExercise: true }), M('Petroff'),
+    ]);
+    expect(g.map(x => x.label)).toEqual(['Ouvertures', 'Exercices']);
+    expect(g[0].items.map(i => i.label)).toEqual(['Grunfeld', 'Petroff']);
+    expect(g[1].items.map(i => i.label)).toEqual(['Tactiques']);
+  });
+
+  test('un seul groupe -> liste plate, pas d\'en-tete inutile', () => {
+    const g = drillSelectGroups([M('Grunfeld'), M('Petroff')]);
+    expect(g).toHaveLength(1);
+    expect(g[0].label).toBe('');
+  });
+
+  test('l\'index d\'origine est conserve malgre le tri (sel.value = S.idx)', () => {
+    const g = drillSelectGroups([M('Zorro'), M('Alpha')]);
+    expect(g[0].items.map(i => i.label)).toEqual(['Alpha', 'Zorro']);
+    expect(g[0].items.find(i => i.label === 'Zorro').i).toBe(0);
+    expect(g[0].items.find(i => i.label === 'Alpha').i).toBe(1);
+  });
+
+  test('homonymes desambigues par les mots du dossier (le numero saute)', () => {
+    const g = drillSelectGroups([
+      M('Gambit Koltanowski', { folder: '773 - Koltanowski - Noirs exd4' }),
+      M('Gambit Koltanowski', { folder: '774 - Koltanowski - Noirs Fxd4' }),
+    ]);
+    // Collation FR : « exd4 » precede « Fxd4 » (e avant f, insensible a la casse).
+    expect(g[0].items.map(i => i.label)).toEqual([
+      'Gambit Koltanowski — Koltanowski - Noirs exd4',
+      'Gambit Koltanowski — Koltanowski - Noirs Fxd4',
+    ]);
+  });
+
+  test('un nom UNIQUE ne recoit jamais de suffixe de dossier', () => {
+    const g = drillSelectGroups([M('Grunfeld', { folder: '760 - Grunfeld profond' })]);
+    expect(g[0].items[0].label).toBe('Grunfeld');
+  });
+
+  test('un dossier qui repete le nom n\'apporte rien -> pas de suffixe', () => {
+    const g = drillSelectGroups([
+      M('Petroff', { folder: '762 - Petroff' }), M('Petroff', { folder: '762 - Petroff' }),
+    ]);
+    expect(g[0].items.map(i => i.label)).toEqual(['Petroff', 'Petroff']);
+  });
+
+  test('figurines appliquees, et cas vides sans explosion', () => {
+    expect(drillSelectGroups([M('4.Cc4!? vs Petroff')])[0].items[0].label)
+      .toBe('4.♘c4!? vs Petroff');
+    expect(drillSelectGroups([])).toEqual([{ label: '', items: [] }]);
+    expect(drillSelectGroups(null)).toEqual([{ label: '', items: [] }]);
+    expect(drillSelectGroups([M('')])[0].items[0].label).toBe('(sans nom)');
   });
 });

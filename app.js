@@ -4,7 +4,7 @@
 // Vendors (chess.js, @supabase/supabase-js) restent chargés en CDN dans index.html.
 // Dans un module ES, un identifiant non déclaré (Chess, supabase) se résout sur
 // globalThis → `new Chess()` et `supabase.createClient` marchent sans import vendor.
-import { _normFen, normalizeSAN, extractAllLines, fig, PIECE_SYMS, figurineTitle } from './lib/core.js';
+import { _normFen, normalizeSAN, extractAllLines, fig, PIECE_SYMS, figurineTitle, drillSelectGroups } from './lib/core.js';
 import { isPlayerMove, _buildDrillTree, _treePlayerPositions, _materialHint } from './lib/tree.js';
 import {
   oppSeenKey, _commentDelay, _drillSessions, countPlayerMoves,
@@ -531,8 +531,13 @@ function initDrillPage() {
   document.getElementById('no-drill').style.display='none';
   document.getElementById('drill-ui').style.display='block';
 
+  // Groupe par nature + homonymes desambigues + tri alphabetique (drillSelectGroups,
+  // pur et teste). `value` reste l'index d'origine dans G.drills.
   const sel = document.getElementById('drill-sel');
-  sel.innerHTML = G.drills.map((d,i)=>`<option value="${i}">${escapeHtml(d.name)}</option>`).join('');
+  const opt = it => `<option value="${it.i}">${escapeHtml(it.label)}</option>`;
+  sel.innerHTML = drillSelectGroups(G.drills).map(g => g.label
+    ? `<optgroup label="${escapeHtml(g.label)}">${g.items.map(opt).join('')}</optgroup>`
+    : g.items.map(opt).join('')).join('');
   sel.value = S.idx;
 
   updateStudentBar();
@@ -790,6 +795,11 @@ function updateScores(){
   const pct=done?Math.round(S.ok/done*100):null;
   document.getElementById('sc-ok') .textContent=String(S.ok);
   document.getElementById('sc-ko') .textContent=String(S.ko);
+  // Accord du pluriel : les libelles etaient figes au pluriel dans le HTML, donc
+  // la bande de score affichait « 1 Erreurs » pendant toute une revision.
+  const okL=document.getElementById('sc-ok-lbl'), koL=document.getElementById('sc-ko-lbl');
+  if(okL) okL.textContent='Correct'+(S.ok>1?'s':'');
+  if(koL) koL.textContent='Erreur' +(S.ko>1?'s':'');
   const pctEl=document.getElementById('sc-pct');
   pctEl.textContent=pct!==null?pct+'%':'—';
   pctEl.style.color=pct===null?'var(--cyan)':pct>=70?'var(--green)':pct>=50?'var(--gold)':'var(--red)';

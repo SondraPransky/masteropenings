@@ -1551,6 +1551,15 @@ textarea {
 .sh-card-act:active { transform:scale(.96); }
 /* Zone cliquable étendue à 40px (le gap de 8px entre boutons évite tout chevauchement) */
 .sh-card-act::before { content:""; position:absolute; inset:-3px; border-radius:50%; }
+/* Au doigt, 40px reste sous la règle des 44px du projet — et c'est le bouton
+   « Réviser » de CHAQUE carte, le plus tapé de l'élève. On ne peut pas y arriver
+   en étendant le ::before (inset -5px ferait chevaucher deux zones voisines dans
+   un gap de 8px) : on agrandit donc le bouton lui-même, là où la place existe.
+   Desktop inchangé (34px visuels + 40px cliquables). */
+@media (hover: none) {
+  .sh-card-act { width: 44px; height: 44px; }
+  .sh-card-act::before { content: none; }
+}
 .sh-card-act:hover { filter:brightness(1.06); border-color:var(--cyan); color:var(--cyan); }
 /* Couche d'édition élève : le bouton s'allume quand l'élève a déjà greffé des lignes.
    Bleu = « écrit par l'élève » (le violet dit « écrit par le coach »). Couleur d'AUTEUR,

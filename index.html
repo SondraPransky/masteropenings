@@ -502,7 +502,8 @@
                 <div id="exp-results"></div>
                 <div id="exp-preview" class="exp-prevcol" style="display:none">
                   <div id="exp-prev-board"></div>
-                  <div id="exp-prev-cap" class="exp-prev-cap">Survolez une ligne</div>
+                  <!-- Les rangees sont tabbables et posent l'apercu au focus : « Survolez » excluait le clavier. -->
+                  <div id="exp-prev-cap" class="exp-prev-cap">Choisissez une ligne</div>
                 </div>
               </div>
               <div id="exp-pager" class="exp-pager" style="display:none"></div>
@@ -855,8 +856,8 @@
         <div class="card" id="score-card">
           <div class="clabel">Score</div>
           <div class="scores-row">
-            <div class="score-box"><div id="sc-ok"  class="score-val" style="color:var(--green)">0</div><div class="score-lbl">Corrects</div></div>
-            <div class="score-box"><div id="sc-ko"  class="score-val" style="color:var(--red)">0</div><div class="score-lbl">Erreurs</div></div>
+            <div class="score-box"><div id="sc-ok"  class="score-val" style="color:var(--green)">0</div><div id="sc-ok-lbl" class="score-lbl">Corrects</div></div>
+            <div class="score-box"><div id="sc-ko"  class="score-val" style="color:var(--red)">0</div><div id="sc-ko-lbl" class="score-lbl">Erreurs</div></div>
             <div class="score-box"><div id="sc-pct" class="score-val" style="color:var(--cyan)">—</div><div class="score-lbl">Réussite</div></div>
           </div>
         </div>
