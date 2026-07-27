@@ -1,0 +1,3 @@
+PuzzleId,FEN,Moves,Rating,RatingDeviation,Popularity,NbPlays,Themes,GameUrl,OpeningTags
+P1,r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 4 10,g8f6 d2d3 f8c5,1500,80,90,1000,fork middlegame,https://lichess.org/abcd1234#20,Italian_Game Italian_Game_Classical_Variation
+P5,r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3,a7a6 b5a4 g8f6,1450,70,85,800,fork pin,https://lichess.org/newgame1#5,Ruy_Lopez

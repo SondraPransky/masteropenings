@@ -18,6 +18,16 @@ L’application doit permettre :
 **Phase : le refactoring est terminé → on entre dans la construction produit.**
 Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un prof — toi — + ses élèves) ; le **multi-coachs viendra après**. Pas encore d’utilisateurs réels.
 
+### 🔖 Session du 27 juillet 2026 — ▶ SUPPRESSION du dossier source OTKB « opening-tactics-kb » (déménagement complet dans EECoach)
+
+**Demande utilisatrice : pouvoir supprimer le dossier `Desktop/opening-tactics-kb` entièrement.** Cas INVERSE de « Ouvertures - data » (supprimé le 23/07) : là le code était vendoré et la source poussée sur GitHub ; ici le code vendoré est **EN AVANCE** sur la source (bridge.py, reduce.py, serve-api, fen_key — 5 fichiers .py divergents, tous dans notre sens) mais **le repo source n'avait AUCUN remote** → son historique n'existait nulle part ailleurs. Déménagé, puis **chaque pièce vérifiée par l'acte** :
+- **`data-otkb/`** (gitignoré) = la base RÉDUITE `otkb-z.db` 5,74 Go (équivalence stricte du 22/07) **déplacée** depuis le dossier source + **`otkb-source-git.bundle`** (historique complet). ⚠ Preuve par re-clonage réel dans le scratchpad : **117 fichiers restaurés, HEAD `8b74726` strictement identique** au dossier source.
+- **`otkb/config.py`** : `DATA_DIR` → `data-otkb/`, `db_path` → `otkb-z.db` → **`py -m otkb serve-api` marche SANS `--db`** (vérifié : /health 1 207 204 puzzles, through 214 382 = l'étalon exact). `import otkb` résout sur `maiachess/otkb/`, **0 référence** au chemin source dans le code.
+- **`otkb/docs/`** = les 6 .md racine (PLAN/SPEC/DESIGN/PRODUCT/CLAUDE/README, 73 Ko de décisions) + `launch.json.otkb-web` ; **`otkb/tests-py/`** = les 18 fichiers pytest + fixtures.
+- **Inventaire exhaustif des gitignorés du dossier source** (ce que le bundle ne couvre pas) : caches jetables · original 18,4 Go (remplacé par la réduite) · CSV Lichess 1,1 Go (re-téléchargeable) · artefacts `otkb-web*.sqlite` (piste abandonnée, ne fait pas le through-position) · **`config.local.toml` = le token Lichess, seul point resté à la charge de l'utilisatrice** (récupérer ou révoquer avant suppression).
+
+**Suppression validée** (~25 Go récupérés). ⚠ Comme pour `oa/` : **la copie `otkb/` est désormais LA copie de développement — ne jamais re-vendorer par-dessus.**
+
 ### 🔖 Session du 23 juillet 2026 — ▶ REVUE COMPLÈTE des parcours (testeur, élève + coach) : 3 bugs de données, 2 arbitrages
 
 **Demande utilisatrice : « vérifie les parcours utilisateurs un par un, toutes les fonctionnalités, élève comme prof ».** Parcours marchés au volume réel (les 26 modules du dump lecture-seule + les 2 docs OA), en mesurant au DOM (les screenshots timent out, piège connu §8). typecheck + **191 tests** + build verts, **0 erreur console**, 0 débordement sur les 8 sections coach et les 2 pages élève, **0 échec de contraste AA en sombre** (7 sections coach + accueil élève).

@@ -1,0 +1,5 @@
+PuzzleId,FEN,Moves,Rating,RatingDeviation,Popularity,NbPlays,Themes,GameUrl,OpeningTags
+P1,r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 4 10,g8f6 d2d3 f8c5,1500,80,90,1000,fork middlegame,https://lichess.org/abcd1234#20,Italian_Game Italian_Game_Classical_Variation
+P2,rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2,g1f3 b8c6,1400,75,88,900,pin short,https://lichess.org/efgh5678#3,
+P3,8/8/8/8/8/8/8/K6k w - - 0 30,a1a2,1600,70,80,500,sacrifice,https://lichess.org/deep0001#59,Sicilian_Defense
+P4,this is not a valid fen,a1a2,1200,60,70,300,fork,https://lichess.org/bad00001#10,French_Defense

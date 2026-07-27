@@ -18,9 +18,11 @@ Thumbs.db
 tests/e2e/.auth/
 
 # OTKB (usine locale monorepo) — CODE versionné, DONNÉES et SECRET jamais commités.
-# Le corpus (.db 18 Go, CSV 1 Go) reste sur la machine ; le pont le sert en local.
+# La base servie vit dans data-otkb/ (otkb-z.db, réduite, 5,7 Go) + le bundle git
+# de l'ancien repo source « opening-tactics-kb » (supprimé, sans remote GitHub).
 otkb/**/__pycache__/
 otkb/data/
+data-otkb/
 *.db
 *.sqlite
 lichess_db_puzzle.csv

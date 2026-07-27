@@ -13,9 +13,12 @@ import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 
-# Racine du projet = dossier parent de otkb/
+# Racine du projet = dossier parent de otkb/ (= la racine EECoach depuis le
+# vendoring). Les donnees vivent dans data-otkb/ (gitignore) — la base servie
+# est la REDUITE otkb-z.db (equivalence stricte verifiee le 22/07/2026) ; le
+# dossier source « opening-tactics-kb » est supprime, l'original 18 Go avec.
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-DATA_DIR = PROJECT_ROOT / "data"
+DATA_DIR = PROJECT_ROOT / "data-otkb"
 
 
 @dataclass(slots=True)
@@ -24,7 +27,7 @@ class Config:
 
     # Chemins (données lourdes -> data/, gitignoré)
     data_dir: Path = DATA_DIR
-    db_path: Path = DATA_DIR / "otkb.db"
+    db_path: Path = DATA_DIR / "otkb-z.db"
     csv_path: Path = DATA_DIR / "lichess_db_puzzle.csv"
 
     # Filtre passe 1 (SPEC §4) : OpeningTags non vide ET fullmove < seuil.

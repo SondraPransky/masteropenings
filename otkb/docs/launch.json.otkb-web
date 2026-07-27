@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "otkb-ui",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "otkb", "ui", "--port", "8080", "--no-show"],
+      "port": 8080
+    }
+  ]
+}
