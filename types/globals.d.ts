@@ -244,6 +244,9 @@ interface Window {
   _srLadderAddRung?: (...a: any[]) => any;
   _srLadderRemoveRung?: (...a: any[]) => any;
   srFlashDone?: (...a: any[]) => any;
+  srFlashFlip?: (...a: any[]) => any;
+  _flashCorrection?: (...a: any[]) => any;
+  _flashCorrectionNext?: (...a: any[]) => any;
 
   // — Drill (lib/drill.js) —
   startLineDrill?: (...a: any[]) => any;
