@@ -1,4 +1,5 @@
 import { isPlayerMove, _buildDrillTree, _treePlayerPositions, _treePositionsScan, _materialHint,
+         compareGameToTree, compareGameToRepertoire,
          _mergeStudentLayer, _diffAgainstCoach, _countLayerMoves, _editorTreeToDrillTree,
          buildTreeModule, gameModuleName, chapterCount, chapterPgn, applyChapTitles, shiftChapTitles } from '../lib/tree.js';
 import { extractAllLines, splitPgnGames, pgnStartFen, replacePgnGame } from '../lib/core.js';
@@ -473,5 +474,46 @@ describe('shiftChapTitles — recalage de la surcouche quand une partie bouge', 
   test('surcouche absente ou cles parasites : ne casse pas', () => {
     expect(shiftChapTitles(null, 0, -1)).toEqual({});
     expect(shiftChapTitles({ zz: 'X', '1': 'B' }, 0, -1)).toEqual({ '0': 'B' });
+  });
+});
+
+describe('compareGameToRepertoire — sortie de theorie', () => {
+  // Repertoire Blancs : 1.e4 e5 2.Nf3 (et 2.Bc4 en alternative)
+  const rep = buildTreeModule({ id: 1, name: 'Italienne', side: 'w',
+    pgn: '[Event "r"]\n\n1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 *' });
+  const repAlt = buildTreeModule({ id: 2, name: 'Roi', side: 'w',
+    pgn: '[Event "r"]\n\n1. e4 e5 2. Nf3 Nc6 (2... d6 3. d4) 3. Bb5 *' });
+
+  test('deviation du camp enseigne = sortie, avec coups attendus', () => {
+    const r = compareGameToTree(['e4', 'e5', 'd4'], new Chess().fen(), rep);
+    expect(r.exit).toMatchObject({ ply: 2, moveNo: 2, color: 'w', played: 'd4' });
+    expect(r.exit.expected).toEqual(['Nf3']);
+    expect(r.depth).toBe(2);
+  });
+  test('coup ADVERSE hors livre = pas de sortie, le livre se termine', () => {
+    const r = compareGameToTree(['e4', 'c5'], new Chess().fen(), rep);
+    expect(r.exit).toBeNull();
+    expect(r.depth).toBe(1);   // e4 suivi ; apres c5 la position n est plus dans l arbre
+  });
+  test('partie qui suit le livre jusqu au bout : depth pleine, pas de sortie', () => {
+    const r = compareGameToTree(['e4', 'e5', 'Nf3', 'Nc6', 'Bc4', 'Bc5'], new Chess().fen(), rep);
+    expect(r.exit).toBeNull();
+    expect(r.depth).toBe(6);
+  });
+  test('compareGameToRepertoire choisit le module au suivi le plus profond', () => {
+    const pgn = '1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 *';
+    const best = compareGameToRepertoire(pgn, [repAlt, rep]);
+    expect(best.d.name).toBe('Italienne');
+    expect(best.depth).toBe(6);
+  });
+  test('une sortie profonde prime, et les paquets d exercices sont ignores', () => {
+    const pgn = '1. e4 e5 2. Nf3 Nc6 3. d4 *';   // 3.d4 : sortie du rep (attendu Bc4)
+    const best = compareGameToRepertoire(pgn, [rep, { ...rep, id: 9, isExercise: true }]);
+    expect(best.d.id).toBe(1);
+    expect(best.exit.played).toBe('d4');
+    expect(best.exit.expected).toEqual(['Bc4']);
+  });
+  test('correspondance trop courte (< 4 demi-coups, pas de sortie) = null', () => {
+    expect(compareGameToRepertoire('1. d4 d5 *', [rep])).toBeNull();
   });
 });

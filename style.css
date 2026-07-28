@@ -2479,6 +2479,38 @@ textarea {
   margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .lib-entry-line .mv-num { color: var(--dim); margin-right: 1px; }
+/* Sortie de répertoire / suivi — icône + texte, jamais la couleur seule. */
+.lib-entry-rep {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  font-size: .74rem; margin-top: 3px; line-height: 1.4;
+}
+.lib-entry-rep.warn { color: var(--gold-ink); }
+.lib-entry-rep.ok   { color: var(--green-ink); }
+.lib-entry-rep-mod  { color: var(--dim); }
+
+/* Même information côté coach (rangée de partie partagée) + bouton exercice. */
+.pg-rep {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  font-size: .76rem; color: var(--gold-ink);
+  padding: 6px 10px 8px; line-height: 1.4;
+}
+.pg-rep-mod { color: var(--dim); }
+.pg-rep-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  margin-left: auto; padding: 4px 10px; min-height: 28px;
+  border: 1px solid var(--cyan-glow); border-radius: var(--rs);
+  background: var(--cyan-dim); color: var(--cyan-ink);
+  font: inherit; font-size: .74rem; font-weight: 600; cursor: pointer;
+  transition: background-color .12s ease, border-color .12s ease;
+}
+.pg-rep-btn:hover, .pg-rep-btn:focus-visible { background: var(--cyan-dim-h); border-color: var(--cyan); }
+.pg-rep-btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 1px; }
+@media (hover: none) {
+  .pg-rep-btn { min-height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pg-rep-btn { transition: none; }
+}
 
 /* Note « filtrées par l'échiquier » au-dessus de la liste. */
 .lib-pos-note {
