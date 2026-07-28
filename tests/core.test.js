@@ -1,5 +1,5 @@
 import { _normFen, leitnerSchedule, DEFAULT_LADDER_HOURS, normalizeSAN, extractAllLines, fig, figurineTitle, drillSelectGroups,
-         splitPgnGames, insertPgnGames, removePgnGame, pgnMainlineSans } from '../lib/core.js';
+         splitPgnGames, insertPgnGames, removePgnGame, pgnMainlineSans, frSanToEnglish } from '../lib/core.js';
 
 // ─────────────────────────────────────────────────────────────
 describe('_normFen — clé de transposition', () => {
@@ -332,5 +332,26 @@ describe('pgnMainlineSans — ligne principale sans rejouer', () => {
   it('PGN vide ou sans coup : []', () => {
     expect(pgnMainlineSans('')).toEqual([]);
     expect(pgnMainlineSans('[Event "x"]\n\n*')).toEqual([]);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+describe('frSanToEnglish — saisie francaise depuis une feuille', () => {
+  it('traduit les lettres de piece francaises', () => {
+    expect(frSanToEnglish('Cf3')).toBe('Nf3');
+    expect(frSanToEnglish('Fxc4')).toBe('Bxc4');
+    expect(frSanToEnglish('Txd1+')).toBe('Rxd1+');
+    expect(frSanToEnglish('Dh5')).toBe('Qh5');
+    expect(frSanToEnglish('Rg1')).toBe('Kg1');   // R francais = ROI, jamais la tour
+  });
+  it('promotion e8=D -> e8=Q', () => {
+    expect(frSanToEnglish('e8=D')).toBe('e8=Q');
+    expect(frSanToEnglish('axb8=T')).toBe('axb8=R');
+  });
+  it('coups de pion et roques inchanges', () => {
+    expect(frSanToEnglish('e4')).toBe('e4');
+    expect(frSanToEnglish('exd5')).toBe('exd5');
+    expect(frSanToEnglish('O-O')).toBe('O-O');
+    expect(frSanToEnglish('O-O-O')).toBe('O-O-O');
   });
 });

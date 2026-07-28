@@ -160,6 +160,7 @@ interface Window {
   qeReset?: (...a: any[]) => any;
   qePlaySan?: (...a: any[]) => any;
   qeSave?: (...a: any[]) => any;
+  qeTypeSubmit?: (...a: any[]) => any;          // coup tape au clavier (notation FR/EN)
   openChapterTransfer?: (...a: any[]) => any;   // copier/déplacer un chapitre vers un autre module (lib/chapters.js)
   chapterTransferMode?: (...a: any[]) => any;
   chapterTransferRun?: (...a: any[]) => any;

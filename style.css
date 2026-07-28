@@ -2574,6 +2574,23 @@ textarea {
 .lib-qe-acts { display: flex; gap: 6px; flex-wrap: wrap; }
 .lib-qe-right { flex: 1; min-width: min(240px, 100%); display: flex; flex-direction: column; gap: 10px; }
 .lib-qe-hint { font-size: .8rem; color: var(--dim); line-height: 1.5; text-wrap: pretty; }
+/* Saisie clavier depuis la feuille : le repère « Coup N — camp » garde la
+   ligne de lecture, le champ enchaîne les coups. */
+.lib-qe-type { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.lib-qe-turn {
+  flex: none; font-family: 'JetBrains Mono', monospace; font-size: .72rem;
+  font-weight: 600; color: var(--cyan-ink);
+  background: var(--cyan-dim); border: 1px solid var(--cyan-glow);
+  border-radius: 999px; padding: 3px 10px;
+}
+.lib-qe-type input {
+  flex: 1; min-width: 110px; max-width: 200px; padding: 8px 10px;
+  border: 1px solid var(--border); border-radius: var(--rs);
+  background: var(--surf); color: var(--text);
+  font-family: 'JetBrains Mono', monospace; font-size: .84rem;
+}
+.lib-qe-type input:focus-visible { outline: 2px solid var(--cyan); outline-offset: -1px; }
+
 .lib-qe-moves {
   font-family: 'JetBrains Mono', monospace; font-size: .8rem; line-height: 1.7;
   color: var(--text); overflow-wrap: anywhere;
