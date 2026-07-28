@@ -23,10 +23,12 @@ import './lib/sr.js';
 import './lib/coach.js';
 import './lib/student.js';
 import './lib/modules.js';
+import './lib/chapters.js';
 import './lib/maia.js';
 import './lib/board.js';
 import './lib/mastery.js';
 import './lib/library.js';
+import './lib/library-etabli.js';
 import './lib/setup.js';
 import './lib/exercises.js';
 // Client Supabase partagé (auth ici + couche données) et couche d'accès données extraite.

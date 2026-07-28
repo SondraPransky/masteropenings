@@ -1,4 +1,5 @@
-import { _normFen, leitnerSchedule, DEFAULT_LADDER_HOURS, normalizeSAN, extractAllLines, fig, figurineTitle, drillSelectGroups } from '../lib/core.js';
+import { _normFen, leitnerSchedule, DEFAULT_LADDER_HOURS, normalizeSAN, extractAllLines, fig, figurineTitle, drillSelectGroups,
+         splitPgnGames, insertPgnGames, removePgnGame, pgnMainlineSans } from '../lib/core.js';
 
 // ─────────────────────────────────────────────────────────────
 describe('_normFen — clé de transposition', () => {
@@ -265,5 +266,71 @@ describe('drillSelectGroups — le <select> de modules de la page drill', () => 
     expect(drillSelectGroups([])).toEqual([{ label: '', items: [] }]);
     expect(drillSelectGroups(null)).toEqual([{ label: '', items: [] }]);
     expect(drillSelectGroups([M('')])[0].items[0].label).toBe('(sans nom)');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+describe('insertPgnGames / removePgnGame — transfert de chapitres', () => {
+  const A = '[Event "A"]\n\n1. e4 e5 *';
+  const B = '[Event "B"]\n\n1. d4 d5 *';
+  const C = '[Event "C"]\n\n1. c4 c5 *';
+
+  it('ajoute une partie a la fin par defaut', () => {
+    const out = insertPgnGames(A + '\n\n' + B, C);
+    expect(splitPgnGames(out)).toEqual([A, B, C]);
+  });
+  it('insere a l index demande', () => {
+    expect(splitPgnGames(insertPgnGames(A + '\n\n' + B, C, 1))).toEqual([A, C, B]);
+  });
+  it('un chunk SANS [Event] recoit un en-tete : sinon il fusionnerait avec le chapitre precedent', () => {
+    const out = insertPgnGames(A, '1. Nf3 Nf6 *');
+    expect(splitPgnGames(out)).toHaveLength(2);
+    expect(splitPgnGames(out)[1]).toContain('1. Nf3 Nf6');
+  });
+  it('un collage multi-parties devient autant de chapitres', () => {
+    expect(splitPgnGames(insertPgnGames(A, B + '\n\n' + C))).toHaveLength(3);
+  });
+  it('le BOM UTF-8 des exports ChessBase ne masque plus le [Event] de tete', () => {
+    const out = insertPgnGames(A, '﻿' + B);
+    expect(splitPgnGames(out)).toEqual([A, B]);
+  });
+  it('colle vide / PGN vide : sans effet', () => {
+    expect(insertPgnGames(A, '   ')).toBe(A);
+    expect(splitPgnGames(insertPgnGames('', B))).toEqual([B]);
+  });
+
+  it('retire la partie demandee et laisse les autres intactes', () => {
+    expect(splitPgnGames(removePgnGame([A, B, C].join('\n\n'), 1))).toEqual([A, C]);
+  });
+  it('retirer la seule partie rend un PGN vide (l appelant doit refuser)', () => {
+    expect(removePgnGame(A, 0)).toBe('');
+  });
+  it('index hors bornes : PGN inchange', () => {
+    expect(removePgnGame(A + '\n\n' + B, 5)).toBe(A + '\n\n' + B);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+describe('pgnMainlineSans — ligne principale sans rejouer', () => {
+  it('extrait les SAN, saute numeros / commentaires / NAG / resultat', () => {
+    const pgn = '[Event "x"]\n\n1. e4 $1 {bon} e5 2. Nf3 {[%cal Ge1e4]} Nc6 3. Bb5!? a6 1-0';
+    expect(pgnMainlineSans(pgn)).toEqual(['e4', 'e5', 'Nf3', 'Nc6', 'Bb5', 'a6']);
+  });
+  it('ignore les variantes a toute profondeur', () => {
+    const pgn = '1. e4 e5 (1... c5 2. Nf3 (2. Nc3 Nc6)) 2. Nf3 *';
+    expect(pgnMainlineSans(pgn)).toEqual(['e4', 'e5', 'Nf3']);
+  });
+  it('plafond maxPlies + roque + echec/mat conserves', () => {
+    const pgn = '1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. O-O Qh4 5. Qe2 Qxf2+ *';
+    expect(pgnMainlineSans(pgn, 7)).toEqual(['e4', 'e5', 'Nf3', 'Nc6', 'Bc4', 'Bc5', 'O-O']);
+    expect(pgnMainlineSans(pgn)).toContain('Qxf2+');
+  });
+  it('multi-parties : seule la PREMIERE partie est lue', () => {
+    const pgn = '[Event "A"]\n\n1. e4 *\n\n[Event "B"]\n\n1. d4 *';
+    expect(pgnMainlineSans(pgn)).toEqual(['e4']);
+  });
+  it('PGN vide ou sans coup : []', () => {
+    expect(pgnMainlineSans('')).toEqual([]);
+    expect(pgnMainlineSans('[Event "x"]\n\n*')).toEqual([]);
   });
 });

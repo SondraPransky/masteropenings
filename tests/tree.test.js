@@ -1,6 +1,6 @@
 import { isPlayerMove, _buildDrillTree, _treePlayerPositions, _treePositionsScan, _materialHint,
          _mergeStudentLayer, _diffAgainstCoach, _countLayerMoves, _editorTreeToDrillTree,
-         buildTreeModule, gameModuleName, chapterCount, chapterPgn, applyChapTitles } from '../lib/tree.js';
+         buildTreeModule, gameModuleName, chapterCount, chapterPgn, applyChapTitles, shiftChapTitles } from '../lib/tree.js';
 import { extractAllLines, splitPgnGames, pgnStartFen, replacePgnGame } from '../lib/core.js';
 
 // `Chess` est injecté en global par tests/setup.js (comme dans le navigateur).
@@ -454,5 +454,24 @@ describe('applyChapTitles — surcouche des titres de chapitres édités', () =>
     expect(applyChapTitles(sessions, null)[0].label).toBe('Arbre complet');
     applyChapTitles(sessions, { '0': 'Mon titre' });
     expect(sessions[0].label).toBe('Mon titre');
+  });
+});
+
+describe('shiftChapTitles — recalage de la surcouche quand une partie bouge', () => {
+  test('retrait de la partie 1 : son titre part, les suivants descendent d un cran', () => {
+    const t = { '0': 'A', '1': 'B', '2': 'C', '3': 'D' };
+    expect(shiftChapTitles(t, 1, -1)).toEqual({ '0': 'A', '1': 'C', '2': 'D' });
+  });
+  test('insertion en 1 : tout ce qui suit monte d un cran, rien n est perdu', () => {
+    const t = { '0': 'A', '1': 'B' };
+    expect(shiftChapTitles(t, 1, +1)).toEqual({ '0': 'A', '2': 'B' });
+  });
+  test('ajout EN FIN (cas du transfert) : aucune cle existante ne bouge', () => {
+    const t = { '0': 'A', '1': 'B' };
+    expect(shiftChapTitles(t, 2, +1)).toEqual({ '0': 'A', '1': 'B' });
+  });
+  test('surcouche absente ou cles parasites : ne casse pas', () => {
+    expect(shiftChapTitles(null, 0, -1)).toEqual({});
+    expect(shiftChapTitles({ zz: 'X', '1': 'B' }, 0, -1)).toEqual({ '0': 'B' });
   });
 });
