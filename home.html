@@ -15,15 +15,20 @@
   --surf3: #e2e8f0;
   --border:   rgba(15,23,42,.09);
   --border-h: rgba(15,23,42,.18);
-  --cyan:      #6366f1;
-  --cyan-dim:  rgba(99,102,241,.08);
-  --cyan-glow: rgba(99,102,241,.22);
+  /* #6366f1 rendait le bouton primaire a 4,47:1 (sous AA) — aligne sur le
+     --cyan de l'app (#4f46e5, blanc dessus = 6,3). --cyan-ink = l'encre pour
+     texte sur teinte (regle de l'encre de l'app). */
+  --cyan:      #4f46e5;
+  --cyan-ink:  #4f46e5;
+  --cyan-dim:  rgba(79,70,229,.08);
+  --cyan-glow: rgba(79,70,229,.22);
   --gold:     #d97706;
   --green:    #059669;
   --green-dim:rgba(5,150,105,.08);
   --text:  #0f172a;
   --text-2:#475569;
-  --dim:   #94a3b8;
+  /* #94a3b8 tombait a 2,5:1 sur le fond (stats, auteur de citation, footer). */
+  --dim:   #64748b;
   --r: 10px; --rs: 6px;
   --shadow-sm: 0 1px 3px rgba(15,23,42,.08),0 1px 2px rgba(15,23,42,.06);
   --shadow:    0 4px 12px rgba(15,23,42,.08),0 2px 4px rgba(15,23,42,.06);
@@ -32,9 +37,13 @@
 [data-theme="dark"] {
   --bg:    #080c14;  --surf:  #0e1520;  --surf2: #151e2d;  --surf3: #1c2740;
   --border:rgba(148,163,184,.09); --border-h:rgba(148,163,184,.18);
-  --cyan-dim:rgba(99,102,241,.12); --cyan-glow:rgba(99,102,241,.3);
+  /* --cyan flippe clair (texte lisible) ; l'encre du bouton plein passe au
+     fonce (regle des boutons de l'app) ; l'encre sur teinte monte d'un cran. */
+  --cyan:#818cf8; --cyan-ink:#a5b4fc;
+  --cyan-dim:rgba(129,140,248,.12); --cyan-glow:rgba(129,140,248,.3);
   --gold:  #f59e0b; --green: #34d399;  --green-dim:rgba(52,211,153,.12);
-  --text:  #f1f5f9; --text-2:#94a3b8;  --dim:#64748b;
+  /* #64748b tombait a 3,9:1 sur le fond sombre. */
+  --text:  #f1f5f9; --text-2:#94a3b8;  --dim:#94a3b8;
   --shadow-sm:0 1px 4px rgba(0,0,0,.5),0 2px 8px rgba(0,0,0,.25);
   --shadow:   0 4px 16px rgba(0,0,0,.55),0 1px 4px rgba(0,0,0,.3);
   --shadow-lg:0 16px 56px rgba(0,0,0,.75),0 4px 14px rgba(0,0,0,.4);
@@ -61,7 +70,7 @@ nav{
 
 /* ── HERO ── */
 .hero{text-align:center;padding:72px 24px 56px;max-width:680px;margin:0 auto}
-.hero-badge{display:inline-flex;align-items:center;gap:6px;font-size:.71rem;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--cyan);background:var(--cyan-dim);border:1px solid rgba(99,102,241,.25);border-radius:20px;padding:5px 14px;margin-bottom:22px}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;font-size:.71rem;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--cyan-ink);background:var(--cyan-dim);border:1px solid var(--cyan-glow);border-radius:999px;padding:5px 14px;margin-bottom:22px}
 .hero h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:800;letter-spacing:-.6px;line-height:1.12;margin-bottom:16px}
 .hero h1 em{color:var(--cyan);font-style:normal}
 .hero-sub{font-size:1.05rem;color:var(--text-2);line-height:1.7;max-width:520px;margin:0 auto 32px}
@@ -70,6 +79,7 @@ nav{
 /* ── BUTTONS ── */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 22px;border-radius:var(--rs);border:none;font-family:inherit;font-weight:600;font-size:.9rem;cursor:pointer;transition:.15s;text-decoration:none;white-space:nowrap}
 .btn-primary{background:var(--cyan);color:#fff;box-shadow:0 1px 8px var(--cyan-glow)}
+[data-theme="dark"] .btn-primary{color:#0f172a}
 .btn-primary:hover{filter:brightness(1.1)}
 .btn-ghost{background:transparent;color:var(--text-2);border:1px solid var(--border)}
 .btn-ghost:hover{background:var(--surf2);color:var(--text);border-color:var(--border-h)}
@@ -106,11 +116,11 @@ nav{
 
 /* ── CITATION ── */
 .citation-wrap{max-width:640px;margin:0 auto 72px;padding:0 24px}
-.citation-card{background:var(--surf);border:1px solid var(--border);border-left:4px solid var(--cyan);border-radius:var(--r);padding:28px 32px;box-shadow:var(--shadow-sm)}
+.citation-card{background:var(--cyan-dim);border:1px solid var(--cyan-glow);border-radius:var(--r);padding:28px 32px;box-shadow:var(--shadow-sm)}
 .citation-text{font-size:1.05rem;line-height:1.7;color:var(--text);margin-bottom:14px;font-style:italic}
 .citation-text::before{content:'\201C';color:var(--cyan);font-size:1.4rem;line-height:0;vertical-align:-.2em;margin-right:2px}
 .citation-text::after{content:'\201D';color:var(--cyan);font-size:1.4rem;line-height:0;vertical-align:-.2em;margin-left:2px}
-.citation-author{font-size:.78rem;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:1.2px}
+.citation-author{font-size:.78rem;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:1.2px}
 
 /* ── CTA FINAL ── */
 .cta-final{text-align:center;max-width:560px;margin:0 auto 72px;padding:0 24px}

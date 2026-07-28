@@ -600,6 +600,16 @@ textarea {
 
 /* ══ BULLE COMMENTAIRE — phase apprentissage (façon Duolingo) ══ */
 /* Carte pédagogique du coup courant : en-tête (coup + NAG) + corps (commentaire prof) */
+/* Coup courant de l'arbre d'étude. Blanc sur --cyan passe en clair (#4f46e5)
+   mais pas en sombre (#818cf8, 2,98:1) → encre foncée en sombre, comme les
+   boutons pleins (règle du 16/07). */
+.study-cur { background: var(--cyan); color: #fff; }
+[data-theme="dark"] .study-cur { color: #18181b; }
+/* Meme surface, meme defaut : ces deux pleins-cyan a texte blanc n'avaient pas
+   d'override sombre non plus (2,98:1 sur #818cf8). */
+[data-theme="dark"] #study-guess-btn.active { color: #18181b; }
+[data-theme="dark"] .sh-card-play, [data-theme="dark"] .sh-card-play:hover { color: #18181b; }
+
 .study-bubble {
   margin: 14px 0 6px;
   padding: 12px 14px;
@@ -839,6 +849,11 @@ textarea {
      que 44 − 16 = 28px et la cible resterait sous la barre. */
   .eleve-search { min-height: 44px; padding-top: 0; padding-bottom: 0; }
   .eleve-search input { align-self: stretch; min-height: 44px; }
+  /* Le champ jumeau de la bibliothèque avait échappé au même traitement (40px).
+     Pas de reset de padding ici : la règle de base (padding 9px, plus tard dans
+     le fichier) gagnerait de toute façon, et le border-box + min-height suffit. */
+  .lib-search { min-height: 44px; }
+  .lib-search input { align-self: stretch; min-height: 44px; }
   /* Safari iOS zoome la page au focus de TOUT champ dont la police est < 16px. Le
      <meta viewport> n'a volontairement pas de maximum-scale (ça désactiverait le zoom
      manuel = régression a11y), donc la taille de police est le SEUL levier. Mesuré avant
