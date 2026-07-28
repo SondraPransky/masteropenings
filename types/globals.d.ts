@@ -144,6 +144,8 @@ interface Window {
   oaaCreatePacket?: (...a: any[]) => any;       // « Créer un paquet » (lib/coach-analytics-export.js)
   oaaPacketSave?: (...a: any[]) => any;         // validation de la modale paquet (+ assignation)
   renameChapter?: (...a: any[]) => any;         // renommer un chapitre depuis le répertoire (lib/modules.js)
+  srStartDaily?: (...a: any[]) => any;          // « Ma séance du jour » — session SR courte composée (lib/sr.js)
+  _srDailyPlan?: (...a: any[]) => any;
   openGameTransfer?: (...a: any[]) => any;      // déplacer/copier/dupliquer une partie entre bases (lib/library.js)
   _gtSync?: (...a: any[]) => any;
   gameTransferRun?: (...a: any[]) => any;

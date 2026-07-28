@@ -1423,6 +1423,9 @@ textarea {
 .sh-hero--calm .sh-hero-sub { color:var(--dim); opacity:1; }
 .sh-hero-label { position:relative; font-family:var(--font-display); font-size:1.1rem; font-weight:800; letter-spacing:-.3px; margin:0 0 3px; }  /* margin:0 = reset UA du h2 */
 .sh-hero-sub { position:relative; font-size:.82rem; opacity:.92; margin-bottom:14px; line-height:1.45; }
+/* « (+N en réserve) » : l'information existe sans peser — le plafond de la
+   séance du jour est un contrat, pas un retard. */
+.sh-hero-more { opacity:.75; }
 .sh-hero--calm .sh-hero-sub { margin-bottom:0; }
 .sh-hero-btn { position:relative; background:#fff; color:#4f46e5; border:none; border-radius:var(--rs); padding:11px 16px; font-family:inherit; font-weight:700; font-size:.9rem; cursor:pointer; width:auto; min-width:220px; transition:transform .15s cubic-bezier(.22,1,.36,1), filter .15s; }
 .sh-hero-btn:hover { filter:brightness(.96); transform:translateY(-1px); }
