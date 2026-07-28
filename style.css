@@ -2505,6 +2505,41 @@ textarea {
 }
 .pg-rep-btn:hover, .pg-rep-btn:focus-visible { background: var(--cyan-dim-h); border-color: var(--cyan); }
 .pg-rep-btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 1px; }
+/* ── Page parents (?parent=<token>, lib/parent-link.js) ──
+   Recouvre l'app : le parent n'a ni compte ni navigation — une seule carte. */
+#parent-report-root {
+  position: fixed; inset: 0; z-index: var(--z-promo, 610);
+  overflow-y: auto; background: var(--bg);
+  display: flex; justify-content: center; align-items: flex-start;
+  padding: 32px 16px 48px;
+}
+.prp-card {
+  width: 100%; max-width: 560px;
+  background: var(--surf); border: 1px solid var(--border); border-radius: var(--r);
+  box-shadow: var(--shadow); padding: 28px 28px 22px;
+}
+.prp-brand { font-size: .78rem; font-weight: 700; color: var(--cyan-ink); margin-bottom: 10px; }
+.prp-title { font-size: 1.4rem; font-weight: 750; margin: 0 0 18px; text-wrap: balance; }
+.prp-sub { font-size: .84rem; color: var(--dim); }
+.prp-loading { font-size: .9rem; color: var(--dim); padding: 24px 0; text-align: center; }
+.prp-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+.prp-kpi { background: var(--surf2); border: 1px solid var(--border); border-radius: var(--rs); padding: 12px 10px; text-align: center; }
+.prp-kpi-v { font-size: 1.5rem; font-weight: 750; font-variant-numeric: tabular-nums; }
+.prp-kpi-v span { font-size: .85rem; color: var(--dim); font-weight: 600; }
+.prp-kpi-l { font-size: .68rem; color: var(--dim); line-height: 1.35; margin-top: 3px; }
+.prp-sec { font-size: .72rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--dim); margin: 18px 0 8px; }
+.prp-cal { display: grid; grid-template-columns: repeat(14, 1fr); gap: 4px; }
+.prp-day { aspect-ratio: 1; border-radius: 3px; background: var(--surf3); }
+.prp-day.on { background: var(--cyan); }
+.prp-recent { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.prp-recent li { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; font-size: .88rem; }
+.prp-r-meta { font-size: .74rem; color: var(--dim); }
+.prp-foot { margin-top: 22px; padding-top: 14px; border-top: 1px solid var(--border); font-size: .74rem; color: var(--dim); line-height: 1.5; text-wrap: pretty; }
+@media (max-width: 480px) {
+  .prp-kpis { grid-template-columns: 1fr 1fr; }
+  .prp-cal { grid-template-columns: repeat(7, 1fr); }
+}
+
 @media (hover: none) {
   .pg-rep-btn { min-height: 44px; }
 }
