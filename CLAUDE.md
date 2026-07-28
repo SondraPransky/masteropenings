@@ -18,6 +18,27 @@ L’application doit permettre :
 **Phase : le refactoring est terminé → on entre dans la construction produit.**
 Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un prof — toi — + ses élèves) ; le **multi-coachs viendra après**. Pas encore d’utilisateurs réels.
 
+### 🔖 Session du 28 juillet 2026 (2e) — ▶ 4 CHANTIERS PRODUIT arbitrés au grill puis livrés d'affilée
+
+**Demande utilisatrice : « propositions d'amélioration, cherche les besoins utilisateurs, vérifie les parcours » (/apex /grill-me), puis « enchaîne tout ».** Recherche web (les enfants tiennent par des sessions COURTES et régulières ; les rapports parents sont LE différenciateur des plateformes de club ; les feuilles de partie papier sont la vraie source des parties d'élèves) + grill : **9 arbitrages fermés**. 4 commits poussés (`83080cb` → `3e7068d`), typecheck + **225 tests** (+9) + build verts, chaque pièce vérifiée navigateur.
+
+#### Les arbitrages du grill (FERMÉS — ne pas rouvrir)
+Lancement repoussé (plus mi-septembre strict) · priorités = comparer au répertoire / séance du jour / lien parents (le contenu 969 exos + 163 diapos ATTEND) · **PAS de compétition entre élèves** · fiche imprimable « peut servir » (backlog) · les parties viennent des **feuilles papier** → OCR voulu, en 2 temps (relecture guidée d'abord, photo→IA ensuite) · comparer au répertoire visible **coach ET élève** · séance du jour **auto, recette fixe, devient LE hero** · lien parents = **URL secrète sans compte, jamais les parties** · ordre de livraison 1→4 respecté.
+
+#### 1. « Ma séance du jour » (`83080cb`) — le hero élève devient la séance
+`_srDailyPlan`/`srStartDaily` (lib/sr.js) : plafond **16 cartes** (~10 min), dus les plus en retard d'abord + **4 places garanties** aux nouveautés ; la file `'all'` couvrant déjà modules + paquets + membres de plans, la séance est mixte SANS nouveau canal. Le plafond est un CONTRAT, pas un retard → message calme (« N autres attendront la prochaine »), jamais le bandeau backlog. Bilan célébré (mascotte cheer + « reviens demain pour ta série »). `srStart(scope, drillIdx, dailyPlan)` = 3e param optionnel, la session classique strictement inchangée.
+
+#### 2. « Comparer au répertoire » (`d857b3f`) — la pièce que ni Chessable ni ChessKid n'ont
+Cœur pur `compareGameToTree`/`compareGameToRepertoire` (lib/tree.js, +6 tests) : rejoue la ligne principale d'une partie contre l'arbre d'un module ; **sortie** = première position connue où le camp ENSEIGNÉ joue hors répertoire. ⚠ Un coup ADVERSE inconnu ne compte ni comme faute ni dans `depth` (l'adversaire a quitté le livre, pas l'élève) — le test l'a attrapé. Élève : ligne sur chaque entrée de base (« Sortie du répertoire au coup 5. : ♘d4 — le répertoire joue ♘c3 ou d4 ») + toast à la saisie. Coach : même ligne sur les parties partagées + **« Créer l'exercice » en 1 clic** (position de sortie → paquet flash via `buildExercisePacket`, garde anti-doublon par nom). Mémoïsé par partie + somme des `updatedAt` des modules.
+
+#### 3. Lien parents (`d6aa319`) — ⚠ MIGRATION-008 À LANCER côté Supabase
+Bouton « Lien parents » sur la page profil élève → jeton dans **le profil du COACH** (`profiles.extra.parentLinks`, fusion lecture-modification-écriture — ⚠ `_sbSaveBases` montre le piège : un update naïf d'`extra` écrase les autres clés) ; révocation = retrait de la clé. Page parent (`?parent=<token>`, lib/parent-link.js) : recouvre l'app SANS toucher au routeur (overlay fixe additive), jours actifs /28 en mini-calendrier, réussite 30 j, « travail en cours » = les modules RÉELLEMENT révisés (jamais les parties). RPC `parent_report` SECURITY DEFINER appelable par `anon` (le jeton EST le secret) — **`supabase/migration-008-parent-link.sql` à exécuter avant tout usage réel ; chemin connecté jamais testé**. Identité passée en `data-*` (les apostrophes des noms français cassent les onclick).
+
+#### 4. Relecture guidée depuis la feuille (`3e7068d`) — le socle OCR sans IA
+Sur l'établi : champ clavier en **notation française** (`frSanToEnglish` pur, +3 tests — C→N F→B T→R D→Q et **R→Roi TOUJOURS** : ici la langue est déclarée, contrairement aux titres mixtes du corpus) avec repli anglais brut ; repère « **Coup 7 — Noirs** » qui suit la feuille à chaque coup ; coup illisible refusé avec le numéro (« vérifie ta feuille (coup 5) ») et gardé dans le champ ; la frappe enchaîne sans quitter le champ. **Reste (volontairement plus tard)** : photo→IA (Edge Function + clé API = 1er service payant, à configurer avec l'utilisatrice ; les apps du marché plafonnent à 75-95 % → la relecture guidée reste le filet de correction).
+
+**Aussi dans cette session (avant le grill)** : passe UX/UI complète + /code-review — voir le bloc « Session du 28 juillet » ci-dessous (commits `7b7e9d4`, `740a31f`).
+
 ### 🔖 Session du 28 juillet 2026 — ▶ PARTIES TRANSFÉRABLES (chapitres entre modules, établi bibliothèque) + passe UX/UI complète
 
 **Demande utilisatrice : « copier coller des parties dans différents modules ou les déplacer d'un module à l'autre », puis intégration des 4 meilleures idées de sa maquette « Mes parties — europe échecs »** (artifact claude.ai, inventorié fonction par fonction). Deux commits poussés (`4243173`, `7b7e9d4`), typecheck + **216 tests** (+18) + build verts, 0 erreur console, tout vérifié navigateur sur les 26 modules réels.
