@@ -1955,7 +1955,11 @@ textarea {
 .mono-move { font-family: var(--font-mono); font-weight: 700; }
 
 /* ── Lecture d'une partie d'élève (lib/game-view.js) ───────────────────────── */
-.gv-body { display: flex; flex: 1; overflow: hidden; flex-wrap: wrap; }
+/* En-tete de l'ecran de lecture (retour + titre + Annoter) — plus une barre de modal. */
+.gv-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.gv-title { flex: 1; min-width: 0; font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Ecran normal (dans la section Parties) : plus de flex:1/overflow:hidden d'overlay. */
+.gv-body { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0; border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; background: var(--surf); }
 .gv-board-col { flex: 0 0 auto; padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 10px; border-right: 1px solid var(--border); }
 .gv-nav { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: center; }
 .gv-explore-bar { display: flex; align-items: center; gap: 8px; font-size: .74rem; color: var(--dim); background: var(--surf2); border: 1px solid var(--border); border-radius: var(--rs); padding: 6px 10px; }
@@ -1965,8 +1969,9 @@ textarea {
 .gv-mv:hover, .gv-mv:focus-visible { background: var(--surf2); }
 .gv-mv.cur { background: var(--cyan-dim); color: var(--cyan-ink); font-weight: 700; }
 .gv-mv:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
-.gv-side { flex: 1; min-width: 260px; overflow-y: auto; padding: 16px; }
-.gv-side .ref-panel { border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+.gv-side { flex: 1; min-width: 260px; padding: 16px; }
+/* Le cadre + surface vivent sur .gv-body maintenant → pas de double bordure ici. */
+.gv-side .ref-panel { border: 1px solid var(--border); border-radius: var(--rs); overflow: hidden; }
 @media (max-width: 860px) {
   .gv-board-col { flex-basis: 100%; border-right: none; }
   .gv-side { min-width: 100%; }
@@ -1988,9 +1993,11 @@ textarea {
 .ref-move-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 5px; }
 .ref-move-n { font-size: .72rem; color: var(--dim); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .ref-wdl { display: flex; height: 15px; border-radius: 4px; overflow: hidden; font-size: 9.5px; line-height: 15px; text-align: center; }
-.ref-wdl-w { background: #e6e2d6; color: #3a352a; }
-.ref-wdl-d { background: #9a978f; color: #23211d; }
-.ref-wdl-b { background: #3a3733; color: #e8e5df; }
+/* Barre resultat Blancs/Nulle/Noirs = data-viz (pas des tokens d'UI) : neutres zinc
+   FROIDS, lisibles sur les 2 themes (l'ancienne palette beige CHAUDE jurait en sombre). */
+.ref-wdl-w { background: #dcdce0; color: #1a1a1b; }
+.ref-wdl-d { background: #8b8b93; color: #141416; }
+.ref-wdl-b { background: #34343b; color: #e7e7ea; }
 .ref-games-head { font-size: .68rem; text-transform: uppercase; letter-spacing: .5px; color: var(--dim); padding: 10px 12px 4px; }
 .ref-games { display: flex; flex-direction: column; }
 .ref-game { display: flex; flex-direction: column; gap: 1px; padding: 6px 12px; border-bottom: 1px solid var(--border); text-decoration: none; color: var(--text); }
