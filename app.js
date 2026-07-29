@@ -17,6 +17,8 @@ import {
 import { G } from './state.js';
 import { S } from './lib/session.js';
 import './lib/editor.js';
+import './lib/reference.js';
+import './lib/game-view.js';
 import './lib/drill.js';
 import './lib/study.js';
 import './lib/sr.js';
@@ -24,7 +26,6 @@ import './lib/coach.js';
 import './lib/student.js';
 import './lib/modules.js';
 import './lib/chapters.js';
-import './lib/maia.js';
 import './lib/board.js';
 import './lib/mastery.js';
 import './lib/library.js';
@@ -386,13 +387,7 @@ function switchCoachSection(sec) {
     // ratée par N % des X+ Lichess » (croisement, sens inverse). Non bloquant.
     Promise.resolve(window._sbLoadOaAnalyses?.()).then(()=>{ window.renderHeatmap?.(); });
   }
-  if (sec==='parties') { loadTeacherGames().then(()=>{ _syncPartiesFilter(); window.renderPartiesTab?.(); }); }
-}
-
-function _syncPartiesFilter() {
-  const src = document.getElementById('prof-drill-filter');
-  const pt  = document.getElementById('parties-drill-filter');
-  if (src && pt) { pt.innerHTML = src.innerHTML; pt.value = src.value; }
+  if (sec==='parties') { loadTeacherGames().then(()=>{ window.renderPartiesTab?.(); }); }
 }
 
 // Modules : création, bibliothèque d ouvertures, cartes coach -> lib/modules.js
@@ -577,7 +572,6 @@ function updateSessionInfo() {
 function startDrill(i) {
   const d = G.drills[i];
   if (!d) return;
-  document.getElementById('btn-quit-maia').style.display = 'none';   // aucune partie Maia en cours en mode drill
   S.sr = null;   // sortie d'une éventuelle session de révision espacée
   // Avec Firebase : le nom vient du compte
   if (ACCOUNTS_ON && G.currentUser && !S.student) {
@@ -603,7 +597,6 @@ function startDrill(i) {
     ? Math.max(0, Math.min(S.startChapter, (d.sessions?.length || 1) - 1)) : 0;
   S.startChapter = null;
   S.chapterTree = null;
-  S.postTheory = false;
   window._setStudyLayout?.(false);   // reset propre (réactivé par startStudyPhase si arbre)
 
   // Badges info
@@ -729,8 +722,6 @@ function setBoardPrompt(type, msg) {
 }
 
 // resizeBoard + nav clavier + drawCoords -> lib/board.js
-
-// Moteur Maia (ONNX) : chargement lazy, inference, partie libre vs Maia -> lib/maia.js
 
 // Rendu + interaction échiquier (drawBoard, drag, listeners, canInteract, tryMove, flipBoard) -> lib/board.js
 

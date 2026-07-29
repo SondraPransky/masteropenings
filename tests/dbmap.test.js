@@ -30,7 +30,7 @@ describe('mapping module ↔ ligne SQL', () => {
     expect(row.hide_comments).toBe(false);
     expect(row.updated_at).toBe(1700000001234);
     expect(row.owner_student_id).toBe(null);
-    expect(row.extra).toEqual({ created: '27/06/2026', fromLibrary: true, demo: false, isExercise: false, exType: null, folder: null, overlayOf: null, overlayBy: null, plans: [], chapTitles: {} });
+    expect(row.extra).toEqual({ created: '27/06/2026', fromLibrary: true, demo: false, isExercise: false, exType: null, folder: null, group: null, overlayOf: null, overlayBy: null, plans: [], chapTitles: {} });
   });
 
   it('round-trip : les titres de chapitres édités survivent à l\'aller-retour extra', () => {

@@ -932,6 +932,19 @@ textarea {
 .create-choice-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .create-choice-txt b { font-family: var(--font-display); font-size: .95rem; font-weight: 700; color: var(--text); }
 .create-choice-txt small { font-size: .76rem; color: var(--dim); line-height: 1.4; }
+/* Sous-action rattachée à « Sur l'échiquier » : une variante du même geste (partir
+   d'une position précise), pas une 5e carte — d'où le style discret et l'accroche
+   visuelle sous la carte (retrait négatif de la gouttière .create-choices). */
+.create-sub {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  margin: -4px 0 2px; padding: 6px 16px 6px 22px;
+  background: none; border: 0; cursor: pointer; text-align: left;
+  font-family: inherit; font-size: .78rem; color: var(--dim);
+  transition: color .12s;
+}
+.create-sub:hover, .create-sub:focus-visible { color: var(--cyan); }
+.create-sub:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; border-radius: var(--rs); }
+.create-sub i { font-size: .95rem; color: var(--cyan); flex-shrink: 0; }
 /* Second rang de choix (moins central) : plus compact, sous un intitulé */
 .create-sep { font-size: .68rem; text-transform: uppercase; letter-spacing: .6px; color: var(--dim); font-weight: 600; margin: 16px 2px 8px; }
 .create-choice.sm { padding: 10px 14px; gap: 12px; }
@@ -1922,12 +1935,6 @@ textarea {
 .pg-stu-stats { font-size: .74rem; color: var(--dim); }
 .pg-annotated { color: var(--violet); font-weight: 700; font-size: .7rem; white-space: nowrap; }
 .pg-new { display: inline-block; padding: 1px 8px; border-radius: 999px; background: var(--cyan-dim); color: var(--cyan); font-size: .64rem; font-weight: 700; vertical-align: middle; }
-.pg-maia { margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--border); }
-.pg-maia > summary { cursor: pointer; font-weight: 700; font-size: .9rem; list-style: none; margin-bottom: 8px; }
-.pg-maia > summary::-webkit-details-marker { display: none; }
-.pg-maia > summary::after { content: '▸'; color: var(--dim); margin-left: 8px; }
-.pg-maia[open] > summary::after { content: '▾'; }
-.pg-maia > summary:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; border-radius: 6px; }
 
 /* Tooltip échiquier flottant (hover/focus d'une erreur — points faibles + détail élève). */
 .wsx-tip { position: fixed; z-index: var(--z-sticky); background: var(--surf); border: 1px solid var(--border);
@@ -1943,6 +1950,76 @@ textarea {
 .wsx-row-name .wsx-comment-inline { color: var(--dim); font-weight: 400; font-style: italic; }
 /* Coup SAN en notation (cellules de table, listes) — évite le style mono inline répété. */
 .mono-move { font-family: var(--font-mono); font-weight: 700; }
+
+/* ── Lecture d'une partie d'élève (lib/game-view.js) ───────────────────────── */
+.gv-body { display: flex; flex: 1; overflow: hidden; flex-wrap: wrap; }
+.gv-board-col { flex: 0 0 auto; padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 10px; border-right: 1px solid var(--border); }
+.gv-nav { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: center; }
+.gv-explore-bar { display: flex; align-items: center; gap: 8px; font-size: .74rem; color: var(--dim); background: var(--surf2); border: 1px solid var(--border); border-radius: var(--rs); padding: 6px 10px; }
+.gv-notation { max-width: 520px; font-size: .88rem; line-height: 2; }
+.gv-mv-num { color: var(--dim); font-family: var(--font-mono); font-size: .82rem; margin: 0 2px 0 6px; }
+.gv-mv { background: transparent; border: 0; cursor: pointer; font-family: var(--font-mono); font-weight: 500; color: var(--text); padding: 1px 4px; border-radius: 4px; }
+.gv-mv:hover, .gv-mv:focus-visible { background: var(--surf2); }
+.gv-mv.cur { background: var(--cyan-dim); color: var(--cyan-ink); font-weight: 700; }
+.gv-mv:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
+.gv-side { flex: 1; min-width: 260px; overflow-y: auto; padding: 16px; }
+.gv-side .ref-panel { border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+@media (max-width: 860px) {
+  .gv-board-col { flex-basis: 100%; border-right: none; }
+  .gv-side { min-width: 100%; }
+}
+
+/* ── Panneau Référence (lib/reference.js) — base Maîtres Lichess ────────────── */
+.ref-panel { display: flex; flex-direction: column; min-height: 0; }
+.ref-head { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+.ref-head-title { display: flex; align-items: center; gap: 6px; font-size: .82rem; font-weight: 700; color: var(--text); }
+.ref-head-sub { font-size: .72rem; color: var(--dim); margin-top: 2px; }
+.ref-moves { display: flex; flex-direction: column; }
+.ref-move {
+  display: block; width: 100%; text-align: left; cursor: pointer;
+  background: transparent; border: 0; border-bottom: 1px solid var(--border);
+  padding: 8px 12px; transition: background-color .12s;
+}
+.ref-move:hover, .ref-move:focus-visible { background: var(--surf2); }
+.ref-move:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
+.ref-move-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 5px; }
+.ref-move-n { font-size: .72rem; color: var(--dim); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ref-wdl { display: flex; height: 15px; border-radius: 4px; overflow: hidden; font-size: 9.5px; line-height: 15px; text-align: center; }
+.ref-wdl-w { background: #e6e2d6; color: #3a352a; }
+.ref-wdl-d { background: #9a978f; color: #23211d; }
+.ref-wdl-b { background: #3a3733; color: #e8e5df; }
+.ref-games-head { font-size: .68rem; text-transform: uppercase; letter-spacing: .5px; color: var(--dim); padding: 10px 12px 4px; }
+.ref-games { display: flex; flex-direction: column; }
+.ref-game { display: flex; flex-direction: column; gap: 1px; padding: 6px 12px; border-bottom: 1px solid var(--border); text-decoration: none; color: var(--text); }
+a.ref-game:hover { background: var(--surf2); }
+.ref-game-players { font-size: .78rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ref-game-meta { font-size: .7rem; color: var(--dim); font-variant-numeric: tabular-nums; }
+.ref-foot { padding: 8px 12px; font-size: .7rem; color: var(--dim); display: flex; align-items: center; gap: 6px; }
+.ref-msg { padding: 16px 12px; font-size: .78rem; color: var(--dim); display: flex; align-items: center; gap: 8px; }
+.ref-spin { animation: ref-spin 1s linear infinite; }
+@keyframes ref-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .ref-spin { animation: none; } }
+/* Avatar d'élève : photo ronde ou pastille à initiale (fallback). */
+.stu-avatar { border-radius: 50%; object-fit: cover; flex-shrink: 0; display: inline-block; vertical-align: middle; }
+.stu-avatar-init {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--cyan-dim); color: var(--cyan-ink); font-weight: 700;
+  border: 1px solid var(--cyan-glow); line-height: 1;
+}
+/* Avatar cliquable de la page profil : survol = « changer la photo ». */
+.sp-avatar-btn { position: relative; padding: 0; border: 0; background: none; cursor: pointer; border-radius: 50%; flex-shrink: 0; }
+.sp-avatar-btn .stu-avatar { border: 2px solid var(--border); }
+.sp-avatar-btn::after {
+  content: "\ea29"; font-family: "tabler-icons"; font-size: 13px;
+  position: absolute; right: -2px; bottom: -2px;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--cyan); color: #fff; display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--surf);
+}
+.sp-avatar-btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.eleve-name-id { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.sp-photo-del { background: none; border: 0; padding: 0; color: var(--cyan-ink); cursor: pointer; font: inherit; font-size: inherit; text-decoration: underline; }
+.sp-photo-del:hover { color: var(--cyan); }
 /* Sous-titre de section dans le détail élève (module, Progression, Positions difficiles). */
 .ed-subhead { font-weight: 700; font-size: .88rem; }
 
@@ -2035,10 +2112,20 @@ textarea {
      depuis la profondeur réelle du groupe) : une largeur par rangée
      (fit-content) casserait l'alignement vertical — tout l'intérêt de la
      signature — et un 24rem fixe affamait le nom (218px) quand le groupe
-     n'avait que des lignes courtes (mesuré à 1366). */
-  grid-template-columns: minmax(11rem, 1fr) minmax(0, var(--mrow-linew, 24rem)) auto auto;
+     n'avait que des lignes courtes (mesuré à 1366).
+     ⚠ Le vide de la rangée vit APRÈS la signature, pas avant : quand le nom
+     prenait le 1fr, la ligne de coups était poussée contre « N ch. / N pos. »
+     — même police mono, même taille, 14px d'écart : « 4.♘f3 » et « 5 ch. »
+     se lisaient comme une suite de coups. La place libre se PARTAGE donc (2fr
+     au nom, 1fr aux compteurs, contenu calé à droite près de ses boutons) :
+     mesuré à 1366, un plafond fixe sur le nom affamait la signature (14 lignes
+     tronquées), et tout donner au nom ramenait la gouttière à 14px. */
+  grid-template-columns: minmax(11rem, 2fr) minmax(0, var(--mrow-linew, 24rem)) minmax(max-content, 1fr) auto;
   align-items: center;
   gap: 14px;
+  /* Les sections aux lignes profondes remplissent leur colonne : sans gouttière
+     un peu plus large, le dernier coup touchait presque le compteur (20px). */
+  column-gap: 22px;
   padding: 10px 12px;
   border-bottom: 1px solid var(--border);
   transition: background-color .15s ease;
@@ -2056,6 +2143,9 @@ textarea {
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
 }
 .mrow-chap { color: var(--dim); }
+/* Glyphe de camp sur la rangée, quand les GROUPES structurent le répertoire
+   (le camp n'est alors plus porté par l'en-tête de section). */
+.mrow-side { color: var(--dim); font-size: 1em; margin-right: 6px; line-height: 1; }
 /* Les mots du dossier-descripteur (« Noirs exd4 ») : le texte de la coach,
    verbatim, quand il ajoute ce que le nom ne dit pas — c'est lui qui distingue
    trois « Gambit Koltanowski » homonymes. Inline après le nom (baseline flex),
@@ -2065,14 +2155,23 @@ textarea {
   min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
-/* LA signature : la ligne d'ouverture, en notation figurine monospacée. */
+/* LA signature : la ligne d'ouverture, en notation figurine monospacée.
+   C'est un APERÇU du contenu replié : une fois la rangée dépliée, chaque
+   chapitre montre sa propre ligne (dont la 1re redit exactement celle-ci) —
+   la garder ferait doublon. On la masque à l'ouverture (visibility, pas
+   display : la colonne de grille reste et l'alignement des rangées voisines
+   fermées ne bouge pas). */
 .mrow-line {
   font-family: var(--font-mono); font-size: .78rem; color: var(--text-2);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+.mrow.open .mrow-line { visibility: hidden; }
+/* Les compteurs ne sont PAS de la notation : le mono est réservé à la signature
+   échecs (règle du système). En mono, « 5 ch. » collé à « …4.♘f3 » se lisait
+   comme la suite des coups — c'est le défaut signalé. Police d'interface. */
 .mrow-stats {
-  display: flex; align-items: center; gap: 12px;
-  font-family: var(--font-mono); font-size: .74rem; color: var(--dim);
+  display: flex; align-items: center; justify-content: flex-end; gap: 12px;
+  font-size: .74rem; color: var(--dim);
   font-variant-numeric: tabular-nums; white-space: nowrap;
 }
 .mrow-stats b { color: var(--text-2); font-weight: 600; }
@@ -2087,9 +2186,14 @@ textarea {
 /* ── Détail dépliable : les chapitres du module, enfin visibles ─────────────
    Libellés verbatim de la coach (72 en base, 0 affiché avant) + « Jouer » par
    chapitre ; l'échiquier suit le chapitre survolé (startFen déjà en mémoire). */
+/* Chapitres à GAUCHE, plateau d'aperçu JUSTE À CÔTÉ. La liste étirée en 1fr
+   poussait l'échiquier au bord droit (~400px de vide au milieu) : on cale la
+   grille à gauche et on plafonne la colonne des chapitres à sa largeur utile,
+   le plateau la suit. Le vide résiduel vit à droite, pas entre les deux. */
 .mrow-detail {
-  display: grid; grid-template-columns: minmax(0, 1fr) auto;
-  gap: 18px; align-items: start;
+  display: grid; grid-template-columns: fit-content(34rem) auto;
+  justify-content: start;
+  gap: 22px; align-items: start;
   padding: 4px 12px 16px 12px;   /* aligné sous le nom (plus de gouttière depuis le 22/07) */
   background: var(--surf2);
   border-bottom: 1px solid var(--border);
@@ -3084,64 +3188,63 @@ textarea {
 .oaa-tab.on { color: var(--cyan); border-bottom-color: var(--cyan); font-weight: 600; }
 /* wrap : au téléphone, tri + filtre + « Créer un paquet » dépassent 375px et le
    select de tri sortait par la GAUCHE (poussé par son margin-right:auto). */
-/* ── Panneau de paramètres : un RAIL par axe (réf. utilisatrice du 22/07) ──
-   Chaque rangée = un radiogroup à crans ; la pilule (.oaa-rail-fill) se remplit
-   jusqu'au cran choisi — pur indicateur de position, comme un curseur à crans.
-   Sa largeur dérive de --k/--n posés par le rendu : (k + ½) / n. */
+/* ── Panneau de paramètres : un contrôle SEGMENTÉ par axe ──────────────────
+   Refonte 29/07 : la pilule ne se remplit plus JUSQU'AU cran (metaphore de jauge
+   cumulative, fausse pour « Camp »/« Tranche » qui sont des categories, pas une
+   echelle). Un SEUL segment est surligne et GLISSE vers le choix actif — le
+   patron segmente standard, correct pour les axes categoriels comme ordinaux. */
 .oaa-params {
-  display: flex; flex-direction: column; gap: 6px;
-  padding: 12px 14px; margin-bottom: 12px;
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 14px 16px; margin-bottom: 12px;
   background: var(--surf2); border: 1px solid var(--border); border-radius: 12px;
   position: relative;
 }
-.oaa-rail { display: grid; grid-template-columns: 72px minmax(0, 1fr); align-items: center; gap: 12px; }
-.oaa-rail-l { font-size: .74rem; font-weight: 600; color: var(--dim); }
-/* ⚠ inline-grid à colonnes 1fr, PAS un grid pleine largeur à colonnes auto :
-   la pilule est en % de la piste — sur une piste 1fr elle débordait loin après
-   le dernier cran (mesuré : 955px pour 3 crans de 260px), et des colonnes auto
-   inégales faussent (k + ½)/n. En inline-grid auto-dimensionné, les 1fr
-   s'égalisent sur le plus large libellé → la géométrie est exacte. */
+.oaa-rail { display: grid; grid-template-columns: 80px minmax(0, 1fr); align-items: center; gap: 14px; }
+.oaa-rail-l { font-size: .78rem; font-weight: 600; color: var(--text-2); }
+/* La piste EST le contrôle segmenté : fond encastré, segments 1fr égaux.
+   inline-grid auto-dimensionné (les 1fr s'égalisent sur le plus large libellé)
+   → le segment surligné aligne exactement sur sa colonne. */
 .oaa-rail-track {
   position: relative; display: inline-grid; justify-self: start;
   grid-template-columns: repeat(var(--n), 1fr);
-  align-items: center; max-width: 100%;
+  align-items: stretch; max-width: 100%;
+  background: var(--surf); border: 1px solid var(--border);
+  border-radius: 10px; padding: 3px;
 }
+/* Le surligneur : UNE largeur de segment, translaté de k segments vers l'actif. */
 .oaa-rail-fill {
-  position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-  height: 28px; border-radius: 999px;
-  width: calc((var(--k) + .5) / var(--n) * 100%);
+  position: absolute; top: 3px; bottom: 3px; left: 3px;
+  width: calc((100% - 6px) / var(--n));
+  transform: translateX(calc(var(--k) * 100%));
+  border-radius: 7px;
   background: var(--cyan-dim); border: 1px solid var(--cyan-dim-h, var(--cyan-glow));
-  transition: width .18s ease;
+  transition: transform .2s cubic-bezier(.4, 0, .2, 1);
   pointer-events: none;
 }
 .oaa-rail-stop {
   position: relative; z-index: 1;
-  font-family: inherit; font-size: .74rem; font-weight: 500;
-  padding: 6px 12px; border: 0; border-radius: 999px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: inherit; font-size: .76rem; font-weight: 500;
+  padding: 7px 12px; border: 0; border-radius: 7px;
   background: transparent; color: var(--dim); cursor: pointer;
-  transition: color .15s, background-color .15s, transform .1s;
+  transition: color .15s;
   white-space: nowrap;
 }
 .oaa-rail-stop:hover { color: var(--text-2); }
-/* Retour tactile au clic : son voisin direct .oaa-chip l'avait deja (passe du
-   17/07), les rails sont arrives apres (22/07) et l'avaient manque — deux
-   controles cote a cote qui ne repondent pas pareil sous le doigt. */
-.oaa-rail-stop:active { transform: scale(.96); }
 .oaa-rail-stop.on { color: var(--cyan-ink); font-weight: 700; }
-.oaa-rail-stop:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
+.oaa-rail-stop:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
 .oaa-params-count {
-  position: absolute; top: 12px; right: 14px;
+  position: absolute; top: 14px; right: 16px;
   font-family: var(--font-mono); font-size: .72rem; color: var(--dim);
   font-variant-numeric: tabular-nums;
 }
 @media (max-width: 640px) {
-  .oaa-rail { grid-template-columns: 1fr; gap: 2px; }
+  .oaa-rail { grid-template-columns: 1fr; gap: 4px; }
   .oaa-rail-track { grid-template-columns: repeat(var(--n), minmax(0, 1fr)); }
-  .oaa-rail-stop { padding: 8px 4px; }
   .oaa-params-count { position: static; align-self: flex-end; }
 }
-@media (hover: none) { .oaa-rail-stop { min-height: 44px; } }
-@media (prefers-reduced-motion: reduce) { .oaa-rail-fill, .oaa-rail-stop { transition: none; } }
+@media (hover: none) { .oaa-rail-stop { min-height: 40px; } }
+@media (prefers-reduced-motion: reduce) { .oaa-rail-fill { transition: none; } }
 
 .oaa-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
 .oaa-selcount { font-size: .74rem; color: var(--dim); }

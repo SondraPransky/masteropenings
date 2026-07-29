@@ -86,7 +86,6 @@ interface Window {
   PIECE_CDN?: string;
   pieceImgs?: any;
   _E?: any;            // état éditeur (lib/editor.js)
-  _lastMoveXY?: { x: number; y: number };   // dernières coords pointeur (board → lib/maia.js promo)
 
   // — Helpers / vues (app.js) —
   fig?: (...a: any[]) => any;
@@ -229,6 +228,7 @@ interface Window {
   modSelectFolder?: (...a: any[]) => any;
   renameModFolder?: (...a: any[]) => any;
   moveDrillToFolder?: (...a: any[]) => any;
+  moveDrillToGroup?: (...a: any[]) => any;
   figurineText?: (s: string) => string;
   renderOverview?: (...a: any[]) => any;
   ovOpenStudent?: (...a: any[]) => any;
@@ -319,6 +319,19 @@ interface Window {
   renderMyLibrary?: (...a: any[]) => any;
   _sbSaveBases?: (...a: any[]) => any;
   _sbLoadBases?: (...a: any[]) => any;
+  _sbSaveStudentPhotos?: (...a: any[]) => any;
+  spPickPhoto?: (...a: any[]) => any;
+  spRemovePhoto?: (...a: any[]) => any;
+  renderReferencePanel?: (opts: { hostId: string; fen: string; onMove?: (san: string) => any }) => any;
+  _refClickMove?: (san: string) => any;
+  openGameView?: (pgn: string, meta?: any) => any;
+  gvGoto?: (...a: any[]) => any;
+  gvPrev?: (...a: any[]) => any;
+  gvNext?: (...a: any[]) => any;
+  gvGotoEnd?: (...a: any[]) => any;
+  gvFlip?: (...a: any[]) => any;
+  gvBackToGame?: (...a: any[]) => any;
+  gvAnnotate?: (...a: any[]) => any;
   openGameEditor?: (...a: any[]) => any;   // éditeur en mode saisie de partie (lib/editor.js)
   openPgnEditorNew?: (...a: any[]) => any;  // éditeur module vierge, startFen optionnel (lib/editor.js)
   openPositionSetup?: (...a: any[]) => any; // éditeur de position module (tranche C, lib/setup.js)
@@ -342,16 +355,6 @@ interface Window {
   openGameReview?: (...a: any[]) => any;   // élève ouvre sa partie annotée (P1.5, lib/library.js)
   annotateSharedGame?: (...a: any[]) => any; // coach annote une partie partagée (P1.4, lib/coach.js)
 
-  // — Moteur Maia (lib/maia.js) —
-  saveGame?: (...a: any[]) => any;   // reste dans app.js, appelé par maia.js (défini dans lib/mastery.js)
-  loadMaia?: (...a: any[]) => any;
-  enginePlay?: (...a: any[]) => any;
-  startPostTheory?: (...a: any[]) => any;
-  quitMaiaGame?: (...a: any[]) => any;
-  playVsMaia?: (...a: any[]) => any;
-  tryMovePostTheory?: (...a: any[]) => any;
-  _afterMaiaReady?: (...a: any[]) => any;
-  _checkPTEnd?: (...a: any[]) => any;
 }
 
 // Imports d'assets par le bundler (Vite) : CSS chargés en chunks lazy
