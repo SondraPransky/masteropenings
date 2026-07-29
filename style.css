@@ -1985,6 +1985,9 @@ textarea {
 .ref-moves { display: flex; flex-direction: column; }
 .ref-move {
   display: block; width: 100%; text-align: left; cursor: pointer;
+  /* color explicite : un <button> N'HERITE PAS la couleur → sans ca le SAN tombe au
+     noir par defaut du navigateur = 1.19:1 (invisible) sur le panneau sombre. */
+  color: var(--text);
   background: transparent; border: 0; border-bottom: 1px solid var(--border);
   padding: 8px 12px; transition: background-color .12s;
 }
