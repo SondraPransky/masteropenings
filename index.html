@@ -846,6 +846,11 @@
           <div id="study-guess-row" style="display:none;margin-bottom:8px">
             <button id="study-guess-btn" class="btn btn-ghost btn-sm" style="width:100%" onclick="toggleStudyGuess()"><i class="ti ti-target" aria-hidden="true"></i> Devine le coup</button>
           </div>
+          <!-- Outils coach : editer les variantes depuis la notation du module (coach only, gere par renderStudyCoachTools) -->
+          <div id="study-coach-tools" style="display:none;gap:6px;margin-bottom:8px">
+            <button id="study-promote-btn" class="btn btn-ghost btn-sm" style="flex:1" onclick="studyPromoteVariation()" title="Faire de ce coup la ligne principale"><i class="ti ti-arrow-up" aria-hidden="true"></i> Promouvoir</button>
+            <button class="btn btn-ghost btn-sm" style="flex:1;color:var(--red)" onclick="studyDeleteVariation()" title="Supprimer cette variante et sa suite"><i class="ti ti-trash" aria-hidden="true"></i> Supprimer la variante</button>
+          </div>
           <div style="display:flex;gap:6px;align-items:center;margin-bottom:4px">
             <button class="btn btn-ghost btn-sm" id="learn-prev-btn" onclick="learnPrev()">← Préc.</button>
             <span id="learn-pos-num" style="font-size:.78rem;color:var(--dim);flex:1;text-align:center">Position de départ</span>
