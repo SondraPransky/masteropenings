@@ -351,7 +351,12 @@ function switchCoachSection(sec) {
     const el = document.getElementById('csec-'+s);
     if (el) el.style.display = s===sec ? '' : 'none';
     const btn = document.getElementById('csnav-'+s);
-    if (btn) btn.classList.toggle('on', s===sec);
+    if (btn) {
+      btn.classList.toggle('on', s===sec);
+      // Etat actif expose a l'AT (pas seulement la couleur de la classe .on).
+      if (s===sec) btn.setAttribute('aria-current', 'page');
+      else btn.removeAttribute('aria-current');
+    }
   });
   if (sec==='overview') {
     // Vue d'ensemble : synthèse prescriptive (KPIs, à suivre, points faibles, parties à annoter).

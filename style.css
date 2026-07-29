@@ -1445,6 +1445,9 @@ textarea {
 .sh-hero-btn:active { transform:translateY(0) scale(.98); }
 /* Mobile : pleine largeur = cible tactile confortable (le hero y est étroit, aucun risque d'étirement). */
 @media (max-width:560px) { .sh-hero-btn { width:100%; } }
+/* Cible tactile 44px : c'est le CTA principal quotidien de l'eleve, sur surface mobile-first
+   (convention du projet appliquee a .btn/.btn-sm/.sh-card-act ; .sh-hero-btn n'est pas un .btn). */
+@media (hover: none) { .sh-hero-btn { min-height: 44px; } }
 /* Mascotte « chat-cavalier » (budget délice) — hero premier lancement.
    Le chat à gauche, le texte + CTA à droite ; empilé sous 480px (chat au-dessus). */
 .sh-welcome { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
@@ -2275,7 +2278,12 @@ a.ref-game:hover { background: var(--surf2); }
 @media (hover: none) {
   .mdet-chap-add { min-height: 44px; }
   .ct-mode { min-height: 44px; }
+  /* Sans :hover, les actions de chapitre (renommer, transferer, monter/descendre)
+     resteraient invisibles (opacity:0) et sous la cible tactile → on les revele. */
+  .mdet-chap-edit { opacity: 1; min-height: 44px; min-width: 44px; }
 }
+.mdet-chap-edit:disabled { opacity: .28; cursor: default; }
+.mdet-chap-row:hover .mdet-chap-edit:disabled { opacity: .28; }
 @media (prefers-reduced-motion: reduce) {
   .mdet-chap-add { transition: none; }
   .mdet-chap-add:active { transform: none; }
@@ -2986,6 +2994,15 @@ a.ref-game:hover { background: var(--surf2); }
 /* Focus clavier visible sur tout élément interactif (.btn garde son anneau box-shadow) */
 :focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
 .btn:focus-visible { outline: none; }
+/* Lien d'evitement : premier focus apres la nav globale, saute la sidebar coach.
+   Cache hors ecran, revele au focus clavier. Encre inversee = contraste max 2 themes. */
+.skip-link {
+  position: fixed; left: 8px; top: -60px; z-index: 300;
+  background: var(--text); color: var(--bg);
+  padding: 8px 14px; border-radius: var(--rs);
+  font-size: .85rem; font-weight: 600; text-decoration: none;
+}
+.skip-link:focus { top: 8px; }
 /* Texte réservé aux lecteurs d'écran */
 .sr-only {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;

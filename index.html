@@ -217,12 +217,13 @@
      PAGE COACH — DASHBOARD UNIFIÉ
 ════════════════════════════════════════ -->
 <div id="page-coach" class="page on">
+<a href="#coach-main" class="skip-link">Passer au contenu</a>
 <div class="coach-layout">
 
   <!-- ══ SIDEBAR ══ -->
-  <aside class="coach-sidenav">
+  <aside class="coach-sidenav" role="navigation" aria-label="Sections du tableau de bord">
     <div class="csnav-group">Pilotage</div>
-    <button class="csnav-btn on" id="csnav-overview" onclick="switchCoachSection('overview')">
+    <button class="csnav-btn on" id="csnav-overview" onclick="switchCoachSection('overview')" aria-current="page">
       <span class="csnav-ico"><i class="ti ti-home" aria-hidden="true"></i></span>
       <span class="csnav-lbl">Vue d'ensemble</span>
     </button>
@@ -270,7 +271,7 @@
   </aside>
 
   <!-- ══ MAIN CONTENT ══ -->
-  <main class="coach-main-area">
+  <main class="coach-main-area" id="coach-main" tabindex="-1">
 
     <!-- ── SECTION : Vue d'ensemble (atterrissage coach — synthèse prescriptive) ── -->
     <div id="csec-overview">
@@ -333,6 +334,7 @@
           <option value="due">À réviser d'abord</option>
           <option value="level">Par niveau</option>
         </select>
+        <button class="btn btn-ghost btn-sm" onclick="openGroupModal()" style="white-space:nowrap" title="Créer un groupe et y ranger des modules"><i class="ti ti-folder-plus" aria-hidden="true"></i> Nouveau groupe</button>
         <div id="mod-folders" class="mod-folder-chips"></div>
       </div>
       <div id="module-cards-grid" class="mcard-grid">
@@ -400,7 +402,7 @@
       <div class="modal" style="max-width:520px;width:96vw;max-height:92vh;overflow-y:auto;padding:24px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
           <div class="modal-title" id="cls-form-title" style="margin:0"><i class="ti ti-school" aria-hidden="true"></i> Nouvelle classe</div>
-          <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-class-form');cancelEditClass()">✕</button>
+          <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-class-form');cancelEditClass()" aria-label="Fermer">✕</button>
         </div>
         <div style="font-size:.8rem;color:var(--dim);margin-bottom:14px;line-height:1.6">Créez un groupe d'élèves, ou cochez « cours particulier » pour un élève seul. Ils verront les modules assignés dans leur espace.</div>
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:400;font-size:.82rem;margin-bottom:14px">
@@ -431,7 +433,7 @@
       <div class="modal" style="max-width:600px;width:96vw;max-height:92vh;overflow-y:auto;padding:24px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
           <div class="modal-title" style="margin:0"><i class="ti ti-target" aria-hidden="true"></i> Position à revoir</div>
-          <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-weakspot')">✕</button>
+          <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-weakspot')" aria-label="Fermer">✕</button>
         </div>
         <div id="ws-modal-body"></div>
       </div>
@@ -537,7 +539,7 @@
       <div class="modal" style="max-width:460px;width:96vw;max-height:92vh;overflow-y:auto;padding:24px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
           <div class="modal-title" style="margin:0"><i class="ti ti-download" aria-hidden="true"></i> Dossier de puzzles à donner à un élève</div>
-          <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-exp-export')">✕</button>
+          <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-exp-export')" aria-label="Fermer">✕</button>
         </div>
         <div class="exp-hint" style="margin-bottom:12px">Puzzles dont une partie passe par cette position, à un moment ou un autre.</div>
         <div class="exp-filters" style="margin-bottom:10px">
@@ -591,7 +593,8 @@
       </div>
       <div id="prof-parties-content">
         <div class="empty" style="border:1px dashed var(--border);border-radius:var(--r);padding:60px">
-          <div class="empty-ico"><i class="ti ti-chess" aria-hidden="true"></i></div>Aucune partie partagée
+          <div class="empty-ico"><i class="ti ti-chess" aria-hidden="true"></i></div>Aucune partie partagée pour l'instant.<br>
+          <span style="font-size:.8rem">Une partie apparaîtra ici dès qu'un élève vous en partage une depuis sa bibliothèque.</span>
         </div>
       </div>
     </div>
@@ -875,7 +878,7 @@
   <div class="modal" style="max-width:620px;width:96vw;max-height:90vh;overflow-y:auto;padding:24px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
       <div class="modal-title" style="margin:0"><i class="ti ti-books" aria-hidden="true"></i> Ouvertures prêtes à l'emploi</div>
-      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-library')">✕</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-library')" aria-label="Fermer">✕</button>
     </div>
     <p style="font-size:.8rem;color:var(--dim);margin-bottom:16px">Choisis une ouverture prête à l'emploi pour commencer tout de suite — coups et commentaires inclus.</p>
     <div id="library-list"></div>
@@ -887,7 +890,7 @@
   <div class="modal" style="max-width:460px;width:96vw;padding:24px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
       <div class="modal-title" style="margin:0">Créer une révision</div>
-      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-student-create-choice')">✕</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-student-create-choice')" aria-label="Fermer">✕</button>
     </div>
     <div style="font-size:.82rem;color:var(--dim);margin-bottom:18px">Comment veux-tu partir ? C'est <strong>privé</strong> — ton prof ne le voit pas.</div>
     <div class="create-choices">
@@ -911,7 +914,7 @@
   <div class="modal" style="max-width:560px;width:96vw;max-height:92vh;overflow-y:auto;padding:28px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
       <div class="modal-title" style="margin:0"><i class="ti ti-download" aria-hidden="true"></i> Importer une révision perso</div>
-      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-student-import')">✕</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-student-import')" aria-label="Fermer">✕</button>
     </div>
     <p style="font-size:.8rem;color:var(--dim);margin-bottom:18px;line-height:1.5">Colle un PGN (avec ou sans commentaires) pour t'entraîner sur l'ouverture de ton choix. C'est <strong>privé</strong> — ton prof ne le voit pas.</p>
     <div class="frow">
@@ -944,7 +947,7 @@
   <div class="modal" style="max-width:600px;width:96vw;max-height:92vh;overflow-y:auto;padding:28px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
       <div class="modal-title" style="margin:0"><i class="ti ti-chess" aria-hidden="true"></i> Nouvelle partie</div>
-      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-new-game')">✕</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-new-game')" aria-label="Fermer">✕</button>
     </div>
 
     <!-- Essentiels : qui joue, résultat, coups -->
@@ -999,11 +1002,35 @@
   </div>
 </div>
 
+<!-- Modal : creer un groupe / ranger un module dans un groupe (remplace le prompt natif) -->
+<div class="overlay" id="modal-group">
+  <div class="modal" style="max-width:520px;width:96vw;max-height:92vh;overflow-y:auto;padding:24px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div class="modal-title" id="group-modal-title" style="margin:0"><i class="ti ti-folder-plus" aria-hidden="true"></i> Nouveau groupe</div>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-group')" aria-label="Fermer">✕</button>
+    </div>
+    <div style="font-size:.8rem;color:var(--dim);margin-bottom:14px;line-height:1.6" id="group-modal-help">Nommez le groupe et cochez les modules à y ranger. Un groupe devient une section du répertoire.</div>
+    <div class="frow">
+      <label for="group-name-input">Nom du groupe</label>
+      <input type="text" id="group-name-input" list="group-name-list" placeholder="Ex : Répertoire Blancs · Défenses · Débutants" autocomplete="off">
+      <datalist id="group-name-list"></datalist>
+    </div>
+    <div class="frow" id="group-modules-row">
+      <label>Modules à ranger <span style="font-weight:400;color:var(--dim);font-size:.72rem">— cliquez pour cocher</span></label>
+      <div id="group-modules" class="module-checklist"></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-group')">Annuler</button>
+      <button class="btn btn-primary btn-sm" id="group-save-btn" onclick="saveGroupModal()"><i class="ti ti-folder-plus" aria-hidden="true"></i> Créer le groupe</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="modal-create-choice">
   <div class="modal" style="max-width:480px;width:96vw;padding:24px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
       <div class="modal-title" style="margin:0">Créer un module</div>
-      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-create-choice')">✕</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-create-choice')" aria-label="Fermer">✕</button>
     </div>
     <div style="font-size:.82rem;color:var(--dim);margin-bottom:18px">Comment veux-tu partir ?</div>
     <div class="create-choices">
@@ -1034,7 +1061,7 @@
   <div class="modal" style="max-width:820px;width:96vw;max-height:94vh;overflow-y:auto;padding:24px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
       <div class="modal-title" id="ex-pk-title" style="margin:0"><i class="ti ti-puzzle" aria-hidden="true"></i> Nouveau paquet d'exercices</div>
-      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-exercise-packet')">✕</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-exercise-packet')" aria-label="Fermer">✕</button>
     </div>
     <div style="display:grid;grid-template-columns:2fr 1.2fr 1fr;gap:10px;margin-bottom:16px">
       <div class="frow" style="margin:0"><label>Nom du paquet</label>
@@ -1120,7 +1147,7 @@
   <div class="modal" style="max-width:560px;width:96vw;max-height:94vh;overflow-y:auto;padding:24px;z-index:var(--z-modal-nested)">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
       <div class="modal-title" style="margin:0"><i class="ti ti-clipboard-text" aria-hidden="true"></i> Importer des exercices (PGN)</div>
-      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-exercise-pgn')">✕</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-exercise-pgn')" aria-label="Fermer">✕</button>
     </div>
     <div style="font-size:.82rem;color:var(--dim);margin-bottom:12px">Une partie = un exercice : la position vient de l'en-tête <code>[FEN]</code> (ou du départ standard), la solution est la <b>ligne principale complète</b> (1 coup pour une tactique, plusieurs pour un mat en N). Colle plusieurs parties d'affilée pour en créer plusieurs.</div>
     <div class="frow"><label>PGN</label>
@@ -1138,7 +1165,7 @@
   <div class="modal" style="max-width:660px;width:96vw;max-height:94vh;overflow-y:auto;padding:24px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
       <div class="modal-title" style="margin:0">Position de départ</div>
-      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-position-setup')">✕</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-position-setup')" aria-label="Fermer">✕</button>
     </div>
     <div style="font-size:.82rem;color:var(--dim);margin-bottom:16px">Place les pièces (choisis-en une puis clique les cases), ou colle un FEN.</div>
     <div class="ps-layout">
@@ -1174,7 +1201,7 @@
   <div class="modal" style="max-width:620px;width:96vw;max-height:92vh;overflow-y:auto;padding:28px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
       <div class="modal-title" style="margin:0"><i class="ti ti-stack-2" aria-hidden="true"></i> Nouveau module</div>
-      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-create-drill')">✕</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-create-drill')" aria-label="Fermer">✕</button>
     </div>
 
     <div class="frow" id="cd-single-pgn">
@@ -1383,7 +1410,7 @@
   <div class="modal" style="max-width:420px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
       <div class="modal-title" style="margin:0"><i class="ti ti-checkerboard" aria-hidden="true"></i> Couleur de l'échiquier</div>
-      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-board-settings')">✕</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-board-settings')" aria-label="Fermer">✕</button>
     </div>
     <div class="exp-hint" style="margin-bottom:14px">S'applique à tous les échiquiers du site.</div>
     <div class="board-theme-grid" id="board-theme-grid"></div>
@@ -1394,7 +1421,7 @@
   <div class="modal" style="max-width:440px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
       <div class="modal-title" style="margin:0"><i class="ti ti-settings" aria-hidden="true"></i> Réglages de la révision</div>
-      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-sr-settings')">✕</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-sr-settings')" aria-label="Fermer">✕</button>
     </div>
     <label class="sr-set-row">
       <span>Nouveaux coups par jour</span>
