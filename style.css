@@ -2009,6 +2009,22 @@ a.ref-game:hover { background: var(--surf2); }
 .ref-game-meta { font-size: .7rem; color: var(--dim); font-variant-numeric: tabular-nums; }
 .ref-foot { padding: 8px 12px; font-size: .7rem; color: var(--dim); display: flex; align-items: center; gap: 6px; }
 .ref-msg { padding: 16px 12px; font-size: .78rem; color: var(--dim); display: flex; align-items: center; gap: 8px; }
+/* ── Visionneuse d'une partie de référence (en place, pas de pop-up) ── */
+.ref-view-head { padding: 8px 12px 0; }
+.ref-back { background: transparent; border: 0; color: var(--cyan-ink); font-size: .74rem; font-weight: 600; cursor: pointer; padding: 2px 0; display: inline-flex; align-items: center; gap: 4px; }
+.ref-back:hover { text-decoration: underline; }
+.ref-view-cite { padding: 6px 12px 0; font-size: .8rem; font-weight: 700; color: var(--text); }
+.ref-view-board { display: flex; justify-content: center; padding: 10px 12px; }
+.ref-view-hint { padding: 0 12px 4px; font-size: .68rem; color: var(--dim); }
+.ref-view-moves { padding: 0 12px 10px; font-family: var(--font-mono); font-size: .82rem; line-height: 1.9; }
+.ref-vm-num { color: var(--dim); font-size: .72rem; margin: 0 1px 0 4px; }
+.ref-vm { background: transparent; border: 0; color: var(--text-2); cursor: pointer; padding: 1px 3px; border-radius: var(--rs); font-family: inherit; font-weight: 500; }
+.ref-vm:hover, .ref-vm:focus-visible { background: var(--surf2); }
+.ref-vm:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
+.ref-vm.inc { color: var(--cyan-ink); font-weight: 700; }   /* coups inclus jusqu'à la coupe */
+.ref-insert { display: block; width: calc(100% - 24px); margin: 2px 12px 12px; }
+.ref-none { color: var(--dim); font-size: .78rem; }
+@media (hover: none) { .ref-vm { padding: 5px 7px; } .ref-back { min-height: 40px; } }
 .ref-spin { animation: ref-spin 1s linear infinite; }
 @keyframes ref-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .ref-spin { animation: none; } }

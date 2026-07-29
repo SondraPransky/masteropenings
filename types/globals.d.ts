@@ -322,7 +322,7 @@ interface Window {
   _sbSaveStudentPhotos?: (...a: any[]) => any;
   spPickPhoto?: (...a: any[]) => any;
   spRemovePhoto?: (...a: any[]) => any;
-  renderReferencePanel?: (opts: { hostId: string; fen: string; onMove?: (san: string) => any }) => any;
+  renderReferencePanel?: (opts: { hostId: string; fen: string; onMove?: (san: string) => any; onInsert?: (sans: string[], cite: string) => any; flip?: boolean }) => any;
   _refClickMove?: (san: string) => any;
   openGameView?: (pgn: string, meta?: any) => any;
   gvGoto?: (...a: any[]) => any;

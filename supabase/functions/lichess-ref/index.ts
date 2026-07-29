@@ -36,6 +36,25 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   try {
     const url = new URL(req.url);
+    const token = Deno.env.get('LICHESS_TOKEN') || '';
+
+    // Route « ?game=<id> » : PGN d'une partie (repli si l'appel direct du client est
+    // bloqué). L'API principale lichess.org accepte le même token.
+    const gameId = url.searchParams.get('game');
+    if (gameId) {
+      const gh: Record<string, string> = { Accept: 'application/x-chess-pgn' };
+      if (token) gh.Authorization = `Bearer ${token}`;
+      const gr = await fetch(
+        `https://lichess.org/game/export/${encodeURIComponent(gameId)}?moves=true&tags=true&clocks=false&evals=false`,
+        { headers: gh },
+      );
+      const gbody = await gr.text();
+      return new Response(gbody, {
+        status: gr.status,
+        headers: { ...CORS, 'Content-Type': 'application/x-chess-pgn', 'Cache-Control': 'public, max-age=86400' },
+      });
+    }
+
     const fen = url.searchParams.get('fen');
     if (!fen) return json({ error: 'missing fen' }, 400);
 
@@ -44,7 +63,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const topGames = url.searchParams.get('topGames') || '6';
     const q = new URLSearchParams({ fen, moves, topGames });
 
-    const token = Deno.env.get('LICHESS_TOKEN') || '';
     const headers: Record<string, string> = { Accept: 'application/json' };
     if (token) headers.Authorization = `Bearer ${token}`;
 
