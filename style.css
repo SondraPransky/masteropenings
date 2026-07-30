@@ -687,6 +687,9 @@ textarea {
 
 /* Toggle « devine le coup » actif */
 #study-guess-btn.active { background: var(--cyan); color: #fff; border-color: var(--cyan); }
+/* Toggle « Tout déplier » actif (même patron ; encre foncée en sombre via la règle partagée ci-dessous) */
+#study-expand-btn.active { background: var(--cyan); color: #fff; border-color: var(--cyan); }
+[data-theme="dark"] #study-expand-btn.active { color: #18181b; }
 
 /* ══ Session de révision espacée (SR) ══════════ */
 .sr-bar-top { display: flex; justify-content: space-between; align-items: center; font-size: .78rem; color: var(--text-2); font-weight: 600; margin-bottom: 6px; }
