@@ -1,0 +1,246 @@
+<title>Sous-variantes — ingénierie de la notation</title>
+<style>
+  :root{
+    --bg:#fafafa; --surf:#ffffff; --surf2:#f4f4f5; --surf3:#e4e4e7; --border:#e4e4e7; --border-h:#d4d4d8;
+    --cyan:#4f46e5; --cyan-ink:#4f46e5; --cyan-dim:rgba(79,70,229,.08); --cyan-glow:rgba(79,70,229,.30);
+    --gold:#d97706; --green-ink:#166534;
+    --violet-ink:#6d28d9; --violet-dim:rgba(124,58,237,.10); --violet-glow:rgba(124,58,237,.35);
+    --text:#18181b; --text-2:#3f3f46; --dim:#65656d;
+    --shadow:0 1px 2px rgba(24,24,40,.06),0 4px 16px rgba(24,24,40,.05);
+    --mono:'JetBrains Mono',ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --body:system-ui,-apple-system,"Hanken Grotesk","Segoe UI",sans-serif;
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --bg:#09090b; --surf:#18181b; --surf2:#1f1f23; --surf3:#27272a; --border:#27272a; --border-h:#3f3f46;
+    --cyan:#818cf8; --cyan-ink:#a5b4fc; --cyan-dim:rgba(129,140,248,.12); --cyan-glow:rgba(129,140,248,.34);
+    --gold:#f59e0b; --green-ink:#86efac;
+    --violet-ink:#c4b5fd; --violet-dim:rgba(167,139,250,.14); --violet-glow:rgba(167,139,250,.42);
+    --text:#fafafa; --text-2:#d4d4d8; --dim:#9a9aa3; --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 20px rgba(0,0,0,.35);
+  }}
+  :root[data-theme="dark"]{
+    --bg:#09090b; --surf:#18181b; --surf2:#1f1f23; --surf3:#27272a; --border:#27272a; --border-h:#3f3f46;
+    --cyan:#818cf8; --cyan-ink:#a5b4fc; --cyan-dim:rgba(129,140,248,.12); --cyan-glow:rgba(129,140,248,.34);
+    --gold:#f59e0b; --green-ink:#86efac;
+    --violet-ink:#c4b5fd; --violet-dim:rgba(167,139,250,.14); --violet-glow:rgba(167,139,250,.42);
+    --text:#fafafa; --text-2:#d4d4d8; --dim:#9a9aa3; --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#fafafa; --surf:#ffffff; --surf2:#f4f4f5; --surf3:#e4e4e7; --border:#e4e4e7; --border-h:#d4d4d8;
+    --cyan:#4f46e5; --cyan-ink:#4f46e5; --cyan-dim:rgba(79,70,229,.08); --cyan-glow:rgba(79,70,229,.30);
+    --gold:#d97706; --green-ink:#166534;
+    --violet-ink:#6d28d9; --violet-dim:rgba(124,58,237,.10); --violet-glow:rgba(124,58,237,.35);
+    --text:#18181b; --text-2:#3f3f46; --dim:#65656d; --shadow:0 1px 2px rgba(24,24,40,.06),0 4px 16px rgba(24,24,40,.05);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1240px;margin:0 auto;padding:32px 20px 72px}
+  header.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+  h1{font-size:clamp(1.4rem,4vw,1.9rem);font-weight:800;letter-spacing:-.02em;margin:0;text-wrap:balance}
+  h1 em{color:var(--cyan);font-style:normal}
+  .lead{color:var(--dim);max-width:70ch;margin:.5rem 0 0;font-size:.93rem}
+  .toggle{flex:none;background:var(--surf);border:1px solid var(--border);color:var(--text-2);padding:8px 14px;
+          border-radius:999px;font:inherit;font-size:.85rem;font-weight:600;cursor:pointer;box-shadow:var(--shadow)}
+  .toggle:hover{border-color:var(--border-h)}
+
+  .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px;margin-top:26px;align-items:start}
+  .card{background:var(--surf);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+  .chead{display:flex;align-items:baseline;gap:9px;margin-bottom:2px}
+  .cletter{font-family:var(--mono);font-size:.75rem;font-weight:700;color:#fff;background:var(--cyan);width:23px;height:23px;border-radius:7px;display:grid;place-items:center;flex:none}
+  @media (prefers-color-scheme:dark){.cletter{color:#09090b}}
+  :root[data-theme="dark"] .cletter{color:#09090b}
+  :root[data-theme="light"] .cletter{color:#fff}
+  .cletter.ghost{background:var(--surf3);color:var(--dim)}
+  :root[data-theme="dark"] .cletter.ghost{color:var(--dim)}
+  .ctitle{font-weight:750;font-size:.98rem}
+  .cwhy{color:var(--dim);font-size:.82rem;margin:0 0 12px}
+
+  /* panneau : largeur réaliste du panneau de notation (≈380px) */
+  .panel{background:var(--surf2);border:1px solid var(--border);border-radius:10px;padding:11px 10px;
+         font-family:var(--mono);font-size:.86rem;line-height:1.8;font-variant-numeric:tabular-nums;max-width:400px}
+  .n{color:var(--dim);font-size:.74em;margin:0 1px 0 5px}
+  .main{font-weight:600;color:var(--text)}
+  .cur{background:var(--cyan);color:#fff;font-weight:700;border-radius:5px;padding:1px 5px}
+  @media (prefers-color-scheme:dark){.cur{color:#09090b}}
+  :root[data-theme="dark"] .cur{color:#09090b}
+  :root[data-theme="light"] .cur{color:#fff}
+  .note{text-decoration:underline dotted var(--cyan);text-underline-offset:3px;text-decoration-thickness:1.5px}
+  .nag{color:var(--gold);font-weight:700}
+
+  /* ═ règles communes A/B/C ═ */
+  /* var = UNE variante = UN paragraphe à retrait suspendu ; indentation plafonnée à 2 niveaux */
+  .var{position:relative;margin:4px 0;padding:2px 4px 2px 14px;font-weight:400;color:var(--text-2);border-radius:0 6px 6px 0}
+  .var .var{margin-left:14px}
+  .var .var .var{margin-left:0}           /* plafond : niveau 3+ n'indente plus */
+  .var::before{content:"";position:absolute;left:0;top:3px;bottom:3px;width:2px;border-radius:2px;background:var(--border-h)}
+  .bif{font-weight:600;color:var(--text-2)}                 /* coup de bifurcation, en évidence */
+  .inl{color:var(--dim)}                                    /* profondeur ≥3 : en ligne, parenthèses */
+  /* chemin actif : rail indigo + branches mortes estompées */
+  .var.on::before{background:var(--cyan)}
+  .var.on{background:var(--cyan-dim)}
+  .var.off{opacity:.62}
+
+  /* B : étiquettes */
+  .tag{display:inline-flex;align-items:center;min-width:15px;justify-content:center;padding:0 4px;height:16px;
+       font-family:var(--body);font-size:.64rem;font-weight:700;color:var(--cyan-ink);background:var(--surf);
+       border:1px solid var(--cyan-glow);border-radius:4px;margin-right:6px;vertical-align:1px}
+  .var.off .tag{color:var(--dim);border-color:var(--border-h)}
+  .crumb{font-family:var(--body);font-size:.72rem;color:var(--dim);padding:2px 4px 8px;border-bottom:1px solid var(--border);margin-bottom:8px}
+  .crumb b{color:var(--cyan-ink);font-weight:700}
+  .crumb .mono{font-family:var(--mono)}
+
+  /* C : branches mortes repliées en résumé */
+  .fold{color:var(--dim);cursor:pointer}
+  .fold .more{font-family:var(--body);font-size:.72rem;color:var(--cyan-ink);font-weight:600;margin-left:5px}
+
+  /* aujourd'hui (reproduction) */
+  .old .var0{margin:2px 0 2px 2px;padding:1px 8px;border-left:2px solid var(--border);font-size:.86em;color:var(--dim)}
+  .old .var0 .var0{font-size:.93em}
+  .old .arw{margin-right:3px;font-size:.82em;color:var(--dim)}
+  .old .dotc{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--cyan);vertical-align:middle;margin-left:3px}
+
+  /* bulle du coup courant (le #study-bubble de l'app) */
+  .bub{max-width:400px;margin-top:10px;padding:11px 13px;background:var(--cyan-dim);border:1px solid var(--cyan-glow);
+       border-radius:12px;font-family:var(--body);font-size:.82rem;line-height:1.55;color:var(--text)}
+  .bub .bh{display:flex;align-items:center;gap:7px;color:var(--cyan-ink);font-weight:700;margin-bottom:4px}
+  .bub .bh .mono{font-family:var(--mono);font-size:.92rem}
+  /* commentaire en ligne (traitement ChessBase) */
+  .cmt{font-family:var(--body);font-style:italic;color:var(--violet-ink);font-size:.92em;font-weight:400}
+
+  .rules{margin-top:30px;background:var(--surf);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:var(--shadow)}
+  .rules h2{font-size:.95rem;margin:0 0 10px}
+  .rules ol{margin:0;padding-left:20px;font-size:.86rem;color:var(--text-2);display:grid;gap:5px}
+  .rules b{color:var(--text)}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Sous-variantes : <em>trois montages</em> des mêmes règles</h1>
+      <p class="lead">Panneaux à largeur réelle (~380px), arbre profond du Gambit Rubinstein, coup courant
+        <span style="font-family:var(--mono)">6.♗e2!</span> dans la variante 5…c6. Les trois propositions partagent le
+        socle d'ingénierie (règles en bas de page) ; elles diffèrent sur UN choix de structure.</p>
+    </div>
+    <button class="toggle" id="tg">◐ Thème</button>
+  </header>
+
+  <div class="cols">
+
+    <!-- Aujourd'hui -->
+    <section class="card">
+      <div class="chead"><span class="cletter ghost">·</span><span class="ctitle">Aujourd'hui (référence)</span></div>
+      <p class="cwhy">Texte qui rapetisse par niveau, rail gris uniforme, point de commentaire flottant, rien n'indique la ligne active.</p>
+      <div class="panel old">
+        <span class="n">1.</span><span class="main">e4</span> <span class="main">e5</span> <span class="n">2.</span><span class="main">♘f3</span> <span class="main">♘c6</span> <span class="n">3.</span><span class="main">♘c3</span> <span class="main">♘f6</span> <span class="n">4.</span><span class="main">♗b5</span> <span class="main">♘d4</span> <span class="n">5.</span><span class="main">♘xe5!?</span> <span class="main">♗xb5</span><span class="dotc"></span><span class="n">6.</span>
+        <div class="var0"><span class="arw">↳</span><span class="n">5…</span>c6?! <span class="n">6.</span><span class="cur">♗e2!</span><span class="dotc"></span><span class="n">7.</span>
+          <div class="var0"><span class="arw">↳</span><span class="n">6…</span>d5 <span class="n">7.</span>exd5 ♗f5 <span class="n">8.</span>d3±</div>
+          ♘xe4 ♕e7 <span class="n">8.</span>♘xc6 bxc6 <span class="n">9.</span>d3 d5 <span class="n">10.</span>♘g3
+        </div>
+        <div class="var0"><span class="arw">↳</span><span class="n">5…</span>♘xe4?! <span class="n">6.</span>♘xe4 ♗xb5 <span class="n">7.</span>♘xf7!!<span class="dotc"></span><span class="n">7…</span>
+          <div class="var0"><span class="arw">↳</span><span class="n">7.</span>O-O d5! <span class="n">8.</span>♘g3 ♗e7 <span class="n">9.</span>a4 ♗d6 <span class="n">10.</span>♘f3 c6 <span class="n">11.</span>b3 O-O <span class="n">12.</span>♖e1 f6 <span class="n">13.</span>♗d3 ♗f7 <span class="n">14.</span>♗a3±</div>
+          ♕e7 <span class="n">8.</span>♘xh8 ♕xe4+ <span class="n">9.</span>♕f1±
+        </div>
+        <div class="var0"><span class="arw">↳</span><span class="n">5…</span>♗c5 <span class="n">6.</span>O-O O-O <span class="n">7.</span>♗c4 d6</div>
+      </div>
+    </section>
+
+    <!-- A -->
+    <section class="card">
+      <div class="chead"><span class="cletter">A</span><span class="ctitle">Paragraphique + chemin actif</span></div>
+      <p class="cwhy">Les 6 règles, sans rien d'autre : une variante = un paragraphe, graisse au lieu de la taille, et la ligne active porte le rail indigo — les branches mortes s'estompent.</p>
+      <div class="panel">
+        <span class="n">1.</span><span class="main">e4</span> <span class="main">e5</span> <span class="n">2.</span><span class="main">♘f3</span> <span class="main">♘c6</span> <span class="n">3.</span><span class="main">♘c3</span> <span class="main">♘f6</span> <span class="n">4.</span><span class="main">♗b5</span> <span class="main">♘d4</span> <span class="n">5.</span><span class="main">♘xe5!?</span> <span class="main note">♗xb5</span>
+        <div class="var on"><span class="n">5…</span><span class="bif">c6?!</span> <span class="n">6.</span><span class="cur note">♗e2!</span> <span class="n">7.</span>♘xe4 ♕e7 <span class="n">8.</span>♘xc6 bxc6 <span class="n">9.</span>d3 d5 <span class="n">10.</span>♘g3
+          <div class="var off"><span class="n">6…</span><span class="bif">d5</span> <span class="n">7.</span>exd5 ♗f5 <span class="n">8.</span>d3<span class="nag">±</span></div>
+        </div>
+        <div class="var off"><span class="n">5…</span><span class="bif">♘xe4?!</span> <span class="n">6.</span>♘xe4 ♗xb5 <span class="n">7.</span><span class="note">♘xf7!!</span> ♕e7 <span class="n">8.</span>♘xh8 ♕xe4+ <span class="n">9.</span>♕f1<span class="nag">±</span>
+          <div class="var off"><span class="n">7.</span><span class="bif">O-O</span> d5! <span class="n">8.</span>♘g3 ♗e7 <span class="n">9.</span>a4 ♗d6 <span class="n">10.</span>♘f3 c6 <span class="inl">(10…♗g4 11.h3 ♗h5 12.g4)</span> <span class="n">11.</span>b3 O-O <span class="n">12.</span>♖e1 f6 <span class="n">13.</span>♗d3 ♗f7 <span class="n">14.</span>♗a3<span class="nag">±</span></div>
+        </div>
+        <div class="var off"><span class="n">5…</span><span class="bif">♗c5</span> <span class="n">6.</span>O-O O-O <span class="n">7.</span>♗c4 d6</div>
+      </div>
+      <div class="bub"><div class="bh">💡 <span class="mono">6.♗e2!</span></div>
+        est très bon pour les Blancs : l'idée est qu'après d7-d6, ils pourront tranquillement rapatrier leur Cavalier en f3 sans craindre ♗g4 (qui est un problème dans cette ligne en général)</div>
+    </section>
+
+    <!-- B -->
+    <section class="card">
+      <div class="chead"><span class="cletter">B</span><span class="ctitle">A + étiquettes et fil d'Ariane</span></div>
+      <p class="cwhy">Le même montage, plus une identité par ligne (A · B · C, façon ChessBase 6) et un fil d'Ariane en tête du panneau qui dit toujours où tu es.</p>
+      <div class="panel">
+        <div class="crumb">Tu es dans : <b>Principale</b> › <b class="mono">5…c6?!</b> — coup 6</div>
+        <span class="n">1.</span><span class="main">e4</span> <span class="main">e5</span> <span class="n">2.</span><span class="main">♘f3</span> <span class="main">♘c6</span> <span class="n">3.</span><span class="main">♘c3</span> <span class="main">♘f6</span> <span class="n">4.</span><span class="main">♗b5</span> <span class="main">♘d4</span> <span class="n">5.</span><span class="main">♘xe5!?</span> <span class="main note">♗xb5</span>
+        <div class="var on"><span class="tag">A</span><span class="n">5…</span><span class="bif">c6?!</span> <span class="n">6.</span><span class="cur note">♗e2!</span> <span class="n">7.</span>♘xe4 ♕e7 <span class="n">8.</span>♘xc6 bxc6 <span class="n">9.</span>d3 d5 <span class="n">10.</span>♘g3
+          <div class="var off"><span class="tag">A1</span><span class="n">6…</span><span class="bif">d5</span> <span class="n">7.</span>exd5 ♗f5 <span class="n">8.</span>d3<span class="nag">±</span></div>
+        </div>
+        <div class="var off"><span class="tag">B</span><span class="n">5…</span><span class="bif">♘xe4?!</span> <span class="n">6.</span>♘xe4 ♗xb5 <span class="n">7.</span><span class="note">♘xf7!!</span> ♕e7 <span class="n">8.</span>♘xh8 ♕xe4+ <span class="n">9.</span>♕f1<span class="nag">±</span>
+          <div class="var off"><span class="tag">B1</span><span class="n">7.</span><span class="bif">O-O</span> d5! <span class="n">8.</span>♘g3 ♗e7 <span class="n">9.</span>a4 ♗d6 <span class="n">10.</span>♘f3 c6 <span class="inl">(10…♗g4 11.h3)</span> <span class="n">11.</span>b3 O-O <span class="n">12.</span>♖e1 f6 <span class="n">13.</span>♗d3 ♗f7 <span class="n">14.</span>♗a3<span class="nag">±</span></div>
+        </div>
+        <div class="var off"><span class="tag">C</span><span class="n">5…</span><span class="bif">♗c5</span> <span class="n">6.</span>O-O O-O <span class="n">7.</span>♗c4 d6</div>
+      </div>
+      <div class="bub"><div class="bh">💡 <span class="mono">6.♗e2!</span></div>
+        est très bon pour les Blancs : l'idée est qu'après d7-d6, ils pourront tranquillement rapatrier leur Cavalier en f3 sans craindre ♗g4</div>
+    </section>
+
+    <!-- C -->
+    <section class="card">
+      <div class="chead"><span class="cletter">C</span><span class="ctitle">A + branches mortes résumées</span></div>
+      <p class="cwhy">Le même montage, mais les branches hors du chemin actif sont réduites à leur première ligne + « déplier ». L'arbre entier reste accessible, l'écran ne montre que l'essentiel.</p>
+      <div class="panel">
+        <span class="n">1.</span><span class="main">e4</span> <span class="main">e5</span> <span class="n">2.</span><span class="main">♘f3</span> <span class="main">♘c6</span> <span class="n">3.</span><span class="main">♘c3</span> <span class="main">♘f6</span> <span class="n">4.</span><span class="main">♗b5</span> <span class="main">♘d4</span> <span class="n">5.</span><span class="main">♘xe5!?</span> <span class="main note">♗xb5</span>
+        <div class="var on"><span class="n">5…</span><span class="bif">c6?!</span> <span class="n">6.</span><span class="cur note">♗e2!</span> <span class="n">7.</span>♘xe4 ♕e7 <span class="n">8.</span>♘xc6 bxc6 <span class="n">9.</span>d3 d5 <span class="n">10.</span>♘g3
+          <div class="var off fold"><span class="n">6…</span><span class="bif">d5</span> <span class="n">7.</span>exd5 ♗f5…<span class="more">déplier</span></div>
+        </div>
+        <div class="var off fold"><span class="n">5…</span><span class="bif">♘xe4?!</span> <span class="n">6.</span>♘xe4 ♗xb5 <span class="n">7.</span><span class="note">♘xf7!!</span>…<span class="more">déplier · 2 lignes</span></div>
+        <div class="var off fold"><span class="n">5…</span><span class="bif">♗c5</span> <span class="n">6.</span>O-O O-O…<span class="more">déplier</span></div>
+      </div>
+      <div class="bub"><div class="bh">💡 <span class="mono">6.♗e2!</span></div>
+        est très bon pour les Blancs : l'idée est qu'après d7-d6, ils pourront tranquillement rapatrier leur Cavalier en f3 sans craindre ♗g4</div>
+    </section>
+
+  </div>
+
+  <h2 style="font-size:.78rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);margin:38px 0 14px;display:flex;align-items:center;gap:10px">Et le texte du commentaire ? — deux traitements<span style="flex:1;height:1px;background:var(--border)"></span></h2>
+  <div class="cols">
+
+    <section class="card">
+      <div class="chead"><span class="cletter">1</span><span class="ctitle">Bulle seule (l'actuel, gardé)</span></div>
+      <p class="cwhy">Le flux ne porte que le marqueur (souligné pointillé) ; le texte vit dans la bulle sous la notation, pour le coup courant uniquement. Le flux reste 100 % scannable — c'est la règle 6.</p>
+      <div class="panel">
+        <div class="var on"><span class="n">5…</span><span class="bif">c6?!</span> <span class="n">6.</span><span class="cur note">♗e2!</span> <span class="n">7.</span>♘xe4 <span class="note">♕e7</span> <span class="n">8.</span>♘xc6 bxc6 <span class="n">9.</span>d3 d5 <span class="n">10.</span>♘g3</div>
+      </div>
+      <div class="bub"><div class="bh">💡 <span class="mono">6.♗e2!</span></div>
+        est très bon pour les Blancs : l'idée est qu'après d7-d6, ils pourront tranquillement rapatrier leur Cavalier en f3 sans craindre ♗g4 (qui est un problème dans cette ligne en général)</div>
+    </section>
+
+    <section class="card">
+      <div class="chead"><span class="cletter">2</span><span class="ctitle">Courts en ligne + longs en bulle</span></div>
+      <p class="cwhy">Façon ChessBase : un commentaire court (≤ ~40 caractères) s'affiche en italique dans le flux, un long va dans la bulle. On lit les remarques brèves sans bouger — mais le flux se rallonge.</p>
+      <div class="panel">
+        <div class="var on"><span class="n">5…</span><span class="bif">c6?!</span> <span class="cmt">trop lent</span> <span class="n">6.</span><span class="cur note">♗e2!</span> <span class="n">7.</span>♘xe4 ♕e7 <span class="cmt">seule défense</span> <span class="n">8.</span>♘xc6 bxc6 <span class="n">9.</span>d3 d5 <span class="n">10.</span>♘g3</div>
+      </div>
+      <div class="bub"><div class="bh">💡 <span class="mono">6.♗e2!</span></div>
+        est très bon pour les Blancs : l'idée est qu'après d7-d6, ils pourront tranquillement rapatrier leur Cavalier en f3 sans craindre ♗g4 (qui est un problème dans cette ligne en général)</div>
+    </section>
+
+  </div>
+
+  <div class="rules">
+    <h2>Le socle commun (les 6 règles d'ingénierie)</h2>
+    <ol>
+      <li><b>Une variante = un paragraphe</b> qui commence par son coup de bifurcation en évidence (<span style="font-family:var(--mono)">5…c6?!</span>).</li>
+      <li><b>Indentation plafonnée à 2 niveaux</b> — au-delà, la sous-ligne reste en ligne entre parenthèses (règle ChessBase ; visible dans la branche B1).</li>
+      <li><b>Retrait suspendu</b> : une variante qui wrappe reste alignée sous son premier coup (visible sur la longue B1).</li>
+      <li><b>Hiérarchie par graisse et encre, pas par taille</b> : même corps mono partout — fini le texte qui rapetisse.</li>
+      <li><b>Chemin actif</b> : rail indigo + fond léger sur la ligne où l'on est ; les autres branches s'estompent. On sait toujours où on est.</li>
+      <li><b>Le commentaire ne coupe jamais le flux</b> : soulignement pointillé sur le coup annoté (le point collé disparaît), texte dans la bulle existante.</li>
+    </ol>
+  </div>
+</div>
+
+<script>
+  const root=document.documentElement, tg=document.getElementById('tg');
+  tg.addEventListener('click',()=>{
+    const cur=root.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+    root.setAttribute('data-theme',cur==='dark'?'light':'dark');
+  });
+</script>

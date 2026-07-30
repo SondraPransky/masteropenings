@@ -18,6 +18,22 @@ L’application doit permettre :
 **Phase : le refactoring est terminé → on entre dans la construction produit.**
 Cible de déploiement : **mi-septembre 2026**. Lancement **single-coach** (un prof — toi — + ses élèves) ; le **multi-coachs viendra après**. Pas encore d’utilisateurs réels.
 
+### 🔖 Session du 30 juillet 2026 — ▶ INGÉNIERIE DESIGN de la notation du mode arbre (sous-variantes) : P1+R3 livré
+
+**Demande utilisatrice : « la fenêtre de révision est moche » (mode arbre, les 26 modules) — plusieurs planches rejetées jusqu'à exiger « de l'ingénierie design et une réflexion en profondeur, cherche sur le web ».** Recherche des retours terrain (forums Lichess, ChessBase, Chessable, ChessTree) → **4 problèmes documentés** : ① alternatives en parenthèses inline illisibles (Lichess Study Branches) · ② le repli est réclamé MAIS pénible s'il est manuel/par défaut (issue lila #9735 + fil « collapsed by default inconvenient ») · ③ être lâché au milieu d'un arbre sans contexte (Chessable) · ④ au-delà d'un volume, le texte perd les variantes (raison d'être de ChessTree). **Leçon SCID** : les commentaires inline détruisent la scannabilité.
+
+**Arbitrages utilisatrice (fermés)** : le commentaire RESTE en bulle (pas sous l'échiquier — « l'échiquier doit rester grand ») · design retenu = **P1 (repli auto + chemin actif) + R3 (bilan SR par branche) + R1 conditionnel (sommaire si ≥3 branches)** · R2 (aperçu au survol) écarté. Le cheminement : 4 planches d'habillages rejetées → la bonne échelle était la **linéarisation de l'arbre**, pas la peinture.
+
+**Livré** (`renderStudyTree` réécrit, lib/study.js — purement présentationnel, ni données ni moteur ; bloc `.study-var` refait, style.css) :
+- **Repli AUTO piloté par la navigation** : la branche du chemin courant (`S.studyPath`) est dépliée + surlignée (`.on` : rail indigo + fond `--cyan-dim`), les autres résumées à 3 demi-coups + « … déplier · N coups » (`.off`, opacité .66) ; état manuel `_studyOpenVars` (Set de chemins JSON, vidé par `startStudyPhase`), « replier » sur une branche ouverte à la main. `studyToggleVar` au pont window.
+- **Socle typographique** : hiérarchie par GRAISSE et encre, plus jamais par taille (fini le .86em/.8em) ; coup de bifurcation en 600 ; **indentation plafonnée à 2 niveaux** (`.study-var .study-var .study-var { margin-left:0 }` — règle ChessBase, le panneau fait ~380px) ; commentaire = **soulignement pointillé sur le coup** (`.study-note`) au lieu de la pastille flottante qui se collait au numéro suivant (les marques SR gagnent aussi `margin:0 3px` des DEUX côtés).
+- **R3 — bilan SR par branche repliée** : « ● N à revoir » (`--gold-ink` sur `--gold-dim`, règle de l'encre) / « ✓ acquise » via `branchSr` (walk du sous-arbre sur `_studyMastery`). Par coup : ✓/● conservés. ⚠ Invisible en local dev (pas d'historique Leitner) — à voir en connecté.
+- **R1 conditionnel** : ≥3 branches de 1er niveau → **sommaire en pastilles cliquables** (`.study-toc`, saute à la variante + point ambre si travail dû) ; sinon **fil d'Ariane** « Tu es dans : Principale › 5…c6?! » (`.study-crumb`).
+
+**Vérifié navigateur (vrai Gambit Rubinstein, 10 branches)** : sommaire actif, toutes repliées à l'ouverture, déplier/replier, clic pastille → navigation + `.on` + coup courant, 0 débordement, thème sombre OK, 0 erreur console. typecheck + **225 tests** verts. ⚠ Les findings du hook sur `.study-var` (side-tab) restent des **faux positifs documentés** (rail = guide d'indentation structurel).
+
+**Les 8 planches de maquettes sont sauvegardées dans `docs/maquettes-notation/`** (+ artifacts : conclusions `d59b25f1`, raffinements `63fb21ca`, ingénierie `49d8505b`). **Reste** : le seuil de résumé (3 demi-coups) à ajuster à l'usage ; les bilans SR à voir avec un vrai élève connecté ; la planche A–H du panneau ligne/test (20/07) reste NON arbitrée — c'était un autre périmètre.
+
 ### 🔖 Session du 29 juillet 2026 (2e) — ▶ /better-interface (coach + élève) + 3 demandes utilisatrice sur « Mes modules »
 
 **Revue `/better-interface` en 2 temps (tableau de bord coach, puis accueil élève), puis 3 correctifs produit.** typecheck + **225 tests** + build verts, tout vérifié navigateur (2 thèmes, 375→1280), 0 erreur console. Poussé sur `main`.

@@ -1,0 +1,327 @@
+<title>Notation en révision — 6 nouvelles propositions</title>
+<style>
+  :root{
+    --bg:#fafafa; --surf:#ffffff; --surf2:#f4f4f5; --surf3:#e4e4e7;
+    --border:#e4e4e7; --border-h:#d4d4d8;
+    --cyan:#4f46e5; --cyan-ink:#4f46e5; --cyan-dim:rgba(79,70,229,.08); --cyan-glow:rgba(79,70,229,.30);
+    --green:#16a34a; --green-ink:#166534; --green-dim:rgba(22,163,74,.10); --green-glow:rgba(22,163,74,.25);
+    --red:#dc2626; --red-ink:#be123c; --red-dim:rgba(220,38,38,.10); --red-glow:rgba(220,38,38,.25);
+    --violet:#7c3aed; --violet-ink:#6d28d9; --violet-dim:rgba(124,58,237,.10); --violet-glow:rgba(124,58,237,.30);
+    --text:#18181b; --text-2:#3f3f46; --dim:#65656d;
+    --shadow:0 1px 2px rgba(24,24,40,.06),0 4px 16px rgba(24,24,40,.05);
+    --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+    --body:system-ui,-apple-system,"Hanken Grotesk","Segoe UI",sans-serif;
+    --r:16px; --rs:10px;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#09090b; --surf:#18181b; --surf2:#1f1f23; --surf3:#27272a;
+      --border:#27272a; --border-h:#3f3f46;
+      --cyan:#818cf8; --cyan-ink:#a5b4fc; --cyan-dim:rgba(129,140,248,.12); --cyan-glow:rgba(129,140,248,.32);
+      --green:#4ade80; --green-ink:#86efac; --green-dim:rgba(74,222,128,.12); --green-glow:rgba(74,222,128,.28);
+      --red:#f87171; --red-ink:#fca5a5; --red-dim:rgba(248,113,113,.13); --red-glow:rgba(248,113,113,.28);
+      --violet:#a78bfa; --violet-ink:#c4b5fd; --violet-dim:rgba(167,139,250,.13); --violet-glow:rgba(167,139,250,.32);
+      --text:#fafafa; --text-2:#d4d4d8; --dim:#9a9aa3;
+      --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#09090b; --surf:#18181b; --surf2:#1f1f23; --surf3:#27272a;
+    --border:#27272a; --border-h:#3f3f46;
+    --cyan:#818cf8; --cyan-ink:#a5b4fc; --cyan-dim:rgba(129,140,248,.12); --cyan-glow:rgba(129,140,248,.32);
+    --green:#4ade80; --green-ink:#86efac; --green-dim:rgba(74,222,128,.12); --green-glow:rgba(74,222,128,.28);
+    --red:#f87171; --red-ink:#fca5a5; --red-dim:rgba(248,113,113,.13); --red-glow:rgba(248,113,113,.28);
+    --violet:#a78bfa; --violet-ink:#c4b5fd; --violet-dim:rgba(167,139,250,.13); --violet-glow:rgba(167,139,250,.32);
+    --text:#fafafa; --text-2:#d4d4d8; --dim:#9a9aa3;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#fafafa; --surf:#ffffff; --surf2:#f4f4f5; --surf3:#e4e4e7;
+    --border:#e4e4e7; --border-h:#d4d4d8;
+    --cyan:#4f46e5; --cyan-ink:#4f46e5; --cyan-dim:rgba(79,70,229,.08); --cyan-glow:rgba(79,70,229,.30);
+    --green:#16a34a; --green-ink:#166534; --green-dim:rgba(22,163,74,.10); --green-glow:rgba(22,163,74,.25);
+    --red:#dc2626; --red-ink:#be123c; --red-dim:rgba(220,38,38,.10); --red-glow:rgba(220,38,38,.25);
+    --violet:#7c3aed; --violet-ink:#6d28d9; --violet-dim:rgba(124,58,237,.10); --violet-glow:rgba(124,58,237,.30);
+    --text:#18181b; --text-2:#3f3f46; --dim:#65656d;
+    --shadow:0 1px 2px rgba(24,24,40,.06),0 4px 16px rgba(24,24,40,.05);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);line-height:1.5;
+       -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  .wrap{max-width:1120px;margin:0 auto;padding:32px 20px 72px}
+
+  header.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:6px}
+  h1{font-size:clamp(1.5rem,4vw,2rem);font-weight:800;letter-spacing:-.02em;margin:0;text-wrap:balance}
+  h1 em{color:var(--cyan);font-style:normal}
+  .lead{color:var(--dim);max-width:62ch;margin:.5rem 0 0;font-size:.95rem}
+  .toggle{flex:none;display:inline-flex;align-items:center;gap:8px;background:var(--surf);border:1px solid var(--border);
+          color:var(--text-2);padding:8px 14px;border-radius:999px;font:inherit;font-size:.85rem;font-weight:600;
+          cursor:pointer;box-shadow:var(--shadow)}
+  .toggle:hover{border-color:var(--border-h)}
+
+  .ctx{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 28px}
+  .ctx .chip{font-size:.76rem;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--surf2);
+             border:1px solid var(--border);color:var(--text-2)}
+  .ctx .chip b{color:var(--text)}
+  .ctx .chip.err{background:var(--red-dim);border-color:var(--red-glow);color:var(--red-ink)}
+  .ctx .chip.cur{background:var(--cyan-dim);border-color:var(--cyan-glow);color:var(--cyan-ink)}
+  .ctx .chip.co{background:var(--violet-dim);border-color:var(--violet-glow);color:var(--violet-ink)}
+
+  .grid{display:grid;grid-template-columns:1fr;gap:20px}
+  @media(min-width:760px){.grid{grid-template-columns:1fr 1fr}}
+
+  .prop{background:var(--surf);border:1px solid var(--border);border-radius:var(--r);padding:18px 18px 20px;
+        box-shadow:var(--shadow);display:flex;flex-direction:column;gap:14px}
+  .prop-head{display:flex;align-items:baseline;gap:10px}
+  .prop-letter{font-family:var(--mono);font-size:.8rem;font-weight:700;color:#fff;background:var(--cyan);
+               width:26px;height:26px;border-radius:8px;display:grid;place-items:center;flex:none}
+  .prop-title{font-weight:750;font-size:1.02rem;letter-spacing:-.01em}
+  .prop-why{color:var(--dim);font-size:.85rem;margin:-6px 0 0}
+
+  /* --- panneau simulé --- */
+  .panel{background:var(--surf2);border:1px solid var(--border);border-radius:12px;padding:14px;min-height:150px}
+  .m{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .num{color:var(--dim);font-family:var(--mono);font-size:.82em}
+  .pcap{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin:0 0 8px}
+
+  /* I — ruban horizontal */
+  .ribbon{display:flex;gap:8px;overflow-x:auto;padding:6px 2px 12px;scrollbar-width:thin}
+  .rmove{flex:none;font-family:var(--mono);font-size:.95rem;background:var(--surf);border:1px solid var(--border);
+         border-radius:10px;padding:9px 12px;color:var(--text-2);white-space:nowrap;font-weight:600}
+  .rmove .num{display:block;font-size:.68rem;margin-bottom:2px}
+  .rmove.err{background:var(--red-dim);border-color:var(--red-glow);color:var(--red-ink)}
+  .rmove.cur{background:var(--cyan-dim);border-color:var(--cyan);color:var(--cyan-ink);transform:scale(1.14);
+             box-shadow:0 0 0 3px var(--cyan-dim);font-weight:800;margin:0 6px}
+  .ribbon-note{font-size:.82rem;color:var(--violet-ink);background:var(--violet-dim);border:1px solid var(--violet-glow);
+               border-radius:9px;padding:8px 11px;margin-top:2px}
+  .ribbon-note b{font-family:var(--mono)}
+
+  /* J — partition annotée */
+  .score{display:grid;grid-template-columns:auto 1fr;gap:0 16px;font-size:.92rem}
+  .score .ln{display:contents}
+  .score .mv{padding:5px 0;border-bottom:1px dashed var(--border);font-family:var(--mono)}
+  .score .mv .num{margin-right:6px}
+  .score .anno{padding:5px 0;border-bottom:1px dashed var(--border);font-size:.82rem;color:var(--dim);display:flex;align-items:center}
+  .score .mv.err{color:var(--red-ink)}
+  .score .anno.co{color:var(--violet-ink)}
+  .score .mv.cur{color:var(--cyan-ink);font-weight:800}
+  .score .anno.cur{color:var(--cyan-ink);font-weight:600}
+  .score .w{color:var(--text)} .score .b{color:var(--text-2)}
+
+  /* K — conversation */
+  .chat{display:flex;flex-direction:column;gap:9px}
+  .bub{max-width:82%;padding:8px 12px;border-radius:14px;font-size:.9rem;line-height:1.4}
+  .bub.coach{align-self:flex-start;background:var(--violet-dim);border:1px solid var(--violet-glow);
+             color:var(--violet-ink);border-bottom-left-radius:4px}
+  .bub.stu{align-self:flex-end;background:var(--surf);border:1px solid var(--border);border-bottom-right-radius:4px}
+  .bub .m{font-size:1rem;font-weight:700}
+  .bub.stu.err{border-color:var(--red-glow);background:var(--red-dim)}
+  .bub.stu.err .m{color:var(--red-ink)}
+  .bub .verd{font-size:.74rem;font-weight:700;margin-left:6px}
+  .bub.ok .verd{color:var(--green-ink)} .bub.err .verd{color:var(--red-ink)}
+  .bub.prompt{align-self:center;max-width:100%;text-align:center;background:var(--cyan-dim);
+              border:1px dashed var(--cyan-glow);color:var(--cyan-ink);border-radius:12px;font-weight:700}
+
+  /* L — chapitres par phase */
+  .phase{border:1px solid var(--border);border-radius:11px;overflow:hidden;margin-bottom:9px;background:var(--surf)}
+  .phase-h{display:flex;align-items:center;gap:9px;padding:9px 12px;font-size:.82rem;font-weight:700;cursor:default}
+  .phase-h .car{color:var(--dim);font-size:.7rem}
+  .phase-h .cnt{margin-left:auto;font-size:.72rem;color:var(--dim);font-weight:600}
+  .phase.done .phase-h{color:var(--dim)}
+  .phase.done .phase-h .tick{color:var(--green-ink)}
+  .phase.open{border-color:var(--cyan-glow)}
+  .phase.open .phase-h{color:var(--text);background:var(--cyan-dim)}
+  .phase-b{padding:8px 12px 12px;border-top:1px solid var(--border);font-family:var(--mono);font-size:.92rem;
+           display:flex;flex-wrap:wrap;gap:x;gap:4px 10px}
+  .phase-b .mv{padding:2px 0}
+  .phase-b .mv.err{color:var(--red-ink)} .phase-b .mv.cur{color:var(--cyan-ink);font-weight:800}
+  .phase-b .co{flex-basis:100%;font-family:var(--body);font-size:.8rem;color:var(--violet-ink);
+               background:var(--violet-dim);border-radius:8px;padding:6px 9px;margin-top:2px}
+
+  /* M — cartes quiz */
+  .quiz{display:flex;flex-direction:column;gap:10px}
+  .qcard{border:1px solid var(--border);border-radius:12px;padding:11px 13px;background:var(--surf);
+         display:flex;align-items:center;gap:12px}
+  .qcard .qn{font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);flex:none}
+  .qcard.flipped.err{border-color:var(--red-glow);background:var(--red-dim)}
+  .qcard.flipped .res{font-family:var(--mono);font-size:.95rem;font-weight:700}
+  .qcard.flipped.err .res{color:var(--red-ink)}
+  .qcard.flipped.err .res s{color:var(--dim);text-decoration-thickness:1px;margin-right:8px;font-weight:600}
+  .qcard.down{border-style:dashed;border-color:var(--cyan-glow);background:var(--cyan-dim);justify-content:space-between}
+  .qcard.down .qtext{font-weight:700;color:var(--cyan-ink)}
+  .qcard.done{opacity:.7}
+  .qcard.done .res{color:var(--green-ink);font-family:var(--mono);font-weight:700}
+  .qcard .co2{font-size:.78rem;color:var(--violet-ink);margin-top:4px}
+  .qcard .stack{display:flex;flex-direction:column}
+
+  /* N — ruban de chips */
+  .chips{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+  .kchip{font-family:var(--mono);font-size:.88rem;font-weight:600;padding:6px 10px;border-radius:999px;
+         background:var(--surf);border:1px solid var(--border);color:var(--text-2);display:inline-flex;gap:5px;align-items:baseline}
+  .kchip .num{font-size:.72em}
+  .kchip.err{background:var(--red-dim);border-color:var(--red-glow);color:var(--red-ink)}
+  .kchip.cur{background:var(--cyan);border-color:var(--cyan);color:#fff;font-weight:800;
+             box-shadow:0 0 0 3px var(--cyan-dim);transform:translateY(-1px)}
+  :root[data-theme="dark"] .kchip.cur,.kchip.cur{color:#fff}
+  @media (prefers-color-scheme:dark){.kchip.cur{color:#09090b}}
+  :root[data-theme="dark"] .kchip.cur{color:#09090b}
+  :root[data-theme="light"] .kchip.cur{color:#fff}
+  .chips-co{width:100%;font-size:.8rem;color:var(--violet-ink);background:var(--violet-dim);
+            border:1px solid var(--violet-glow);border-radius:9px;padding:7px 10px;margin-top:6px}
+
+  footer{margin-top:34px;color:var(--dim);font-size:.85rem;border-top:1px solid var(--border);padding-top:18px}
+  footer b{color:var(--text-2)}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:10px;font-size:.8rem;color:var(--dim)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:10px;height:10px;border-radius:3px;flex:none}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Notation en révision — <em>6 nouvelles</em> propositions</h1>
+      <p class="lead">Suite de la planche A–H. Six approches structurellement différentes pour le panneau
+        <code>#notation-moves</code> du lecteur. Mêmes données : Espagnole, élève aux Blancs, 3.♗b5 raté,
+        coup 5 à trouver, commentaire du coach.</p>
+    </div>
+    <button class="toggle" id="tg" aria-label="Basculer le thème">◐ Thème</button>
+  </header>
+
+  <div class="ctx" aria-hidden="true">
+    <span class="chip"><b>Partie&nbsp;:</b> Espagnole</span>
+    <span class="chip"><b>Élève&nbsp;:</b> Blancs ♔</span>
+    <span class="chip err">3.♗b5 raté (joué ♗c4)</span>
+    <span class="chip co">Commentaire coach</span>
+    <span class="chip cur">Coup 5 — à trouver</span>
+  </div>
+
+  <div class="grid">
+
+    <!-- I -->
+    <section class="prop">
+      <div class="prop-head"><span class="prop-letter">I</span><span class="prop-title">Ruban horizontal</span></div>
+      <p class="prop-why">Une seule ligne qui défile ; le coup courant est centré et agrandi. Pensé mobile — la notation ne mange pas de hauteur.</p>
+      <div class="panel">
+        <div class="ribbon">
+          <span class="rmove"><span class="num">1.</span>e4</span>
+          <span class="rmove"><span class="num">1…</span>e5</span>
+          <span class="rmove"><span class="num">2.</span>♘f3</span>
+          <span class="rmove"><span class="num">2…</span>♘c6</span>
+          <span class="rmove err"><span class="num">3.</span>♗b5</span>
+          <span class="rmove"><span class="num">3…</span>a6</span>
+          <span class="rmove"><span class="num">4.</span>♗a4</span>
+          <span class="rmove"><span class="num">4…</span>♘f6</span>
+          <span class="rmove cur"><span class="num">5.</span>? </span>
+        </div>
+        <div class="ribbon-note">Sur <b>3.♗b5</b> tu as joué ♗c4. L'Espagnole cloue la pression sur c6 — ♗b5 est le coup thématique.</div>
+      </div>
+    </section>
+
+    <!-- J -->
+    <section class="prop">
+      <div class="prop-head"><span class="prop-letter">J</span><span class="prop-title">Partition annotée</span></div>
+      <p class="prop-why">Colonne de coups fine à gauche, marge d'annotation large à droite — chaque remarque du coach est alignée sur SON coup, façon partition.</p>
+      <div class="panel">
+        <div class="score">
+          <div class="mv"><span class="num">1.</span><span class="w">e4</span> <span class="b">e5</span></div><div class="anno"></div>
+          <div class="mv"><span class="num">2.</span><span class="w">♘f3</span> <span class="b">♘c6</span></div><div class="anno"></div>
+          <div class="mv err"><span class="num">3.</span><span class="w">♗b5</span> <span class="b">a6</span></div><div class="anno co">Coup thématique de l'Espagnole — pression sur c6.</div>
+          <div class="mv"><span class="num">4.</span><span class="w">♗a4</span> <span class="b">♘f6</span></div><div class="anno"></div>
+          <div class="mv cur"><span class="num">5.</span><span class="w">? </span></div><div class="anno cur">À toi de jouer.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- K -->
+    <section class="prop">
+      <div class="prop-head"><span class="prop-letter">K</span><span class="prop-title">Conversation</span></div>
+      <p class="prop-why">Le coach « parle » à gauche, l'élève « répond » par ses coups à droite. Métaphore de leçon — chaleureux et très lisible pour un enfant.</p>
+      <div class="panel">
+        <div class="chat">
+          <div class="bub stu ok"><span class="m">1.e4 e5&nbsp; 2.♘f3 ♘c6</span><span class="verd">✓</span></div>
+          <div class="bub coach">On entre dans l'Espagnole : le bon coup 3 met la pression sur c6.</div>
+          <div class="bub stu err"><span class="m">3.♗c4</span><span class="verd">✗ — ♗b5</span></div>
+          <div class="bub stu ok"><span class="m">4.♗a4 ♘f6</span><span class="verd">✓</span></div>
+          <div class="bub prompt">À toi de jouer — coup 5</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- L -->
+    <section class="prop">
+      <div class="prop-head"><span class="prop-letter">L</span><span class="prop-title">Chapitres par phase</span></div>
+      <p class="prop-why">Les coups regroupés par phase d'ouverture, chaque bloc pliable. Le passé « fait » se replie, on se concentre sur la phase en cours.</p>
+      <div class="panel">
+        <div class="phase done">
+          <div class="phase-h"><span class="tick">✓</span> Les premiers coups <span class="cnt">1–2 · fait</span></div>
+        </div>
+        <div class="phase open">
+          <div class="phase-h"><span class="car">▾</span> L'Espagnole se déclare <span class="cnt">3–5</span></div>
+          <div class="phase-b">
+            <span class="mv err">3.♗b5 a6</span>
+            <span class="mv">4.♗a4 ♘f6</span>
+            <span class="mv cur">5.?</span>
+            <span class="co">♗b5 cloue la pression sur c6 — le coup thématique. À toi pour le 5.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- M -->
+    <section class="prop">
+      <div class="prop-head"><span class="prop-letter">M</span><span class="prop-title">Cartes-quiz</span></div>
+      <p class="prop-why">Pour le mode test : chaque coup à trouver est une carte. Résolue → elle se retourne (verdict) ; à venir → face cachée. Combinable par phase, comme H.</p>
+      <div class="panel">
+        <div class="quiz">
+          <div class="qcard done"><span class="qn">Coups 1–2</span><span class="res">✓ e4 e5 · ♘f3 ♘c6</span></div>
+          <div class="qcard flipped err">
+            <span class="qn">Coup 3</span>
+            <div class="stack"><span class="res"><s>♗c4</s>♗b5</span><span class="co2">Le coup thématique de l'Espagnole.</span></div>
+          </div>
+          <div class="qcard down"><span class="qn">Coup 5</span><span class="qtext">À toi de jouer →</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- N -->
+    <section class="prop">
+      <div class="prop-head"><span class="prop-letter">N</span><span class="prop-title">Ruban de chips</span></div>
+      <p class="prop-why">Coups en pastilles qui s'enroulent naturellement, le coup courant en relief plein. Très compact, un peu ludique — un « nuage » de coups.</p>
+      <div class="panel">
+        <div class="chips">
+          <span class="kchip"><span class="num">1.</span>e4</span>
+          <span class="kchip"><span class="num">1…</span>e5</span>
+          <span class="kchip"><span class="num">2.</span>♘f3</span>
+          <span class="kchip"><span class="num">2…</span>♘c6</span>
+          <span class="kchip err"><span class="num">3.</span>♗b5</span>
+          <span class="kchip"><span class="num">3…</span>a6</span>
+          <span class="kchip"><span class="num">4.</span>♗a4</span>
+          <span class="kchip"><span class="num">4…</span>♘f6</span>
+          <span class="kchip cur"><span class="num">5.</span>?</span>
+          <span class="chips-co">♗b5 sur le coup 3 : le coup thématique, pression sur c6.</span>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer>
+    <div><b>Rappel des états</b> — mêmes conventions que l'app.</div>
+    <div class="legend">
+      <span><span class="dot" style="background:var(--text-2)"></span> coup joué / correct</span>
+      <span><span class="dot" style="background:var(--red)"></span> erreur</span>
+      <span><span class="dot" style="background:var(--violet)"></span> annotation du coach</span>
+      <span><span class="dot" style="background:var(--cyan)"></span> coup courant / à trouver</span>
+    </div>
+  </footer>
+</div>
+
+<script>
+  const root=document.documentElement, tg=document.getElementById('tg');
+  tg.addEventListener('click',()=>{
+    const cur=root.getAttribute('data-theme')
+      || (matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+    root.setAttribute('data-theme', cur==='dark'?'light':'dark');
+  });
+</script>

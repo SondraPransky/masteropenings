@@ -1,0 +1,235 @@
+<title>Notation — 4 propositions façon ChessBase amélioré</title>
+<style>
+  :root{
+    --bg:#fafafa; --surf:#ffffff; --surf2:#f4f4f5; --surf3:#e4e4e7;
+    --border:#e4e4e7; --border-h:#d4d4d8;
+    --cyan:#4f46e5; --cyan-ink:#4f46e5; --cyan-dim:rgba(79,70,229,.08); --cyan-glow:rgba(79,70,229,.30);
+    --green-ink:#166534; --green-dim:rgba(22,163,74,.10);
+    --red:#dc2626; --red-ink:#be123c; --red-dim:rgba(220,38,38,.10); --red-glow:rgba(220,38,38,.25);
+    --violet:#7c3aed; --violet-ink:#6d28d9; --violet-dim:rgba(124,58,237,.10); --violet-glow:rgba(124,58,237,.30);
+    --text:#18181b; --text-2:#3f3f46; --dim:#65656d;
+    --shadow:0 1px 2px rgba(24,24,40,.06),0 4px 16px rgba(24,24,40,.05);
+    --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+    --body:system-ui,-apple-system,"Hanken Grotesk","Segoe UI",sans-serif;
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --bg:#09090b; --surf:#18181b; --surf2:#1f1f23; --surf3:#27272a; --border:#27272a; --border-h:#3f3f46;
+    --cyan:#818cf8; --cyan-ink:#a5b4fc; --cyan-dim:rgba(129,140,248,.12); --cyan-glow:rgba(129,140,248,.32);
+    --green-ink:#86efac; --green-dim:rgba(74,222,128,.12);
+    --red:#f87171; --red-ink:#fca5a5; --red-dim:rgba(248,113,113,.13); --red-glow:rgba(248,113,113,.28);
+    --violet:#a78bfa; --violet-ink:#c4b5fd; --violet-dim:rgba(167,139,250,.13); --violet-glow:rgba(167,139,250,.32);
+    --text:#fafafa; --text-2:#d4d4d8; --dim:#9a9aa3; --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 20px rgba(0,0,0,.35);
+  }}
+  :root[data-theme="dark"]{
+    --bg:#09090b; --surf:#18181b; --surf2:#1f1f23; --surf3:#27272a; --border:#27272a; --border-h:#3f3f46;
+    --cyan:#818cf8; --cyan-ink:#a5b4fc; --cyan-dim:rgba(129,140,248,.12); --cyan-glow:rgba(129,140,248,.32);
+    --green-ink:#86efac; --green-dim:rgba(74,222,128,.12);
+    --red:#f87171; --red-ink:#fca5a5; --red-dim:rgba(248,113,113,.13); --red-glow:rgba(248,113,113,.28);
+    --violet:#a78bfa; --violet-ink:#c4b5fd; --violet-dim:rgba(167,139,250,.13); --violet-glow:rgba(167,139,250,.32);
+    --text:#fafafa; --text-2:#d4d4d8; --dim:#9a9aa3; --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#fafafa; --surf:#ffffff; --surf2:#f4f4f5; --surf3:#e4e4e7; --border:#e4e4e7; --border-h:#d4d4d8;
+    --cyan:#4f46e5; --cyan-ink:#4f46e5; --cyan-dim:rgba(79,70,229,.08); --cyan-glow:rgba(79,70,229,.30);
+    --green-ink:#166534; --green-dim:rgba(22,163,74,.10);
+    --red:#dc2626; --red-ink:#be123c; --red-dim:rgba(220,38,38,.10); --red-glow:rgba(220,38,38,.25);
+    --violet:#7c3aed; --violet-ink:#6d28d9; --violet-dim:rgba(124,58,237,.10); --violet-glow:rgba(124,58,237,.30);
+    --text:#18181b; --text-2:#3f3f46; --dim:#65656d; --shadow:0 1px 2px rgba(24,24,40,.06),0 4px 16px rgba(24,24,40,.05);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1120px;margin:0 auto;padding:32px 20px 72px}
+  header.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+  h1{font-size:clamp(1.5rem,4vw,2rem);font-weight:800;letter-spacing:-.02em;margin:0;text-wrap:balance}
+  h1 em{color:var(--cyan);font-style:normal}
+  .lead{color:var(--dim);max-width:64ch;margin:.5rem 0 0;font-size:.95rem}
+  .lead code{font-family:var(--mono);font-size:.86em;background:var(--surf2);padding:1px 5px;border-radius:5px}
+  .toggle{flex:none;display:inline-flex;align-items:center;gap:8px;background:var(--surf);border:1px solid var(--border);
+          color:var(--text-2);padding:8px 14px;border-radius:999px;font:inherit;font-size:.85rem;font-weight:600;cursor:pointer;box-shadow:var(--shadow)}
+  .toggle:hover{border-color:var(--border-h)}
+
+  .grid{display:grid;grid-template-columns:1fr;gap:20px;margin-top:28px}
+  @media(min-width:780px){.grid{grid-template-columns:1fr 1fr}}
+  .prop{background:var(--surf);border:1px solid var(--border);border-radius:16px;padding:18px 18px 20px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:13px}
+  .prop-head{display:flex;align-items:baseline;gap:10px}
+  .prop-letter{font-family:var(--mono);font-size:.8rem;font-weight:700;color:#fff;background:var(--cyan);width:26px;height:26px;border-radius:8px;display:grid;place-items:center;flex:none}
+  .prop-title{font-weight:750;font-size:1.02rem;letter-spacing:-.01em}
+  .prop-why{color:var(--dim);font-size:.85rem;margin:-4px 0 0}
+  .panel{background:var(--surf2);border:1px solid var(--border);border-radius:12px;padding:6px}
+  .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .num{color:var(--dim)}
+
+  /* ---------- O — colonne ChessBase ---------- */
+  .cbtable{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.95rem}
+  .cbtable td{padding:6px 10px}
+  .cbtable .rn{color:var(--dim);width:34px;text-align:right;border-right:1px solid var(--border);font-size:.85em}
+  .cbtable .mw,.cbtable .mb{width:44%;cursor:default}
+  .cbtable tr.stripe{background:color-mix(in srgb,var(--surf3) 45%,transparent)}
+  .cbtable .mv-cell.err{color:var(--red-ink);background:var(--red-dim);border-radius:6px}
+  .cbtable .mv-cell.cur{color:#fff;background:var(--cyan);border-radius:6px;font-weight:700}
+  @media (prefers-color-scheme:dark){.cbtable .mv-cell.cur{color:#09090b}}
+  :root[data-theme="dark"] .cbtable .mv-cell.cur{color:#09090b}
+  :root[data-theme="light"] .cbtable .mv-cell.cur{color:#fff}
+  .mv-cell{padding:2px 7px;display:inline-block}
+  .cbtable tr.sub td{font-family:var(--body);font-size:.8rem;padding-top:2px;padding-bottom:6px}
+  .cbtable .co{color:var(--violet-ink)} .cbtable .co::before{content:"▸ ";opacity:.6}
+  .cbtable .var{color:var(--dim)} .cbtable .var b{font-family:var(--mono);color:var(--text-2);font-weight:600}
+
+  /* ---------- P — flux ChessBase ---------- */
+  .flow{font-family:var(--mono);font-size:.98rem;line-height:2;color:var(--text-2);padding:10px 12px}
+  .flow .num{margin-left:5px}
+  .flow .w{color:var(--text);font-weight:600}
+  .flow .err{color:var(--red-ink);background:var(--red-dim);padding:1px 5px;border-radius:5px;font-weight:700}
+  .flow .cur{color:#fff;background:var(--cyan);padding:1px 7px;border-radius:6px;font-weight:700}
+  @media (prefers-color-scheme:dark){.flow .cur{color:#09090b}}
+  :root[data-theme="dark"] .flow .cur{color:#09090b}
+  :root[data-theme="light"] .flow .cur{color:#fff}
+  .flow .cmt{font-family:var(--body);font-style:italic;color:var(--violet-ink);font-size:.86em}
+  .flow .vr{display:block;font-size:.86em;color:var(--dim);background:var(--surf);border:1px solid var(--border);
+            border-radius:8px;padding:3px 9px;margin:5px 0 5px 14px;line-height:1.7}
+  .flow .vr b{color:var(--text-2);font-weight:600}
+
+  /* ---------- Q — arbre indenté ---------- */
+  .tree{font-family:var(--mono);font-size:.95rem;padding:8px 6px}
+  .tline{display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:7px}
+  .tline .num{width:26px;text-align:right}
+  .tline.err .m{color:var(--red-ink)} .tline.cur{background:var(--cyan-dim)}
+  .tline.cur .m{color:var(--cyan-ink);font-weight:700}
+  .tbranch{margin:2px 0 4px 34px;border-left:2px solid var(--border);padding-left:12px}
+  .tbranch .tline{font-size:.86em;color:var(--dim);padding:3px 8px}
+  .tbranch .tag{font-family:var(--body);font-size:.72rem;color:var(--dim);margin-left:4px}
+  .tco{margin:4px 0 6px 34px;font-size:.8rem;color:var(--violet-ink);background:var(--violet-dim);
+       border:1px solid var(--violet-glow);border-radius:8px;padding:6px 10px;font-family:var(--body)}
+
+  /* ---------- R — colonne + volet coach ---------- */
+  .cbmini{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.92rem}
+  .cbmini td{padding:4px 9px}
+  .cbmini .rn{color:var(--dim);width:30px;text-align:right;border-right:1px solid var(--border);font-size:.84em}
+  .cbmini tr.stripe{background:color-mix(in srgb,var(--surf3) 45%,transparent)}
+  .cbmini .mv-cell.err{color:var(--red-ink);background:var(--red-dim);border-radius:5px}
+  .cbmini .mv-cell.cur{color:#fff;background:var(--cyan);border-radius:5px;font-weight:700}
+  @media (prefers-color-scheme:dark){.cbmini .mv-cell.cur{color:#09090b}}
+  :root[data-theme="dark"] .cbmini .mv-cell.cur{color:#09090b}
+  :root[data-theme="light"] .cbmini .mv-cell.cur{color:#fff}
+  .coachpane{margin-top:8px;background:var(--violet-dim);border:1px solid var(--violet-glow);border-radius:10px;padding:11px 13px}
+  .coachpane .cp-h{display:flex;align-items:center;gap:8px;font-size:.72rem;font-weight:700;letter-spacing:.06em;
+                   text-transform:uppercase;color:var(--violet-ink);margin-bottom:5px}
+  .coachpane .cp-h .mono{background:var(--surf);border:1px solid var(--violet-glow);border-radius:5px;padding:1px 6px;font-size:.9rem;letter-spacing:0;text-transform:none}
+  .coachpane .cp-b{font-size:.88rem;color:var(--text-2)}
+
+  footer{margin-top:34px;color:var(--dim);font-size:.85rem;border-top:1px solid var(--border);padding-top:18px}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:10px;font-size:.8rem;color:var(--dim)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:10px;height:10px;border-radius:3px;flex:none}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Notation — <em>ChessBase amélioré</em></h1>
+      <p class="lead">Quatre variantes conventionnelles pour <code>#notation-moves</code> : la fenêtre de notation
+        ChessBase reprise proprement (colonne, flux, variantes), avec l'intégration des commentaires du coach.
+        Démo : Espagnole, élève aux Blancs, 3.♗b5 raté, une variante 3.♗c4, coup 5 à trouver.</p>
+    </div>
+    <button class="toggle" id="tg">◐ Thème</button>
+  </header>
+
+  <div class="grid">
+
+    <!-- O -->
+    <section class="prop">
+      <div class="prop-head"><span class="prop-letter">O</span><span class="prop-title">Colonne ChessBase</span></div>
+      <p class="prop-why">La table classique n° · Blancs · Noirs, en plus aéré : zébrage discret, commentaire et variante sur leur propre rangée pleine largeur (au lieu d'être écrasés dans la cellule).</p>
+      <div class="panel">
+        <table class="cbtable">
+          <tr><td class="rn">1</td><td class="mw"><span class="mv-cell">e4</span></td><td class="mb"><span class="mv-cell">e5</span></td></tr>
+          <tr class="stripe"><td class="rn">2</td><td class="mw"><span class="mv-cell">♘f3</span></td><td class="mb"><span class="mv-cell">♘c6</span></td></tr>
+          <tr><td class="rn">3</td><td class="mw"><span class="mv-cell err">♗b5</span></td><td class="mb"><span class="mv-cell">a6</span></td></tr>
+          <tr class="sub"><td class="rn"></td><td colspan="2" class="co">Coup thématique de l'Espagnole — pression sur c6.</td></tr>
+          <tr class="sub"><td class="rn"></td><td colspan="2" class="var"><b>3.♗c4</b> — l'Italienne ; ici on étudie l'Espagnole.</td></tr>
+          <tr class="stripe"><td class="rn">4</td><td class="mw"><span class="mv-cell">♗a4</span></td><td class="mb"><span class="mv-cell">♘f6</span></td></tr>
+          <tr><td class="rn">5</td><td class="mw"><span class="mv-cell cur">?</span></td><td class="mb"></td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- P -->
+    <section class="prop">
+      <div class="prop-head"><span class="prop-letter">P</span><span class="prop-title">Flux ChessBase</span></div>
+      <p class="prop-why">La notation « au fil du texte » de ChessBase, assainie : ligne principale en texte courant, variantes en blocs indentés et adoucis, commentaires en italique.</p>
+      <div class="panel">
+        <div class="flow">
+          <span class="num">1.</span><span class="w">e4</span> e5
+          <span class="num">2.</span><span class="w">♘f3</span> ♘c6
+          <span class="num">3.</span><span class="err">♗b5</span> <span class="cmt">— pression sur c6.</span>
+          <span class="vr"><b>3.♗c4</b> l'Italienne, mais ici on étudie l'Espagnole.</span>
+          a6 <span class="num">4.</span><span class="w">♗a4</span> ♘f6
+          <span class="vr"><b>4.♗xc6</b> dxc6 5.O-O — la variante d'échange.</span>
+          <span class="num">5.</span><span class="cur">?</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Q -->
+    <section class="prop">
+      <div class="prop-head"><span class="prop-letter">Q</span><span class="prop-title">Arbre indenté</span></div>
+      <p class="prop-why">Ligne principale verticale, variantes rattachées par un rail neutre (façon étude Lichess / chess.com). Les branches restent clairement secondaires.</p>
+      <div class="panel">
+        <div class="tree">
+          <div class="tline"><span class="num">1.</span><span class="m">e4 e5</span></div>
+          <div class="tline"><span class="num">2.</span><span class="m">♘f3 ♘c6</span></div>
+          <div class="tline err"><span class="num">3.</span><span class="m">♗b5 a6</span></div>
+          <div class="tco">Coup thématique — pression sur c6.</div>
+          <div class="tbranch">
+            <div class="tline"><span class="num">3.</span><span class="m">♗c4</span><span class="tag">l'Italienne</span></div>
+          </div>
+          <div class="tline"><span class="num">4.</span><span class="m">♗a4 ♘f6</span></div>
+          <div class="tbranch">
+            <div class="tline"><span class="num">4.</span><span class="m">♗xc6 dxc6 5.O-O</span><span class="tag">échange</span></div>
+          </div>
+          <div class="tline cur"><span class="num">5.</span><span class="m">? — à toi de jouer</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- R -->
+    <section class="prop">
+      <div class="prop-head"><span class="prop-letter">R</span><span class="prop-title">Colonne + volet coach</span></div>
+      <p class="prop-why">Table compacte au-dessus, et un volet fixe en bas qui montre toujours l'instruction du coach pour le coup en cours — la « fenêtre d'entraînement » de ChessBase, mais dédiée.</p>
+      <div class="panel">
+        <table class="cbmini">
+          <tr><td class="rn">1</td><td><span class="mv-cell">e4</span></td><td><span class="mv-cell">e5</span></td></tr>
+          <tr class="stripe"><td class="rn">2</td><td><span class="mv-cell">♘f3</span></td><td><span class="mv-cell">♘c6</span></td></tr>
+          <tr><td class="rn">3</td><td><span class="mv-cell err">♗b5</span></td><td><span class="mv-cell">a6</span></td></tr>
+          <tr class="stripe"><td class="rn">4</td><td><span class="mv-cell">♗a4</span></td><td><span class="mv-cell">♘f6</span></td></tr>
+          <tr><td class="rn">5</td><td><span class="mv-cell cur">?</span></td><td></td></tr>
+        </table>
+        <div class="coachpane">
+          <div class="cp-h">Coach · coup courant <span class="mono">5.</span></div>
+          <div class="cp-b">Roque court pour mettre le roi à l'abri et connecter les tours — le plan naturel de l'Espagnole.</div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer>
+    <div>Mêmes conventions d'état que l'app.</div>
+    <div class="legend">
+      <span><span class="dot" style="background:var(--text-2)"></span> coup joué</span>
+      <span><span class="dot" style="background:var(--red)"></span> erreur</span>
+      <span><span class="dot" style="background:var(--dim)"></span> variante secondaire</span>
+      <span><span class="dot" style="background:var(--violet)"></span> commentaire coach</span>
+      <span><span class="dot" style="background:var(--cyan)"></span> coup courant</span>
+    </div>
+  </footer>
+</div>
+
+<script>
+  const root=document.documentElement, tg=document.getElementById('tg');
+  tg.addEventListener('click',()=>{
+    const cur=root.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+    root.setAttribute('data-theme',cur==='dark'?'light':'dark');
+  });
+</script>

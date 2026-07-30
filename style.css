@@ -636,15 +636,54 @@ textarea {
 }
 @media (prefers-reduced-motion: reduce) { .study-bubble.pop { animation: none; } }
 
-/* Variantes en blocs indentés ; rail/fond/flèche colorés inline selon la profondeur */
+/* Sous-variantes — montage P1+R3 (30/07) : une variante = un paragraphe à rail.
+   La branche ACTIVE (chemin courant) est surlignée (.on), les autres estompées
+   et repliées par renderStudyTree (.off). Indentation plafonnée à 2 niveaux
+   (règle ChessBase : au-delà, la marge n'augmente plus — le panneau fait ~380px).
+   Le rail est un GUIDE D'INDENTATION structurel (façon éditeur de code), pas un
+   side-tab décoratif. */
 .study-var {
-  margin: 3px 0 3px 2px;
-  padding: 1px 8px;
-  border-left: 2px solid var(--border);
-  border-radius: 0;
-  line-height: 1.6;
+  position: relative;
+  margin: 4px 0;
+  padding: 2px 6px 2px 14px;
+  border-radius: 0 6px 6px 0;
+  line-height: 1.75;
+  color: var(--text-2);
 }
-.study-var-arrow { margin-right: 3px; font-size: .82em; color: var(--dim); }
+.study-var::before {
+  content: ""; position: absolute; left: 0; top: 3px; bottom: 3px;
+  width: 2px; border-radius: 2px; background: var(--border-h);
+}
+.study-var.on  { background: var(--cyan-dim); }
+.study-var.on::before { background: var(--cyan); }
+.study-var.off { opacity: .66; }
+.study-var .study-var { margin-left: 14px; }
+.study-var .study-var .study-var { margin-left: 0; }
+/* Coup annoté : soulignement pointillé — le marqueur fait partie du coup (fin de
+   la pastille flottante qui se collait au numéro du coup suivant) */
+.study-note { text-decoration: underline dotted var(--cyan); text-underline-offset: 3px; text-decoration-thickness: 1.5px; }
+/* « … déplier · N coups » / « replier » d'une branche résumée */
+.study-more { font-family: var(--font-ui); font-size: .7rem; color: var(--cyan-ink); font-weight: 600; margin-left: 5px; cursor: pointer; }
+.study-more:hover { text-decoration: underline; }
+/* Bilan SR d'une branche repliée (R3) : « ● N à revoir » / « ✓ acquise » */
+.study-srsum { font-family: var(--font-ui); font-size: .68rem; font-weight: 700; color: var(--gold-ink);
+  background: var(--gold-dim); border-radius: 999px; padding: 1px 8px; margin-left: 6px; vertical-align: 1px; }
+.study-srsum.done { color: var(--green-ink); background: var(--surf3); }
+/* Fil d'Ariane (chapitres à < 3 branches) */
+.study-crumb { font-family: var(--font-ui); font-size: .72rem; color: var(--dim); padding: 0 2px 7px;
+  border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+.study-crumb b { color: var(--cyan-ink); font-weight: 700; }
+/* Sommaire des branches (R1, chapitres à ≥ 3 branches) */
+.study-toc { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; padding-bottom: 8px;
+  border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+.study-toc-lbl { font-family: var(--font-ui); font-size: .64rem; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--dim); margin-right: 2px; }
+.study-toc-t { font-size: .78rem; font-weight: 600; color: var(--text-2); background: var(--surf);
+  border: 1px solid var(--border-h); border-radius: 999px; padding: 2px 9px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 5px; transition: border-color .15s, color .15s; }
+.study-toc-t:hover { border-color: var(--cyan); color: var(--cyan-ink); }
+.study-toc-t.on { color: var(--cyan-ink); border-color: var(--cyan); background: var(--cyan-dim); font-weight: 700; }
+.study-toc-d { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); flex: none; }
 
 /* Toggle « devine le coup » actif */
 #study-guess-btn.active { background: var(--cyan); color: #fff; border-color: var(--cyan); }

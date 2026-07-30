@@ -1,0 +1,278 @@
+<title>Notation du mode arbre — propositions</title>
+<style>
+  :root{
+    --bg:#fafafa; --surf:#ffffff; --surf2:#f4f4f5; --surf3:#e4e4e7; --border:#e4e4e7; --border-h:#d4d4d8;
+    --cyan:#4f46e5; --cyan-ink:#4f46e5; --cyan-dim:rgba(79,70,229,.08); --cyan-glow:rgba(79,70,229,.30);
+    --gold:#d97706; --gold-dim:rgba(217,119,6,.12); --gold-glow:rgba(217,119,6,.30);
+    --green-ink:#166534;
+    --violet:#7c3aed; --violet-ink:#6d28d9; --violet-dim:rgba(124,58,237,.10); --violet-glow:rgba(124,58,237,.30);
+    --text:#18181b; --text-2:#3f3f46; --dim:#65656d;
+    --shadow:0 1px 2px rgba(24,24,40,.06),0 4px 16px rgba(24,24,40,.05);
+    --mono:'JetBrains Mono',ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --body:system-ui,-apple-system,"Hanken Grotesk","Segoe UI",sans-serif;
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --bg:#09090b; --surf:#18181b; --surf2:#1f1f23; --surf3:#27272a; --border:#27272a; --border-h:#3f3f46;
+    --cyan:#818cf8; --cyan-ink:#a5b4fc; --cyan-dim:rgba(129,140,248,.12); --cyan-glow:rgba(129,140,248,.32);
+    --gold:#f59e0b; --gold-dim:rgba(245,158,11,.14); --gold-glow:rgba(245,158,11,.30);
+    --green-ink:#86efac;
+    --violet:#a78bfa; --violet-ink:#c4b5fd; --violet-dim:rgba(167,139,250,.13); --violet-glow:rgba(167,139,250,.32);
+    --text:#fafafa; --text-2:#d4d4d8; --dim:#9a9aa3; --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 20px rgba(0,0,0,.35);
+  }}
+  :root[data-theme="dark"]{
+    --bg:#09090b; --surf:#18181b; --surf2:#1f1f23; --surf3:#27272a; --border:#27272a; --border-h:#3f3f46;
+    --cyan:#818cf8; --cyan-ink:#a5b4fc; --cyan-dim:rgba(129,140,248,.12); --cyan-glow:rgba(129,140,248,.32);
+    --gold:#f59e0b; --gold-dim:rgba(245,158,11,.14); --gold-glow:rgba(245,158,11,.30);
+    --green-ink:#86efac;
+    --violet:#a78bfa; --violet-ink:#c4b5fd; --violet-dim:rgba(167,139,250,.13); --violet-glow:rgba(167,139,250,.32);
+    --text:#fafafa; --text-2:#d4d4d8; --dim:#9a9aa3; --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#fafafa; --surf:#ffffff; --surf2:#f4f4f5; --surf3:#e4e4e7; --border:#e4e4e7; --border-h:#d4d4d8;
+    --cyan:#4f46e5; --cyan-ink:#4f46e5; --cyan-dim:rgba(79,70,229,.08); --cyan-glow:rgba(79,70,229,.30);
+    --gold:#d97706; --gold-dim:rgba(217,119,6,.12); --gold-glow:rgba(217,119,6,.30);
+    --green-ink:#166534;
+    --violet:#7c3aed; --violet-ink:#6d28d9; --violet-dim:rgba(124,58,237,.10); --violet-glow:rgba(124,58,237,.30);
+    --text:#18181b; --text-2:#3f3f46; --dim:#65656d; --shadow:0 1px 2px rgba(24,24,40,.06),0 4px 16px rgba(24,24,40,.05);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:32px 20px 72px}
+  header.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+  h1{font-size:clamp(1.5rem,4vw,2rem);font-weight:800;letter-spacing:-.02em;margin:0;text-wrap:balance}
+  h1 em{color:var(--cyan);font-style:normal}
+  .lead{color:var(--dim);max-width:64ch;margin:.5rem 0 0;font-size:.95rem}
+  .toggle{flex:none;display:inline-flex;align-items:center;gap:8px;background:var(--surf);border:1px solid var(--border);
+          color:var(--text-2);padding:8px 14px;border-radius:999px;font:inherit;font-size:.85rem;font-weight:600;cursor:pointer;box-shadow:var(--shadow)}
+  .toggle:hover{border-color:var(--border-h)}
+
+  h2.sec{font-size:.78rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);
+          margin:38px 0 14px;display:flex;align-items:center;gap:10px}
+  h2.sec::after{content:"";flex:1;height:1px;background:var(--border)}
+
+  /* ── placement du commentaire : maquettes de layout ── */
+  .layouts{display:grid;grid-template-columns:1fr;gap:16px}
+  @media(min-width:720px){.layouts{grid-template-columns:1fr 1fr}}
+  .lay{background:var(--surf);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+  .lay-tag{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin:0 0 3px}
+  .lay-tag.bad{color:var(--dim)} .lay-tag.good{color:var(--cyan-ink)}
+  .lay-desc{font-size:.85rem;color:var(--dim);margin:0 0 12px}
+  .mini{display:grid;grid-template-columns:1.1fr 1fr;gap:10px;height:190px}
+  .mini .col{display:flex;flex-direction:column;gap:8px;min-height:0}
+  .brd{aspect-ratio:1;border-radius:9px;background:
+        repeating-conic-gradient(var(--surf3) 0% 25%, var(--surf) 0% 50%) 0 0/26px 26px;
+        border:1px solid var(--border);min-height:0}
+  .noteslot{border:1.5px dashed var(--violet-glow);background:var(--violet-dim);border-radius:9px;
+            font-size:.68rem;font-weight:600;color:var(--violet-ink);display:grid;place-items:center;text-align:center;padding:6px}
+  .notecol{background:var(--surf2);border:1px solid var(--border);border-radius:9px;flex:1;min-height:0;
+           padding:8px;display:flex;flex-direction:column;gap:5px;overflow:hidden}
+  .fakeline{height:6px;border-radius:3px;background:var(--surf3)}
+  .fakeline.w70{width:70%}.fakeline.w90{width:90%}.fakeline.w55{width:55%}.fakeline.w80{width:80%}
+  .fakeline.cur{background:var(--cyan);width:36%}
+
+  /* ── notation : proposals ── */
+  .props{display:flex;flex-direction:column;gap:18px}
+  .prop{background:var(--surf);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:var(--shadow)}
+  .prop-head{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
+  .prop-letter{font-family:var(--mono);font-size:.8rem;font-weight:700;color:#fff;background:var(--cyan);width:24px;height:24px;border-radius:7px;display:grid;place-items:center;flex:none}
+  @media (prefers-color-scheme:dark){.prop-letter{color:#09090b}}
+  :root[data-theme="dark"] .prop-letter{color:#09090b}
+  :root[data-theme="light"] .prop-letter{color:#fff}
+  .prop-title{font-weight:750;font-size:1.02rem}
+  .prop-why{color:var(--dim);font-size:.86rem;margin:2px 0 14px}
+  .panel{background:var(--surf2);border:1px solid var(--border);border-radius:12px;padding:13px 14px;
+         font-family:var(--mono);font-size:.94rem;line-height:1.95;font-variant-numeric:tabular-nums}
+
+  /* jetons de coup communs */
+  .n{color:var(--dim);font-size:.74em;margin-right:1px}
+  .mv{padding:1px 3px;border-radius:6px;cursor:default}
+  .mvmain{color:var(--text);font-weight:600}
+  .mv+.mv,.mvmain+.mvmain{margin-left:5px}
+  .cur{background:var(--cyan);color:#fff;font-weight:700;padding:2px 6px}
+  @media (prefers-color-scheme:dark){.cur{color:#09090b}}
+  :root[data-theme="dark"] .cur{color:#09090b}
+  :root[data-theme="light"] .cur{color:#fff}
+  .known{color:var(--green-ink);font-size:.8em;font-weight:700;margin-left:3px}
+  /* indicateur de commentaire — corrigé : marge des DEUX côtés, jamais collé au numéro suivant */
+  .note-u{text-decoration:underline dotted var(--cyan);text-underline-offset:3px;text-decoration-thickness:1.5px}
+
+  /* P1 — blocs imbriqués */
+  .p1 .v{margin:5px 0 5px 4px;padding:5px 10px 5px 11px;border-radius:9px;background:var(--surf);border:1px solid var(--border)}
+  .p1 .v .v{background:color-mix(in srgb,var(--surf2) 70%,transparent);margin-left:8px}
+  .p1 .vh{font-size:.7rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--dim);margin-right:7px}
+  .p1 .sub{color:var(--dim);font-weight:400;font-size:.9em}
+  .p1 .sub .mvmain{color:var(--text-2);font-weight:500}
+
+  /* P2 — rails de profondeur */
+  .p2 .v{margin:4px 0 4px 3px;padding:2px 0 2px 12px;border-left:2.5px solid var(--cyan-glow)}
+  .p2 .v .v{border-left-color:var(--gold-glow);margin-left:10px}
+  .p2 .brnum{font-family:var(--mono);font-weight:700;color:var(--cyan-ink);margin-right:6px;font-size:.82em}
+  .p2 .v .v .brnum{color:var(--gold)}
+  .p2 .sub{color:var(--dim);font-weight:400;font-size:.9em}
+  .p2 .sub .mvmain{color:var(--text-2);font-weight:500}
+
+  /* P3 — variantes repliables */
+  .p3 .varchip{display:inline-flex;align-items:center;gap:6px;margin:4px 0 4px 6px;padding:3px 10px;border-radius:999px;
+               background:var(--surf);border:1px solid var(--border-h);color:var(--text-2);font-family:var(--body);
+               font-size:.76rem;font-weight:600;cursor:pointer}
+  .p3 .varchip:hover{border-color:var(--cyan);color:var(--cyan-ink)}
+  .p3 .varchip .cnt{color:var(--cyan-ink)}
+  .p3 details{margin:4px 0 4px 6px}
+  .p3 summary{list-style:none;display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;
+              background:var(--cyan-dim);border:1px solid var(--cyan-glow);color:var(--cyan-ink);
+              font-family:var(--body);font-size:.76rem;font-weight:600;cursor:pointer}
+  .p3 summary::-webkit-details-marker{display:none}
+  .p3 details[open] .exp{display:block;margin:6px 0 2px 12px;padding-left:11px;border-left:2px solid var(--border);color:var(--dim);font-size:.9em}
+  .p3 .exp .mvmain{color:var(--text-2);font-weight:500}
+
+  .cbubble{margin-top:12px;padding:11px 13px;background:var(--cyan-dim);border:1px solid var(--cyan-glow);border-radius:12px}
+  .cbubble .h{display:flex;align-items:center;gap:7px;color:var(--cyan-ink);font-weight:700;margin-bottom:5px;font-family:var(--body);font-size:.9rem}
+  .cbubble .h .mono{font-family:var(--mono)}
+  .cbubble .b{font-family:var(--body);font-size:.85rem;color:var(--text);line-height:1.55}
+
+  footer{margin-top:36px;color:var(--dim);font-size:.85rem;border-top:1px solid var(--border);padding-top:18px}
+  footer b{color:var(--text-2)}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Notation du <em>mode arbre</em> — propositions</h1>
+      <p class="lead">Sur les vraies données du Gambit Rubinstein. On règle trois choses : où placer le commentaire,
+        mieux marquer les sous-variantes, et le point de commentaire qui se collait au numéro suivant.</p>
+    </div>
+    <button class="toggle" id="tg">◐ Thème</button>
+  </header>
+
+  <h2 class="sec">1 · Où placer le commentaire</h2>
+  <div class="layouts">
+    <div class="lay">
+      <p class="lay-tag bad">Aujourd'hui</p>
+      <p class="lay-desc">Le commentaire de <b>6.♗e2!</b> est tout en bas de la notation — loin du coup surligné (en haut) et loin de l'échiquier, où l'élève regarde.</p>
+      <div class="mini">
+        <div class="col"><div class="brd"></div></div>
+        <div class="col">
+          <div class="notecol">
+            <div class="fakeline w90"></div><div class="fakeline cur"></div><div class="fakeline w70"></div>
+            <div class="fakeline w80"></div><div class="fakeline w55"></div>
+            <div class="noteslot" style="margin-top:auto">💬 commentaire ici</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="lay">
+      <p class="lay-tag good">Proposé</p>
+      <p class="lay-desc">Le commentaire passe <b>sous l'échiquier</b> (slot <code>#board-comment</code>, déjà prévu). L'explication est là où l'œil se trouve, et la notation à droite respire.</p>
+      <div class="mini">
+        <div class="col">
+          <div class="brd"></div>
+          <div class="noteslot">💬 6.♗e2! — l'idée est qu'après d7-d6…</div>
+        </div>
+        <div class="col">
+          <div class="notecol">
+            <div class="fakeline w90"></div><div class="fakeline cur"></div><div class="fakeline w70"></div>
+            <div class="fakeline w80"></div><div class="fakeline w55"></div><div class="fakeline w70"></div><div class="fakeline w80"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="sec">2 · Marquer les sous-variantes + corriger le point</h2>
+  <div class="props">
+
+    <!-- P1 -->
+    <section class="prop">
+      <div class="prop-head"><span class="prop-letter">1</span><span class="prop-title">Blocs imbriqués</span></div>
+      <p class="prop-why">Chaque variante est un vrai bloc encadré, imbriqué par profondeur. On voit d'un coup d'œil où une ligne commence et finit — c'est la containment qui manquait.</p>
+      <div class="panel p1">
+        <span class="n">1.</span><span class="mv mvmain">e4</span><span class="mv mvmain">e5</span>
+        <span class="n">2.</span><span class="mv mvmain">♘f3</span><span class="mv mvmain">♘c6</span>
+        <span class="n">3.</span><span class="mv mvmain">♘c3</span><span class="mv mvmain">♘f6</span>
+        <span class="n">4.</span><span class="mv mvmain">♗b5</span><span class="mv mvmain">♘d4</span>
+        <span class="n">5.</span><span class="mv mvmain">♘xe5!?</span><span class="mv mvmain note-u">♗xb5</span>
+        <div class="v">
+          <span class="vh">Variante A</span><span class="n">5…</span><span class="mv mvmain">c6?!</span>
+          <span class="n">6.</span><span class="mv cur note-u">♗e2!</span>
+          <div class="v sub"><span class="vh">A1</span><span class="n">6…</span><span class="mvmain">d5</span> <span class="n">7.</span><span class="mvmain">♘f5</span> ♗xf5 <span class="n">8.</span>d3±</div>
+          <span class="n">7.</span><span class="mvmain">♘xe4</span> ♗e7 <span class="n">8.</span>♘xc6 bxc6
+        </div>
+        <div class="v sub">
+          <span class="vh">Variante B</span><span class="n">5…</span><span class="mvmain">♘xe4?!</span>
+          <span class="n">6.</span>♘xe4 ♗xb5 <span class="n">7.</span><span class="note-u">♘xf7!!</span>
+        </div>
+        <div class="v sub">
+          <span class="vh">Variante C</span><span class="n">5…</span><span class="mvmain">♗c5</span>
+          <span class="n">6.</span>O-O O-O
+        </div>
+      </div>
+    </section>
+
+    <!-- P2 -->
+    <section class="prop">
+      <div class="prop-head"><span class="prop-letter">2</span><span class="prop-title">Rails de profondeur</span></div>
+      <p class="prop-why">Pas de bloc encadré, mais un rail coloré par niveau (indigo au 1er, ambre au 2e) + le coup de bifurcation en évidence. Plus léger que les blocs, la profondeur se lit à la couleur du rail.</p>
+      <div class="panel p2">
+        <span class="n">1.</span><span class="mv mvmain">e4</span><span class="mv mvmain">e5</span>
+        <span class="n">2.</span><span class="mv mvmain">♘f3</span><span class="mv mvmain">♘c6</span>
+        <span class="n">3.</span><span class="mv mvmain">♘c3</span><span class="mv mvmain">♘f6</span>
+        <span class="n">4.</span><span class="mv mvmain">♗b5</span><span class="mv mvmain">♘d4</span>
+        <span class="n">5.</span><span class="mv mvmain">♘xe5!?</span><span class="mv mvmain note-u">♗xb5</span>
+        <div class="v">
+          <span class="brnum">5…c6?!</span><span class="n">6.</span><span class="mv cur note-u">♗e2!</span>
+          <div class="v sub"><span class="brnum">6…d5</span> <span class="n">7.</span>♘f5 ♗xf5 <span class="n">8.</span>d3±</div>
+          <span class="n">7.</span><span class="mvmain">♘xe4</span> ♗e7 <span class="n">8.</span>♘xc6 bxc6
+        </div>
+        <div class="v sub">
+          <span class="brnum">5…♘xe4?!</span><span class="n">6.</span>♘xe4 ♗xb5 <span class="n">7.</span><span class="note-u">♘xf7!!</span>
+        </div>
+        <div class="v sub">
+          <span class="brnum">5…♗c5</span><span class="n">6.</span>O-O O-O
+        </div>
+      </div>
+    </section>
+
+    <!-- P3 -->
+    <section class="prop">
+      <div class="prop-head"><span class="prop-letter">3</span><span class="prop-title">Variantes repliables</span></div>
+      <p class="prop-why">La ligne principale reste seule et nette ; chaque bifurcation devient une pastille « N variantes » qu'on déplie au besoin. Traite aussi le « trop chargé » — et une variante repliée est marquée sans ambiguïté.</p>
+      <div class="panel p3">
+        <span class="n">1.</span><span class="mv mvmain">e4</span><span class="mv mvmain">e5</span>
+        <span class="n">2.</span><span class="mv mvmain">♘f3</span><span class="mv mvmain">♘c6</span>
+        <span class="n">3.</span><span class="mv mvmain">♘c3</span><span class="mv mvmain">♘f6</span>
+        <span class="n">4.</span><span class="mv mvmain">♗b5</span><span class="mv mvmain">♘d4</span>
+        <span class="n">5.</span><span class="mv mvmain">♘xe5!?</span><span class="mv mvmain note-u">♗xb5</span>
+        <br>
+        <details open>
+          <summary>▾ Variante A · 5…c6?! (en cours)</summary>
+          <div class="exp">
+            <span class="n">6.</span><span class="mv cur note-u">♗e2!</span>
+            <span class="n">7.</span><span class="mvmain">♘xe4</span> ♗e7 <span class="n">8.</span>♘xc6 bxc6
+            <br><span class="n">6…</span><span class="mvmain">d5</span> <span class="n">7.</span>♘f5 ♗xf5 <span class="n">8.</span>d3±
+          </div>
+        </details>
+        <span class="varchip">▸ 5…♘xe4?! <span class="cnt">· 1 variante</span></span>
+        <span class="varchip">▸ 5…♗c5 <span class="cnt">· 2 variantes</span></span>
+      </div>
+    </section>
+
+    <div class="cbubble">
+      <div class="h">💡 <span class="mono">6. ♗e2!</span></div>
+      <div class="b">Très bon pour les Blancs : après d7-d6, ils rapatrient tranquillement le Cavalier en f3 sans craindre …♗g4. — <i>Ce commentaire va sous l'échiquier (section 1), pas dans la notation.</i></div>
+    </div>
+
+  </div>
+
+  <footer>
+    <div><b>Le point de commentaire</b> — remplacé par un <span class="note-u" style="font-family:var(--mono)">soulignement pointillé</span> sur le coup annoté : il fait partie du coup, donc il ne peut plus se coller au numéro suivant. (À défaut, un point avec marge des deux côtés règle aussi le bug.)</div>
+  </footer>
+</div>
+
+<script>
+  const root=document.documentElement, tg=document.getElementById('tg');
+  tg.addEventListener('click',()=>{
+    const cur=root.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+    root.setAttribute('data-theme',cur==='dark'?'light':'dark');
+  });
+</script>

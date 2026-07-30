@@ -1,0 +1,180 @@
+<title>Où placer le commentaire — 6 options</title>
+<style>
+  :root{
+    --bg:#fafafa; --surf:#ffffff; --surf2:#f4f4f5; --surf3:#e4e4e7; --border:#e4e4e7; --border-h:#d4d4d8;
+    --cyan:#4f46e5; --cyan-ink:#4f46e5; --cyan-dim:rgba(79,70,229,.08); --cyan-glow:rgba(79,70,229,.30);
+    --violet:#7c3aed; --violet-ink:#6d28d9; --violet-dim:rgba(124,58,237,.10); --violet-glow:rgba(124,58,237,.35);
+    --text:#18181b; --text-2:#3f3f46; --dim:#65656d;
+    --shadow:0 1px 2px rgba(24,24,40,.06),0 4px 16px rgba(24,24,40,.05);
+    --mono:'JetBrains Mono',ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --body:system-ui,-apple-system,"Hanken Grotesk","Segoe UI",sans-serif;
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --bg:#09090b; --surf:#18181b; --surf2:#1f1f23; --surf3:#27272a; --border:#27272a; --border-h:#3f3f46;
+    --cyan:#818cf8; --cyan-ink:#a5b4fc; --cyan-dim:rgba(129,140,248,.12); --cyan-glow:rgba(129,140,248,.32);
+    --violet:#a78bfa; --violet-ink:#c4b5fd; --violet-dim:rgba(167,139,250,.14); --violet-glow:rgba(167,139,250,.40);
+    --text:#fafafa; --text-2:#d4d4d8; --dim:#9a9aa3; --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 20px rgba(0,0,0,.35);
+  }}
+  :root[data-theme="dark"]{
+    --bg:#09090b; --surf:#18181b; --surf2:#1f1f23; --surf3:#27272a; --border:#27272a; --border-h:#3f3f46;
+    --cyan:#818cf8; --cyan-ink:#a5b4fc; --cyan-dim:rgba(129,140,248,.12); --cyan-glow:rgba(129,140,248,.32);
+    --violet:#a78bfa; --violet-ink:#c4b5fd; --violet-dim:rgba(167,139,250,.14); --violet-glow:rgba(167,139,250,.40);
+    --text:#fafafa; --text-2:#d4d4d8; --dim:#9a9aa3; --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#fafafa; --surf:#ffffff; --surf2:#f4f4f5; --surf3:#e4e4e7; --border:#e4e4e7; --border-h:#d4d4d8;
+    --cyan:#4f46e5; --cyan-ink:#4f46e5; --cyan-dim:rgba(79,70,229,.08); --cyan-glow:rgba(79,70,229,.30);
+    --violet:#7c3aed; --violet-ink:#6d28d9; --violet-dim:rgba(124,58,237,.10); --violet-glow:rgba(124,58,237,.35);
+    --text:#18181b; --text-2:#3f3f46; --dim:#65656d; --shadow:0 1px 2px rgba(24,24,40,.06),0 4px 16px rgba(24,24,40,.05);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:32px 20px 72px}
+  header.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+  h1{font-size:clamp(1.5rem,4vw,2rem);font-weight:800;letter-spacing:-.02em;margin:0;text-wrap:balance}
+  h1 em{color:var(--cyan);font-style:normal}
+  .lead{color:var(--dim);max-width:64ch;margin:.5rem 0 0;font-size:.95rem}
+  .toggle{flex:none;display:inline-flex;align-items:center;gap:8px;background:var(--surf);border:1px solid var(--border);
+          color:var(--text-2);padding:8px 14px;border-radius:999px;font:inherit;font-size:.85rem;font-weight:600;cursor:pointer;box-shadow:var(--shadow)}
+  .toggle:hover{border-color:var(--border-h)}
+
+  .grid{display:grid;grid-template-columns:1fr;gap:18px;margin-top:26px}
+  @media(min-width:680px){.grid{grid-template-columns:1fr 1fr}}
+  .card{background:var(--surf);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:11px}
+  .card.reco{border-color:var(--cyan-glow);box-shadow:var(--shadow),0 0 0 1px var(--cyan-glow)}
+  .chead{display:flex;align-items:baseline;gap:9px}
+  .cletter{font-family:var(--mono);font-size:.75rem;font-weight:700;color:#fff;background:var(--cyan);width:23px;height:23px;border-radius:7px;display:grid;place-items:center;flex:none}
+  @media (prefers-color-scheme:dark){.cletter{color:#09090b}}
+  :root[data-theme="dark"] .cletter{color:#09090b}
+  :root[data-theme="light"] .cletter{color:#fff}
+  .ctitle{font-weight:750;font-size:1rem}
+  .cbadge{margin-left:auto;font-size:.66rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--cyan-ink);background:var(--cyan-dim);border:1px solid var(--cyan-glow);padding:2px 7px;border-radius:999px}
+  .cwhy{color:var(--dim);font-size:.83rem;margin:0}
+
+  /* mini layout */
+  .stage{background:var(--surf2);border:1px solid var(--border);border-radius:11px;padding:10px;height:198px;display:flex;flex-direction:column;gap:8px}
+  .row{display:grid;grid-template-columns:1.05fr 1fr;gap:9px;flex:1;min-height:0}
+  .lcol,.rcol{display:flex;flex-direction:column;gap:7px;min-height:0}
+  .brd{flex:1;border-radius:8px;background:repeating-conic-gradient(var(--surf3) 0% 25%, var(--surf) 0% 50%) 0 0/22px 22px;border:1px solid var(--border);min-height:44px;position:relative}
+  .note{border:1.5px dashed var(--violet-glow);background:var(--violet-dim);border-radius:8px;font-size:.66rem;font-weight:600;
+        color:var(--violet-ink);display:grid;place-items:center;text-align:center;padding:5px;line-height:1.25}
+  .nota{background:var(--surf);border:1px solid var(--border);border-radius:8px;flex:1;min-height:0;padding:7px;display:flex;flex-direction:column;gap:5px;overflow:hidden;position:relative}
+  .ln{height:6px;border-radius:3px;background:var(--surf3)}
+  .ln.a{width:92%}.ln.b{width:74%}.ln.c{width:84%}.ln.d{width:60%}.ln.e{width:80%}.ln.f{width:68%}
+  .ln.cur{background:var(--cyan);width:40%}
+  .lbl{font-size:.6rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);flex:none}
+  .sticky-tag{position:absolute;top:5px;right:6px;font-size:.55rem;font-weight:700;color:var(--cyan-ink);background:var(--cyan-dim);border-radius:4px;padding:1px 4px}
+  .float{position:absolute;z-index:2;box-shadow:var(--shadow)}
+  .pointer{position:absolute;width:9px;height:9px;background:var(--violet-dim);border-left:1.5px dashed var(--violet-glow);border-bottom:1.5px dashed var(--violet-glow);transform:rotate(45deg)}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Où placer le <em>commentaire</em> — 6 options</h1>
+      <p class="lead">Mode arbre en révision. La zone violette pointillée = l'emplacement du commentaire du coup courant.
+        La barre indigo dans la notation = le coup surligné.</p>
+    </div>
+    <button class="toggle" id="tg">◐ Thème</button>
+  </header>
+
+  <div class="grid">
+
+    <!-- A -->
+    <section class="card reco">
+      <div class="chead"><span class="cletter">A</span><span class="ctitle">Sous l'échiquier</span><span class="cbadge">reco</span></div>
+      <p class="cwhy">Là où l'élève regarde quand il cherche le coup. Slot <code>#board-comment</code> déjà prévu. La notation à droite reste pure.</p>
+      <div class="stage">
+        <div class="row">
+          <div class="lcol"><div class="brd"></div><div class="note" style="min-height:44px">💬 6.♗e2! — après d7-d6, le Cavalier revient en f3…</div></div>
+          <div class="rcol"><div class="nota"><div class="ln a"></div><div class="ln cur"></div><div class="ln b"></div><div class="ln c"></div><div class="ln d"></div><div class="ln e"></div><div class="ln f"></div></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- B -->
+    <section class="card">
+      <div class="chead"><span class="cletter">B</span><span class="ctitle">En ligne, sous le coup</span></div>
+      <p class="cwhy">Le commentaire s'insère juste sous le coup courant dans l'arbre — proximité maximale. Contrepartie : l'arbre saute à chaque déplacement.</p>
+      <div class="stage">
+        <div class="row">
+          <div class="lcol"><div class="brd"></div></div>
+          <div class="rcol"><div class="nota">
+            <div class="ln a"></div><div class="ln cur"></div>
+            <div class="note" style="min-height:34px">💬 après d7-d6, le Cavalier revient en f3…</div>
+            <div class="ln b"></div><div class="ln c"></div><div class="ln d"></div>
+          </div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- C -->
+    <section class="card">
+      <div class="chead"><span class="cletter">C</span><span class="ctitle">Épinglé en haut de la notation</span></div>
+      <p class="cwhy">Bandeau fixe au sommet du panneau : le commentaire du coup courant reste visible pendant qu'on fait défiler l'arbre. Position stable.</p>
+      <div class="stage">
+        <div class="row">
+          <div class="lcol"><div class="brd"></div></div>
+          <div class="rcol"><div class="nota" style="padding-top:0">
+            <div class="note" style="margin:-7px -7px 4px;border-radius:8px 8px 0 0;border-top:none;min-height:38px">💬 6.♗e2! <span class="sticky-tag">épinglé</span></div>
+            <div class="ln a"></div><div class="ln cur"></div><div class="ln b"></div><div class="ln c"></div><div class="ln d"></div><div class="ln e"></div>
+          </div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- D -->
+    <section class="card">
+      <div class="chead"><span class="cletter">D</span><span class="ctitle">Épinglé en bas de la notation</span></div>
+      <p class="cwhy">Comme aujourd'hui, mais <b>collé au bas du panneau et toujours visible</b> (l'arbre défile derrière). Il ne disparaît plus quand la ligne est longue.</p>
+      <div class="stage">
+        <div class="row">
+          <div class="lcol"><div class="brd"></div></div>
+          <div class="rcol"><div class="nota" style="padding-bottom:0">
+            <div class="ln a"></div><div class="ln cur"></div><div class="ln b"></div><div class="ln c"></div><div class="ln d"></div>
+            <div class="note" style="margin:4px -7px -7px;border-radius:0 0 8px 8px;border-bottom:none;min-height:38px">💬 6.♗e2! <span class="sticky-tag">épinglé</span></div>
+          </div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- E -->
+    <section class="card">
+      <div class="chead"><span class="cletter">E</span><span class="ctitle">Barre pleine largeur en bas</span></div>
+      <p class="cwhy">Une bande de commentaire qui s'étend sous l'échiquier ET la notation. Beaucoup de place pour un long texte du coach, séparée nettement du reste.</p>
+      <div class="stage">
+        <div class="row" style="flex:1">
+          <div class="lcol"><div class="brd"></div></div>
+          <div class="rcol"><div class="nota"><div class="ln a"></div><div class="ln cur"></div><div class="ln b"></div><div class="ln c"></div><div class="ln d"></div></div></div>
+        </div>
+        <div class="note" style="flex:none;min-height:40px">💬 6.♗e2! — l'idée est qu'après d7-d6, ils rapatrient le Cavalier en f3 sans craindre …♗g4</div>
+      </div>
+    </section>
+
+    <!-- F -->
+    <section class="card">
+      <div class="chead"><span class="cletter">F</span><span class="ctitle">Carte flottante ancrée au coup</span></div>
+      <p class="cwhy">Une bulle qui apparaît à côté du coup surligné, avec une petite pointe vers lui. Très liée au coup — mais elle recouvre une partie de l'arbre.</p>
+      <div class="stage">
+        <div class="row">
+          <div class="lcol"><div class="brd"></div></div>
+          <div class="rcol"><div class="nota">
+            <div class="ln a"></div><div class="ln cur"></div><div class="ln b"></div><div class="ln c"></div><div class="ln d"></div><div class="ln e"></div>
+            <div class="pointer" style="left:-4px;top:33px"></div>
+            <div class="note float" style="left:6px;top:40px;right:6px;min-height:40px">💬 6.♗e2! — après d7-d6, le Cavalier revient en f3…</div>
+          </div></div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<script>
+  const root=document.documentElement, tg=document.getElementById('tg');
+  tg.addEventListener('click',()=>{
+    const cur=root.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+    root.setAttribute('data-theme',cur==='dark'?'light':'dark');
+  });
+</script>

@@ -1,0 +1,213 @@
+<title>Notation mode arbre — raffinements de P1</title>
+<style>
+  :root{
+    --bg:#fafafa; --surf:#ffffff; --surf2:#f4f4f5; --surf3:#e4e4e7; --border:#e4e4e7; --border-h:#d4d4d8;
+    --cyan:#4f46e5; --cyan-ink:#4f46e5; --cyan-dim:rgba(79,70,229,.08); --cyan-glow:rgba(79,70,229,.30);
+    --gold:#d97706; --gold-dim:rgba(217,119,6,.12); --green-ink:#166534; --green:#16a34a;
+    --violet-ink:#6d28d9; --violet-dim:rgba(124,58,237,.10); --violet-glow:rgba(124,58,237,.35);
+    --text:#18181b; --text-2:#3f3f46; --dim:#65656d;
+    --shadow:0 1px 2px rgba(24,24,40,.06),0 4px 16px rgba(24,24,40,.05);
+    --shadow-lg:0 4px 12px rgba(24,24,40,.10),0 12px 32px rgba(24,24,40,.10);
+    --mono:'JetBrains Mono',ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --body:system-ui,-apple-system,"Hanken Grotesk","Segoe UI",sans-serif;
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --bg:#09090b; --surf:#18181b; --surf2:#1f1f23; --surf3:#27272a; --border:#27272a; --border-h:#3f3f46;
+    --cyan:#818cf8; --cyan-ink:#a5b4fc; --cyan-dim:rgba(129,140,248,.12); --cyan-glow:rgba(129,140,248,.34);
+    --gold:#f59e0b; --gold-dim:rgba(245,158,11,.15); --green-ink:#86efac; --green:#4ade80;
+    --violet-ink:#c4b5fd; --violet-dim:rgba(167,139,250,.14); --violet-glow:rgba(167,139,250,.42);
+    --text:#fafafa; --text-2:#d4d4d8; --dim:#9a9aa3;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 20px rgba(0,0,0,.35);
+    --shadow-lg:0 4px 12px rgba(0,0,0,.5),0 12px 32px rgba(0,0,0,.45);
+  }}
+  :root[data-theme="dark"]{
+    --bg:#09090b; --surf:#18181b; --surf2:#1f1f23; --surf3:#27272a; --border:#27272a; --border-h:#3f3f46;
+    --cyan:#818cf8; --cyan-ink:#a5b4fc; --cyan-dim:rgba(129,140,248,.12); --cyan-glow:rgba(129,140,248,.34);
+    --gold:#f59e0b; --gold-dim:rgba(245,158,11,.15); --green-ink:#86efac; --green:#4ade80;
+    --violet-ink:#c4b5fd; --violet-dim:rgba(167,139,250,.14); --violet-glow:rgba(167,139,250,.42);
+    --text:#fafafa; --text-2:#d4d4d8; --dim:#9a9aa3;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 20px rgba(0,0,0,.35);
+    --shadow-lg:0 4px 12px rgba(0,0,0,.5),0 12px 32px rgba(0,0,0,.45);
+  }
+  :root[data-theme="light"]{
+    --bg:#fafafa; --surf:#ffffff; --surf2:#f4f4f5; --surf3:#e4e4e7; --border:#e4e4e7; --border-h:#d4d4d8;
+    --cyan:#4f46e5; --cyan-ink:#4f46e5; --cyan-dim:rgba(79,70,229,.08); --cyan-glow:rgba(79,70,229,.30);
+    --gold:#d97706; --gold-dim:rgba(217,119,6,.12); --green-ink:#166534; --green:#16a34a;
+    --violet-ink:#6d28d9; --violet-dim:rgba(124,58,237,.10); --violet-glow:rgba(124,58,237,.35);
+    --text:#18181b; --text-2:#3f3f46; --dim:#65656d;
+    --shadow:0 1px 2px rgba(24,24,40,.06),0 4px 16px rgba(24,24,40,.05);
+    --shadow-lg:0 4px 12px rgba(24,24,40,.10),0 12px 32px rgba(24,24,40,.10);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1240px;margin:0 auto;padding:32px 20px 72px}
+  header.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+  h1{font-size:clamp(1.4rem,4vw,1.9rem);font-weight:800;letter-spacing:-.02em;margin:0;text-wrap:balance}
+  h1 em{color:var(--cyan);font-style:normal}
+  .lead{color:var(--dim);max-width:72ch;margin:.5rem 0 0;font-size:.93rem}
+  .toggle{flex:none;background:var(--surf);border:1px solid var(--border);color:var(--text-2);padding:8px 14px;
+          border-radius:999px;font:inherit;font-size:.85rem;font-weight:600;cursor:pointer;box-shadow:var(--shadow)}
+  .toggle:hover{border-color:var(--border-h)}
+
+  .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:18px;margin-top:26px;align-items:start}
+  .card{background:var(--surf);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+  .card.reco{border-color:var(--cyan-glow);box-shadow:var(--shadow),0 0 0 1px var(--cyan-glow)}
+  .chead{display:flex;align-items:center;gap:9px;margin-bottom:2px}
+  .cletter{font-family:var(--mono);font-size:.75rem;font-weight:700;color:#fff;background:var(--cyan);width:23px;height:23px;border-radius:7px;display:grid;place-items:center;flex:none}
+  @media (prefers-color-scheme:dark){.cletter{color:#09090b}}
+  :root[data-theme="dark"] .cletter{color:#09090b}
+  :root[data-theme="light"] .cletter{color:#fff}
+  .ctitle{font-weight:750;font-size:.98rem}
+  .cbadge{margin-left:auto;font-size:.64rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--cyan-ink);background:var(--cyan-dim);border:1px solid var(--cyan-glow);padding:2px 7px;border-radius:999px;flex:none}
+  .cwhy{color:var(--dim);font-size:.82rem;margin:0 0 12px}
+  .src{font-size:.72rem;color:var(--dim);margin-top:10px;padding-top:8px;border-top:1px dashed var(--border)}
+  .src b{color:var(--text-2)}
+
+  .panel{background:var(--surf2);border:1px solid var(--border);border-radius:10px;padding:11px 10px;
+         font-family:var(--mono);font-size:.86rem;line-height:1.85;font-variant-numeric:tabular-nums;max-width:400px;position:relative}
+  .n{color:var(--dim);font-size:.74em;margin:0 1px 0 5px}
+  .main{font-weight:600;color:var(--text)}
+  .cur{background:var(--cyan);color:#fff;font-weight:700;border-radius:5px;padding:1px 5px}
+  @media (prefers-color-scheme:dark){.cur{color:#09090b}}
+  :root[data-theme="dark"] .cur{color:#09090b}
+  :root[data-theme="light"] .cur{color:#fff}
+  .note{text-decoration:underline dotted var(--cyan);text-underline-offset:3px;text-decoration-thickness:1.5px}
+  .nag{color:var(--gold);font-weight:700}
+
+  .var{position:relative;margin:4px 0;padding:2px 4px 2px 14px;font-weight:400;color:var(--text-2);border-radius:0 6px 6px 0}
+  .var .var{margin-left:14px}
+  .var::before{content:"";position:absolute;left:0;top:3px;bottom:3px;width:2px;border-radius:2px;background:var(--border-h)}
+  .bif{font-weight:600;color:var(--text-2)}
+  .var.on::before{background:var(--cyan)}
+  .var.on{background:var(--cyan-dim)}
+  .var.off{opacity:.66}
+  .more{font-family:var(--body);font-size:.7rem;color:var(--cyan-ink);font-weight:600;margin-left:5px;cursor:pointer}
+
+  /* marques SR */
+  .ok{color:var(--green-ink);font-size:.78em;font-weight:700;margin:0 1px}
+  .due{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--gold);vertical-align:middle;margin:0 2px}
+  .srsum{display:inline-flex;align-items:center;gap:4px;font-family:var(--body);font-size:.68rem;font-weight:700;
+         color:var(--gold);background:var(--gold-dim);border-radius:999px;padding:1px 8px;margin-left:6px;vertical-align:1px}
+  .srsum.done{color:var(--green-ink);background:var(--surf3)}
+
+  /* sommaire de variantes (TOC) */
+  .toc{display:flex;flex-wrap:wrap;gap:5px;padding-bottom:9px;margin-bottom:9px;border-bottom:1px solid var(--border)}
+  .toc .t{font-family:var(--mono);font-size:.72rem;font-weight:600;color:var(--text-2);background:var(--surf);
+          border:1px solid var(--border-h);border-radius:999px;padding:2px 9px;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+  .toc .t:hover{border-color:var(--cyan)}
+  .toc .t.on{color:var(--cyan-ink);border-color:var(--cyan);background:var(--cyan-dim);font-weight:700}
+  .toc .t .d{width:5px;height:5px;border-radius:50%;background:var(--gold)}
+  .toc .lbl{font-family:var(--body);font-size:.66rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);align-self:center;margin-right:2px}
+
+  /* peek au survol */
+  .peek{position:absolute;left:12px;right:12px;background:var(--surf);border:1px solid var(--border-h);border-radius:10px;
+        padding:9px 11px;box-shadow:var(--shadow-lg);z-index:2;font-size:.84rem;line-height:1.75}
+  .peek .ph{font-family:var(--body);font-size:.66rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);margin-bottom:3px}
+  .hovering{outline:1.5px dashed var(--cyan-glow);outline-offset:2px;border-radius:6px}
+
+  .bub{max-width:400px;margin-top:10px;padding:11px 13px;background:var(--cyan-dim);border:1px solid var(--cyan-glow);
+       border-radius:12px;font-family:var(--body);font-size:.82rem;line-height:1.55;color:var(--text)}
+  .bub .bh{display:flex;align-items:center;gap:7px;color:var(--cyan-ink);font-weight:700;margin-bottom:4px}
+  .bub .bh .mono{font-family:var(--mono);font-size:.92rem}
+
+  .concl{margin-top:34px;background:var(--surf);border:1px solid var(--border);border-radius:16px;padding:20px;box-shadow:var(--shadow)}
+  .concl h2{font-size:1.05rem;margin:0 0 10px}
+  .concl p{font-size:.9rem;color:var(--text-2);margin:0 0 10px;max-width:80ch}
+  .concl b{color:var(--text)}
+  .verdict{margin-top:6px;padding:13px 15px;background:var(--cyan-dim);border:1px solid var(--cyan-glow);border-radius:12px;font-size:.9rem}
+  .verdict b{color:var(--cyan-ink)}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Raffinements de P1 — <em>trois leviers</em>, cumulables</h1>
+      <p class="lead">P1 (repli auto + chemin actif) est le socle. Chacun de ces trois raffinements répond à un retour
+        précis du terrain — et ils sont <b>cumulables</b> : la question n'est plus « lequel », mais « lesquels ». Le
+        troisième n'existe que dans EECoach.</p>
+    </div>
+    <button class="toggle" id="tg">◐ Thème</button>
+  </header>
+
+  <div class="cols">
+
+    <!-- R1 -->
+    <section class="card">
+      <div class="chead"><span class="cletter">R1</span><span class="ctitle">Sommaire de variantes en tête</span></div>
+      <p class="cwhy">Les branches du chapitre en pastilles cliquables au sommet du panneau — une table des matières. Un clic saute à la variante (et la déplie). Remplace le fil d'Ariane : il dit à la fois <b>où tu es</b> (pastille active) et <b>ce qui existe</b>.</p>
+      <div class="panel">
+        <div class="toc">
+          <span class="lbl">Lignes</span>
+          <span class="t on">5…c6?!</span>
+          <span class="t">5…♘xe4?! <span class="d"></span></span>
+          <span class="t">5…♗c5</span>
+        </div>
+        <span class="n">1.</span><span class="main">e4</span> <span class="main">e5</span> <span class="n">2.</span><span class="main">♘f3</span> <span class="main">♘c6</span> <span class="n">3.</span><span class="main">♘c3</span> <span class="main">♘f6</span> <span class="n">4.</span><span class="main">♗b5</span> <span class="main">♘d4</span> <span class="n">5.</span><span class="main">♘xe5!?</span> <span class="main note">♗xb5</span>
+        <div class="var on"><span class="n">5…</span><span class="bif">c6?!</span> <span class="n">6.</span><span class="cur note">♗e2!</span> <span class="n">7.</span>♘xe4 ♕e7 <span class="n">8.</span>♘xc6 bxc6 <span class="n">9.</span>d3 d5 <span class="n">10.</span>♘g3
+          <div class="var off"><span class="n">6…</span><span class="bif">d5</span> <span class="n">7.</span>exd5 ♗f5…<span class="more">déplier</span></div>
+        </div>
+        <div class="var off"><span class="n">5…</span><span class="bif">♘xe4?!</span> <span class="n">6.</span>♘xe4 ♗xb5…<span class="more">déplier</span></div>
+        <div class="var off"><span class="n">5…</span><span class="bif">♗c5</span> <span class="n">6.</span>O-O O-O…<span class="more">déplier</span></div>
+      </div>
+      <div class="src"><b>Répond à :</b> « lâché au milieu d'un arbre sans contexte » (Chessable) + les raccourcis « variante suivante » de Lichess, ici rendus visibles et tactiles.</div>
+    </section>
+
+    <!-- R2 -->
+    <section class="card">
+      <div class="chead"><span class="cletter">R2</span><span class="ctitle">Aperçu au survol des branches repliées</span></div>
+      <p class="cwhy">Une branche résumée se laisse <b>survoler</b> : la ligne complète apparaît en surimpression, sans déplier ni bouger la mise en page. Le repli ne cache plus rien — il diffère juste l'affichage. (Au doigt : un appui long, ou le simple tap qui déplie.)</p>
+      <div class="panel" style="padding-bottom:64px">
+        <span class="n">1.</span><span class="main">e4</span> <span class="main">e5</span> <span class="n">2.</span><span class="main">♘f3</span> <span class="main">♘c6</span> <span class="n">3.</span><span class="main">♘c3</span> <span class="main">♘f6</span> <span class="n">4.</span><span class="main">♗b5</span> <span class="main">♘d4</span> <span class="n">5.</span><span class="main">♘xe5!?</span> <span class="main note">♗xb5</span>
+        <div class="var on"><span class="n">5…</span><span class="bif">c6?!</span> <span class="n">6.</span><span class="cur note">♗e2!</span> <span class="n">7.</span>♘xe4 ♕e7 <span class="n">8.</span>♘xc6 bxc6</div>
+        <div class="var off hovering"><span class="n">5…</span><span class="bif">♘xe4?!</span> <span class="n">6.</span>♘xe4 ♗xb5…<span class="more">survolé ↓</span></div>
+        <div class="peek" style="bottom:10px">
+          <div class="ph">Aperçu — clic pour y aller</div>
+          <span class="n">5…</span><span class="bif">♘xe4?!</span> <span class="n">6.</span>♘xe4 ♗xb5 <span class="n">7.</span><span class="note">♘xf7!!</span> ♕e7 <span class="n">8.</span>♘xh8 ♕xe4+ <span class="n">9.</span>♕f1<span class="nag">±</span>
+        </div>
+      </div>
+      <div class="src"><b>Répond à :</b> « replié par défaut, c'est pénible » (Lichess) — la critique visait un repli qui <i>cache</i> ; ici l'aperçu rend le contenu accessible sans clic ni saut de layout.</div>
+    </section>
+
+    <!-- R3 -->
+    <section class="card reco">
+      <div class="chead"><span class="cletter">R3</span><span class="ctitle">Marques de maîtrise SR intégrées</span><span class="cbadge">unique EECoach</span></div>
+      <p class="cwhy">Tes données Leitner vivent déjà par position. On les remonte dans la notation : ✓ sur les coups maîtrisés, point ambre sur les « à revoir » — et surtout, <b>chaque branche repliée porte son bilan</b> (« 2 à revoir »). L'élève voit où travailler AVANT de déplier ; ni Chessable ni ChessBase ne font ça.</p>
+      <div class="panel">
+        <span class="n">1.</span><span class="main">e4</span><span class="ok">✓</span> <span class="main">e5</span> <span class="n">2.</span><span class="main">♘f3</span><span class="ok">✓</span> <span class="main">♘c6</span> <span class="n">3.</span><span class="main">♘c3</span><span class="ok">✓</span> <span class="main">♘f6</span> <span class="n">4.</span><span class="main">♗b5</span><span class="due"></span> <span class="main">♘d4</span> <span class="n">5.</span><span class="main">♘xe5!?</span><span class="ok">✓</span> <span class="main note">♗xb5</span>
+        <div class="var on"><span class="n">5…</span><span class="bif">c6?!</span> <span class="n">6.</span><span class="cur note">♗e2!</span> <span class="n">7.</span>♘xe4<span class="due"></span> ♕e7 <span class="n">8.</span>♘xc6<span class="ok">✓</span> bxc6 <span class="n">9.</span>d3 d5 <span class="n">10.</span>♘g3
+          <div class="var off"><span class="n">6…</span><span class="bif">d5</span> <span class="n">7.</span>exd5 ♗f5…<span class="more">déplier</span><span class="srsum done">✓ acquise</span></div>
+        </div>
+        <div class="var off"><span class="n">5…</span><span class="bif">♘xe4?!</span> <span class="n">6.</span>♘xe4 ♗xb5…<span class="more">déplier</span><span class="srsum">● 2 à revoir</span></div>
+        <div class="var off"><span class="n">5…</span><span class="bif">♗c5</span> <span class="n">6.</span>O-O O-O…<span class="more">déplier</span><span class="srsum done">✓ acquise</span></div>
+      </div>
+      <div class="bub"><div class="bh">💡 <span class="mono">6.♗e2!</span></div>
+        est très bon pour les Blancs : l'idée est qu'après d7-d6, ils pourront tranquillement rapatrier leur Cavalier en f3 sans craindre ♗g4</div>
+      <div class="src"><b>Répond à :</b> « Difficult Moves montre des variantes de 15-20 coups au lieu du coup précis » (Chessable) — ici le coup précis EST marqué, et le bilan remonte au niveau de la branche.</div>
+    </section>
+
+  </div>
+
+  <div class="concl">
+    <h2>Conclusion — le montage cible</h2>
+    <p><b>P1 + R3 d'abord.</b> Le socle (repli auto, chemin actif, graisse, plafond d'indentation) règle la laideur et
+      le volume ; les marques SR transforment la notation en <b>carte de travail</b> — l'élève ne lit plus un arbre, il
+      voit où il en est. C'est aussi le raffinement le moins coûteux : les données existent déjà (<span style="font-family:var(--mono);font-size:.85em">_studyMastery</span>),
+      seul le rendu change.</p>
+    <p><b>R1 ensuite, seulement sur les gros chapitres</b> (≥ 3 branches de 1er niveau) : sur un petit chapitre, le
+      sommaire répéterait ce qu'on voit déjà. <b>R2 en dernier</b> — c'est du confort desktop, et le tap mobile déplie
+      déjà ; à ne faire que si le survol te manque à l'usage.</p>
+    <div class="verdict"><b>Proposition d'implémentation :</b> une seule passe dans <span style="font-family:var(--mono);font-size:.85em">renderStudyTree</span> :
+      ① socle P1 (paragraphes, plafond, chemin actif, repli auto piloté par <span style="font-family:var(--mono);font-size:.85em">S.studyPath</span>) ·
+      ② marques SR par coup + bilan par branche repliée (réutilise <span style="font-family:var(--mono);font-size:.85em">_studyMastery</span>) ·
+      ③ sommaire conditionnel si ≥ 3 branches. Le tout présentationnel — aucun changement de données ni du moteur.</div>
+  </div>
+</div>
+
+<script>
+  const root=document.documentElement, tg=document.getElementById('tg');
+  tg.addEventListener('click',()=>{
+    const cur=root.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+    root.setAttribute('data-theme',cur==='dark'?'light':'dark');
+  });
+</script>

@@ -1,0 +1,246 @@
+<title>Sous-variantes — 6 designs</title>
+<style>
+  :root{
+    --bg:#fafafa; --surf:#ffffff; --surf2:#f4f4f5; --surf3:#e4e4e7; --border:#e4e4e7; --border-h:#d4d4d8;
+    --cyan:#4f46e5; --cyan-ink:#4f46e5; --cyan-dim:rgba(79,70,229,.08); --cyan-glow:rgba(79,70,229,.30);
+    --gold:#d97706; --gold-glow:rgba(217,119,6,.35);
+    --green-ink:#166534;
+    --violet:#7c3aed; --violet-ink:#6d28d9; --violet-dim:rgba(124,58,237,.10); --violet-glow:rgba(124,58,237,.35);
+    --text:#18181b; --text-2:#3f3f46; --dim:#65656d;
+    --shadow-xs:0 1px 1px rgba(24,24,40,.05);
+    --shadow-sm:0 1px 2px rgba(24,24,40,.06),0 1px 3px rgba(24,24,40,.05);
+    --shadow:0 1px 2px rgba(24,24,40,.06),0 4px 16px rgba(24,24,40,.05);
+    --mono:'JetBrains Mono',ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --body:system-ui,-apple-system,"Hanken Grotesk","Segoe UI",sans-serif;
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --bg:#09090b; --surf:#18181b; --surf2:#1f1f23; --surf3:#27272a; --border:#27272a; --border-h:#3f3f46;
+    --cyan:#818cf8; --cyan-ink:#a5b4fc; --cyan-dim:rgba(129,140,248,.12); --cyan-glow:rgba(129,140,248,.34);
+    --gold:#f59e0b; --gold-glow:rgba(245,158,11,.36);
+    --green-ink:#86efac;
+    --violet:#a78bfa; --violet-ink:#c4b5fd; --violet-dim:rgba(167,139,250,.14); --violet-glow:rgba(167,139,250,.42);
+    --text:#fafafa; --text-2:#d4d4d8; --dim:#9a9aa3;
+    --shadow-xs:0 1px 1px rgba(0,0,0,.4);
+    --shadow-sm:0 1px 2px rgba(0,0,0,.45);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 20px rgba(0,0,0,.35);
+  }}
+  :root[data-theme="dark"]{
+    --bg:#09090b; --surf:#18181b; --surf2:#1f1f23; --surf3:#27272a; --border:#27272a; --border-h:#3f3f46;
+    --cyan:#818cf8; --cyan-ink:#a5b4fc; --cyan-dim:rgba(129,140,248,.12); --cyan-glow:rgba(129,140,248,.34);
+    --gold:#f59e0b; --gold-glow:rgba(245,158,11,.36);
+    --green-ink:#86efac;
+    --violet:#a78bfa; --violet-ink:#c4b5fd; --violet-dim:rgba(167,139,250,.14); --violet-glow:rgba(167,139,250,.42);
+    --text:#fafafa; --text-2:#d4d4d8; --dim:#9a9aa3;
+    --shadow-xs:0 1px 1px rgba(0,0,0,.4); --shadow-sm:0 1px 2px rgba(0,0,0,.45);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#fafafa; --surf:#ffffff; --surf2:#f4f4f5; --surf3:#e4e4e7; --border:#e4e4e7; --border-h:#d4d4d8;
+    --cyan:#4f46e5; --cyan-ink:#4f46e5; --cyan-dim:rgba(79,70,229,.08); --cyan-glow:rgba(79,70,229,.30);
+    --gold:#d97706; --gold-glow:rgba(217,119,6,.35);
+    --green-ink:#166534;
+    --violet:#7c3aed; --violet-ink:#6d28d9; --violet-dim:rgba(124,58,237,.10); --violet-glow:rgba(124,58,237,.35);
+    --text:#18181b; --text-2:#3f3f46; --dim:#65656d;
+    --shadow-xs:0 1px 1px rgba(24,24,40,.05); --shadow-sm:0 1px 2px rgba(24,24,40,.06),0 1px 3px rgba(24,24,40,.05);
+    --shadow:0 1px 2px rgba(24,24,40,.06),0 4px 16px rgba(24,24,40,.05);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:32px 20px 72px}
+  header.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+  h1{font-size:clamp(1.5rem,4vw,2rem);font-weight:800;letter-spacing:-.02em;margin:0;text-wrap:balance}
+  h1 em{color:var(--cyan);font-style:normal}
+  .lead{color:var(--dim);max-width:64ch;margin:.5rem 0 0;font-size:.95rem}
+  .toggle{flex:none;display:inline-flex;align-items:center;gap:8px;background:var(--surf);border:1px solid var(--border);
+          color:var(--text-2);padding:8px 14px;border-radius:999px;font:inherit;font-size:.85rem;font-weight:600;cursor:pointer;box-shadow:var(--shadow-sm)}
+  .toggle:hover{border-color:var(--border-h)}
+
+  .grid{display:grid;grid-template-columns:1fr;gap:18px;margin-top:26px}
+  @media(min-width:700px){.grid{grid-template-columns:1fr 1fr}}
+  .card{background:var(--surf);border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:11px}
+  .chead{display:flex;align-items:baseline;gap:9px}
+  .cletter{font-family:var(--mono);font-size:.75rem;font-weight:700;color:#fff;background:var(--cyan);width:23px;height:23px;border-radius:7px;display:grid;place-items:center;flex:none}
+  @media (prefers-color-scheme:dark){.cletter{color:#09090b}}
+  :root[data-theme="dark"] .cletter{color:#09090b}
+  :root[data-theme="light"] .cletter{color:#fff}
+  .ctitle{font-weight:750;font-size:1rem}
+  .cwhy{color:var(--dim);font-size:.83rem;margin:0}
+
+  /* panneau notation — rayon 10, padding 12 => enfants a rayon ~8 (concentrique) */
+  .panel{background:var(--surf2);border:1px solid var(--border);border-radius:10px;padding:12px;
+         font-family:var(--mono);font-size:.9rem;line-height:1.85;font-variant-numeric:tabular-nums}
+  .n{color:var(--dim);font-size:.74em;margin:0 1px 0 5px}
+  .n:first-child{margin-left:0}
+  .mm{color:var(--text);font-weight:600}
+  .cur{background:var(--cyan);color:#fff;font-weight:700;border-radius:5px;padding:1px 5px}
+  @media (prefers-color-scheme:dark){.cur{color:#09090b}}
+  :root[data-theme="dark"] .cur{color:#09090b}
+  :root[data-theme="light"] .cur{color:#fff}
+  .sub{color:var(--dim);font-size:.9em}
+  .sub .mm{color:var(--text-2);font-weight:500}
+
+  /* V1 — rail d'indentation neutre (guide structurel, comme un editeur de code) */
+  .v1 .var{padding-left:12px;border-left:2px solid var(--border-h);margin:3px 0 3px 3px}
+  .v1 .var .var{border-left-color:var(--border-h);margin-left:8px}
+  .v1 .arw{color:var(--dim);margin-right:3px;font-size:.82em}
+
+  /* V2 — blocs imbriques (elevation par ombre, rayons concentriques) */
+  .v2 .var{background:var(--surf);border-radius:8px;padding:5px 9px;margin:5px 0 5px 3px;box-shadow:var(--shadow-xs);border:1px solid var(--border)}
+  .v2 .var .var{border-radius:6px;margin-left:8px;background:var(--surf2)}
+  .v2 .vlbl{font-family:var(--body);font-size:.66rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);margin-right:7px}
+
+  /* V3 — teinte de profondeur (pas de rail, containment par ombrage) */
+  .v3 .var{background:color-mix(in srgb,var(--surf3) 45%,transparent);border-radius:7px;padding:4px 9px;margin:4px 0 4px 2px}
+  .v3 .var .var{background:color-mix(in srgb,var(--surf3) 80%,transparent);margin-left:9px}
+
+  /* V4 — connecteurs d'arbre (glyphes de branche explicites) */
+  .v4{line-height:1.9}
+  .v4 .branch{display:flex;gap:0}
+  .v4 .conn{color:var(--border-h);white-space:pre;font-weight:400;flex:none}
+  .v4 .branch:hover .conn{color:var(--dim)}
+
+  /* V5 — repliables (progressive disclosure, mouvement sobre) */
+  .v5 details{margin:4px 0 2px 4px}
+  .v5 summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:var(--body);
+              font-size:.76rem;font-weight:600;color:var(--text-2);padding:2px 4px;border-radius:6px}
+  .v5 summary::-webkit-details-marker{display:none}
+  .v5 summary:hover{background:var(--surf3)}
+  .v5 .tw{display:inline-block;color:var(--dim);transition:transform .18s cubic-bezier(.2,0,0,1)}
+  .v5 details[open] .tw{transform:rotate(90deg)}
+  .v5 .body{padding:4px 0 2px 14px;border-left:2px solid var(--border);margin:4px 0 0 4px}
+  .v5 .open-mark{color:var(--cyan-ink)}
+
+  /* V6 — etiquettes de variante (pastille nommee A/B/C) */
+  .v6 .var{padding-left:10px;border-left:2px solid var(--border);margin:5px 0 5px 3px}
+  .v6 .tag{display:inline-flex;align-items:center;justify-content:center;min-width:17px;height:17px;padding:0 5px;
+           font-family:var(--body);font-size:.66rem;font-weight:700;color:var(--cyan-ink);background:var(--cyan-dim);
+           border:1px solid var(--cyan-glow);border-radius:5px;margin-right:7px;vertical-align:middle}
+  .v6 .var .var .tag{color:var(--gold);background:transparent;border-color:var(--gold-glow)}
+
+  footer{margin-top:34px;color:var(--dim);font-size:.85rem;border-top:1px solid var(--border);padding-top:18px}
+  footer b{color:var(--text-2)}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Afficher les <em>sous-variantes</em> — 6 designs</h1>
+      <p class="lead">Mode arbre, vraies données du Gambit Rubinstein. Coup courant <span style="font-family:var(--mono)">6.♗e2!</span>.
+        Objectif : que chaque sous-ligne soit nettement délimitée, sans surcharger.</p>
+    </div>
+    <button class="toggle" id="tg">◐ Thème</button>
+  </header>
+
+  <div class="grid">
+
+    <!-- V1 rail -->
+    <section class="card">
+      <div class="chead"><span class="cletter">1</span><span class="ctitle">Rail d'indentation</span></div>
+      <p class="cwhy">Un fin guide vertical par niveau (comme un éditeur de code). Neutre, structurel, tient sur des arbres profonds sans les alourdir. Version soignée de l'actuel.</p>
+      <div class="panel v1">
+        <span class="n">1.</span><span class="mm">e4</span> <span class="mm">e5</span> <span class="n">2.</span><span class="mm">♘f3</span> <span class="mm">♘c6</span> <span class="n">3.</span><span class="mm">♘c3</span> <span class="mm">♘f6</span> <span class="n">4.</span><span class="mm">♗b5</span> <span class="mm">♘d4</span> <span class="n">5.</span><span class="mm">♘xe5!?</span> <span class="mm">♗xb5</span>
+        <div class="var sub"><span class="arw">↳</span><span class="n">5…</span><span class="mm">c6?!</span> <span class="n">6.</span><span class="cur">♗e2!</span>
+          <div class="var"><span class="arw">↳</span><span class="n">6…</span>d5 <span class="n">7.</span>♘f5 ♗xf5 <span class="n">8.</span>d3±</div>
+          <span class="n">7.</span>♘xe4 ♗e7 <span class="n">8.</span>♘xc6 bxc6
+        </div>
+        <div class="var sub"><span class="arw">↳</span><span class="n">5…</span><span class="mm">♘xe4?!</span> <span class="n">6.</span>♘xe4 ♗xb5 <span class="n">7.</span>♘xf7!!</div>
+        <div class="var sub"><span class="arw">↳</span><span class="n">5…</span><span class="mm">♗c5</span> <span class="n">6.</span>O-O O-O</div>
+      </div>
+    </section>
+
+    <!-- V2 blocs -->
+    <section class="card">
+      <div class="chead"><span class="cletter">2</span><span class="ctitle">Blocs imbriqués</span></div>
+      <p class="cwhy">Chaque variante = une petite surface posée (ombre douce, pas gros liseré), imbriquée par rayons concentriques. La containment est explicite.</p>
+      <div class="panel v2">
+        <span class="n">1.</span><span class="mm">e4</span> <span class="mm">e5</span> <span class="n">2.</span><span class="mm">♘f3</span> <span class="mm">♘c6</span> <span class="n">3.</span><span class="mm">♘c3</span> <span class="mm">♘f6</span> <span class="n">4.</span><span class="mm">♗b5</span> <span class="mm">♘d4</span> <span class="n">5.</span><span class="mm">♘xe5!?</span> <span class="mm">♗xb5</span>
+        <div class="var sub"><span class="vlbl">A</span><span class="n">5…</span><span class="mm">c6?!</span> <span class="n">6.</span><span class="cur">♗e2!</span>
+          <div class="var"><span class="vlbl">A1</span><span class="n">6…</span>d5 <span class="n">7.</span>♘f5 ♗xf5 <span class="n">8.</span>d3±</div>
+          <span class="n">7.</span>♘xe4 ♗e7 <span class="n">8.</span>♘xc6 bxc6
+        </div>
+        <div class="var sub"><span class="vlbl">B</span><span class="n">5…</span><span class="mm">♘xe4?!</span> <span class="n">6.</span>♘xe4 ♗xb5 <span class="n">7.</span>♘xf7!!</div>
+        <div class="var sub"><span class="vlbl">C</span><span class="n">5…</span><span class="mm">♗c5</span> <span class="n">6.</span>O-O O-O</div>
+      </div>
+    </section>
+
+    <!-- V3 teinte -->
+    <section class="card">
+      <div class="chead"><span class="cletter">3</span><span class="ctitle">Teinte de profondeur</span></div>
+      <p class="cwhy">Pas de rail : chaque niveau reçoit un fond un peu plus marqué. La délimitation vient de l'ombrage seul — très propre, rien qui « barre ».</p>
+      <div class="panel v3">
+        <span class="n">1.</span><span class="mm">e4</span> <span class="mm">e5</span> <span class="n">2.</span><span class="mm">♘f3</span> <span class="mm">♘c6</span> <span class="n">3.</span><span class="mm">♘c3</span> <span class="mm">♘f6</span> <span class="n">4.</span><span class="mm">♗b5</span> <span class="mm">♘d4</span> <span class="n">5.</span><span class="mm">♘xe5!?</span> <span class="mm">♗xb5</span>
+        <div class="var sub"><span class="n">5…</span><span class="mm">c6?!</span> <span class="n">6.</span><span class="cur">♗e2!</span>
+          <div class="var"><span class="n">6…</span>d5 <span class="n">7.</span>♘f5 ♗xf5 <span class="n">8.</span>d3±</div>
+          <span class="n">7.</span>♘xe4 ♗e7 <span class="n">8.</span>♘xc6 bxc6
+        </div>
+        <div class="var sub"><span class="n">5…</span><span class="mm">♘xe4?!</span> <span class="n">6.</span>♘xe4 ♗xb5 <span class="n">7.</span>♘xf7!!</div>
+        <div class="var sub"><span class="n">5…</span><span class="mm">♗c5</span> <span class="n">6.</span>O-O O-O</div>
+      </div>
+    </section>
+
+    <!-- V4 connecteurs -->
+    <section class="card">
+      <div class="chead"><span class="cletter">4</span><span class="ctitle">Connecteurs d'arbre</span></div>
+      <p class="cwhy">Des glyphes de branche (├─ └─) rendent la ramification littérale, comme un explorateur de fichiers. On lit d'où part chaque ligne.</p>
+      <div class="panel v4">
+        <div><span class="n">1.</span><span class="mm">e4</span> <span class="mm">e5</span> <span class="n">2.</span><span class="mm">♘f3</span> <span class="mm">♘c6</span> <span class="n">3.</span><span class="mm">♘c3</span> <span class="mm">♘f6</span> <span class="n">4.</span><span class="mm">♗b5</span> <span class="mm">♘d4</span> <span class="n">5.</span><span class="mm">♘xe5!?</span> <span class="mm">♗xb5</span></div>
+        <div class="branch"><span class="conn">├─ </span><span class="sub"><span class="n">5…</span><span class="mm">c6?!</span> <span class="n">6.</span><span class="cur">♗e2!</span></span></div>
+        <div class="branch"><span class="conn">│  └─ </span><span class="sub"><span class="n">6…</span>d5 <span class="n">7.</span>♘f5 ♗xf5 <span class="n">8.</span>d3±</span></div>
+        <div class="branch"><span class="conn">│  </span><span class="sub"><span class="n">7.</span>♘xe4 ♗e7 <span class="n">8.</span>♘xc6 bxc6</span></div>
+        <div class="branch"><span class="conn">├─ </span><span class="sub"><span class="n">5…</span><span class="mm">♘xe4?!</span> <span class="n">6.</span>♘xe4 ♗xb5 <span class="n">7.</span>♘xf7!!</span></div>
+        <div class="branch"><span class="conn">└─ </span><span class="sub"><span class="n">5…</span><span class="mm">♗c5</span> <span class="n">6.</span>O-O O-O</span></div>
+      </div>
+    </section>
+
+    <!-- V5 repliables -->
+    <section class="card">
+      <div class="chead"><span class="cletter">5</span><span class="ctitle">Repliables</span></div>
+      <p class="cwhy">La ligne principale reste seule et nette ; chaque bifurcation est un chevron qu'on déplie. Désencombre le plus, et une variante repliée reste clairement signalée.</p>
+      <div class="panel v5">
+        <div><span class="n">1.</span><span class="mm">e4</span> <span class="mm">e5</span> <span class="n">2.</span><span class="mm">♘f3</span> <span class="mm">♘c6</span> <span class="n">3.</span><span class="mm">♘c3</span> <span class="mm">♘f6</span> <span class="n">4.</span><span class="mm">♗b5</span> <span class="mm">♘d4</span> <span class="n">5.</span><span class="mm">♘xe5!?</span> <span class="mm">♗xb5</span></div>
+        <details open>
+          <summary><span class="tw">▸</span> <span class="open-mark">5…c6?! · en cours</span></summary>
+          <div class="body sub"><span class="n">6.</span><span class="cur">♗e2!</span> <span class="n">7.</span>♘xe4 ♗e7 <span class="n">8.</span>♘xc6 bxc6
+            <br><span class="n">6…</span>d5 <span class="n">7.</span>♘f5 ♗xf5 <span class="n">8.</span>d3±</div>
+        </details>
+        <details>
+          <summary><span class="tw">▸</span> 5…♘xe4?! · 1 variante</summary>
+          <div class="body sub"><span class="n">6.</span>♘xe4 ♗xb5 <span class="n">7.</span>♘xf7!!</div>
+        </details>
+        <details>
+          <summary><span class="tw">▸</span> 5…♗c5 · 1 variante</summary>
+          <div class="body sub"><span class="n">6.</span>O-O O-O</div>
+        </details>
+      </div>
+    </section>
+
+    <!-- V6 etiquettes -->
+    <section class="card">
+      <div class="chead"><span class="cletter">6</span><span class="ctitle">Étiquettes de variante</span></div>
+      <p class="cwhy">Chaque variante porte une pastille nommée (A · B · C, A1 en profondeur) + indentation. Utile au coach : « travaille la variante B ». Le nom donne une prise.</p>
+      <div class="panel v6">
+        <span class="n">1.</span><span class="mm">e4</span> <span class="mm">e5</span> <span class="n">2.</span><span class="mm">♘f3</span> <span class="mm">♘c6</span> <span class="n">3.</span><span class="mm">♘c3</span> <span class="mm">♘f6</span> <span class="n">4.</span><span class="mm">♗b5</span> <span class="mm">♘d4</span> <span class="n">5.</span><span class="mm">♘xe5!?</span> <span class="mm">♗xb5</span>
+        <div class="var sub"><span class="tag">A</span><span class="n">5…</span><span class="mm">c6?!</span> <span class="n">6.</span><span class="cur">♗e2!</span>
+          <div class="var"><span class="tag">A1</span><span class="n">6…</span>d5 <span class="n">7.</span>♘f5 ♗xf5 <span class="n">8.</span>d3±</div>
+          <span class="n">7.</span>♘xe4 ♗e7 <span class="n">8.</span>♘xc6 bxc6
+        </div>
+        <div class="var sub"><span class="tag">B</span><span class="n">5…</span><span class="mm">♘xe4?!</span> <span class="n">6.</span>♘xe4 ♗xb5 <span class="n">7.</span>♘xf7!!</div>
+        <div class="var sub"><span class="tag">C</span><span class="n">5…</span><span class="mm">♗c5</span> <span class="n">6.</span>O-O O-O</div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer>
+    <div><b>Note /better-ui</b> — les rails (1, 6) sont des <i>guides d'indentation</i> structurels, pas le « side-tab » décoratif à bannir. Les blocs (2) utilisent l'ombre pour l'élévation et des rayons concentriques. Les repliables (5) n'animent qu'un chevron (mouvement sobre, feedback aussi porté par le texte « en cours / N variantes »).</div>
+  </footer>
+</div>
+
+<script>
+  const root=document.documentElement, tg=document.getElementById('tg');
+  tg.addEventListener('click',()=>{
+    const cur=root.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+    root.setAttribute('data-theme',cur==='dark'?'light':'dark');
+  });
+</script>

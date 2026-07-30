@@ -1,0 +1,214 @@
+<title>Notation du mode arbre — propositions finales et conclusions</title>
+<style>
+  :root{
+    --bg:#fafafa; --surf:#ffffff; --surf2:#f4f4f5; --surf3:#e4e4e7; --border:#e4e4e7; --border-h:#d4d4d8;
+    --cyan:#4f46e5; --cyan-ink:#4f46e5; --cyan-dim:rgba(79,70,229,.08); --cyan-glow:rgba(79,70,229,.30);
+    --gold:#d97706; --green-ink:#166534;
+    --violet-ink:#6d28d9; --violet-dim:rgba(124,58,237,.10); --violet-glow:rgba(124,58,237,.35);
+    --text:#18181b; --text-2:#3f3f46; --dim:#65656d;
+    --shadow:0 1px 2px rgba(24,24,40,.06),0 4px 16px rgba(24,24,40,.05);
+    --mono:'JetBrains Mono',ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --body:system-ui,-apple-system,"Hanken Grotesk","Segoe UI",sans-serif;
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --bg:#09090b; --surf:#18181b; --surf2:#1f1f23; --surf3:#27272a; --border:#27272a; --border-h:#3f3f46;
+    --cyan:#818cf8; --cyan-ink:#a5b4fc; --cyan-dim:rgba(129,140,248,.12); --cyan-glow:rgba(129,140,248,.34);
+    --gold:#f59e0b; --green-ink:#86efac;
+    --violet-ink:#c4b5fd; --violet-dim:rgba(167,139,250,.14); --violet-glow:rgba(167,139,250,.42);
+    --text:#fafafa; --text-2:#d4d4d8; --dim:#9a9aa3; --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 20px rgba(0,0,0,.35);
+  }}
+  :root[data-theme="dark"]{
+    --bg:#09090b; --surf:#18181b; --surf2:#1f1f23; --surf3:#27272a; --border:#27272a; --border-h:#3f3f46;
+    --cyan:#818cf8; --cyan-ink:#a5b4fc; --cyan-dim:rgba(129,140,248,.12); --cyan-glow:rgba(129,140,248,.34);
+    --gold:#f59e0b; --green-ink:#86efac;
+    --violet-ink:#c4b5fd; --violet-dim:rgba(167,139,250,.14); --violet-glow:rgba(167,139,250,.42);
+    --text:#fafafa; --text-2:#d4d4d8; --dim:#9a9aa3; --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 20px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"]{
+    --bg:#fafafa; --surf:#ffffff; --surf2:#f4f4f5; --surf3:#e4e4e7; --border:#e4e4e7; --border-h:#d4d4d8;
+    --cyan:#4f46e5; --cyan-ink:#4f46e5; --cyan-dim:rgba(79,70,229,.08); --cyan-glow:rgba(79,70,229,.30);
+    --gold:#d97706; --green-ink:#166534;
+    --violet-ink:#6d28d9; --violet-dim:rgba(124,58,237,.10); --violet-glow:rgba(124,58,237,.35);
+    --text:#18181b; --text-2:#3f3f46; --dim:#65656d; --shadow:0 1px 2px rgba(24,24,40,.06),0 4px 16px rgba(24,24,40,.05);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1240px;margin:0 auto;padding:32px 20px 72px}
+  header.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+  h1{font-size:clamp(1.4rem,4vw,1.9rem);font-weight:800;letter-spacing:-.02em;margin:0;text-wrap:balance}
+  h1 em{color:var(--cyan);font-style:normal}
+  .lead{color:var(--dim);max-width:72ch;margin:.5rem 0 0;font-size:.93rem}
+  .toggle{flex:none;background:var(--surf);border:1px solid var(--border);color:var(--text-2);padding:8px 14px;
+          border-radius:999px;font:inherit;font-size:.85rem;font-weight:600;cursor:pointer;box-shadow:var(--shadow)}
+  .toggle:hover{border-color:var(--border-h)}
+
+  .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:18px;margin-top:26px;align-items:start}
+  .card{background:var(--surf);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+  .card.reco{border-color:var(--cyan-glow);box-shadow:var(--shadow),0 0 0 1px var(--cyan-glow)}
+  .chead{display:flex;align-items:center;gap:9px;margin-bottom:2px}
+  .cletter{font-family:var(--mono);font-size:.75rem;font-weight:700;color:#fff;background:var(--cyan);width:23px;height:23px;border-radius:7px;display:grid;place-items:center;flex:none}
+  @media (prefers-color-scheme:dark){.cletter{color:#09090b}}
+  :root[data-theme="dark"] .cletter{color:#09090b}
+  :root[data-theme="light"] .cletter{color:#fff}
+  .ctitle{font-weight:750;font-size:.98rem}
+  .cbadge{margin-left:auto;font-size:.64rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--cyan-ink);background:var(--cyan-dim);border:1px solid var(--cyan-glow);padding:2px 7px;border-radius:999px;flex:none}
+  .cwhy{color:var(--dim);font-size:.82rem;margin:0 0 12px}
+  .solves{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0 0}
+  .solves span{font-size:.68rem;font-weight:600;color:var(--green-ink);background:var(--surf2);border:1px solid var(--border);padding:2px 8px;border-radius:999px}
+  .solves span.no{color:var(--dim);text-decoration:line-through;text-decoration-thickness:1px}
+
+  .panel{background:var(--surf2);border:1px solid var(--border);border-radius:10px;padding:11px 10px;
+         font-family:var(--mono);font-size:.86rem;line-height:1.8;font-variant-numeric:tabular-nums;max-width:400px}
+  .n{color:var(--dim);font-size:.74em;margin:0 1px 0 5px}
+  .main{font-weight:600;color:var(--text)}
+  .cur{background:var(--cyan);color:#fff;font-weight:700;border-radius:5px;padding:1px 5px}
+  @media (prefers-color-scheme:dark){.cur{color:#09090b}}
+  :root[data-theme="dark"] .cur{color:#09090b}
+  :root[data-theme="light"] .cur{color:#fff}
+  .note{text-decoration:underline dotted var(--cyan);text-underline-offset:3px;text-decoration-thickness:1.5px}
+  .nag{color:var(--gold);font-weight:700}
+  .cmt{font-family:var(--body);font-style:italic;color:var(--violet-ink);font-size:.92em;font-weight:400}
+
+  .var{position:relative;margin:4px 0;padding:2px 4px 2px 14px;font-weight:400;color:var(--text-2);border-radius:0 6px 6px 0}
+  .var .var{margin-left:14px}
+  .var .var .var{margin-left:0}
+  .var::before{content:"";position:absolute;left:0;top:3px;bottom:3px;width:2px;border-radius:2px;background:var(--border-h)}
+  .bif{font-weight:600;color:var(--text-2)}
+  .inl{color:var(--dim)}
+  .var.on::before{background:var(--cyan)}
+  .var.on{background:var(--cyan-dim)}
+  .var.off{opacity:.62}
+  .fold .more{font-family:var(--body);font-size:.7rem;color:var(--cyan-ink);font-weight:600;margin-left:5px;cursor:pointer}
+  .crumb{font-family:var(--body);font-size:.72rem;color:var(--dim);padding:2px 4px 8px;border-bottom:1px solid var(--border);margin-bottom:8px}
+  .crumb b{color:var(--cyan-ink);font-weight:700}
+  .crumb .mono{font-family:var(--mono)}
+  .tag{display:inline-flex;align-items:center;min-width:15px;justify-content:center;padding:0 4px;height:16px;
+       font-family:var(--body);font-size:.64rem;font-weight:700;color:var(--cyan-ink);background:var(--surf);
+       border:1px solid var(--cyan-glow);border-radius:4px;margin-right:6px;vertical-align:1px}
+  .var.off .tag{color:var(--dim);border-color:var(--border-h)}
+
+  .bub{max-width:400px;margin-top:10px;padding:11px 13px;background:var(--cyan-dim);border:1px solid var(--cyan-glow);
+       border-radius:12px;font-family:var(--body);font-size:.82rem;line-height:1.55;color:var(--text)}
+  .bub .bh{display:flex;align-items:center;gap:7px;color:var(--cyan-ink);font-weight:700;margin-bottom:4px}
+  .bub .bh .mono{font-family:var(--mono);font-size:.92rem}
+
+  .concl{margin-top:34px;background:var(--surf);border:1px solid var(--border);border-radius:16px;padding:20px;box-shadow:var(--shadow)}
+  .concl h2{font-size:1.05rem;margin:0 0 12px}
+  .concl table{width:100%;border-collapse:collapse;font-size:.85rem}
+  .concl th{text-align:left;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);padding:6px 10px;border-bottom:1px solid var(--border)}
+  .concl td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--text-2)}
+  .concl td:first-child{color:var(--text);font-weight:600}
+  .ok{color:var(--green-ink);font-weight:700}
+  .ko{color:var(--dim)}
+  .verdict{margin-top:16px;padding:13px 15px;background:var(--cyan-dim);border:1px solid var(--cyan-glow);border-radius:12px;font-size:.9rem}
+  .verdict b{color:var(--cyan-ink)}
+  .tblwrap{overflow-x:auto}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Notation du mode arbre — <em>propositions finales</em></h1>
+      <p class="lead">Trois propositions complètes (avec commentaires), chacune évaluée contre les 4 problèmes documentés
+        sur le terrain : ① les alternatives en parenthèses inline deviennent illisibles (Lichess) · ② le repli manuel
+        est réclamé PUIS critiqué quand il est mal réglé (Lichess) · ③ être lâché au milieu d'un arbre sans contexte
+        (Chessable) · ④ au-delà d'un volume, le texte perd les variantes (ChessTree).</p>
+    </div>
+    <button class="toggle" id="tg">◐ Thème</button>
+  </header>
+
+  <div class="cols">
+
+    <!-- P1 -->
+    <section class="card reco">
+      <div class="chead"><span class="cletter">1</span><span class="ctitle">Synthèse — repli auto + chemin actif</span><span class="cbadge">reco</span></div>
+      <p class="cwhy">La branche où tu navigues est dépliée et surlignée (rail indigo) ; les autres se résument à leur première ligne, <b>automatiquement</b> — jamais un état à gérer à la main. Fil d'Ariane en tête. Commentaire du coup courant en bulle.</p>
+      <div class="panel">
+        <div class="crumb">Tu es dans : <b>Principale</b> › <b class="mono">5…c6?!</b> — coup 6</div>
+        <span class="n">1.</span><span class="main">e4</span> <span class="main">e5</span> <span class="n">2.</span><span class="main">♘f3</span> <span class="main">♘c6</span> <span class="n">3.</span><span class="main">♘c3</span> <span class="main">♘f6</span> <span class="n">4.</span><span class="main">♗b5</span> <span class="main">♘d4</span> <span class="n">5.</span><span class="main">♘xe5!?</span> <span class="main note">♗xb5</span>
+        <div class="var on"><span class="n">5…</span><span class="bif">c6?!</span> <span class="n">6.</span><span class="cur note">♗e2!</span> <span class="n">7.</span>♘xe4 ♕e7 <span class="n">8.</span>♘xc6 bxc6 <span class="n">9.</span>d3 d5 <span class="n">10.</span>♘g3
+          <div class="var off fold"><span class="n">6…</span><span class="bif">d5</span> <span class="n">7.</span>exd5 ♗f5…<span class="more">déplier</span></div>
+        </div>
+        <div class="var off fold"><span class="n">5…</span><span class="bif">♘xe4?!</span> <span class="n">6.</span>♘xe4 ♗xb5 <span class="n">7.</span><span class="note">♘xf7!!</span>…<span class="more">déplier · 2 lignes</span></div>
+        <div class="var off fold"><span class="n">5…</span><span class="bif">♗c5</span> <span class="n">6.</span>O-O O-O…<span class="more">déplier</span></div>
+      </div>
+      <div class="bub"><div class="bh">💡 <span class="mono">6.♗e2!</span></div>
+        est très bon pour les Blancs : l'idée est qu'après d7-d6, ils pourront tranquillement rapatrier leur Cavalier en f3 sans craindre ♗g4</div>
+      <div class="solves"><span>① parenthèses</span><span>② repli auto</span><span>③ contexte</span><span>④ volume</span></div>
+    </section>
+
+    <!-- P2 -->
+    <section class="card">
+      <div class="chead"><span class="cletter">2</span><span class="ctitle">Tout visible — étiquettes</span></div>
+      <p class="cwhy">Aucun repli : tout l'arbre est là, mais chaque variante est un paragraphe étiqueté (A · B · C), le chemin actif surligné, les branches mortes estompées. Pour qui veut embrasser tout le chapitre d'un regard.</p>
+      <div class="panel">
+        <span class="n">1.</span><span class="main">e4</span> <span class="main">e5</span> <span class="n">2.</span><span class="main">♘f3</span> <span class="main">♘c6</span> <span class="n">3.</span><span class="main">♘c3</span> <span class="main">♘f6</span> <span class="n">4.</span><span class="main">♗b5</span> <span class="main">♘d4</span> <span class="n">5.</span><span class="main">♘xe5!?</span> <span class="main note">♗xb5</span>
+        <div class="var on"><span class="tag">A</span><span class="n">5…</span><span class="bif">c6?!</span> <span class="n">6.</span><span class="cur note">♗e2!</span> <span class="n">7.</span>♘xe4 ♕e7 <span class="n">8.</span>♘xc6 bxc6 <span class="n">9.</span>d3 d5 <span class="n">10.</span>♘g3
+          <div class="var off"><span class="tag">A1</span><span class="n">6…</span><span class="bif">d5</span> <span class="n">7.</span>exd5 ♗f5 <span class="n">8.</span>d3<span class="nag">±</span></div>
+        </div>
+        <div class="var off"><span class="tag">B</span><span class="n">5…</span><span class="bif">♘xe4?!</span> <span class="n">6.</span>♘xe4 ♗xb5 <span class="n">7.</span><span class="note">♘xf7!!</span> ♕e7 <span class="n">8.</span>♘xh8 ♕xe4+ <span class="n">9.</span>♕f1<span class="nag">±</span>
+          <div class="var off"><span class="tag">B1</span><span class="n">7.</span><span class="bif">O-O</span> d5! <span class="n">8.</span>♘g3 ♗e7 <span class="n">9.</span>a4 ♗d6 <span class="n">10.</span>♘f3 c6 <span class="inl">(10…♗g4 11.h3)</span> <span class="n">11.</span>b3 O-O <span class="n">12.</span>♖e1 f6 <span class="n">13.</span>♗d3 ♗f7 <span class="n">14.</span>♗a3<span class="nag">±</span></div>
+        </div>
+        <div class="var off"><span class="tag">C</span><span class="n">5…</span><span class="bif">♗c5</span> <span class="n">6.</span>O-O O-O <span class="n">7.</span>♗c4 d6</div>
+      </div>
+      <div class="bub"><div class="bh">💡 <span class="mono">6.♗e2!</span></div>
+        est très bon pour les Blancs : l'idée est qu'après d7-d6, ils pourront tranquillement rapatrier leur Cavalier en f3 sans craindre ♗g4</div>
+      <div class="solves"><span>① parenthèses</span><span class="no">② repli</span><span>③ contexte (étiquettes)</span><span class="no">④ volume</span></div>
+    </section>
+
+    <!-- P3 -->
+    <section class="card">
+      <div class="chead"><span class="cletter">3</span><span class="ctitle">ChessBase strict — courts en ligne</span></div>
+      <p class="cwhy">Le plus proche de ChessBase : tout visible, pas d'estompage, les commentaires courts en italique dans le flux (les longs en bulle). Dense mais complet — la lecture « livre d'ouvertures ».</p>
+      <div class="panel">
+        <span class="n">1.</span><span class="main">e4</span> <span class="main">e5</span> <span class="n">2.</span><span class="main">♘f3</span> <span class="main">♘c6</span> <span class="n">3.</span><span class="main">♘c3</span> <span class="main">♘f6</span> <span class="n">4.</span><span class="main">♗b5</span> <span class="main">♘d4</span> <span class="n">5.</span><span class="main">♘xe5!?</span> <span class="main note">♗xb5</span>
+        <div class="var"><span class="n">5…</span><span class="bif">c6?!</span> <span class="cmt">trop lent</span> <span class="n">6.</span><span class="cur note">♗e2!</span> <span class="n">7.</span>♘xe4 ♕e7 <span class="cmt">seule défense</span> <span class="n">8.</span>♘xc6 bxc6 <span class="n">9.</span>d3 d5 <span class="n">10.</span>♘g3
+          <div class="var"><span class="n">6…</span><span class="bif">d5</span> <span class="n">7.</span>exd5 ♗f5 <span class="n">8.</span>d3<span class="nag">±</span></div>
+        </div>
+        <div class="var"><span class="n">5…</span><span class="bif">♘xe4?!</span> <span class="n">6.</span>♘xe4 ♗xb5 <span class="n">7.</span><span class="note">♘xf7!!</span> ♕e7 <span class="n">8.</span>♘xh8 ♕xe4+ <span class="n">9.</span>♕f1<span class="nag">±</span>
+          <div class="var"><span class="n">7.</span><span class="bif">O-O</span> d5! <span class="n">8.</span>♘g3 ♗e7 <span class="n">9.</span>a4 ♗d6 <span class="n">10.</span>♘f3 c6 <span class="inl">(10…♗g4 11.h3)</span> <span class="n">11.</span>b3 O-O <span class="n">12.</span>♖e1 f6 <span class="n">13.</span>♗d3 ♗f7 <span class="n">14.</span>♗a3<span class="nag">±</span></div>
+        </div>
+        <div class="var"><span class="n">5…</span><span class="bif">♗c5</span> <span class="n">6.</span>O-O O-O <span class="n">7.</span>♗c4 d6</div>
+      </div>
+      <div class="bub"><div class="bh">💡 <span class="mono">6.♗e2!</span></div>
+        est très bon pour les Blancs : l'idée est qu'après d7-d6, ils pourront tranquillement rapatrier leur Cavalier en f3 sans craindre ♗g4</div>
+      <div class="solves"><span>① parenthèses</span><span class="no">② repli</span><span class="no">③ contexte</span><span class="no">④ volume</span></div>
+    </section>
+
+  </div>
+
+  <div class="concl">
+    <h2>Conclusions</h2>
+    <div class="tblwrap">
+    <table>
+      <tr><th>Problème documenté (terrain)</th><th>P1 Synthèse</th><th>P2 Tout visible</th><th>P3 ChessBase strict</th></tr>
+      <tr><td>① Alternatives en parenthèses illisibles <span style="color:var(--dim);font-weight:400">(Lichess)</span></td>
+          <td class="ok">réglé — 1 variante = 1 paragraphe</td><td class="ok">réglé</td><td class="ok">réglé</td></tr>
+      <tr><td>② Le repli : réclamé, mais pénible s'il est manuel <span style="color:var(--dim);font-weight:400">(Lichess)</span></td>
+          <td class="ok">réglé — repli piloté par la navigation</td><td class="ko">pas de repli (assumé)</td><td class="ko">pas de repli</td></tr>
+      <tr><td>③ Lâché au milieu d'un arbre sans contexte <span style="color:var(--dim);font-weight:400">(Chessable)</span></td>
+          <td class="ok">réglé — fil d'Ariane + chemin actif</td><td class="ok">partiel — étiquettes + chemin actif</td><td class="ko">non traité</td></tr>
+      <tr><td>④ Au-delà d'un volume, le texte perd les variantes <span style="color:var(--dim);font-weight:400">(ChessTree)</span></td>
+          <td class="ok">réglé — l'écran ne montre que l'actif</td><td class="ko">tient jusqu'à ~3-4 variantes/nœud</td><td class="ko">dense sur les gros chapitres</td></tr>
+      <tr><td>Ton retour : « la fenêtre est moche »</td>
+          <td class="ok" colspan="3">les 3 partagent le socle : graisse au lieu de la taille · indentation plafonnée · retrait suspendu · soulignement au lieu du point volant</td></tr>
+    </table>
+    </div>
+    <div class="verdict">
+      <b>Verdict.</b> Pour la <b>révision élève</b> (le mode arbre des 26 modules) : <b>P1</b> — c'est le seul qui tient
+      sur tes vrais chapitres de 35+ coups, et son repli suit la navigation, donc l'élève n'a jamais rien à gérer.
+      P2 reste pertinent comme <b>vue coach</b> (l'éditeur, où l'on veut tout embrasser) — les deux partagent le même
+      rendu, seul le repli diffère. P3 est écarté : il ne règle ni le contexte ni le volume, et les commentaires en
+      ligne rallongent le flux (la leçon SCID).
+    </div>
+  </div>
+</div>
+
+<script>
+  const root=document.documentElement, tg=document.getElementById('tg');
+  tg.addEventListener('click',()=>{
+    const cur=root.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+    root.setAttribute('data-theme',cur==='dark'?'light':'dark');
+  });
+</script>
