@@ -345,6 +345,18 @@
           <button class="btn btn-primary" onclick="openCreateChoice()">+ Créer mon premier module</button>
         </div>
       </div>
+      <!-- ÉCRAN UNIQUE d'un module/chapitre (option A, 03/08) : l'éditeur s'ancre ICI
+           en densité lecture — patron de l'écran des Parties. Remplace la liste. -->
+      <div id="mod-view" style="display:none">
+        <div class="gv-head">
+          <button class="btn btn-ghost btn-sm" onclick="closeModuleView()"><i class="ti ti-arrow-left" aria-hidden="true"></i> Modules</button>
+          <div id="mod-view-title" class="gv-title"></div>
+          <button id="mod-rename-btn" class="btn btn-ghost btn-sm" style="display:none" onclick="modViewRename()"><i class="ti ti-cursor-text" aria-hidden="true"></i> Renommer</button>
+          <button id="mod-tools-btn" class="btn btn-primary btn-sm" aria-pressed="false" onclick="modToggleTools()"><i class="ti ti-edit" aria-hidden="true"></i> Modifier</button>
+          <button id="mod-save-btn" class="btn btn-primary btn-sm" style="display:none" onclick="saveEditorDrill()"><i class="ti ti-device-floppy" aria-hidden="true"></i> Enregistrer</button>
+        </div>
+        <div id="mod-dock"></div>
+      </div>
     </div>
 
     <!-- ── SECTION : Élèves ── -->

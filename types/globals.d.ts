@@ -326,6 +326,7 @@ interface Window {
   _refClickMove?: (san: string) => any;
   openGameEditor?: (...a: any[]) => any;   // éditeur en mode saisie de partie (lib/editor.js)
   openPgnEditorNew?: (...a: any[]) => any;  // éditeur module vierge, startFen optionnel (lib/editor.js)
+  openPgnEditor?: (...a: any[]) => any;     // éditeur d'un module/chapitre, opts {dock, density} (lib/editor.js)
   openPositionSetup?: (...a: any[]) => any; // éditeur de position module (tranche C, lib/setup.js)
   openPositionSetupForGame?: (...a: any[]) => any; // éditeur de position partie (lib/setup.js)
   _boardEntryDone?: (...a: any[]) => any;  // callback retour éditeur → modal (lib/library.js)
