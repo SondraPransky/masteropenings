@@ -324,14 +324,6 @@ interface Window {
   spRemovePhoto?: (...a: any[]) => any;
   renderReferencePanel?: (opts: { hostId: string; fen: string; onMove?: (san: string) => any; onInsert?: (sans: string[], cite: string) => any; flip?: boolean }) => any;
   _refClickMove?: (san: string) => any;
-  openGameView?: (pgn: string, meta?: any) => any;
-  gvGoto?: (...a: any[]) => any;
-  gvPrev?: (...a: any[]) => any;
-  gvNext?: (...a: any[]) => any;
-  gvGotoEnd?: (...a: any[]) => any;
-  gvFlip?: (...a: any[]) => any;
-  gvBackToGame?: (...a: any[]) => any;
-  gvAnnotate?: (...a: any[]) => any;
   openGameEditor?: (...a: any[]) => any;   // éditeur en mode saisie de partie (lib/editor.js)
   openPgnEditorNew?: (...a: any[]) => any;  // éditeur module vierge, startFen optionnel (lib/editor.js)
   openPositionSetup?: (...a: any[]) => any; // éditeur de position module (tranche C, lib/setup.js)

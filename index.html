@@ -606,32 +606,6 @@
           <button id="gv-tools-btn" class="btn btn-primary btn-sm" aria-pressed="false" onclick="gvToggleTools()"><i class="ti ti-edit" aria-hidden="true"></i> Annoter</button>
           <button id="gv-save-btn" class="btn btn-primary btn-sm" style="display:none" onclick="saveEditorDrill()"><i class="ti ti-device-floppy" aria-hidden="true"></i> Enregistrer</button>
         </div>
-        <div class="gv-body">
-          <div class="gv-board-col">
-            <div id="gv-board"></div>
-            <div class="gv-nav">
-              <button class="btn btn-ghost btn-sm" onclick="gvGoto(0)" title="Début" aria-label="Début"><i class="ti ti-chevron-left-pipe"></i></button>
-              <button class="btn btn-ghost btn-sm" onclick="gvPrev()" title="Précédent" aria-label="Précédent"><i class="ti ti-chevron-left"></i></button>
-              <button class="btn btn-ghost btn-sm" onclick="gvFlip()" title="Retourner"><i class="ti ti-rotate"></i> Retourner</button>
-              <button class="btn btn-ghost btn-sm" onclick="gvNext()" title="Suivant" aria-label="Suivant"><i class="ti ti-chevron-right"></i></button>
-              <button class="btn btn-ghost btn-sm" onclick="gvGotoEnd()" title="Fin" aria-label="Fin"><i class="ti ti-chevron-right-pipe"></i></button>
-            </div>
-            <div id="gv-explore-bar" class="gv-explore-bar" style="display:none">
-              <i class="ti ti-eye" aria-hidden="true"></i> Exploration hors de la partie
-              <button class="wsx-link" onclick="gvBackToGame()">← revenir à la partie</button>
-            </div>
-          </div>
-          <!-- Coups À DROITE de l'échiquier ; la Référence derrière un onglet (03/08 :
-               « ça prend trop de place ») — elle ne fetch que quand son onglet est actif. -->
-          <div class="gv-side">
-            <div class="pane-tabs" role="tablist" aria-label="Panneau de droite">
-              <button type="button" id="gv-tab-moves" class="pane-tab on" role="tab" aria-selected="true" onclick="gvTab('moves')"><i class="ti ti-list-numbers" aria-hidden="true"></i> Coups</button>
-              <button type="button" id="gv-tab-ref" class="pane-tab" role="tab" aria-selected="false" onclick="gvTab('ref')"><i class="ti ti-books" aria-hidden="true"></i> Référence</button>
-            </div>
-            <div id="gv-notation" class="gv-notation"></div>
-            <div id="gv-ref" class="ref-panel" style="display:none"></div>
-          </div>
-        </div>
         <!-- Hote d'ancrage : l'editeur (un seul ecran lecture/annotation) vit ICI
              quand une partie est ouverte — .gv-body au-dessus reste l'ancien lecteur. -->
         <div id="gv-dock"></div>
@@ -834,16 +808,15 @@
           </div>
         </div>
 
-        <!-- Barre de session (si drill multi-sessions) -->
-        <div class="card" id="session-bar" style="display:none;padding:14px 18px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-            <div>
-              <div id="session-kind" style="font-size:.65rem;color:var(--dim);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:2px">Session</div>
-              <div id="session-label" style="font-weight:700;font-size:.92rem"></div>
-            </div>
-            <span id="session-prog" style="font-size:.82rem;color:var(--cyan);font-weight:700;font-family:var(--font-mono)"></span>
+        <!-- Barre de session (si drill multi-sessions) — UNE ligne compacte (03/08 :
+             « la place à remonter » — la carte à 3 lignes coûtait ~90px au panneau). -->
+        <div class="card" id="session-bar" style="display:none;padding:8px 14px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span id="session-kind" style="font-size:.65rem;color:var(--dim);text-transform:uppercase;letter-spacing:1.5px;flex-shrink:0">Session</span>
+            <span id="session-prog" style="font-size:.78rem;color:var(--cyan);font-weight:700;font-family:var(--font-mono);flex-shrink:0"></span>
+            <div id="session-label" style="font-weight:700;font-size:.88rem;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
           </div>
-          <div class="prog-bar"><div id="session-fill" class="prog-fill" style="background:var(--cyan);width:0%"></div></div>
+          <div class="prog-bar" style="margin-top:6px;height:3px"><div id="session-fill" class="prog-fill" style="background:var(--cyan);width:0%"></div></div>
         </div>
 
         <!-- Phase Apprentissage (ligne) -->
