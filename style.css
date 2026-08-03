@@ -2027,23 +2027,35 @@ textarea {
 
 /* ── Panneau Référence (lib/reference.js) — base Maîtres Lichess ────────────── */
 .ref-panel { display: flex; flex-direction: column; min-height: 0; }
+/* Onglets d'un panneau latéral (Notation | Référence — éditeur et lecture de partie).
+   Soulignement 2px = l'onglet actif ; <button> porteur de texte → color ET background
+   déclarés (règle du 29/07, élargie : le chrome UA ne doit jamais décider). */
+.pane-tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+.pane-tab { display: flex; align-items: center; gap: 5px; padding: 8px 12px; margin-bottom: -1px;
+  background: none; border: 0; border-bottom: 2px solid transparent; font: inherit;
+  font-size: .78rem; font-weight: 600; color: var(--dim); cursor: pointer; }
+.pane-tab.on { color: var(--text); border-bottom-color: var(--cyan); }
+.pane-tab:hover:not(.on) { color: var(--text-2); }
+.pane-tab:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
+@media (hover: none) { .pane-tab { min-height: 44px; } }
 .ref-head { padding: 10px 12px; border-bottom: 1px solid var(--border); }
 .ref-head-title { display: flex; align-items: center; gap: 6px; font-size: .82rem; font-weight: 700; color: var(--text); }
 .ref-head-sub { font-size: .72rem; color: var(--dim); margin-top: 2px; }
 .ref-moves { display: flex; flex-direction: column; }
 .ref-move {
-  display: block; width: 100%; text-align: left; cursor: pointer;
+  /* Une seule LIGNE par coup (03/08) : coup · stats · barre, la barre flexe. */
+  display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; cursor: pointer;
   /* color explicite : un <button> N'HERITE PAS la couleur → sans ca le SAN tombe au
      noir par defaut du navigateur = 1.19:1 (invisible) sur le panneau sombre. */
   color: var(--text);
   background: transparent; border: 0; border-bottom: 1px solid var(--border);
-  padding: 8px 12px; transition: background-color .12s;
+  padding: 5px 12px; transition: background-color .12s;
 }
 .ref-move:hover, .ref-move:focus-visible { background: var(--surf2); }
 .ref-move:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
-.ref-move-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 5px; }
-.ref-move-n { font-size: .72rem; color: var(--dim); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.ref-wdl { display: flex; height: 15px; border-radius: 4px; overflow: hidden; font-size: 9.5px; line-height: 15px; text-align: center; }
+.ref-move-san { flex-shrink: 0; min-width: 52px; }
+.ref-move-n { flex-shrink: 0; min-width: 96px; text-align: right; font-size: .72rem; color: var(--dim); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ref-wdl { flex: 1; min-width: 80px; display: flex; height: 15px; border-radius: 4px; overflow: hidden; font-size: 9.5px; line-height: 15px; text-align: center; }
 /* Barre resultat Blancs/Nulle/Noirs = data-viz (pas des tokens d'UI) : neutres zinc
    FROIDS, lisibles sur les 2 themes (l'ancienne palette beige CHAUDE jurait en sombre). */
 .ref-wdl-w { background: #dcdce0; color: #1a1a1b; }
@@ -2051,10 +2063,25 @@ textarea {
 .ref-wdl-b { background: #34343b; color: #e7e7ea; }
 .ref-games-head { font-size: .68rem; text-transform: uppercase; letter-spacing: .5px; color: var(--dim); padding: 10px 12px 4px; }
 .ref-games { display: flex; flex-direction: column; }
-.ref-game { display: flex; flex-direction: column; gap: 1px; padding: 6px 12px; border-bottom: 1px solid var(--border); text-decoration: none; color: var(--text); }
-a.ref-game:hover { background: var(--surf2); }
-.ref-game-players { font-size: .78rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ref-game-meta { font-size: .7rem; color: var(--dim); font-variant-numeric: tabular-nums; }
+/* Table des parties de référence (03/08) : colonnes Blancs·Elo·Noirs·Elo·Année·Rés.,
+   tri par Elo au clic sur l'en-tête. Rangée entière cliquable (ouvre la visionneuse). */
+.ref-gtable { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: .72rem; }
+.ref-gtable th { font-weight: 600; color: var(--dim); text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--border); }
+.ref-gtable th:nth-child(2), .ref-gtable th:nth-child(4) { width: 44px; }
+.ref-gtable th:nth-child(5) { width: 42px; }
+.ref-gtable th:nth-child(6) { width: 34px; }
+.ref-gtable td { padding: 5px 6px; border-bottom: 1px solid var(--border); }
+.ref-gt-row { cursor: pointer; color: var(--text); }
+.ref-gt-row:hover, .ref-gt-row:focus-visible { background: var(--surf2); }
+.ref-gt-row:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
+.ref-gt-row.off { cursor: default; }
+.ref-gt-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ref-gt-elo, .ref-gt-yr { color: var(--dim); font-variant-numeric: tabular-nums; }
+.ref-gt-res { white-space: nowrap; }
+/* Bouton de tri : <button> porteur de texte → color ET background déclarés. */
+.ref-gt-sort { display: inline-flex; align-items: center; gap: 2px; padding: 0; background: none; border: 0; font: inherit; font-weight: 600; color: var(--dim); cursor: pointer; }
+.ref-gt-sort:hover, .ref-gt-sort.on { color: var(--text); }
+.ref-gt-sort:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
 .ref-foot { padding: 8px 12px; font-size: .7rem; color: var(--dim); display: flex; align-items: center; gap: 6px; }
 .ref-msg { padding: 16px 12px; font-size: .78rem; color: var(--dim); display: flex; align-items: center; gap: 8px; }
 /* ── Visionneuse d'une partie de référence (en place, pas de pop-up) ── */
@@ -2901,7 +2928,7 @@ a.ref-game:hover { background: var(--surf2); }
 .eleve-name { font-weight: 600; font-size: .85rem; display: flex; align-items: center; gap: 6px; justify-content: space-between; }
 .eleve-meta { font-size: .7rem; color: var(--dim); margin-top: 3px; }
 /* Pastille « à suivre » dans la carte élève (retard réel / inactivité) */
-.eleve-flag { display: inline-block; margin-left: 7px; padding: 1px 7px; border-radius: 999px; font-size: .64rem; font-weight: 700; vertical-align: middle; }
+.eleve-flag { display: inline-block; margin-left: 7px; padding: 1px 7px; border-radius: 999px; font-size: .64rem; font-weight: 700; vertical-align: middle; white-space: nowrap; }
 .eleve-flag.due { background: var(--red-dim); color: var(--red-ink); }
 .eleve-flag.stale { background: var(--gold-dim); color: var(--gold-ink); }
 /* Élèves d'une carte de classe : pastilles de prénoms (jamais d'emails bruts) */

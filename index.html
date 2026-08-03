@@ -619,12 +619,21 @@
               <i class="ti ti-eye" aria-hidden="true"></i> Exploration hors de la partie
               <button class="wsx-link" onclick="gvBackToGame()">← revenir à la partie</button>
             </div>
-            <div id="gv-notation" class="gv-notation"></div>
           </div>
+          <!-- Coups À DROITE de l'échiquier ; la Référence derrière un onglet (03/08 :
+               « ça prend trop de place ») — elle ne fetch que quand son onglet est actif. -->
           <div class="gv-side">
-            <div id="gv-ref" class="ref-panel"></div>
+            <div class="pane-tabs" role="tablist" aria-label="Panneau de droite">
+              <button type="button" id="gv-tab-moves" class="pane-tab on" role="tab" aria-selected="true" onclick="gvTab('moves')"><i class="ti ti-list-numbers" aria-hidden="true"></i> Coups</button>
+              <button type="button" id="gv-tab-ref" class="pane-tab" role="tab" aria-selected="false" onclick="gvTab('ref')"><i class="ti ti-books" aria-hidden="true"></i> Référence</button>
+            </div>
+            <div id="gv-notation" class="gv-notation"></div>
+            <div id="gv-ref" class="ref-panel" style="display:none"></div>
           </div>
         </div>
+        <!-- Hote d'ancrage : l'editeur (un seul ecran lecture/annotation) vit ICI
+             quand une partie est ouverte — .gv-body au-dessus reste l'ancien lecteur. -->
+        <div id="gv-dock"></div>
       </div>
     </div>
 
@@ -1383,13 +1392,18 @@
           </div>
           <div style="font-size:.65rem;color:var(--dim);margin-top:4px;line-height:1.5"><i class="ti ti-info-circle" aria-hidden="true"></i> Le commentaire s'ajoute au coup — clique <b>« Enregistrer »</b> (en haut à droite) pour sauvegarder la partie.</div>
         </div>
-        <div style="font-size:.65rem;color:var(--dim);text-align:center;opacity:.8;line-height:1.6">Clic = jouer un coup · <b>Ctrl + glisser = flèche verte</b> · Maj = rouge · Alt = jaune<br>(touche + clic simple = case colorée) · <button onclick="editorClearShapes()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:.65rem;text-decoration:underline;padding:0;font-family:inherit">effacer les flèches</button></div>
+        <div class="ed-tool" style="font-size:.65rem;color:var(--dim);text-align:center;opacity:.8;line-height:1.6">Clic = jouer un coup · <b>Ctrl + glisser = flèche verte</b> · Maj = rouge · Alt = jaune<br>(touche + clic simple = case colorée) · <button onclick="editorClearShapes()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:.65rem;text-decoration:underline;padding:0;font-family:inherit">effacer les flèches</button></div>
       </div>
       <!-- Notation column -->
       <div style="flex:1;min-width:200px;overflow-y:auto;padding:16px">
-        <div style="font-size:.65rem;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Notation — cliquez un coup pour naviguer</div>
+        <!-- Notation | Référence en onglets (03/08) : la Référence ne prend plus de
+             place sous la notation et ne fetch que quand son onglet est actif. -->
+        <div class="pane-tabs" role="tablist" aria-label="Panneau de notation">
+          <button type="button" id="editor-tab-notation" class="pane-tab on" role="tab" aria-selected="true" onclick="editorSideTab('notation')"><i class="ti ti-list-numbers" aria-hidden="true"></i> Notation</button>
+          <button type="button" id="editor-tab-ref" class="pane-tab" role="tab" aria-selected="false" onclick="editorSideTab('ref')"><i class="ti ti-books" aria-hidden="true"></i> Référence</button>
+        </div>
         <div id="editor-notation" style="font-size:.86rem;line-height:2.1;font-family:'JetBrains Mono',monospace;word-break:break-word"></div>
-        <div id="editor-ref" class="ref-panel" style="margin-top:18px;border:1px solid var(--border);border-radius:var(--r);overflow:hidden"></div>
+        <div id="editor-ref" class="ref-panel" style="display:none;border:1px solid var(--border);border-radius:var(--r);overflow:hidden"></div>
       </div>
     </div>
   </div>
