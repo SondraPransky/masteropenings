@@ -345,7 +345,11 @@ function totalSessions() {
 // ══════════════════════════════════════════════════════
 // NAVIGATION
 // ══════════════════════════════════════════════════════
-function switchCoachSection(sec) {
+// Moitie AFFICHAGE de switchCoachSection (sections + nav), sans le pipeline de
+// rendu. Exposee seule pour ouvrir une partie DANS la section Parties depuis
+// ailleurs (Vue d'ensemble, profil eleve) : le pipeline complet re-rendrait la
+// LISTE en asynchrone (loadTeacherGames().then) et refermerait l'ecran ouvert.
+function _csecShow(sec) {
   const sections = ['overview','classes','modules','explorer','analytics','eleves','heatmap','parties','export'];
   sections.forEach(s => {
     const el = document.getElementById('csec-'+s);
@@ -358,6 +362,10 @@ function switchCoachSection(sec) {
       else btn.removeAttribute('aria-current');
     }
   });
+}
+
+function switchCoachSection(sec) {
+  _csecShow(sec);
   if (sec==='overview') {
     // Vue d'ensemble : synthèse prescriptive (KPIs, à suivre, points faibles, parties à annoter).
     Promise.all([loadTeacherResults(), loadTeacherPractice(), loadTeacherGames()]).then(()=>{
@@ -1102,7 +1110,7 @@ Object.assign(window, {
   isLineMode, isPlayerMove, loadStudentModules, loginUser, logoutUser, nagGlyphs, nextDrill,
   nextSession, pgnToEditorTree, registerUser, requestPasswordReset, save, saveClasses,
   selectDrill, setBoardComment, setBoardPrompt, setFeedback, showHint, signInGoogle,
-  togglePwd, showLoginTab, skipPosition, startDrill, submitNewPassword, switchCoachSection,
+  togglePwd, showLoginTab, skipPosition, startDrill, submitNewPassword, switchCoachSection, _csecShow,
   saveModule, toast, toggleTheme, toggleAcctMenu, totalSessions, updateScores, updateSessionInfo,
   setBoardTheme, openBoardSettings,
 });

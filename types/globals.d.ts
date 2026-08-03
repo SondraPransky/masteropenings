@@ -343,6 +343,7 @@ interface Window {
   openStudentLayerEditor?: (...a: any[]) => any;  // éditeur en mode couche élève (lib/editor.js)
   editorDensity?: (d: string) => void;            // densité lecture/annot de l'éditeur ancré (lib/editor.js)
   closeEditorModal?: () => void;                  // fermeture/restitution de l'éditeur (lib/editor.js)
+  _csecShow?: (sec: string) => void;              // affichage seul d'une section coach, sans pipeline (app.js)
   openGameDocked?: (...a: any[]) => any;          // un seul écran lecture/annotation (lib/game-view.js)
   _studentLayerSaveDone?: (...a: any[]) => any;   // callback retour couche → élève (lib/student.js)
   openMyLines?: (...a: any[]) => any;             // ouvre la couche depuis une carte de module
