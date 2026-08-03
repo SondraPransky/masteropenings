@@ -2018,6 +2018,17 @@ textarea {
 .gv-mv.cur { background: var(--cyan-dim); color: var(--cyan-ink); font-weight: 700; }
 .gv-mv:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
 .gv-side { flex: 1; min-width: 260px; padding: 16px; }
+/* ── Éditeur ANCRÉ dans la section Parties (03/08 : un seul écran lecture/annotation).
+   L'élément overlay est DÉPLACÉ dans #gv-dock : ces règles le sortent du mode
+   plein-écran (les !important battent les styles inline du modal). */
+.overlay.editor-docked { position: static; padding: 0; background: none; z-index: auto; }
+.overlay.editor-docked.on { display: block; }
+[data-theme="dark"] .overlay.editor-docked { background: none; }
+.editor-docked > div { height: auto !important; max-height: none !important; width: 100% !important; max-width: none !important;
+  box-shadow: none !important; border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; background: var(--surf) !important; }
+.editor-docked #editor-header { display: none !important; }   /* la tête de section (retour · titre · ✎) le remplace — !important : il porte un display inline */
+/* Densité LECTURE : les outils d'annotation s'effacent, ✎ les révèle. */
+.editor-lecture .ed-tool { display: none !important; }
 /* Le cadre + surface vivent sur .gv-body maintenant → pas de double bordure ici. */
 .gv-side .ref-panel { border: 1px solid var(--border); border-radius: var(--rs); overflow: hidden; }
 @media (max-width: 860px) {

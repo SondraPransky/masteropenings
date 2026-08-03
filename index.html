@@ -603,7 +603,8 @@
         <div class="gv-head">
           <button class="btn btn-ghost btn-sm" onclick="closeGameView()"><i class="ti ti-arrow-left" aria-hidden="true"></i> Parties</button>
           <div id="gv-title" class="gv-title"></div>
-          <button id="gv-annotate-btn" class="btn btn-primary btn-sm" onclick="gvAnnotate()"><i class="ti ti-edit" aria-hidden="true"></i> Annoter</button>
+          <button id="gv-tools-btn" class="btn btn-primary btn-sm" aria-pressed="false" onclick="gvToggleTools()"><i class="ti ti-edit" aria-hidden="true"></i> Annoter</button>
+          <button id="gv-save-btn" class="btn btn-primary btn-sm" style="display:none" onclick="saveEditorDrill()"><i class="ti ti-device-floppy" aria-hidden="true"></i> Enregistrer la revue</button>
         </div>
         <div class="gv-body">
           <div class="gv-board-col">
@@ -1371,17 +1372,17 @@
           <button class="btn btn-ghost btn-sm" onclick="flipEditorBoard()" title="Retourner"><i class="ti ti-arrows-exchange" aria-hidden="true"></i> Retourner</button>
           <button class="btn btn-ghost btn-sm" onclick="editorNext()">Suiv. →</button>
         </div>
-        <div style="display:flex;gap:6px">
+        <div class="ed-tool" style="display:flex;gap:6px">
           <button class="btn btn-ghost btn-sm" style="font-size:.72rem;color:var(--red)" onclick="editorDeleteNode()"><i class="ti ti-trash" aria-hidden="true"></i> Supprimer</button>
           <button class="btn btn-ghost btn-sm" style="font-size:.72rem;color:var(--dim)" onclick="editorPromoteMain()" title="Faire de ce coup la ligne principale"><i class="ti ti-arrow-up" aria-hidden="true"></i> Ligne princ.</button>
         </div>
         <!-- Annotation NAG -->
-        <div style="width:100%">
+        <div class="ed-tool" style="width:100%">
           <label style="font-size:.68rem;color:var(--dim);display:block;margin-bottom:3px">Annotation du coup (!, ?, ±…)</label>
           <div id="editor-nag-bar" style="display:flex;flex-wrap:wrap;gap:3px;align-items:center"></div>
         </div>
         <!-- Comment -->
-        <div style="width:100%">
+        <div class="ed-tool" style="width:100%">
           <label style="font-size:.68rem;color:var(--dim);display:block;margin-bottom:3px"><i class="ti ti-message" aria-hidden="true"></i> Commentaire sur ce coup</label>
           <!-- Revue : commentaire de l'AUTRE (élève ↔ coach) en lecture seule — jamais écrasé -->
           <div id="editor-comment-context" style="display:none;font-size:.72rem;font-style:italic;margin-bottom:4px;line-height:1.45"></div>

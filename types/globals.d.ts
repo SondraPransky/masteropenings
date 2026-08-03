@@ -341,6 +341,9 @@ interface Window {
   _reviewSaveDone?: (...a: any[]) => any;  // callback retour revue → bibliothèque (P1.4, lib/library.js)
   // Couche d'édition élève : l'élève greffe ses lignes sur un module du coach (additif).
   openStudentLayerEditor?: (...a: any[]) => any;  // éditeur en mode couche élève (lib/editor.js)
+  editorDensity?: (d: string) => void;            // densité lecture/annot de l'éditeur ancré (lib/editor.js)
+  closeEditorModal?: () => void;                  // fermeture/restitution de l'éditeur (lib/editor.js)
+  openGameDocked?: (...a: any[]) => any;          // un seul écran lecture/annotation (lib/game-view.js)
   _studentLayerSaveDone?: (...a: any[]) => any;   // callback retour couche → élève (lib/student.js)
   openMyLines?: (...a: any[]) => any;             // ouvre la couche depuis une carte de module
   _sbSaveStudentOverlay?: (...a: any[]) => any;   // upsert de la ligne overlay (app.js)
