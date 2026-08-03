@@ -809,6 +809,7 @@ textarea {
 
 /* Pills */
 .mastery-pill {
+  white-space: nowrap;   /* « 61 à revoir » cassait en 2 lignes dans les cartes du roster */
   display: inline-flex; align-items: center; gap: 4px;
   font-size: .68rem; padding: 2px 8px; border-radius: 999px;
   font-weight: 600; border: 1px solid transparent;
@@ -1648,8 +1649,11 @@ textarea {
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-  margin-top: auto;
-  padding-top: 16px;
+  /* Ancré sous le TITRE (pas au bas de la carte) : avec margin-top:auto, la rangée
+     de pastilles flottait à une hauteur différente sur chaque carte de la grille
+     (mesuré : ±26px selon le nombre de lignes) — le bas de carte reste ancré via
+     .sh-mod-progress. Passe better-interface 03/08. */
+  margin-top: 12px;
   font-size: 0.81rem;
   color: var(--dim);
 }
@@ -1673,9 +1677,10 @@ textarea {
   height: 6px;
   background: var(--surf3);
   border-radius: 999px;
-  margin-top: 12px;
+  margin-top: auto;        /* c'est LUI qui absorbe la hauteur variable (bas ancré) */
   overflow: hidden;
 }
+.sh-mod .sh-mod-meta { margin-bottom: 12px; }   /* écart minimal avant la barre */
 .sh-mod-progress-fill {
   height: 100%;
   background: var(--cyan);
