@@ -605,6 +605,10 @@ textarea {
    boutons pleins (règle du 16/07). */
 .study-cur { background: var(--cyan); color: #fff; }
 [data-theme="dark"] .study-cur { color: #18181b; }
+/* Coup courant de la notation de l'ÉDITEUR : même règle d'encre que .study-cur.
+   L'inline `color:#111` échouait AA en clair (3,00:1 sur #4f46e5) — audit 03/08. */
+.ed-cur { background: var(--cyan); color: #fff; font-weight: 700; }
+[data-theme="dark"] .ed-cur { color: #18181b; }
 /* Meme surface, meme defaut : ces deux pleins-cyan a texte blanc n'avaient pas
    d'override sombre non plus (2,98:1 sur #818cf8). */
 [data-theme="dark"] #study-guess-btn.active { color: #18181b; }
@@ -1881,7 +1885,9 @@ textarea {
 .cls-stu-none { color: var(--dim); font-size: .78rem; }
 
 /* Points faibles — vocabulaire partagé (modale « Voir la position », chips, panneaux). */
-.wsx-move { font-family: var(--font-mono); font-size: 1rem; font-weight: 700; }
+/* min-width : sans elle, les titres de module démarraient à une abscisse différente
+   par rangée (« h4 » 19px vs « ♘xf4 » 45px) — colonne alignée, un SAN long déborde. */
+.wsx-move { font-family: var(--font-mono); font-size: 1rem; font-weight: 700; min-width: 56px; }
 .wsx-rate { font-size: .7rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
 .wsx-chips { display: flex; flex-wrap: wrap; gap: 4px; }
 .wsx-chip { font-size: .7rem; padding: 2px 7px; border-radius: 999px; background: var(--red-dim); color: var(--red-ink); }
@@ -2089,7 +2095,10 @@ a.ref-game:hover { background: var(--surf2); }
 }
 .sp-avatar-btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
 .eleve-name-id { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
-.sp-photo-del { background: none; border: 0; padding: 0; color: var(--cyan-ink); cursor: pointer; font: inherit; font-size: inherit; text-decoration: underline; }
+/* Nom sur UNE ligne, élidé : un nom qui passait à la ligne décalait la pastille
+   « à revoir » et cassait l'alignement de toute la grille (better-interface 03/08). */
+.eleve-name-txt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sp-photo-del { background: none; border: 0; padding: 0; color: var(--cyan-ink); cursor: pointer; font: inherit; font-size: inherit; text-decoration: underline; white-space: nowrap; }
 .sp-photo-del:hover { color: var(--cyan); }
 /* Sous-titre de section dans le détail élève (module, Progression, Positions difficiles). */
 .ed-subhead { font-weight: 700; font-size: .88rem; }
@@ -2942,6 +2951,13 @@ a.ref-game:hover { background: var(--surf2); }
 .sp-row-name { flex: 1; min-width: 0; font-size: .88rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sp-row-tail { display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
 .sp-row-late { border-color: var(--red-glow); background: var(--red-dim); }
+/* Sur la rangée teintée, les pastilles -dim s'empilaient sur le -dim de la rangée :
+   le fond composé descendait à 4,48:1 en clair. On recompose le tint sur surface
+   OPAQUE → même rendu qu'ailleurs, contraste indépendant du fond de la rangée. */
+.sp-row-late .badge-red, .sp-row-late .deadline-pill.late {
+  background-color: var(--surf);
+  background-image: linear-gradient(var(--red-dim), var(--red-dim));
+}
 .sp-when { font-size: .72rem; color: var(--dim); font-variant-numeric: tabular-nums; }
 /* « N à lui » : bleu = écrit par l'élève (règle des couleurs d'auteur, DESIGN.md). */
 .sp-mine { font-size: .72rem; font-weight: 700; color: var(--blue-ink); background: var(--blue-dim);
