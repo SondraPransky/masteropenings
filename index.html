@@ -118,7 +118,7 @@
         <label>Nouveau mot de passe <span style="font-weight:400;color:var(--dim);font-size:.72rem">— 6 caractères minimum</span></label>
         <input type="password" id="recovery-pwd" placeholder="••••••••" autocomplete="new-password" onkeydown="if(event.key==='Enter')submitNewPassword()">
       </div>
-      <button class="btn btn-primary" style="width:100%;margin-top:14px;padding:10px" onclick="submitNewPassword()">Enregistrer le nouveau mot de passe</button>
+      <button class="btn btn-primary" style="width:100%;margin-top:14px;padding:10px" onclick="submitNewPassword()">Enregistrer</button>
     </div>
     <div id="login-error" style="display:none;margin-top:14px;padding:10px 14px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:var(--rs);font-size:.82rem;color:#ef4444;line-height:1.5"></div>
   </div>
@@ -604,7 +604,7 @@
           <button class="btn btn-ghost btn-sm" onclick="closeGameView()"><i class="ti ti-arrow-left" aria-hidden="true"></i> Parties</button>
           <div id="gv-title" class="gv-title"></div>
           <button id="gv-tools-btn" class="btn btn-primary btn-sm" aria-pressed="false" onclick="gvToggleTools()"><i class="ti ti-edit" aria-hidden="true"></i> Annoter</button>
-          <button id="gv-save-btn" class="btn btn-primary btn-sm" style="display:none" onclick="saveEditorDrill()"><i class="ti ti-device-floppy" aria-hidden="true"></i> Enregistrer la revue</button>
+          <button id="gv-save-btn" class="btn btn-primary btn-sm" style="display:none" onclick="saveEditorDrill()"><i class="ti ti-device-floppy" aria-hidden="true"></i> Enregistrer</button>
         </div>
         <div class="gv-body">
           <div class="gv-board-col">
@@ -1045,7 +1045,7 @@
 
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
       <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-new-game')">Annuler</button>
-      <button class="btn btn-primary btn-sm" onclick="saveGameEntry()"><i class="ti ti-check" aria-hidden="true"></i> Enregistrer la partie</button>
+      <button class="btn btn-primary btn-sm" onclick="saveGameEntry()"><i class="ti ti-check" aria-hidden="true"></i> Enregistrer</button>
     </div>
   </div>
 </div>
@@ -1186,7 +1186,7 @@
 
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
       <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-exercise-packet')">Annuler</button>
-      <button class="btn btn-primary btn-sm" onclick="saveExercisePacket()"><i class="ti ti-check" aria-hidden="true"></i> Enregistrer le paquet</button>
+      <button class="btn btn-primary btn-sm" onclick="saveExercisePacket()"><i class="ti ti-check" aria-hidden="true"></i> Enregistrer</button>
     </div>
   </div>
 </div>
