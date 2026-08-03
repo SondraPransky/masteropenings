@@ -1747,13 +1747,16 @@ textarea {
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 4px 10px;
-  margin-bottom: 16px;
+  /* margin-bottom retire (03/08) : le bouton vit desormais DANS la rangee de
+     controles du drill — une ligne au lieu de deux au-dessus du plateau. */
   cursor: pointer;
   font-family: inherit;
   white-space: nowrap;
   transition: color .15s, border-color .15s, background-color .15s;
 }
 #btn-back-student:hover { color: var(--text-2); border-color: var(--border-h); background: var(--surf2); }
+/* La page drill resserre son chrome vertical : chaque px rendu au plateau (03/08). */
+#page-drill { padding-top: 12px; }
 
 /* ══ BTN LOGOUT ══════════════════════════════════ */
 #btn-logout {

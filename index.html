@@ -774,16 +774,19 @@
 ════════════════════════════════════════ -->
 <div id="page-drill" class="page">
 
-  <button id="btn-back-student" onclick="goBackFromDrill()" title="Retour"><i class="ti ti-arrow-left" aria-hidden="true"></i> <span id="btn-back-label">Mes modules</span></button>
-
   <div id="no-drill" style="text-align:center;padding:40px;color:var(--dim);display:none">
     <div style="font-size:2rem;margin-bottom:12px"><i class="ti ti-target" aria-hidden="true"></i></div>
     Aucun module disponible.<br>
+    <button class="btn btn-ghost" style="margin-top:16px" onclick="goBackFromDrill()"><i class="ti ti-arrow-left" aria-hidden="true"></i> Retour</button>
     <button class="btn btn-ghost" style="margin-top:16px" onclick="goPage('coach')">→ Créer un module</button>
   </div>
 
   <div id="drill-ui" style="display:none">
-    <div id="drill-controls" style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap">
+    <!-- Retour + sélecteur + Recommencer sur UNE ligne (03/08 : « de la place à
+         gratter en haut ») — chaque px gagné ici agrandit le plateau, resizeBoard
+         dérive son budget du DOM. -->
+    <div id="drill-controls" style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+      <button id="btn-back-student" onclick="goBackFromDrill()" title="Retour"><i class="ti ti-arrow-left" aria-hidden="true"></i> <span id="btn-back-label">Mes modules</span></button>
       <select id="drill-sel" onchange="selectDrill(+this.value)" style="flex:1;max-width:360px;padding:7px 10px;font-size:.83rem"></select>
       <button class="btn btn-ghost btn-sm" onclick="startDrill(S.idx)"><i class="ti ti-rotate" aria-hidden="true"></i> Recommencer</button>
     </div>
