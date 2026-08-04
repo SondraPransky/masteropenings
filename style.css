@@ -2013,6 +2013,26 @@ textarea {
 /* ── Lecture d'une partie d'élève (lib/game-view.js) ───────────────────────── */
 /* En-tete de l'ecran de lecture (retour + titre + Annoter) — plus une barre de modal. */
 .gv-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+/* ── Assistant faiblesses ────────────────────────────────────────────────────
+   #wq-status : indicateur discret de la file d'analyse (section Parties).
+   #gv-moments : chips « Moments clés » de la lecture (gaffe/erreur/sortie),
+   règle de l'encre : encre -ink sur fond -dim, jamais le token de base. */
+.wq-status { display: inline-flex; align-items: center; gap: 6px; font-size: .8rem; color: var(--dim); }
+.wq-spin { display: inline-block; animation: wq-rot 1s linear infinite; }
+@keyframes wq-rot { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .wq-spin { animation: none; } }
+#gv-moments { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 0 12px; }
+.gvm-lbl { display: inline-flex; align-items: center; gap: 5px; font-size: .8rem; font-weight: 600; color: var(--dim); }
+.gvm-chip { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--border); background: var(--surf);
+  color: var(--text); font: inherit; font-size: .82rem; padding: 3px 10px; border-radius: 999px; cursor: pointer;
+  transition: border-color .15s ease, background-color .15s ease, transform .12s ease; }
+.gvm-chip:active { transform: scale(.96); }
+.gvm-chip b { font-family: var(--font-mono, monospace); }
+.gvm-blunder { background: var(--red-dim); border-color: var(--red-glow); color: var(--red-ink); }
+.gvm-mistake { background: var(--gold-dim); border-color: var(--gold-glow); color: var(--gold-ink); }
+.gvm-exit { background: var(--cyan-dim); border-color: var(--cyan-glow); color: var(--cyan-ink); }
+.gvm-pending { display: inline-flex; align-items: center; gap: 6px; font-size: .8rem; color: var(--dim); }
+@media (hover: none) { .gvm-chip { min-height: 44px; } }
 .gv-title { flex: 1; min-width: 0; font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* Ecran normal (dans la section Parties) : plus de flex:1/overflow:hidden d'overlay. */
 /* ── Éditeur ANCRÉ dans la section Parties (03/08 : un seul écran lecture/annotation).
@@ -3027,6 +3047,21 @@ textarea {
 .sp-act-ico { flex-shrink: 0; }
 .sp-act-txt { flex: 1; min-width: 0; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sp-act-tail { font-size: .74rem; color: var(--dim); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+
+/* ── Faiblesses détectées (assistant faiblesses, page profil élève) ─────────
+   Règle de l'encre partout : -ink sur -dim, jamais le token de base. */
+.sp-weak-sum { font-size: .8rem; color: var(--text-2); margin: 2px 0 10px; }
+.sp-weak-pending { color: var(--dim); white-space: nowrap; }
+.sp-weak-sub { margin: 12px 0 4px; }
+.sp-weak-rec { color: var(--red-ink); font-weight: 600; }
+.sp-weak-ok { display: flex; align-items: center; gap: 8px; font-size: .82rem; color: var(--green-ink);
+              background: var(--green-dim); border: 1px solid var(--green-glow); border-radius: var(--r); padding: 10px 14px; }
+.sp-fault-blunder { color: var(--red-ink); }
+.sp-fault-mistake { color: var(--gold-ink); }
+.sp-brief { margin-top: 14px; border: 1px solid var(--border); border-radius: var(--r); padding: 12px 14px; background: var(--surf); }
+.sp-brief-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.sp-brief-body { font-size: .84rem; line-height: 1.55; color: var(--text-2); margin-top: 10px; }
+.sp-brief-when { font-size: .72rem; color: var(--dim); margin-top: 8px; }
 
 .sp-empty { font-size: .8rem; color: var(--dim); padding: 12px 2px; }
 .sp-empty-big { text-align: center; padding: 54px 24px; border: 1px dashed var(--border); border-radius: 14px; color: var(--text-2); }

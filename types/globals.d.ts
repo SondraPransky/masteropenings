@@ -322,6 +322,13 @@ interface Window {
   _sbSaveStudentPhotos?: (...a: any[]) => any;
   spPickPhoto?: (...a: any[]) => any;
   spRemovePhoto?: (...a: any[]) => any;
+  // Assistant faiblesses (04/08)
+  startWeaknessQueue?: (...a: any[]) => any;
+  _pgRepOf?: (...a: any[]) => any;
+  _sbSaveStudentBriefs?: (...a: any[]) => any;
+  spGenBrief?: (...a: any[]) => any;
+  gvJumpPly?: (...a: any[]) => any;
+  editorGoPath?: (...a: any[]) => any;
   renderReferencePanel?: (opts: { hostId: string; fen: string; onMove?: (san: string) => any; onInsert?: (sans: string[], cite: string) => any; flip?: boolean }) => any;
   _refClickMove?: (san: string) => any;
   openGameEditor?: (...a: any[]) => any;   // éditeur en mode saisie de partie (lib/editor.js)

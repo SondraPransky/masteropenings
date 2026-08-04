@@ -602,6 +602,8 @@
           <h1 class="cs-title">Parties</h1>
           <div class="cs-sub">Les parties que vos élèves vous ont partagées</div>
         </div>
+        <!-- Indicateur discret de l'assistant faiblesses (piloté par lib/analysis-queue.js) -->
+        <span id="wq-status" class="wq-status" style="display:none" role="status"></span>
       </div>
       <div id="prof-parties-content">
         <div class="empty" style="border:1px dashed var(--border);border-radius:var(--r);padding:60px">
@@ -618,6 +620,9 @@
           <button id="gv-tools-btn" class="btn btn-primary btn-sm" aria-pressed="false" onclick="gvToggleTools()"><i class="ti ti-edit" aria-hidden="true"></i> Annoter</button>
           <button id="gv-save-btn" class="btn btn-primary btn-sm" style="display:none" onclick="saveEditorDrill()"><i class="ti ti-device-floppy" aria-hidden="true"></i> Enregistrer</button>
         </div>
+        <!-- Moments cles (assistant faiblesses) : gaffes moteur + sortie de repertoire,
+             chips cliquables qui sautent a la position dans l'editeur ancre. -->
+        <div id="gv-moments" style="display:none"></div>
         <!-- Hote d'ancrage : l'editeur (un seul ecran lecture/annotation) vit ICI
              quand une partie est ouverte — .gv-body au-dessus reste l'ancien lecteur. -->
         <div id="gv-dock"></div>

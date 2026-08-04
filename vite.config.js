@@ -31,6 +31,12 @@ export default defineConfig({
         mkdirSync('dist/pieces/cburnett', { recursive: true });
         for (const p of ['wK','wQ','wR','wB','wN','wP','bK','bQ','bR','bB','bN','bP'])
           copyFileSync(`pieces/cburnett/${p}.svg`, `dist/pieces/cburnett/${p}.svg`);
+        // Stockfish WASM (assistant faiblesses) — build MONO-THREAD vendorée
+        // (GitHub Pages ne pose pas COOP/COEP → pas de multi-thread possible).
+        // Chargé en lazy par lib/engine.js (Worker), jamais dans le bundle.
+        mkdirSync('dist/vendor/stockfish', { recursive: true });
+        for (const f of ['stockfish-18-lite-single.js', 'stockfish-18-lite-single.wasm'])
+          copyFileSync(`vendor/stockfish/${f}`, `dist/vendor/stockfish/${f}`);
       },
     },
   ],

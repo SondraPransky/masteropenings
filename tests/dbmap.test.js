@@ -207,4 +207,12 @@ describe('mapping résultat / pratique / partie ↔ ligne SQL', () => {
     expect(back.student).toBe('Léa');
     expect(back.pgn).toBe('1. e4 e5');
   });
+  it('partie : l\'analyse moteur (assistant faiblesses) survit au round-trip', () => {
+    const analysis = { v: 1, depth: 12, ts: 1700000000003, evals: [20, -350], faults: [{ ply: 0, loss: 370, sev: 'blunder', best: 'Nf3' }] };
+    const rec = { id: 1, pgn: '1. e4 *', analysis };
+    const back = _sbRowToGame(_sbGameToRow(rec));
+    expect(back.analysis).toEqual(analysis);
+    // Une partie sans analyse ne doit pas en inventer une.
+    expect(_sbRowToGame(_sbGameToRow({ id: 2, pgn: '1. d4 *' })).analysis).toBe(null);
+  });
 });

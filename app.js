@@ -19,6 +19,7 @@ import { S } from './lib/session.js';
 import './lib/editor.js';
 import './lib/reference.js';
 import './lib/game-view.js';
+import './lib/analysis-queue.js';
 import './lib/drill.js';
 import './lib/study.js';
 import './lib/sr.js';
