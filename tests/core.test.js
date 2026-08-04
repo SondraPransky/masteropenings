@@ -1,5 +1,5 @@
 import { _normFen, leitnerSchedule, DEFAULT_LADDER_HOURS, normalizeSAN, extractAllLines, fig, figurineTitle, drillSelectGroups,
-         splitPgnGames, insertPgnGames, removePgnGame, pgnMainlineSans, frSanToEnglish } from '../lib/core.js';
+         splitPgnGames, insertPgnGames, removePgnGame, pgnMainlineSans, frSanToEnglish, moveLabel } from '../lib/core.js';
 
 // ─────────────────────────────────────────────────────────────
 describe('_normFen — clé de transposition', () => {
@@ -353,5 +353,15 @@ describe('frSanToEnglish — saisie francaise depuis une feuille', () => {
     expect(frSanToEnglish('exd5')).toBe('exd5');
     expect(frSanToEnglish('O-O')).toBe('O-O');
     expect(frSanToEnglish('O-O-O')).toBe('O-O-O');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// moveLabel — le numero de coup a la francaise (une seule forme partout)
+// ─────────────────────────────────────────────────────────────
+describe('moveLabel', () => {
+  test('point pour les Blancs, points de suspension pour les Noirs', () => {
+    expect(moveLabel(12, 'w')).toBe('12.');
+    expect(moveLabel(12, 'b')).toBe('12…');
   });
 });

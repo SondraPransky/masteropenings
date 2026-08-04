@@ -1,5 +1,5 @@
 import { evalCp, classifyLoss, computeFaults, phaseOfFen, gameFaults,
-         aggregateExits, aggregateFaults, weaknessReport } from '../lib/weakness-core.js';
+         aggregateExits, aggregateFaults, weaknessReport, briefPayload } from '../lib/weakness-core.js';
 import { extractAllLines } from '../lib/core.js';
 import { _buildDrillTree } from '../lib/tree.js';
 
@@ -120,17 +120,50 @@ describe('aggregateFaults + weaknessReport', () => {
     analysis: { v: 1, evals: [], faults: [{ ply: 2, loss: 338, sev: 'blunder', best: 'Nf3' }] },
   };
   const gSans = { id: 'g2', ts: 6, pgn: '1. d4 *' };
-  test('compte analysées / total et range par phase', () => {
+  test('compte analysées / total et compte par phase', () => {
     const a = aggregateFaults([gAna, gSans]);
     expect(a.analyzed).toBe(1);
     expect(a.total).toBe(2);
     expect(a.blunders).toBe(1);
-    expect(a.phases.ouverture.length).toBe(1);
-    expect(a.phases.ouverture[0].gameId).toBe('g1');
+    expect(a.byPhase).toEqual({ ouverture: 1, milieu: 0, finale: 0 });
+    expect(a.all.length).toBe(1);
+    expect(a.all[0].gameId).toBe('g1');
+  });
+  test('`all` est trié par coût décroissant (les consommateurs ne retrient pas)', () => {
+    // Deux fautes dans la même partie : la moins chère est jouée en PREMIER.
+    const g2 = {
+      id: 'g2', ts: 5, pgn: '1. e4 e5 2. Qh5 Nc6 3. Bc4 Nf6 *',
+      analysis: { v: 1, evals: [], faults: [
+        { ply: 2, loss: 130, sev: 'mistake', best: 'Nf3' },
+        { ply: 4, loss: 480, sev: 'blunder', best: 'Nc3' }] },
+    };
+    const a = aggregateFaults([g2]);
+    expect(a.all.map(f => f.loss)).toEqual([480, 130]);
+    expect(a.blunders).toBe(1);
+    expect(a.mistakes).toBe(1);
   });
   test('weaknessReport assemble les deux natures', () => {
     const r = weaknessReport([gAna], []);
     expect(r).toHaveProperty('exits');
     expect(r.faults.blunders).toBe(1);
+  });
+});
+
+describe('briefPayload — ce qui part à la synthèse IA', () => {
+  const gAna = {
+    id: 'g1', ts: 5, pgn: '1. e4 e5 2. Qh5 Nc6 *', white: 'Léo', black: 'Zoé',
+    analysis: { v: 1, evals: [], faults: [{ ply: 2, loss: 338, sev: 'blunder', best: 'Nf3' }] },
+  };
+  test('compacte le rapport en libellés lisibles, sans tableaux bruts', () => {
+    const p = briefPayload(weaknessReport([gAna], []), 'Léo Martin');
+    expect(p.student).toBe('Léo Martin');
+    expect(p.analyzed).toBe(1);
+    expect(p.fautes.gaffes).toBe(1);
+    expect(p.fautes.parPhase).toEqual({ ouverture: 1, milieu: 0, finale: 0 });
+    expect(p.fautes.top[0]).toEqual({ coup: '2. Qh5', phase: 'ouverture', pions: 3.38, mieux: 'Nf3' });
+  });
+  test('reste sous le garde-fou de 20 Ko de l\'Edge Function', () => {
+    const many = Array.from({ length: 40 }, (_, i) => ({ ...gAna, id: 'g' + i }));
+    expect(JSON.stringify(briefPayload(weaknessReport(many, []), 'X')).length).toBeLessThan(20000);
   });
 });
