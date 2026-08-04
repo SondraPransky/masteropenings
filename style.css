@@ -1626,6 +1626,18 @@ textarea {
 /* ══ CARTES MODULES ÉLÈVE (version finale améliorée) ═════════════════ */
 /* Grille : les cartes verticales se rangent en colonnes (1 en mobile). */
 #sh-module-list, #sh-perso-list, #sh-exercise-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+/* Porte « Voir N autres modules » : enfant de GRILLE, elle doit traverser toutes
+   les colonnes — sinon elle se range comme une carte de plus, à côté des autres. */
+.sh-more { grid-column: 1 / -1; }
+.sh-more > summary { font-size: .82rem; color: var(--cyan-ink); cursor: pointer; padding: 10px 4px;
+  list-style: none; font-weight: 600; }
+.sh-more > summary::-webkit-details-marker { display: none; }
+.sh-more > summary::before { content: '▸ '; color: var(--dim); }
+.sh-more[open] > summary::before { content: '▾ '; }
+.sh-more > summary:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; border-radius: var(--rs); }
+/* Les cartes rangées derrière la porte gardent EXACTEMENT la grille des autres. */
+.sh-more-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; margin-top: 4px; }
+@media (hover: none) { .sh-more > summary { min-height: 44px; display: flex; align-items: center; } }
 /* Focus clavier visible sur les cartes-boutons (WCAG AA) */
 .sh-card-act:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; border-radius: 999px; }
 
