@@ -826,28 +826,58 @@ textarea {
 .deadline-pill.late { background: var(--red-dim);  color: var(--red-ink); border-color: var(--red-glow); }
 .deadline-pill.soon { background: var(--gold-dim);  color: var(--gold-ink); border-color: var(--gold-glow); }
 
-/* Parties */
-.game-row {
-  padding: 12px 14px;
+/* Parties partagées — UNE boîte par élève, des rangées séparées par des filets.
+   ⚠ Pas une carte par partie : en sombre --surf sur --bg ne rend que 1,12:1, donc
+   sept cartes empilées ne se lisaient pas comme sept objets mais comme un aplat
+   (« peu de nuances »). La structure vient des filets et des poids typographiques,
+   jamais d'un écart de surface qui n'existe pas dans ce thème. */
+.pg-list {
   background: var(--surf);
+  /* ⚠ --border-h, PAS --border : mesuré en sombre, #27272a sur #18181b ne rend que
+     1,19:1 — un filet invisible ne peut pas porter la structure. --border-h monte
+     le filet à 1,70:1 et le contour de la boîte à 1,91:1 (la plage lisible). */
+  border: 1px solid var(--border-h);
   border-radius: var(--r);
-  margin-bottom: 6px;
-  cursor: pointer;
-  transition: border-color .15s, box-shadow .15s;
-  border: 1px solid var(--border);
+  overflow: hidden;            /* les rangées héritent du rayon aux extrémités */
 }
-/* Survol : la bordure PLEINE passe a l'accent (le side-stripe 3px est banni par le
-   DESIGN.md). --cyan-glow au lieu de l'indigo-500 en dur, et il bascule en dark. */
-.game-row:hover { border-color: var(--cyan-glow); box-shadow: var(--shadow-xs); }
-/* Layout interne d'une partie partagée (coach-games.js _pgGroupsHTML) — one-off inline extraits. */
-.game-row-main { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
-.game-row-l { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.pg-row {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 10px;
+  padding: 8px 14px;
+  transition: background-color .15s;
+}
+.pg-row + .pg-row { border-top: 1px solid var(--border-h); }
+.pg-row:hover { background: var(--surf2); }
 /* Le résultat est une COLONNE : « 1/2-1/2 » est plus large que « 1-0 » — sans
    largeur fixe, chaque nom démarre à un x différent et la liste zigzague. */
-.game-row-l .game-result { min-width: 52px; flex-shrink: 0; }
-.game-row-info { min-width: 0; }
-.game-row-who { font-weight: 600; font-size: .85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.game-row-meta { font-size: .72rem; color: var(--dim); }
+.pg-row .game-result { min-width: 52px; }
+/* La rangée entière EST l'action : plus de bouton « Ouvrir » répété à chaque ligne.
+   Bouton texte pleine largeur — `color` et `background` déclarés (règle du chrome). */
+.pg-row-open {
+  display: block; width: 100%; min-width: 0; text-align: left;
+  background: none; border: 0; padding: 4px 0; margin: 0;
+  font-family: inherit; color: var(--text); cursor: pointer;
+}
+.pg-row-who  { display: block; font-weight: 600; font-size: .85rem;
+                overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pg-row-meta { display: block; font-size: .72rem; color: var(--dim);
+                overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pg-row-open:hover .pg-row-who { color: var(--cyan-ink); }
+.pg-row-open:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; border-radius: var(--rs); }
+/* L'état est dit sur CHAQUE rangée (avant, il ne vivait que dans l'en-tête du
+   groupe : on lisait « 1 à annoter » sans savoir LAQUELLE). Texte + couleur. */
+.pg-state { font-size: .7rem; font-weight: 700; white-space: nowrap; }
+.pg-state-done { color: var(--violet); }
+.pg-state-todo { color: var(--red-ink); }
+.pg-row .pg-rep { grid-column: 1 / -1; }
+@media (max-width: 560px) {
+  /* L'état passe sous le nom : à 375 il volait la largeur de l'adversaire. */
+  .pg-row { grid-template-columns: 52px minmax(0, 1fr); }
+  .pg-state { grid-column: 2; justify-self: start; }
+}
+@media (hover: none) { .pg-row-open { min-height: 44px; } }
 .pg-empty-note { color: var(--dim); font-size: .82rem; padding: 18px 4px; }
 .pg-todo-count { color: var(--red); }   /* « N à annoter » — signal d'action */
 .game-result { font-size: .72rem; font-family: 'JetBrains Mono', monospace; font-weight: 700; }
@@ -859,6 +889,12 @@ textarea {
 @media (max-width: 700px) {
   .tab-label { display: none; }
   .tab { padding: 6px 10px; font-size: .85rem; }
+  /* ⚠ Le libellé masqué, l'onglet retombe à 34×30 — or ce sont les DEUX contrôles
+     de navigation principaux de l'élève, sur la surface la plus tactile de l'app
+     (PRODUCT.md : « souvent au téléphone pour l'élève »). Même motif que la nav
+     coach passée en icônes seules le 16/07 : masquer le texte impose de rendre
+     la cible au doigt. */
+  @media (hover: none) { .tab { min-width: 44px; min-height: 44px; justify-content: center; } }
 }
 @media (max-width: 600px) {
   /* Select drill : pleine largeur sur sa propre ligne */
@@ -904,6 +940,33 @@ textarea {
      le fichier) gagnerait de toute façon, et le border-box + min-height suffit. */
   .lib-search { min-height: 44px; }
   .lib-search input { align-self: stretch; min-height: 44px; }
+  /* Le champ « Nom d'une nouvelle base » vit dans .lib-toolbar, pas dans .lib-search :
+     il avait échappé aux deux règles ci-dessus et rendait 40px. */
+  #lib-new-base-name { min-height: 44px; }
+  /* Menu compte (36px) et retour de la page drill (26px) : deux contrôles de
+     navigation permanents, présents sur presque tous les écrans. */
+  .acct-btn { min-height: 44px; }
+  #btn-back-student, .nav-back { min-height: 44px; }
+  /* — Balayage des 22 MODALES (04/08) : trois défauts systémiques —
+     1. Le ✕ de fermeture : .btn-sm lui donnait 44 de HAUT, mais sa largeur suit son
+        contenu (un glyphe) → 35px. Ciblé par son nom accessible, sans toucher au
+        markup des 22 modales. */
+  [aria-label="Fermer"] { min-width: 44px; }
+  /* 2. Les champs de saisie DANS les modales rendaient 36px (18 dans le setup de
+        position, 29 dans l'éditeur) : le bloc tactile ne couvrait que les deux
+        champs de recherche. Par EXCLUSION, comme la règle anti-zoom — une liste
+        blanche raterait le prochain type ajouté. */
+  input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]),
+  textarea { min-height: 44px; }
+  /* 3. Les dépliants rendaient 16px. ⚠ « Options avancées » n'est PAS un <summary>
+        mais un <button> nu : on le cible par son contenu (:has, déjà utilisé par
+        `.mcard:has(.mcard-menu[open])`). Le vrai <summary> est couvert aussi. */
+  summary, button:has(#adv-arrow) { min-height: 44px; display: flex; align-items: center; }
+  .create-sub { min-height: 44px; }   /* sous-lien « …ou pars d'une position » : 42px */
+  /* 4. Les cases à cocher des modales (choix de modules d'une classe, colonnes
+        d'export) font 14px, mais elles vivent dans un <label> : c'est LUI la vraie
+        cible (~290px de large, 19-38px de haut). On monte la rangée, pas la case. */
+  .overlay label:has(> input[type=checkbox]) { min-height: 44px; align-items: center; }
   /* Safari iOS zoome la page au focus de TOUT champ dont la police est < 16px. Le
      <meta viewport> n'a volontairement pas de maximum-scale (ça désactiverait le zoom
      manuel = régression a11y), donc la taille de police est le SEUL levier. Mesuré avant
@@ -928,8 +991,12 @@ textarea {
   #btn-logout::before { content: '⏏'; font-size: .85rem; }
   /* Nav back : réduire la padding */
   .nav-back { padding: 4px 6px; font-size: .72rem; }
-  /* Coach : premier bouton (Créer le module) prend toute la largeur */
-  .btn-row > .btn:first-child { flex: 1 1 100%; }
+  /* ⚠ SUPPRIMÉ (04/08) : `.btn-row > .btn:first-child { flex: 1 1 100% }`.
+     Écrite pour « Créer le module » côté coach — mais ce markup a changé depuis, et
+     `.btn-row` ne subsiste QU'À UN endroit dans tout le projet : les outils sous
+     l'échiquier du drill. La règle ne faisait donc plus qu'une chose : étirer
+     « Retourner » sur toute la ligne et renvoyer « Couleur » à la ligne suivante.
+     Une intention morte, un dégât vivant : ne pas la réintroduire. */
 }
 .kpi {
   background: var(--surf);
@@ -1387,6 +1454,7 @@ textarea {
   font-weight: 800;
   letter-spacing: -.5px;
   color: var(--text);
+  margin: 0;   /* reset UA du h1 (la page de connexion n'avait AUCUN titre) */
 }
 .login-logo-title em { color: var(--cyan); font-style: normal; }
 .login-logo-sub {
@@ -2136,7 +2204,9 @@ textarea {
   border: 1px solid var(--cyan-glow); line-height: 1;
 }
 /* Avatar cliquable de la page profil : survol = « changer la photo ». */
-.sp-avatar-btn { position: relative; padding: 0; border: 0; background: none; cursor: pointer; border-radius: 50%; flex-shrink: 0; }
+/* `color` déclaré : sans lui le bouton porte le noir UA, qui n'attend qu'un texte
+   direct pour devenir illisible en sombre (règle du chrome de <button>). */
+.sp-avatar-btn { position: relative; padding: 0; border: 0; background: none; color: var(--text); cursor: pointer; border-radius: 50%; flex-shrink: 0; }
 .sp-avatar-btn .stu-avatar { border: 2px solid var(--border); }
 .sp-avatar-btn::after {
   content: "\ea29"; font-family: "tabler-icons"; font-size: 13px;
@@ -2233,7 +2303,7 @@ textarea {
   border-bottom: 1px solid var(--border);
 }
 .mgroup-side { font-size: 1.1rem; line-height: 1; color: var(--text); }
-.mgroup-title { font-weight: 800; font-size: .95rem; letter-spacing: -.3px; }
+.mgroup-title { font-weight: 800; font-size: .95rem; letter-spacing: -.3px; margin: 0; }  /* margin:0 = reset UA du h2 */
 .mgroup-n { font-family: var(--font-mono); font-size: .74rem; color: var(--dim); font-variant-numeric: tabular-nums; }
 
 .mrow {
@@ -3003,7 +3073,16 @@ textarea {
    nouvelle variante de composant. */
 #prof-page { max-width: 1160px; }
 .sp-head { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
-.sp-head-id { min-width: 0; }
+.sp-head-id { min-width: 0; flex: 1; }   /* l'identité prend la place restante, et la CÈDE en dernier */
+/* ⚠ À 375, « ← Élèves » (81px) + avatar (52) + « Lien parents » (113) + 3 gaps = 288
+   sur 335 : en nowrap, le NOM de l'élève — le titre de la page — était comprimé à
+   16px de large et rendu une lettre par ligne (en-tête à 205px de haut, mesuré).
+   Les actions passent sur leur propre rangée : le nom garde toute la largeur. */
+@media (max-width: 560px) {
+  .sp-head { flex-wrap: wrap; gap: 10px 12px; }
+  .sp-head-id { flex: 1 1 100%; order: 2; }
+  .sp-parent-btn { order: 3; }
+}
 .sp-name { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; letter-spacing: -.5px; margin: 0; }
 .sp-head-sub { font-size: .78rem; color: var(--dim); margin-top: 2px; }
 .sp-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 22px; }
@@ -3187,6 +3266,21 @@ textarea {
 .skip-link:focus { top: 8px; }
 /* Texte réservé aux lecteurs d'écran */
 .sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+/* Mode « Apprentissage » : la carte d'info s'efface pour laisser la place aux coups,
+   mais elle porte le <h1> de la page — le masquer en bloc laissait l'écran sans
+   aucun titre. Tout disparaît sauf le titre, qui passe en sr-only : hauteur nulle,
+   layout identique, et la page garde son nom pour un lecteur d'écran. */
+#drill-info-card.study-hidden {
+  padding: 0; border: 0; background: none; box-shadow: none; margin: 0;
+}
+/* !important : ces enfants portent un `display:flex` INLINE (index.html) et
+   #student-bar est piloté en inline par le JS — un sélecteur, même par id, perd
+   contre du style inline. Même raison que la règle anti-zoom des <select>. */
+#drill-info-card.study-hidden > *:not(.drill-title) { display: none !important; }
+#drill-info-card.study-hidden .drill-title {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
 }

@@ -136,6 +136,16 @@ footer a:hover{color:var(--text)}
 
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-thumb{background:var(--surf3);border-radius:2px}
+
+/* Cibles tactiles. home.html est une page AUTONOME : le bloc `hover:none` de
+   style.css ne l'atteint pas, donc ses CTA rendaient 39-41px au doigt — dont
+   « Lancer l'outil gratuitement », l'action de conversion de la page. Meme
+   convention que l'app (44px), et le desktop ne bouge pas d'un pixel. */
+@media(hover:none){
+  .btn{min-height:44px}
+  #nav-cta{min-height:44px}
+  .logo,#theme-toggle,.footer-links a{min-height:44px;min-width:44px;display:inline-flex;align-items:center}
+}
 </style>
 </head>
 <body>

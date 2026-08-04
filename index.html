@@ -57,7 +57,7 @@
   <div class="login-card">
     <div class="login-logo">
       <span class="login-logo-icon">♟</span>
-      <div class="login-logo-title">EE<em>Coach</em></div>
+      <h1 class="login-logo-title">EE<em>Coach</em></h1>
       <div class="login-logo-sub">Révision d'ouvertures d'échecs</div>
     </div>
     <div class="login-tabs">
@@ -847,7 +847,7 @@
           <div id="learn-comment" style="font-size:.82rem;color:var(--text);line-height:1.55;padding:8px 10px;background:var(--bg);border-radius:var(--r);margin-bottom:10px;height:58px;overflow-y:auto"></div>
           <div id="study-bubble" class="study-bubble" style="display:none"></div>
           <div id="study-guess-row" style="display:none;margin-bottom:8px;gap:6px">
-            <button id="study-guess-btn" class="btn btn-ghost btn-sm" style="flex:1" onclick="toggleStudyGuess()"><i class="ti ti-target" aria-hidden="true"></i> Devine le coup</button>
+            <button id="study-guess-btn" class="btn btn-ghost btn-sm" onclick="toggleStudyGuess()"><i class="ti ti-target" aria-hidden="true"></i> Devine le coup</button>
             <button id="study-expand-btn" class="btn btn-ghost btn-sm" aria-pressed="false" title="Afficher toutes les variantes dépliées" onclick="toggleStudyExpand()"><i class="ti ti-arrows-diagonal" aria-hidden="true"></i> Tout déplier</button>
           </div>
           <!-- Outils coach : editer les variantes depuis la notation du module (coach only, gere par renderStudyCoachTools) -->
@@ -993,7 +993,7 @@
       <div class="frow" style="margin:0"><label>Blancs</label><input type="text" id="ng-white" placeholder="Nom des Blancs"></div>
       <div class="frow" style="margin:0"><label>Noirs</label><input type="text" id="ng-black" placeholder="Nom des Noirs"></div>
       <div class="frow" style="margin:0"><label>Résultat</label>
-        <select id="ng-result"><option value="*">En cours / ?</option><option value="1-0">1-0</option><option value="0-1">0-1</option><option value="1/2-1/2">½-½</option></select>
+        <select id="ng-result" aria-label="Résultat de la partie"><option value="*">En cours / ?</option><option value="1-0">1-0</option><option value="0-1">0-1</option><option value="1/2-1/2">½-½</option></select>
       </div>
     </div>
 
@@ -1020,10 +1020,10 @@
       <summary>Détails (optionnel) — base, tournoi, Elo</summary>
       <div class="ng-grid ng-grid-2-1" style="margin-top:12px">
         <div class="frow" style="margin:0"><label>Base de destination</label>
-          <select id="ng-base"></select>
+          <select id="ng-base" aria-label="Base de destination"></select>
         </div>
         <div class="frow" style="margin:0"><label>Nature</label>
-          <select id="ng-nature"><option value="partie">Partie</option><option value="analyse">Analyse</option></select>
+          <select id="ng-nature" aria-label="Nature de l'entrée"><option value="partie">Partie</option><option value="analyse">Analyse</option></select>
         </div>
       </div>
       <div class="ng-grid ng-grid-2-1-1" style="margin-top:10px">
@@ -1224,7 +1224,7 @@
         </div>
         <div class="frow" style="margin:0">
           <label>FEN</label>
-          <input id="ps-fen" spellcheck="false" onchange="_psApplyFen()" style="font-family:var(--font-mono);font-size:.72rem">
+          <input id="ps-fen" aria-label="Position FEN" spellcheck="false" onchange="_psApplyFen()" style="font-family:var(--font-mono);font-size:.72rem">
         </div>
       </div>
     </div>
