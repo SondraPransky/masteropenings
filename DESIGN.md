@@ -137,6 +137,8 @@ Stratégie **Restrained** : neutres zinc + un accent indigo ≤10% de toute surf
 **La règle des couleurs d'auteur.** Dans un arbre de variantes, la couleur d'un coup dit **qui l'a écrit** — c'est sémantique, jamais décoratif. **Violet = le coach** (ses annotations de partie, ses réponses dans la copie d'un élève) · **bleu (`--blue-ink`) = l'élève** (ses lignes greffées sur un module du coach) · **aucune couleur = personne**, c'est le contenu d'origine. Un seul helper les applique (`_authorStyle`, `lib/editor.js`) ; ne pas réintroduire d'hex en dur (`COACH_COL` était `#7c3aed`, qui ne rendait que 3.11:1 en dark).
 **La règle du hue unique.** Un seul bouton PLEIN indigo par zone d'écran. Le deuxième niveau est TONAL (fond `indigo-dim`, texte indigo), le troisième est GHOST (bordure neutre). Il n'existe pas de deuxième accent plein.
 
+**La règle du chrome de `<button>` (élargie le 03/08/2026).** Tout `<button>` porteur de texte déclare **`color` ET `background`** : un bouton n'hérite ni l'un ni l'autre, et le chrome UA (noir + ButtonFace clair) est un bug de thème en attente — deux fois trouvé en sombre (`.ref-move` : SAN invisible à 1.19:1 ; `.ref-game` : texte clair sur fond UA clair après le passage lien→bouton).
+
 ## 3. Typography
 
 **Display Font:** Bricolage Grotesque (fallback Hanken Grotesk)
@@ -254,6 +256,9 @@ Canvas central avec pièces cburnett (SVG locaux), coordonnées, flèches/formes
 - **Do** faire porter à un niveau de navigation une information réelle : un groupement dont la plupart des entrées sont des singletons (mesuré : 14 dossiers sur 19) est un mur, pas une hiérarchie — il redevient un filtre.
 - **Do** garder les données de table **chiffrées** : « −0,45 » avec l'unité dans l'en-tête, jamais la phrase « perd 0,45 pion ». La forme longue vit en légende, en tooltip et en modale. (Mesuré : la phrase passait à 6 lignes dans une colonne de 60px, poussait la rangée à 122px et rejetait la criticité **et** le bouton d'action hors de l'écran dès 1366px.)
 - **Do** plafonner une longue liste **en CSS** au point de rupture, avec une porte « Voir les N autres » : le point de rupture reste dans la feuille de style, le JS ne pose qu'une classe — et comme rien n'est re-rendu, la sélection en cours survit à l'ouverture.
+- **Do** s'en tenir au **vocabulaire des 6 verbes** (arbitrage 03/08/2026) : **Réviser** (l'élève travaille, ouverture ou exercice) · **Ouvrir** (une partie ou un chapitre — lire d'abord) · **Annoter** (le geste pédagogique sur le contenu d'un élève) · **Modifier** (son propre contenu) · **Tester** (le coach essaie comme un élève) · **Assigner**. Et **« Enregistrer » toujours nu** — le contexte est déjà à l'écran. Ne pas réintroduire S'entraîner / Voir / Revoir / Éditer / « Enregistrer la X ».
+- **Do** appliquer le patron **« écran unique lecture / ✎ »** pour consulter un contenu riche (partie, chapitre) : l'ÉDITEUR ancré dans la section (`_edSetDock`) en densité lecture (outils masqués, plateau inerte), ✎ révèle les outils dans le même écran. Jamais une vue de lecture séparée qui ne rend pas les annotations — c'est ce qui imposait deux vues.
+- **Do** structurer une liste longue par **ce qui structure vraiment le club** — sections par camp pour le répertoire, sections par classe pour les élèves — avec le tri d'urgence À L'INTÉRIEUR de la section, et la teinte d'alerte réservée aux vrais retards (un mur de cartes orange n'alerte plus personne).
 
 ### Don't:
 - **Don't** reproduire « le dashboard SaaS générique » (PRODUCT.md) : cartes identiques, gros KPI + gradient, fond crème/beige, eyebrows en petites capitales tracked.
