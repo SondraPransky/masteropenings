@@ -842,6 +842,9 @@ textarea {
 /* Layout interne d'une partie partagée (coach-games.js _pgGroupsHTML) — one-off inline extraits. */
 .game-row-main { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
 .game-row-l { display: flex; align-items: center; gap: 10px; min-width: 0; }
+/* Le résultat est une COLONNE : « 1/2-1/2 » est plus large que « 1-0 » — sans
+   largeur fixe, chaque nom démarre à un x différent et la liste zigzague. */
+.game-row-l .game-result { min-width: 52px; flex-shrink: 0; }
 .game-row-info { min-width: 0; }
 .game-row-who { font-weight: 600; font-size: .85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .game-row-meta { font-size: .72rem; color: var(--dim); }
