@@ -25,6 +25,11 @@ export const G = {
   // — Photos des élèves, posées par le COACH (annotation) : { cléÉlève: dataURL }.
   //   Data-URL redimensionnée (~160px) rangée dans profiles.extra.studentPhotos du coach. —
   studentPhotos: JSON.parse(localStorage.getItem('mc_student_photos') || '{}'),
+  // — Synthèses rédigées de l'assistant faiblesses : { cléÉlève: {ts, text} }.
+  //   Même ligne de profil coach que studentPhotos (profiles.extra.studentBriefs).
+  //   ⚠ Sans cette relecture, le bilan (un appel PAYANT) disparaissait au
+  //   rechargement hors connecté : deux écrivains, aucun lecteur. —
+  studentBriefs: JSON.parse(localStorage.getItem('mc_student_briefs') || '{}'),
   // — Couches d'édition élève, vues par le COACH (lignes que ses élèves ont greffées sur
   //   ses modules). Non persistées : rechargées à chaque _coachLoad, jamais éditées ici.
   studentOverlays: [],
