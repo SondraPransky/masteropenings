@@ -2910,19 +2910,40 @@ textarea {
 .eleve-search input:focus { outline: none; }
 .eleve-search:focus-within { color: var(--cyan); }
 .eleve-roster-empty { padding: 20px 16px; text-align: center; color: var(--dim); font-size: .8rem; }
-.eleve-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 8px; padding: 0 10px 10px; }
-/* Le survol translatait la carte de 4px : bon dans une colonne étroite, faux dans une
-   grille (la carte cognerait sa voisine). En grille : élévation, pas déplacement. */
-.eleve-list .eleve-item:hover { transform: none; box-shadow: var(--shadow-xs); }
+/* ── Option A (arbitrage 03/08) : sections par CLASSE, rangées compactes ──────
+   La grille de cartes devient une liste : chaque classe est une section, chaque
+   élève une rangée alignée (avatar · nom · stats · barre · pastille). */
+.eleve-list { display: block; padding: 0 10px 10px; }
+.eleve-sec { margin-bottom: 20px; }
+.eleve-sec-h { display: flex; align-items: baseline; gap: 8px; font-weight: 700; font-size: .92rem;
+  letter-spacing: -.2px; padding: 6px 4px; }
+.eleve-sec-n { font-size: .74rem; font-weight: 400; color: var(--dim); }
+.eleve-sec-n b { color: var(--red-ink); }
 .eleve-item {
-  padding: 18px 20px;
-  border-radius: 14px;
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: background-color .2s ease, border-color .2s ease, transform .2s ease;
-  border: 1px solid transparent;
+  transition: background-color .2s ease, border-color .2s ease;
+  border: 1px solid var(--border);
+  background: var(--surf);
   margin-bottom: 6px;
 }
-.eleve-item:hover { background: var(--surf2); border-color: var(--border-h); transform: translateX(4px); }
+.eleve-item:hover { background: var(--surf2); border-color: var(--border-h); box-shadow: var(--shadow-xs); }
+.eleve-item .eleve-name-txt { font-weight: 600; font-size: .88rem; width: 160px; flex-shrink: 0; }
+.eleve-item .eleve-meta { flex: 1; min-width: 0; margin-top: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eleve-item .eleve-progbar { width: 120px; flex-shrink: 0; }
+.eleve-pill { font-size: .7rem; font-weight: 700; border-radius: 999px; padding: 2px 9px;
+  white-space: nowrap; flex-shrink: 0; min-width: 88px; text-align: center; box-sizing: border-box; }
+.eleve-pill.due { background: var(--red-dim); color: var(--red-ink); }
+.eleve-pill.okp { background: var(--green-dim); color: var(--green-ink); }
+.eleve-pill.zero { background: none; color: var(--dim); font-weight: 400; }
+@media (max-width: 700px) {
+  .eleve-item { flex-wrap: wrap; }
+  .eleve-item .eleve-name-txt { width: auto; flex: 1; }
+  .eleve-item .eleve-meta { flex-basis: 100%; order: 4; }
+  .eleve-item .eleve-progbar { display: none; }
+}
 .eleve-item:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
 .eleve-item.on { background: var(--cyan-dim); border-color: var(--cyan); }
 /* « alerte » (positions dues) : tint plein + point rouge, pas une demi-barre latérale. */
