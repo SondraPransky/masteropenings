@@ -864,8 +864,14 @@ textarea {
                 overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pg-row-meta { display: block; font-size: .72rem; color: var(--dim);
                 overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pg-row-who { transition: color .15s; }
 .pg-row-open:hover .pg-row-who { color: var(--cyan-ink); }
 .pg-row-open:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; border-radius: var(--rs); }
+/* État PRESSÉ — il manquait (le composant n'avait que hover + focus). ⚠ Pas de
+   press-scale ici : une rangée de liste ne lévite pas, et un `transform` créerait
+   le contexte d'empilement qui a piégé le menu ⋯ de `.mrow` pendant 4 passes en
+   juillet. Le retour tactile passe par le fond, comme le survol. */
+.pg-row:has(.pg-row-open:active) { background: var(--surf3); }
 /* L'état est dit sur CHAQUE rangée (avant, il ne vivait que dans l'en-tête du
    groupe : on lisait « 1 à annoter » sans savoir LAQUELLE). Texte + couleur. */
 .pg-state { font-size: .7rem; font-weight: 700; white-space: nowrap; }
