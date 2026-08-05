@@ -4,12 +4,19 @@
 ══════════════════════════════════════════════════ */
 :root {
   /* ── Surfaces (zinc) ── */
-  --bg:    #fafafa;
+  /* ── Neutres TIEDES (04/08) ────────────────────────────────────────────────
+     Les surfaces etaient a chroma ZERO (#fafafa / zinc pur) : mathematiquement
+     neutres, et c'est ca qui rendait l'app clinique. Elles portent desormais
+     ~1,5 % de chroma vers le ton BOIS de l'echiquier (--board-dark #b58863) —
+     la seule chaleur que le DESIGN.md autorise, celle du jeu. Ce n'est PAS un
+     virage creme : la luminance est inchangee, seul le hue bouge, et --surf
+     reste un blanc pur pour que les cartes restent nettes. */
+  --bg:    #faf9f7;
   --surf:  #ffffff;
-  --surf2: #f4f4f5;
-  --surf3: #e4e4e7;
-  --border:   #e4e4e7;
-  --border-h: #d4d4d8;
+  --surf2: #f5f3f0;
+  --surf3: #e6e2dc;
+  --border:   #e6e2dc;
+  --border-h: #d8d2c9;
 
   /* ── Couleur des échiquiers (source unique — pilotée par [data-board]) ──
      Tous les plateaux du site (drill, éditeur, setup, miniboards, explorateur
@@ -840,9 +847,17 @@ textarea {
   border-radius: var(--r);
   overflow: hidden;            /* les rangées héritent du rayon aux extrémités */
 }
+/* P3 — la vignette EST la position finale. Une liste de parties d'échecs montre
+   des échiquiers : c'est la seule identité qu'aucun autre outil n'a, et elle
+   remplace une pastille de texte plutôt que de s'y ajouter. */
+.pg-mini { display: block; width: 44px; height: 44px; border-radius: 4px; overflow: hidden;
+  box-shadow: 0 0 0 1px var(--border-h); flex-shrink: 0; }
+.pg-mini > * { display: block; width: 44px !important; height: 44px !important; }
+/* Le résultat descend dans la ligne secondaire, en chiffres alignés. */
+.pg-res-inline { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 .pg-row {
   display: grid;
-  grid-template-columns: 52px minmax(0, 1fr) auto;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
   align-items: center;
   gap: 4px 10px;
   padding: 8px 14px;
@@ -859,7 +874,7 @@ textarea {
    la pastille emprunte le ton BOIS de l'échiquier — la même matière que les
    plateaux du site, à 14 % — pour que la ligne ressemble à une feuille de partie. */
 .pg-row .game-result {
-  min-width: 52px; text-align: center;
+  min-width: 44px; text-align: center;
   padding: 3px 6px; border-radius: var(--rs);
   background: color-mix(in srgb, var(--board-dark) 14%, transparent);
   color: var(--text-2);
@@ -898,7 +913,7 @@ textarea {
 .pg-row .pg-rep { grid-column: 1 / -1; }
 @media (max-width: 560px) {
   /* L'état passe sous le nom : à 375 il volait la largeur de l'adversaire. */
-  .pg-row { grid-template-columns: 52px minmax(0, 1fr); }
+  .pg-row { grid-template-columns: 44px minmax(0, 1fr); }
   .pg-state { grid-column: 2; justify-self: start; }
 }
 @media (hover: none) { .pg-row-open { min-height: 44px; } }
@@ -1221,12 +1236,13 @@ textarea {
 
 /* ══ DARK MODE ══════════════════════════════════ */
 [data-theme="dark"] {
-  --bg:        #09090b;
-  --surf:      #18181b;
-  --surf2:     #27272a;
-  --surf3:     #3f3f46;
-  --border:    #27272a;
-  --border-h:  #3f3f46;
+  /* Meme tiedeur en sombre : le graphite prend le hue du bois, pas du bleu. */
+  --bg:        #0b0a09;
+  --surf:      #1a1917;
+  --surf2:     #2a2825;
+  --surf3:     #423f3a;
+  --border:    #2a2825;
+  --border-h:  #423f3a;
   --cyan:      #818cf8;
   /* ⚠ #818cf8 sur --cyan-dim NE TIENT PAS quand le -dim composite sur --surf2
      (4,03:1 mesuré — il tient sur --bg, d'où l'illusion des chips). L'encre se
@@ -1940,7 +1956,11 @@ textarea {
   flex-shrink: 0;
 }
 .csnav-badge.alert { background: var(--red-dim); color: var(--red-ink); }
-.csnav-badge.new   { background: var(--cyan-dim); color: var(--cyan); }
+/* ⚠ --cyan-ink, PAS --cyan : le badge est du petit texte gras sur --cyan-dim, et
+   le -dim composite ici sur la surface de la nav. Mesuré après la tiédeur des
+   neutres (04/08) : --cyan y tombait à 3,88:1 en sombre. Même piège que la note
+   du token, qui existe précisément pour ça. */
+.csnav-badge.new   { background: var(--cyan-dim); color: var(--cyan-ink); }
 .csnav-divider { border: none; border-top: 1px solid var(--border); margin: 6px 4px; }
 .csnav-group { font-size: .68rem; font-weight: 700; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; padding: 10px 12px 4px; }
 
