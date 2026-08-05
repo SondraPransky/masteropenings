@@ -5,12 +5,12 @@ colors:
   indigo-primary: "#4f46e5"
   indigo-dim: "#4f46e514"
   indigo-glow: "#4f46e54d"
-  zinc-page: "#fafafa"
+  zinc-page: "#faf9f7"
   zinc-surface: "#ffffff"
-  zinc-surface-2: "#f4f4f5"
-  zinc-surface-3: "#e4e4e7"
-  zinc-border: "#e4e4e7"
-  zinc-border-hover: "#d4d4d8"
+  zinc-surface-2: "#f5f3f0"
+  zinc-surface-3: "#e6e2dc"
+  zinc-border: "#e6e2dc"
+  zinc-border-hover: "#d8d2c9"
   zinc-ink: "#18181b"
   zinc-ink-2: "#3f3f46"
   zinc-dim: "#65656d"
@@ -100,7 +100,7 @@ EECoach est le cahier d'exercices soigné d'une académie d'échecs : du papier 
 Ce que le système **rejette explicitement** (anti-références PRODUCT.md) : le dashboard SaaS générique (cartes identiques, gros KPI + gradient, fond crème, eyebrows en capitales) ; la densité-cockpit de chess.com/lichess ; l'app enfantine sur-gamifiée (couleurs criardes, confetti permanents) ; le corporate froid et gris. La chaleur vient d'abord du jeu lui-même (figurines ♔♞, notation algébrique, mini-échiquiers) ; une mascotte « chat-cavalier » l'appuie, mais **strictement au budget délice** (voir la règle de la mascotte).
 
 **Key Characteristics:**
-- Fond zinc neutre (#fafafa), surfaces blanches, bordures 1px — jamais de teinte crème/beige.
+- Fond zinc **tiède** (#faf9f7), surfaces blanches, bordures 1px — chroma orienté vers le BOIS de l'échiquier, jamais vers le crème.
 - Un seul hue d'accent (indigo #4f46e5) décliné en trois poids : plein > tonal > ghost.
 - Couleurs sémantiques d'état uniquement (vert/ambre/rouge/violet), chacune avec sa variante `-ink` AA pour le texte petit et sa variante `-dim` pour les fonds.
 - La signature échecs : monospace pour la notation et les données, figurines dans le texte, échiquier au centre.
@@ -115,9 +115,9 @@ Stratégie **Restrained** : neutres zinc + un accent indigo ≤10% de toute surf
 - **Encre indigo** (#4f46e5) : L'UNIQUE accent. Action principale (1 bouton plein par zone), sélection courante, coup courant dans la notation, progression. Ses déclinaisons : `indigo-dim` (rgba 8%) pour les fonds tonals, `indigo-glow` (rgba 30%) pour bordures/focus. En dark : #818cf8.
 
 ### Neutral
-- **Papier zinc** (#fafafa) : fond de page. Blanc cassé à chroma zéro — jamais réchauffé vers le crème.
-- **Surface** (#ffffff) / **Surface 2** (#f4f4f5) / **Surface 3** (#e4e4e7) : cartes, panneaux, contrôles imbriqués.
-- **Bordure** (#e4e4e7), **bordure hover** (#d4d4d8) : la délimitation par défaut de toute surface.
+- **Papier zinc tiède** (#faf9f7) : fond de page. ⚠ **Corrigé le 04/08** : les surfaces étaient à chroma ZÉRO (#fafafa, zinc pur) et c'est *ça* qui rendait l'app clinique (« froide », retour utilisatrice). Elles portent désormais ~1,5 % de chroma vers `--board-dark` (#b58863), le bois des échiquiers — **la seule chaleur autorisée, celle du jeu**. La luminance ne bouge pas, seul le hue ; `--surf` reste un blanc PUR pour que les cartes restent nettes. Ce n'est **pas** un virage crème : le crème reste banni (anti-référence produit *et* défaut IA saturé).
+- **Surface** (#ffffff, blanc PUR) / **Surface 2** (#f5f3f0) / **Surface 3** (#e6e2dc) : cartes, panneaux, contrôles imbriqués.
+- **Bordure** (#e6e2dc), **bordure hover** (#d8d2c9) : la délimitation par défaut de toute surface.
 - **Encre** (#18181b), **encre secondaire** (#3f3f46), **estompé** (#65656d — calibré 4.55:1 sur **surface-3**, la plus foncée : c'est la contrainte réelle, pas surface-2) : les trois niveaux de texte. Un compte ou une donnée n'est PAS de l'estompé → `--text-2` (cf. `.csnav-badge`).
 
 ### Tertiary (sémantique d'état — jamais décorative)
@@ -135,6 +135,16 @@ Stratégie **Restrained** : neutres zinc + un accent indigo ≤10% de toute surf
 > **Le symptôme à surveiller : une famille parallèle.** **Quatre** fois de suite, le même défaut a été trouvé — une palette voisine vivant à côté des tokens, presque toujours dans une **bordure** pendant que le fond et le texte étaient déjà tokenisés : rose-600 à côté de red-600 (clair, 14 sites), rose-400 + emerald-400 + sky-400 à côté de red/green/blue-400 (**dark**, 14 sites), yellow-400/500 à côté d'amber (les deux thèmes) — balayées le 16/07/2026 — puis **indigo-500 (`rgba(99,102,241,…)`) à côté de l'accent lui-même** (17 sites, balayé le 17/07/2026). La cause racine des trois premières : `-glow` n'existait pas, donc chaque bordure improvisait sa teinte. Un `var(--gold-glow, rgba(202,138,4,.25))` traînait même dans le code — un fallback vers un token jamais créé.
 > **La 4e est la plus instructive : `--cyan-glow` existait déjà.** Ce n'était donc pas un token manquant mais de la dérive pure — et une dérive *invisible en clair*, où #4f46e5 et #6366f1 se ressemblent assez pour passer. Le vrai dégât est en **sombre** : le rgba en dur ne flippe pas, donc `border: rgba(99,102,241)` restait l'indigo CLAIR sur fond sombre, dans la règle même dont le fond était `var(--cyan-dim)`. **Un rgba écrit à la main est un bug de thème en attente** : si tu en écris un, c'est que le token manque — ou que tu ne l'as pas cherché.
 **La règle des couleurs d'auteur.** Dans un arbre de variantes, la couleur d'un coup dit **qui l'a écrit** — c'est sémantique, jamais décoratif. **Violet = le coach** (ses annotations de partie, ses réponses dans la copie d'un élève) · **bleu (`--blue-ink`) = l'élève** (ses lignes greffées sur un module du coach) · **aucune couleur = personne**, c'est le contenu d'origine. Un seul helper les applique (`_authorStyle`, `lib/editor.js`) ; ne pas réintroduire d'hex en dur (`COACH_COL` était `#7c3aed`, qui ne rendait que 3.11:1 en dark).
+**La règle de la RÉFÉRENCE (04/08/2026 — la plus importante pour toute évolution visuelle).** L'**accueil élève** est la surface validée par l'utilisatrice (« je la trouve beaucoup mieux : les couleurs, la typo, la simplicité, les cartes »). Toute nouvelle surface se mesure à elle, on ne cherche plus une direction. Son vocabulaire : un état est une **pilule teintée** (`.74rem/700`, couple `-dim`/`-ink`, `radius 9999px`) — jamais du texte coloré ; une action est un **bouton rond** ; **une seule zone est saturée** par écran. ⚠ Ce qui ne se porte PAS tel quel : le conteneur **carte**. Il marche là-bas parce qu'il y a peu d'objets ; sur une liste dense il produit l'aplat de 1,12:1 du thème sombre. On aligne **la voix, pas la densité**.
+
+**La règle de la chaleur (04/08/2026).** La chaleur vient du **jeu** — le bois des échiquiers (`--board-dark`), les figurines, la notation, les mini-diagrammes — **jamais d'un fond crème** ni d'un accent SaaS plaqué. Un fond crème/sable est à la fois une anti-référence produit et le défaut IA le plus saturé de l'époque. Corollaire livré : les neutres portent un soupçon du hue du bois (§Neutral), et la vignette d'une partie est sa **position finale**.
+
+**La règle de la hiérarchie par la NATURE.** Quand deux niveaux se ressemblent, ne pas creuser l'écart de taille : changer de **catégorie**. Mesuré le 04/08 : un titre de section à 15,2px/800 et un nom de module à 14px/700, de **même couleur**, ne se distinguaient pas (surtout en sombre). Le titre est passé en police **display**, la rangée en police d'interface : différence de nature, pas de degré.
+
+**La règle du retour au pressé (Apple, Designing Fluid Interfaces).** Tout contrôle répond au **pointer-down**, pas au relâchement. `scale(.97)` sur courbe spring, avec sa porte `prefers-reduced-motion`. ⚠ **Sauf les rangées de liste** (`.mrow`, `.pg-row`) : un `transform` y crée le contexte d'empilement qui a piégé le menu ⋯ pendant quatre passes — elles répondent par le **fond**.
+
+**La règle de l'interlignage.** Il suit la taille **à l'inverse** : serré sur le display (1,15), confortable sur le corps. Un `line-height` unique hérité pour toutes les accroches (c'était 1,5, y compris sur un titre de 24,8px) fait flotter les gros titres.
+
 **La règle du hue unique.** Un seul bouton PLEIN indigo par zone d'écran. Le deuxième niveau est TONAL (fond `indigo-dim`, texte indigo), le troisième est GHOST (bordure neutre). Il n'existe pas de deuxième accent plein.
 
 **La règle du chrome de `<button>` (élargie le 03/08/2026).** Tout `<button>` porteur de texte déclare **`color` ET `background`** : un bouton n'hérite ni l'un ni l'autre, et le chrome UA (noir + ButtonFace clair) est un bug de thème en attente — deux fois trouvé en sombre (`.ref-move` : SAN invisible à 1.19:1 ; `.ref-game` : texte clair sur fond UA clair après le passage lien→bouton).
