@@ -1565,7 +1565,7 @@ textarea {
 /* Colonne de contenu élève — 1080px = la largeur de .lib-wrap (« Ma bibliothèque »),
    l'autre onglet du même rôle : basculer entre les deux ne doit pas faire sauter la mise en page. */
 .sh-wrap { max-width: 1080px; margin: 0 auto; padding: 20px 16px; }
-.sh-section-label { font-family:var(--font-display); font-size:1.02rem; font-weight:700; letter-spacing:-.2px; color:var(--text); margin:24px 0 10px; }
+.sh-section-label { font-family:var(--font-display); font-size:1.02rem; font-weight:700; letter-spacing:-.2px; line-height:1.3; color:var(--text); margin:24px 0 10px; }
 .sh-section-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:24px 0 10px; }
 @media (max-width:520px) {
   .sh-section-head { flex-wrap:wrap; }
@@ -1578,7 +1578,7 @@ textarea {
 .sh-notif-banner.coach:hover { background:rgba(124,58,237,.14); }
 .sh-notif-banner.coach:focus-visible { outline:2px solid #7c3aed; outline-offset:2px; }
 .sh-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:16px; }
-.sh-hello { font-family:var(--font-display); font-size:1.55rem; font-weight:800; letter-spacing:-.5px; margin:0; }  /* margin:0 = reset UA du h1 */
+.sh-hello { font-family:var(--font-display); font-size:1.55rem; font-weight:800; letter-spacing:-.5px; line-height:1.15; margin:0; }  /* margin:0 = reset UA du h1 */
 .sh-hello-sub { font-size:.82rem; color:var(--dim); margin-top:2px; }
 .sh-streak { font-size:.82rem; font-weight:700; color:var(--gold-ink); background:var(--gold-dim); border:1px solid rgba(217,119,6,.25); padding:5px 11px; border-radius:999px; white-space:nowrap; flex-shrink:0; }
 .sh-streak:empty { display:none; }
@@ -1592,7 +1592,7 @@ textarea {
 .sh-hero--calm::after { display:none; }
 .sh-hero--calm .sh-hero-label { color:var(--text); }
 .sh-hero--calm .sh-hero-sub { color:var(--dim); opacity:1; }
-.sh-hero-label { position:relative; font-family:var(--font-display); font-size:1.1rem; font-weight:800; letter-spacing:-.3px; margin:0 0 3px; }  /* margin:0 = reset UA du h2 */
+.sh-hero-label { position:relative; font-family:var(--font-display); font-size:1.1rem; font-weight:800; letter-spacing:-.3px; line-height:1.25; margin:0 0 3px; }  /* margin:0 = reset UA du h2 */
 .sh-hero-sub { position:relative; font-size:.82rem; opacity:.92; margin-bottom:14px; line-height:1.45; }
 /* « (+N en réserve) » : l'information existe sans peser — le plafond de la
    séance du jour est un contrat, pas un retard. */
@@ -1973,7 +1973,7 @@ textarea {
   gap: 12px;
   flex-wrap: wrap;
 }
-.cs-title { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; letter-spacing: -.5px; margin: 0 0 2px; }  /* margin 0 = reset UA du h1 */
+.cs-title { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; letter-spacing: -.5px; line-height: 1.15; margin: 0 0 2px; }  /* margin 0 = reset UA du h1 */
 .cs-sub { font-size: .78rem; color: var(--dim); }
 /* Sous-titre de bloc (pages coach) */
 .cs-subhead { font-family: var(--font-display); font-size: .98rem; font-weight: 700; color: var(--text); margin: 0 0 10px; display: flex; align-items: center; gap: 7px; }
@@ -3305,6 +3305,30 @@ textarea {
   .cls-grid { grid-template-columns: 1fr; }
   .mcard-grid { grid-template-columns: 1fr; }
   .cs-kpi-strip { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ══ RETOUR AU PRESSÉ ════════════════════════ */
+/* Apple (Designing Fluid Interfaces) : le retour se pose au pointer-DOWN, pas au
+   relâchement — sans quoi le contrôle semble mort. `.btn` l'avait déjà ; ces neuf
+   familles interactives n'étaient pas des `.btn` et n'avaient donc AUCUN retour.
+   ⚠ Volontairement PAS sur les rangées de liste (`.mrow`, `.pg-row`) : un
+   `transform` y crée le contexte d'empilement qui a piégé le menu ⋯ pendant
+   quatre passes en juillet — elles répondent par le fond. */
+.csnav-btn:active, .tab:active, .acct-btn:active, .nav-back:active,
+.mod-folder-chip:active, .pg-rep-btn:active, .study-toc-t:active,
+.ed-nag-btn:active, .sh-more > summary:active {
+  transform: scale(.97);
+}
+.csnav-btn, .tab, .acct-btn, .nav-back, .mod-folder-chip, .pg-rep-btn,
+.study-toc-t, .ed-nag-btn, .sh-more > summary {
+  transition: transform .12s cubic-bezier(.32,.72,0,1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .csnav-btn, .tab, .acct-btn, .nav-back, .mod-folder-chip, .pg-rep-btn,
+  .study-toc-t, .ed-nag-btn, .sh-more > summary { transition: none; }
+  .csnav-btn:active, .tab:active, .acct-btn:active, .nav-back:active,
+  .mod-folder-chip:active, .pg-rep-btn:active, .study-toc-t:active,
+  .ed-nag-btn:active, .sh-more > summary:active { transform: none; }
 }
 
 /* ══ ACCESSIBILITÉ ═══════════════════════════ */
