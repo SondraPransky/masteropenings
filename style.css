@@ -2002,7 +2002,17 @@ textarea {
 /* ── Page Classes : cartes cliquables → détail d'une classe ── */
 .cls-card { padding: 10px 12px; background: var(--surf2); border: 1px solid var(--border); border-radius: var(--r);
   margin-bottom: 8px; cursor: pointer; transition: border-color .15s ease, background .15s ease; }
-.cls-card:hover { border-color: var(--cyan-glow); background: var(--surf); }
+/* ⚠ Le survol menait a --surf, PLUS SOMBRE que --surf2 en theme sombre : la carte
+   s'assombrissait au survol, l'inverse du signal attendu. --surf3 eclaircit dans
+   les deux themes. + un chevron : la carte ETAIT cliquable (role=button, onclick),
+   rien ne le disait — c'est l'affordance qui manquait, pas le comportement. */
+.cls-card:hover { border-color: var(--cyan-glow); background: var(--surf3); }
+.cls-card:hover .cls-card-go { color: var(--cyan-ink); transform: translateX(2px); }
+.cls-card:active { transform: scale(.995); }
+.cls-card-go { color: var(--dim); font-size: 1.05rem; flex-shrink: 0;
+  transition: color .15s ease, transform .15s cubic-bezier(.32,.72,0,1); }
+.cls-mod-more { color: var(--dim); }
+@media (prefers-reduced-motion: reduce) { .cls-card-go { transition: none; } .cls-card:active { transform: none; } }
 .cls-card:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .cls-card { transition: none; } }
 .cls-detail-head { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
@@ -2359,13 +2369,19 @@ textarea {
 .mod-folder-pick select { font-size: .8rem; width: auto; max-width: 15rem; }
 
 .mgroup { margin: 0 0 26px; }
+.mgroup + .mgroup { margin-top: 34px; }   /* l'air separe les sections autant que le filet */
 .mgroup-head {
   display: flex; align-items: baseline; gap: 10px;
   padding: 0 0 8px; margin-bottom: 4px;
   border-bottom: 1px solid var(--border);
 }
 .mgroup-side { font-size: 1.1rem; line-height: 1; color: var(--text); }
-.mgroup-title { font-weight: 800; font-size: .95rem; letter-spacing: -.3px; margin: 0; }  /* margin:0 = reset UA du h2 */
+/* ⚠ Le titre de section et le nom de module etaient a la MEME couleur et a une
+   graisse voisine (15,2/800 contre 14/700) : on ne voyait pas qu'une section
+   contenait l'autre, surtout en sombre. La difference est desormais de NATURE —
+   police display contre police d'interface — et pas seulement de degre. */
+.mgroup-title { font-family: var(--font-display); font-weight: 800; font-size: 1.05rem;
+  letter-spacing: -.3px; line-height: 1.25; margin: 0; }  /* margin:0 = reset UA du h2 */
 .mgroup-n { font-family: var(--font-mono); font-size: .74rem; color: var(--dim); font-variant-numeric: tabular-nums; }
 
 .mrow {
@@ -2405,7 +2421,9 @@ textarea {
    (les premiers coups) vit dans sa propre colonne, jamais tronquée avant lui. */
 .mrow-main { min-width: 0; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .mrow-name {
-  font-weight: 700; font-size: .875rem; line-height: 1.35;
+  /* 600 et non 700 : la rangee est le CONTENU d'une section, elle ne doit pas
+     rivaliser avec son titre. */
+  font-weight: 600; font-size: .875rem; line-height: 1.35;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
 }
 .mrow-chap { color: var(--dim); }
@@ -3333,6 +3351,11 @@ textarea {
   .mcard-grid { grid-template-columns: 1fr; }
   .cs-kpi-strip { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* Colonne « Élèves en échec » : une seule ligne, jamais de retour a la ligne —
+   c'est le nombre qui compte dans un balayage, pas la liste nominative. */
+.wsx-chips { flex-wrap: nowrap; overflow: hidden; }
+.wsx-chip-more { color: var(--dim); }
 
 /* ══ RETOUR AU PRESSÉ ════════════════════════ */
 /* Apple (Designing Fluid Interfaces) : le retour se pose au pointer-DOWN, pas au
