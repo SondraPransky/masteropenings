@@ -907,9 +907,15 @@ textarea {
 /* Un travail FINI n'appelle rien : « Annotée » se dit en gris avec une coche.
    Le violet est l'encre de l'AUTEUR coach dans un arbre de variantes (règle des
    couleurs d'auteur) — s'en servir comme pastille de liste le dilue. */
-.pg-state { font-size: .75rem; font-weight: 600; white-space: nowrap; }
-.pg-state-done { color: var(--dim); font-weight: 400; }
-.pg-state-todo { color: var(--red-ink); }
+/* Vocabulaire d'état repris de l'accueil élève (validé le 04/08) : une PILULE
+   teintée, pas du texte coloré — mêmes métriques que `.sh-mod-state`, mêmes
+   couples -dim/-ink. Le langage d'état devient le même dans les deux rôles. */
+.pg-state {
+  font-size: .74rem; font-weight: 700; letter-spacing: .4px; white-space: nowrap;
+  padding: 5px 12px; border-radius: 9999px;
+}
+.pg-state-done { background: var(--surf2); color: var(--dim); font-weight: 600; letter-spacing: 0; }
+.pg-state-todo { background: var(--red-dim); color: var(--red-ink); }
 .pg-row .pg-rep { grid-column: 1 / -1; }
 @media (max-width: 560px) {
   /* L'état passe sous le nom : à 375 il volait la largeur de l'adversaire. */
@@ -3082,7 +3088,10 @@ textarea {
 .eleve-item .eleve-name-txt { font-weight: 600; font-size: .88rem; width: 160px; flex-shrink: 0; }
 .eleve-item .eleve-meta { flex: 1; min-width: 0; margin-top: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .eleve-item .eleve-progbar { width: 120px; flex-shrink: 0; }
-.eleve-pill { font-size: .7rem; font-weight: 700; border-radius: 999px; padding: 2px 9px;
+.eleve-pill { font-size: .74rem; font-weight: 700; border-radius: 999px; padding: 2px 9px;
+  /* .74rem = la marche des pilules d'etat de l'app (.sh-mod-state, .pg-state) : meme
+     vocabulaire dans les 2 roles. Le PADDING reste compact — une liste de 40 rangees
+     n'est pas une grille de 4 cartes ; on aligne la voix, pas la densite. */
   white-space: nowrap; flex-shrink: 0; min-width: 88px; text-align: center; box-sizing: border-box; }
 .eleve-pill.due { background: var(--red-dim); color: var(--red-ink); }
 .eleve-pill.okp { background: var(--green-dim); color: var(--green-ink); }
