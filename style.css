@@ -2570,7 +2570,25 @@ textarea {
 @media (prefers-reduced-motion: reduce) {
   .mrow-chev, .mdet-chap, .mdet-chap-play, .mdet-chap-edit { transition: none; }
 }
-.mrow-flags { display: flex; align-items: center; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+/* ⚠ `flex-basis:100%` : les pastilles ont TOUJOURS leur propre ligne sous le nom.
+   Dans le `.mrow-main` en flex-wrap, elles restaient collees au nom quand il etait
+   court et basculaient a la ligne quand il etait long — leur position dependait
+   donc de la longueur du titre, et la colonne zigzaguait d'une rangee a l'autre. */
+.mrow-flags { display: flex; align-items: center; gap: 6px; margin-top: 5px; flex-wrap: wrap; flex-basis: 100%; }
+/* Vocabulaire de pilule de l'app (.sh-mod-state / .pg-state) : la pastille etait
+   un `.badge` a 11,2px stylé en INLINE, la plus petite chose de la rangee. */
+.mrow-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: .74rem; font-weight: 700; letter-spacing: .4px;
+  padding: 4px 11px; border-radius: 9999px; border: 0;
+  font-family: inherit; cursor: pointer;
+  transition: transform .12s cubic-bezier(.32,.72,0,1), filter .12s;
+}
+.mrow-pill:active { transform: scale(.97); }
+.mrow-pill:hover  { filter: brightness(1.06); }
+.mrow-pill-due { background: var(--red-dim); color: var(--red-ink); }
+@media (prefers-reduced-motion: reduce) { .mrow-pill { transition: none; } .mrow-pill:active { transform: none; } }
+@media (hover: none) { .mrow-pill { min-height: 32px; } }
 
 /* Étroit : le nom garde la 1re rangée avec les actions ; les coups et les
    compteurs partagent la seconde (les coups à gauche, les chiffres à droite). */
