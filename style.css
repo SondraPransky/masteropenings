@@ -852,7 +852,18 @@ textarea {
 .pg-row:hover { background: var(--surf2); }
 /* Le résultat est une COLONNE : « 1/2-1/2 » est plus large que « 1-0 » — sans
    largeur fixe, chaque nom démarre à un x différent et la liste zigzague. */
-.pg-row .game-result { min-width: 52px; }
+/* Le résultat est de la DONNÉE, pas un état sur lequel agir : il perd ses trois
+   teintes (vert/rouge/gris = 3 hues sur chaque rangée) au profit d'une pastille
+   neutre. La seule couleur d'accent de la liste reste « À annoter ».
+   ⚠ La chaleur vient du JEU, jamais d'un fond crème (banni par le DESIGN.md) :
+   la pastille emprunte le ton BOIS de l'échiquier — la même matière que les
+   plateaux du site, à 14 % — pour que la ligne ressemble à une feuille de partie. */
+.pg-row .game-result {
+  min-width: 52px; text-align: center;
+  padding: 3px 6px; border-radius: var(--rs);
+  background: color-mix(in srgb, var(--board-dark) 14%, transparent);
+  color: var(--text-2);
+}
 /* La rangée entière EST l'action : plus de bouton « Ouvrir » répété à chaque ligne.
    Bouton texte pleine largeur — `color` et `background` déclarés (règle du chrome). */
 .pg-row-open {
@@ -860,11 +871,15 @@ textarea {
   background: none; border: 0; padding: 4px 0; margin: 0;
   font-family: inherit; color: var(--text); cursor: pointer;
 }
-.pg-row-who  { display: block; font-weight: 600; font-size: .85rem;
+/* ⚠ Échelle de type RESSERRÉE. Mesuré sur l'écran d'avant : 16 combinaisons
+   taille/graisse distinctes — quand chaque information a sa propre taille,
+   AUCUNE n'a de rang, et rien ne se distingue. La liste n'en garde que trois :
+   le nom (0,9rem/600), la méta (0,75rem/400) et l'état (0,75rem/600). */
+.pg-row-who  { display: block; font-weight: 600; font-size: .9rem; line-height: 1.35;
+                overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+                transition: color .15s; }
+.pg-row-meta { display: block; font-size: .75rem; font-weight: 400; color: var(--dim);
                 overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pg-row-meta { display: block; font-size: .72rem; color: var(--dim);
-                overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pg-row-who { transition: color .15s; }
 .pg-row-open:hover .pg-row-who { color: var(--cyan-ink); }
 .pg-row-open:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; border-radius: var(--rs); }
 /* État PRESSÉ — il manquait (le composant n'avait que hover + focus). ⚠ Pas de
@@ -874,8 +889,11 @@ textarea {
 .pg-row:has(.pg-row-open:active) { background: var(--surf3); }
 /* L'état est dit sur CHAQUE rangée (avant, il ne vivait que dans l'en-tête du
    groupe : on lisait « 1 à annoter » sans savoir LAQUELLE). Texte + couleur. */
-.pg-state { font-size: .7rem; font-weight: 700; white-space: nowrap; }
-.pg-state-done { color: var(--violet); }
+/* Un travail FINI n'appelle rien : « Annotée » se dit en gris avec une coche.
+   Le violet est l'encre de l'AUTEUR coach dans un arbre de variantes (règle des
+   couleurs d'auteur) — s'en servir comme pastille de liste le dilue. */
+.pg-state { font-size: .75rem; font-weight: 600; white-space: nowrap; }
+.pg-state-done { color: var(--dim); font-weight: 400; }
 .pg-state-todo { color: var(--red-ink); }
 .pg-row .pg-rep { grid-column: 1 / -1; }
 @media (max-width: 560px) {
@@ -886,7 +904,7 @@ textarea {
 @media (hover: none) { .pg-row-open { min-height: 44px; } }
 .pg-empty-note { color: var(--dim); font-size: .82rem; padding: 18px 4px; }
 .pg-todo-count { color: var(--red); }   /* « N à annoter » — signal d'action */
-.game-result { font-size: .72rem; font-family: 'JetBrains Mono', monospace; font-weight: 700; }
+.game-result { font-size: .75rem; font-family: 'JetBrains Mono', monospace; font-weight: 700; }
 /* Regle de l'encre : 11.5px bold = petit texte -> variantes -ink (le token de base plafonne a 3.3:1). */
 .game-result.win  { color: var(--green-ink); }
 .game-result.loss { color: var(--red-ink); }
@@ -2074,13 +2092,13 @@ textarea {
 
 /* ── Page Parties : dashboard des parties partagées (groupé par élève) ── */
 .pg-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
-.pg-count { font-size: .82rem; }
+.pg-count { font-size: .8rem; }        /* echelle : secondaire = .8rem */
 .pg-chips { display: flex; gap: 6px; flex-wrap: wrap; }
 .pg-search { flex: 1 1 200px; min-width: 170px; }
 .pg-stu-sec { margin-bottom: 18px; }
 .pg-stu-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
 .pg-stu-name { font-family: var(--font-display); font-size: .95rem; font-weight: 700; }
-.pg-stu-stats { font-size: .74rem; color: var(--dim); }
+.pg-stu-stats { font-size: .75rem; color: var(--dim); }   /* tertiaire = .75rem */
 .pg-annotated { color: var(--violet); font-weight: 700; font-size: .7rem; white-space: nowrap; }
 .pg-new { display: inline-block; padding: 1px 8px; border-radius: 999px; background: var(--cyan-dim); color: var(--cyan); font-size: .64rem; font-weight: 700; vertical-align: middle; }
 
@@ -2822,7 +2840,7 @@ textarea {
 /* Même information côté coach (rangée de partie partagée) + bouton exercice. */
 .pg-rep {
   display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
-  font-size: .76rem; color: var(--gold-ink);
+  font-size: .8rem; color: var(--gold-ink);
   padding: 6px 10px 8px; line-height: 1.4;
 }
 .pg-rep-mod { color: var(--dim); }
@@ -2831,7 +2849,7 @@ textarea {
   margin-left: auto; padding: 4px 10px; min-height: 28px;
   border: 1px solid var(--cyan-glow); border-radius: var(--rs);
   background: var(--cyan-dim); color: var(--cyan-ink);
-  font: inherit; font-size: .74rem; font-weight: 600; cursor: pointer;
+  font: inherit; font-size: .75rem; font-weight: 600; cursor: pointer;
   transition: background-color .12s ease, border-color .12s ease;
 }
 .pg-rep-btn:hover, .pg-rep-btn:focus-visible { background: var(--cyan-dim-h); border-color: var(--cyan); }
