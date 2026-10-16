@@ -47,7 +47,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
   // On relit le rôle du profil avec le jeton de l'appelant (RLS : sa propre ligne).
   const auth = req.headers.get('Authorization') || '';
   const sbUrl = Deno.env.get('SUPABASE_URL') || '';
-  const anon = Deno.env.get('SUPABASE_ANON_KEY') || '';
+  // Clé publique : celle fournie par Supabase, sinon celle que le site envoie déjà.
+  const anon = Deno.env.get('SUPABASE_ANON_KEY') || req.headers.get('apikey') || '';
   if (!auth.startsWith('Bearer ') || !sbUrl || !anon) return json({ error: 'non authentifié' }, 401);
   try {
     const uRes = await fetch(`${sbUrl}/auth/v1/user`, { headers: { Authorization: auth, apikey: anon } });
