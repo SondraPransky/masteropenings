@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test';
 // Valable prof OU élève : confirme que l'app reconnaît un utilisateur connecté.
 test.describe('Session authentifiée', () => {
   test('utilisateur connecté : nav visible, hors page de login', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.goto('/?auth=1', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('#nav-user')).toBeVisible({ timeout: 15_000 });
     await expect(page.locator('#btn-logout')).toBeVisible();
     await expect(page.locator('#page-login')).toBeHidden();

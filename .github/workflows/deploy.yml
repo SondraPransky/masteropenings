@@ -29,6 +29,9 @@ jobs:
         with:
           node-version: 22
       - run: npm ci
+      # Garde-fou : on ne publie jamais un build dont le typage ou les tests cassent.
+      - run: npm run typecheck
+      - run: npm test
       - run: npm run build
       # v5 tire upload-artifact@v7 en interne (c'est ce qui levait l'annotation Node 20).
       - uses: actions/upload-pages-artifact@v5

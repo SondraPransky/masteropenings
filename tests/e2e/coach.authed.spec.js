@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test';
 // Exerce les parcours qui ont régressé aujourd'hui (📤 Partager, ➕ Ajouter un élève).
 test.describe('Espace prof (authentifié)', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.goto('/?auth=1', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('#page-coach')).toBeVisible({ timeout: 15_000 });
   });
 

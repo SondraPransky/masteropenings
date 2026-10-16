@@ -42,6 +42,25 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const apiKey = Deno.env.get('ANTHROPIC_API_KEY') || '';
   if (!apiKey) return json({ error: 'ANTHROPIC_API_KEY manquant (secret Supabase)' }, 500);
 
+  // « Verify JWT » garantit un compte connecté — pas un COACH : la création de
+  // compte étant ouverte, n'importe quel élève pourrait sinon dépenser la clé.
+  // On relit le rôle du profil avec le jeton de l'appelant (RLS : sa propre ligne).
+  const auth = req.headers.get('Authorization') || '';
+  const sbUrl = Deno.env.get('SUPABASE_URL') || '';
+  const anon = Deno.env.get('SUPABASE_ANON_KEY') || '';
+  if (!auth.startsWith('Bearer ') || !sbUrl || !anon) return json({ error: 'non authentifié' }, 401);
+  try {
+    const uRes = await fetch(`${sbUrl}/auth/v1/user`, { headers: { Authorization: auth, apikey: anon } });
+    const user = uRes.ok ? await uRes.json() : null;
+    if (!user?.id) return json({ error: 'non authentifié' }, 401);
+    const pRes = await fetch(`${sbUrl}/rest/v1/profiles?select=role&id=eq.${user.id}`,
+      { headers: { Authorization: auth, apikey: anon } });
+    const rows = pRes.ok ? await pRes.json() : [];
+    if (rows?.[0]?.role !== 'teacher') return json({ error: 'réservé aux coachs' }, 403);
+  } catch (_e) {
+    return json({ error: 'vérification du compte impossible' }, 502);
+  }
+
   try {
     const report = await req.json();
     // Garde-fou taille : le rapport est compact par construction ; on refuse un
@@ -80,8 +99,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       }),
     });
     if (!r.ok) {
-      const err = await r.text();
-      return json({ error: 'Anthropic ' + r.status + ' : ' + err.slice(0, 300) }, 502);
+      console.error('Anthropic', r.status, (await r.text()).slice(0, 500));
+      return json({ error: 'service de synthèse indisponible (' + r.status + ')' }, 502);
     }
     const out = await r.json();
     const text = (out.content || []).filter((b: { type: string }) => b.type === 'text')
@@ -89,6 +108,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     if (!text) return json({ error: 'réponse vide' }, 502);
     return json({ text });
   } catch (e) {
-    return json({ error: String(e) }, 502);
+    console.error(e);
+    return json({ error: 'requête invalide' }, 400);
   }
 });

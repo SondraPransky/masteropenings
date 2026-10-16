@@ -9,12 +9,13 @@
 <meta name="theme-color" content="#4f46e5">
 <link rel="apple-touch-icon" href="icon.svg">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js" integrity="sha384-aH7F59TKSh8OEAivbclch9UUnWn/Uy8AQlYYKzpVaQkAp8W6IF2VocW/knEeRwT0" crossorigin="anonymous"></script>
+<!-- Version ÉPINGLÉE + intégrité : « @2 » flottant laissait n'importe quelle future 2.x (ou un CDN compromis) entrer dans l'app sans relecture. -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.min.js" integrity="sha384-UagCvVPT5XXA0Hx+nJYUAGBFseHT9zBgpJMSebsAxl9lciTwbT+39j5VfRjdP5Tp" crossorigin="anonymous"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css" rel="stylesheet" integrity="sha384-XAeMOW3g/ahgKWjRcH7Xp+LVEQ/hkKrV0zkAUTnFwlaWK1aXfd9vVufdwqr/836i" crossorigin="anonymous">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -27,8 +28,8 @@
   <div class="tabs" id="nav-tabs">
     <button class="tab tab-teacher on" id="tab-coach" onclick="goPage('coach')"><i class="ti ti-layout-dashboard" aria-hidden="true"></i><span class="tab-label"> Tableau de bord</span></button>
     <button class="tab tab-teacher"    id="tab-drill" onclick="goPage('drill')"><i class="ti ti-eye" aria-hidden="true"></i><span class="tab-label"> Aperçu</span></button>
-    <button class="tab tab-student"    id="tab-revision" onclick="goPage('student-home')" style="display:none"><i class="ti ti-player-play" aria-hidden="true"></i><span class="tab-label"> Réviser</span></button>
-    <button class="tab tab-student"    id="tab-library"  onclick="goPage('library')"      style="display:none"><i class="ti ti-books" aria-hidden="true"></i><span class="tab-label"> Ma bibliothèque</span></button>
+    <button class="tab tab-student"    id="tab-revision" aria-label="Réviser" onclick="goPage('student-home')" style="display:none"><i class="ti ti-player-play" aria-hidden="true"></i><span class="tab-label"> Réviser</span></button>
+    <button class="tab tab-student"    id="tab-library"  aria-label="Ma bibliothèque" onclick="goPage('library')"      style="display:none"><i class="ti ti-books" aria-hidden="true"></i><span class="tab-label"> Ma bibliothèque</span></button>
   </div>
   <span id="nav-student"></span>
   <div class="acct" id="acct-menu" style="display:none">
