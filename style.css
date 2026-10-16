@@ -3880,3 +3880,6 @@ textarea {
 .oaa-th-sort:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
 .oaa-empty .btn { margin-top: 14px; }
 .oaa-refresh { flex-shrink: 0; }
+
+/* Le POURQUOI d'une faute (lib/motifs-core.js) : une phrase d'élève, pas un chiffre. */
+.sp-fault-why { font-size: .82rem; color: var(--text); margin-top: 2px; }
