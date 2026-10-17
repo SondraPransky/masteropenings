@@ -1,5 +1,5 @@
 import { evalCp, classifyLoss, computeFaults, phaseOfFen, gameFaults,
-         aggregateExits, aggregateFaults, weaknessReport, briefPayload } from '../lib/weakness-core.js';
+         aggregateExits, aggregateFaults, weaknessReport, writeBrief } from '../lib/weakness-core.js';
 import { extractAllLines } from '../lib/core.js';
 import { _buildDrillTree } from '../lib/tree.js';
 
@@ -149,21 +149,26 @@ describe('aggregateFaults + weaknessReport', () => {
   });
 });
 
-describe('briefPayload — ce qui part à la synthèse IA', () => {
+describe('writeBrief — bilan rédigé local, sans IA payante', () => {
   const gAna = {
     id: 'g1', ts: 5, pgn: '1. e4 e5 2. Qh5 Nc6 *', white: 'Léo', black: 'Zoé',
     analysis: { v: 1, evals: [], faults: [{ ply: 2, loss: 338, sev: 'blunder', best: 'Nf3' }] },
   };
-  test('compacte le rapport en libellés lisibles, sans tableaux bruts', () => {
-    const p = briefPayload(weaknessReport([gAna], []), 'Léo Martin');
-    expect(p.student).toBe('Léo Martin');
-    expect(p.analyzed).toBe(1);
-    expect(p.fautes.gaffes).toBe(1);
-    expect(p.fautes.parPhase).toEqual({ ouverture: 1, milieu: 0, finale: 0 });
-    expect(p.fautes.top[0]).toEqual({ coup: '2. Qh5', phase: 'ouverture', pions: 3.38, mieux: 'Nf3' });
+  test('dit simplement quand il n\'y a rien', () => {
+    expect(writeBrief(weaknessReport([], []), 'Léo')).toMatch(/aucune partie/);
+    expect(writeBrief(weaknessReport([{ id: 'x', pgn: '1. e4 *' }], []), 'Léo')).toMatch(/en cours d'analyse/);
   });
-  test('reste sous le garde-fou de 20 Ko de l\'Edge Function', () => {
-    const many = Array.from({ length: 40 }, (_, i) => ({ ...gAna, id: 'g' + i }));
-    expect(JSON.stringify(briefPayload(weaknessReport(many, []), 'X')).length).toBeLessThan(20000);
+  test('chiffre les fautes, nomme la plus coûteuse et avoue des données maigres', () => {
+    const t = writeBrief(weaknessReport([gAna], []), 'Léo', () => ['la dame en h5 restait en prise']);
+    expect(t).toMatch(/1 gaffe et 0 erreur/);
+    expect(t).toMatch(/2\. Qh5 : la dame en h5 restait en prise/);
+    expect(t).toMatch(/prudence/);
+  });
+  test('fait remonter un motif récurrent en axe de travail', () => {
+    const many = Array.from({ length: 4 }, (_, i) => ({ ...gAna, id: 'g' + i }));
+    const t = writeBrief(weaknessReport(many, []), 'Léo', () => ['le fou en c4 restait en prise']);
+    expect(t).toMatch(/pièces laissées en prise/);
+    expect(t).toMatch(/À travailler/);
+    expect(t).not.toMatch(/prudence/);
   });
 });

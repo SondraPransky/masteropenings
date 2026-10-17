@@ -587,6 +587,7 @@ function startDrill(i) {
   const d = G.drills[i];
   if (!d) return;
   S.sr = null;   // sortie d'une éventuelle session de révision espacée
+  window._srToggleBar?.(false);
   // Avec Firebase : le nom vient du compte
   if (ACCOUNTS_ON && G.currentUser && !S.student) {
     S.student = G.currentUser.displayName || G.currentUser.email;

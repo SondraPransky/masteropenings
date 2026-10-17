@@ -15,7 +15,7 @@ setup('authenticate', async ({ page }) => {
       'dans un fichier .env à la racine. Voir .env.example.'
     );
   }
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await page.goto('/?auth=1', { waitUntil: 'domcontentloaded' });
   await page.locator('#login-email').fill(email);
   await page.locator('#login-pwd').fill(password);
   await page.getByRole('button', { name: /Se connecter/ }).click();
