@@ -3909,3 +3909,31 @@ textarea {
   .sh-hero--board .sh-hero-label, .sh-hero--board .sh-hero-sub, .sh-hero--board .sh-hero-btn { grid-column: auto; grid-row: auto; }
   .sh-hero--board .sh-hero-btn { grid-area: btn; }
 }
+
+/* ── Écran de révision — direction B « Le Plateau d'abord » (oct. 2026) ─────
+   Pendant une séance, l'échiquier prime : le sélecteur de module et
+   « Recommencer » (inutiles, voire trompeurs dans une séance mixte)
+   s'effacent ; progression en segments + consigne passent au-dessus. */
+#drill-ui.sr-session #drill-sel,
+#drill-ui.sr-session #drill-controls > .btn { display: none; }
+#drill-ui.sr-session #score-card,
+#drill-ui.sr-session #history-card { display: none !important; }
+/* La carte d'infos redit la barre du haut, mais porte le <h1> de la page :
+   masquée VISUELLEMENT seulement (même règle que .study-hidden). */
+#drill-ui.sr-session #drill-info-card { position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+#drill-info-card .badge:empty { display: none; }
+
+.sr-top { max-width: 1160px; margin: 0 auto 12px; display: flex; flex-direction: column; gap: 7px; }
+.sr-top-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.sr-top-turn { font-family: var(--font-display); font-size: 1.15rem; font-weight: 800; letter-spacing: -.02em; line-height: 1.2; color: var(--text); }
+.sr-top-count { font-size: .82rem; font-weight: 700; color: var(--dim); white-space: nowrap; }
+.sr-segs { display: grid; gap: 3px; }
+.sr-seg { height: 6px; border-radius: 999px; background: var(--surf3); transition: background-color .25s ease; }
+.sr-seg.done { background: var(--green); }
+.sr-seg.now { background: var(--cyan); }
+.sr-top-mod { font-size: .8rem; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sr-next { margin-top: 12px; }
+.sr-next-lbl { font-size: .74rem; font-weight: 700; color: var(--dim); margin-bottom: 6px; }
+.sr-next-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.sr-next-row > div { border: 0 !important; opacity: .92; }
+@media (prefers-reduced-motion: reduce) { .sr-seg { transition: none; } }
