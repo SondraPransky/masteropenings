@@ -3883,3 +3883,29 @@ textarea {
 
 /* Le POURQUOI d'une faute (lib/motifs-core.js) : une phrase d'élève, pas un chiffre. */
 .sp-fault-why { font-size: .82rem; color: var(--text); margin-top: 2px; }
+
+/* ── Accueil élève — direction A « Le Cahier » (oct. 2026) ─────────────────
+   Le module se reconnaît à sa POSITION : vignette d'échiquier à la place du
+   rond de camp. La séance du jour montre la prochaine position à jouer. */
+.sh-thumb { flex: 0 0 auto; margin-left: auto; line-height: 0; }
+.sh-thumb > div { border-radius: 8px !important; border: 0 !important; box-shadow: 0 1px 3px rgba(30,27,75,.18); }
+.sh-mod:hover .sh-thumb > div { box-shadow: 0 0 0 2px var(--cyan); }
+.sh-streak { display: inline-flex; align-items: center; gap: 5px; }
+.sh-streak .ti { font-size: 1rem; }
+.sh-welcome-btn { white-space: normal; text-align: center; }
+
+.sh-hero-main { position: relative; min-width: 0; }
+.sh-hero--board { display: grid; grid-template-columns: 1fr auto; grid-template-areas: "main board" "btn btn"; column-gap: 14px; row-gap: 14px; align-items: center; }
+.sh-hero--board .sh-hero-main { grid-area: main; }
+.sh-hero--board .sh-hero-main .sh-hero-sub { margin-bottom: 0; }
+.sh-hero--board .sh-hero-btn { grid-area: btn; }
+.sh-hero--board .sh-hero-board { grid-area: board; }
+.sh-hero--board::after { display: none !important; }   /* le vrai échiquier remplace le cavalier décoratif */
+.sh-hero-board { position: relative; line-height: 0; }
+.sh-hero-board > div { border: 0 !important; border-radius: 10px !important; box-shadow: 0 0 0 3px rgba(255,255,255,.28), 0 6px 16px rgba(30,27,75,.3); }
+@media (max-width: 380px) { .sh-hero-board > div { width: 92px !important; height: 92px !important; flex-basis: 92px !important; } }
+@media (min-width: 760px) {
+  .sh-hero--board { grid-template-columns: 1fr auto auto; grid-template-areas: "main btn board"; column-gap: 24px; }
+  .sh-hero--board .sh-hero-label, .sh-hero--board .sh-hero-sub, .sh-hero--board .sh-hero-btn { grid-column: auto; grid-row: auto; }
+  .sh-hero--board .sh-hero-btn { grid-area: btn; }
+}
