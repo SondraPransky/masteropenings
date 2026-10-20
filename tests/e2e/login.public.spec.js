@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 // Page de connexion — AUCUN compte requis, AUCUN mot de passe saisi.
 // Ces tests tournent sans identifiants (`npm run test:e2e:public`).
 test.describe('Page de connexion (visiteur non connecté)', () => {
-  test.beforeEach(async ({ page }) => { await page.goto('/', { waitUntil: 'domcontentloaded' }); });
+  test.beforeEach(async ({ page }) => { await page.goto('/?auth=1', { waitUntil: 'domcontentloaded' }); });
 
   test('affiche le formulaire de connexion', async ({ page }) => {
     await expect(page.locator('#page-login')).toBeVisible();

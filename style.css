@@ -3880,3 +3880,60 @@ textarea {
 .oaa-th-sort:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
 .oaa-empty .btn { margin-top: 14px; }
 .oaa-refresh { flex-shrink: 0; }
+
+/* Le POURQUOI d'une faute (lib/motifs-core.js) : une phrase d'élève, pas un chiffre. */
+.sp-fault-why { font-size: .82rem; color: var(--text); margin-top: 2px; }
+
+/* ── Accueil élève — direction A « Le Cahier » (oct. 2026) ─────────────────
+   Le module se reconnaît à sa POSITION : vignette d'échiquier à la place du
+   rond de camp. La séance du jour montre la prochaine position à jouer. */
+.sh-thumb { flex: 0 0 auto; margin-left: auto; line-height: 0; }
+.sh-thumb > div { border-radius: 8px !important; border: 0 !important; box-shadow: 0 1px 3px rgba(30,27,75,.18); }
+.sh-mod:hover .sh-thumb > div { box-shadow: 0 0 0 2px var(--cyan); }
+.sh-streak { display: inline-flex; align-items: center; gap: 5px; }
+.sh-streak .ti { font-size: 1rem; }
+.sh-welcome-btn { white-space: normal; text-align: center; }
+
+.sh-hero-main { position: relative; min-width: 0; }
+.sh-hero--board { display: grid; grid-template-columns: 1fr auto; grid-template-areas: "main board" "btn btn"; column-gap: 14px; row-gap: 14px; align-items: center; }
+.sh-hero--board .sh-hero-main { grid-area: main; }
+.sh-hero--board .sh-hero-main .sh-hero-sub { margin-bottom: 0; }
+.sh-hero--board .sh-hero-btn { grid-area: btn; }
+.sh-hero--board .sh-hero-board { grid-area: board; }
+.sh-hero--board::after { display: none !important; }   /* le vrai échiquier remplace le cavalier décoratif */
+.sh-hero-board { position: relative; line-height: 0; }
+.sh-hero-board > div { border: 0 !important; border-radius: 10px !important; box-shadow: 0 0 0 3px rgba(255,255,255,.28), 0 6px 16px rgba(30,27,75,.3); }
+@media (max-width: 380px) { .sh-hero-board > div { width: 92px !important; height: 92px !important; flex-basis: 92px !important; } }
+@media (min-width: 760px) {
+  .sh-hero--board { grid-template-columns: 1fr auto auto; grid-template-areas: "main btn board"; column-gap: 24px; }
+  .sh-hero--board .sh-hero-label, .sh-hero--board .sh-hero-sub, .sh-hero--board .sh-hero-btn { grid-column: auto; grid-row: auto; }
+  .sh-hero--board .sh-hero-btn { grid-area: btn; }
+}
+
+/* ── Écran de révision — direction B « Le Plateau d'abord » (oct. 2026) ─────
+   Pendant une séance, l'échiquier prime : le sélecteur de module et
+   « Recommencer » (inutiles, voire trompeurs dans une séance mixte)
+   s'effacent ; progression en segments + consigne passent au-dessus. */
+#drill-ui.sr-session #drill-sel,
+#drill-ui.sr-session #drill-controls > .btn { display: none; }
+#drill-ui.sr-session #score-card,
+#drill-ui.sr-session #history-card { display: none !important; }
+/* La carte d'infos redit la barre du haut, mais porte le <h1> de la page :
+   masquée VISUELLEMENT seulement (même règle que .study-hidden). */
+#drill-ui.sr-session #drill-info-card { position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+#drill-info-card .badge:empty { display: none; }
+
+.sr-top { max-width: 1160px; margin: 0 auto 12px; display: flex; flex-direction: column; gap: 7px; }
+.sr-top-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.sr-top-turn { font-family: var(--font-display); font-size: 1.15rem; font-weight: 800; letter-spacing: -.02em; line-height: 1.2; color: var(--text); }
+.sr-top-count { font-size: .82rem; font-weight: 700; color: var(--dim); white-space: nowrap; }
+.sr-segs { display: grid; gap: 3px; }
+.sr-seg { height: 6px; border-radius: 999px; background: var(--surf3); transition: background-color .25s ease; }
+.sr-seg.done { background: var(--green); }
+.sr-seg.now { background: var(--cyan); }
+.sr-top-mod { font-size: .8rem; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sr-next { margin-top: 12px; }
+.sr-next-lbl { font-size: .74rem; font-weight: 700; color: var(--dim); margin-bottom: 6px; }
+.sr-next-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.sr-next-row > div { border: 0 !important; opacity: .92; }
+@media (prefers-reduced-motion: reduce) { .sr-seg { transition: none; } }

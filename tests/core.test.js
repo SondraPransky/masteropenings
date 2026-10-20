@@ -365,3 +365,19 @@ describe('moveLabel', () => {
     expect(moveLabel(12, 'b')).toBe('12…');
   });
 });
+
+import { _matchFen } from '../lib/core.js';
+describe('_matchFen — FEN-4 au format Lichess/python-chess', () => {
+  it('efface la case en passant quand aucune prise n\'est possible', () => {
+    const g = new Chess(); g.move('e4');
+    expect(_matchFen(g.fen())).toBe('rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq -');
+  });
+  it('garde la case en passant quand la prise est jouable', () => {
+    const g = new Chess(); ['e4', 'a6', 'e5', 'd5'].forEach(m => g.move(m));
+    expect(_matchFen(g.fen()).endsWith(' d6')).toBe(true);
+  });
+  it('rejoint une FEN python-chess identique', () => {
+    const g = new Chess(); ['d4', 'Nf6', 'c4'].forEach(m => g.move(m));
+    expect(_matchFen(g.fen())).toBe(_matchFen('rnbqkb1r/pppppppp/5n2/8/2PP4/8/PP2PPPP/RNBQKBNR b KQkq - 0 2'));
+  });
+});
