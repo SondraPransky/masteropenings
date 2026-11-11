@@ -3937,3 +3937,17 @@ textarea {
 .sr-next-row { display: flex; gap: 8px; flex-wrap: wrap; }
 .sr-next-row > div { border: 0 !important; opacity: .92; }
 @media (prefers-reduced-motion: reduce) { .sr-seg { transition: none; } }
+
+/* ── Chaton-pion : déclinaisons (oct. 2026) ─────────────────────────────────
+   États vides, erreur, fin de révision. Centré au-dessus du message, jamais
+   plus grand que le texte qu'il accompagne. */
+.msc-empty { display: flex; justify-content: center; margin: 0 auto 10px; }
+.end-msc { display: flex; justify-content: center; margin: -6px 0 8px; }
+.logo .msc-mark { flex: 0 0 auto; margin-right: 2px; }
+.login-logo-icon .msc { margin: 0 auto; filter: none; }
+.login-logo-icon { filter: drop-shadow(0 6px 14px rgba(79,70,229,.18)); }
+.prp-brand { display: flex; align-items: center; gap: 6px; }
+.sh-streak--palier { padding-left: 6px; }
+.sh-streak--palier .msc { margin: -6px 0 -4px; }
+#sh-streak.streak-pop { display: inline-flex; }
+.sh-streak .msc { display: inline-block; vertical-align: middle; }

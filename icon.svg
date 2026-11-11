@@ -1,8 +1,25 @@
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img">
 <title>EECoach</title>
 <rect width="512" height="512" rx="112" fill="#4f46e5"/>
-<g fill="#ffffff" transform="translate(59,67) scale(16.43)">
-<path d="M8 16l-1.447 .724a1 1 0 0 0 -.553 .894v2.382h12v-2.382a1 1 0 0 0 -.553 -.894l-1.447 -.724h-8z"/>
-<path d="M9 3l1 3l-3.491 2.148a1 1 0 0 0 .524 1.852h2.967l-2.073 6h7.961l.112 -5c0 -3 -1.09 -5.983 -4 -7c-1.94 -.678 -2.94 -1.011 -3 -1z"/>
-</g>
+<svg x="64" y="83.63636363636363" width="384" height="360.72727272727275" viewBox="17 4 66 62">
+    <!-- oreilles -->
+    <path d="M29 30 L 30 8 L 46 19 Z" fill="#f6efe3" stroke="#3f3f46" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M71 30 L 70 8 L 54 19 Z" fill="#f6efe3" stroke="#3f3f46" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M32.5 24 L 33 14 L 41 19.5 Z" fill="#f4a7bb"/>
+    <path d="M67.5 24 L 67 14 L 59 19.5 Z" fill="#f4a7bb"/>
+    <!-- tête = la boule du pion -->
+    <circle cx="50" cy="39" r="24" fill="#f6efe3" stroke="#3f3f46" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M66 26 A 21 21 0 0 1 69 51" fill="none" stroke="#e3d6c1" stroke-width="5" stroke-linecap="round"/>
+    <path d="M35 25 A 19 19 0 0 1 44 19" fill="none" stroke="#fffaf2" stroke-width="3" stroke-linecap="round"/>
+    <!-- joues, yeux, nez, bouche, moustaches -->
+    <ellipse cx="35" cy="50" rx="4.2" ry="2.6" fill="#f4a7bb" opacity=".7"/>
+    <ellipse cx="65" cy="50" rx="4.2" ry="2.6" fill="#f4a7bb" opacity=".7"/>
+    <ellipse cx="41" cy="42" rx="3.9" ry="5" fill="#27272a"/><ellipse cx="59" cy="42" rx="3.9" ry="5" fill="#27272a"/>
+       <circle cx="42.4" cy="40" r="1.4" fill="#fff"/><circle cx="60.4" cy="40" r="1.4" fill="#fff"/>
+    <path d="M47.6 47.3 H52.4 L50 50 Z" fill="#f4a7bb" stroke="#3f3f46" stroke-width="1.4" stroke-linejoin="round"/>
+    <path d="M46 51.5 Q 48 54 50 51.5 Q 52 54 54 51.5" fill="none" stroke="#3f3f46" stroke-width="1.8" stroke-linecap="round"/>
+    <g stroke="#3f3f46" stroke-width="1.4" stroke-linecap="round" opacity=".75">
+      <path d="M31 47 L 19 45"/><path d="M31 51 L 19 53"/>
+      <path d="M69 47 L 81 45"/><path d="M69 51 L 81 53"/>
+    </g></svg>
 </svg>
